@@ -1,16 +1,39 @@
 <!-- MAIN CONTENT -->
-<h5 class="page-header"><a id="content" name="content">Installation</a></h5>
+<h5 class="page-header"><a id="content" name="content">Download</a></h5>
 
-<p><a href="http://downloads.mozdev.org/synckolab/FILENAME.xpi">XPI INSTALL LINK</a></p>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.1.1.xpi">SyncKolab 0.1.1</a></p>
+<h6>Previous Releases</h6>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.1.0.xpi">SyncKolab 0.1.0</a></p>
 
+<h5 class="page-header">Installation Instructions</h5>
 <p>
-<b>NOTES TO OWNERS:</b>
-<ol>
-  <li><a href="http://www.mozdev.org/docs/download.html">Look here</a> for instructions on how to 
-  make your project releases publicly available, and our policy for posting releases to be picked 
-  up by the download mirrors.</li>
-  <li>To find out how to get your extension listed on
-  update.mozilla.org read the instructions posted here:<br>
-  <a href="https://addons.update.mozilla.org/about/">https://addons.update.mozilla.org/about/</a></li>
-</ol>
+Step 1: <a href="http://downloads.mozdev.org/synckolab/synckolab-0.1.1.xpi">download it</a> (use "rightclick/save as" otherwise firefox will try to install) <br/>
+Step 2: Open Thunderbird use Tools/Extensions then Install and install the xpi<br/>
+Step 3: Restart Thunderbird<br/>
+Step 4: Configure the server, address book and folder (see description)<br/>
+
+Step 5: rightclick on the icon bar (next to Stop) go to customize and drag the "Sync Kolab" Icon to the
+bar<br/>
+Step 6: click the icon and the sync will start<br/>
+<b>MAKE SURE YOU READ THE RELEASE NOTES OF THE VERSION!!!</b>
+</p>
+
+<h5 class="page-header">Release Notes</h5>
+<h6>synckolab 0.1.1</h6>
+<p>
+Fixed some nasty message bug. It should now download the online folders.
+Still a bad bug on Linux which I cannot figure out (under linux it wont find my contact folder's messages???).
+</p>
+<h6>synckolab 0.1.0 alpha</a></h6>
+<p>
+
+This is a testing release. Do not use it in productive enviroments!!!<br/>
+<b>This version might break your folder and your selected address book... use with care and BACKUP before use!!!</b>
+After installing make sure to set the path and server right. Right now you also
+have to make sure the imap folder you want to sync with is set for offline downloading and
+downloaded (I added some code to download it, but it doesnt work yet... I guess). Just rightclick
+the folder you want, go to Offline, select "Select this folder for offline use" and press
+"Download Now". After that it should sync just fine.
+</p>
+
 </p>

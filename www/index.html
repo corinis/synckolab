@@ -33,7 +33,55 @@
 <!-- ***************** INFO/NEWS *************** -->
 
 <!-- MAIN CONTENT -->
-<p>The <strong>synckolab</strong> project content goes here.</p>
+<h1>Sync Kolab</h1>
+<p>
+SyncKolab was written to add kolab functionality to thunderbird. It reads a selected Imap folder and synchronizes it with the local address book (and calendar in the future). It is currently under heavy development, so use with care!<br/>
+It has been tested under Thunderbird 1 for Windows and Linux. Wheres under Linux it does not seem to work. I still working on that.
+</p>
+<h2>What is Kolab?</h2>
+<p>
+What it does is, that it loads all your contacts (from a selected address book), and synchronizes them with a selected imap folder. Where every contact is stored as an vcard. In the next version I also want to include calendar Entries (vCal)... For more information http://kolab.org/<br/>
 
+The idea behind this is, that you can now have your contacts+calendar entries stored on the imap server. so you can actually have the same addresses on more than one computer. The kolab project has a  groupware server that uses imap to exchange calendar entries and vcards.
+</p>
+<h2>Installation</h2>
+<h3>synckolab 0.1.0 alpha</h3>
+<p>
+Step 1: <a href="synckolab-0.1.1.xpi">download it</a> (use "rightclick/save as" otherwise firefox will try to install) <br/>
+Step 2: Open Thunderbird use Tools/Extensions then Install and install the xpi<br/>
+Step 3: Restart Thunderbird<br/>
+Step 4: Configure the server, address book and folder (see description)<br/>
+
+Step 5: rightclick on the icon bar (next to Stop) go to customize and drag the "Sync Kolab" Icon to the 
+bar<br/>
+Step 6: click the icon and the sync will start<br/>
+<b>MAKE SURE YOU READ THE RELEASE NOTES OF THE VERSION!!!</b>
+</p>
+<h2>Release Notes</h2>
+<h3><a href="synckolab-0.1.1.xpi">synckolab 0.1.1</a></h3>
+<p>
+Fixed some nasty message bug. It should now download the online folders.
+Still a bad bug on Linux which I cannot figure out (under linux it wont find my contact folder's messages???).
+</p>
+<h3><a href="synckolab-0.1.0.xpi">synckolab 0.1.0 alpha</a></h3>
+<p>
+
+This is a testing release. Do not use it in productive enviroments!!!<br/>
+<b>This version might break your folder and your selected address book... use with care and BACKUP before use!!!</b>
+After installing make sure to set the path and server right. Right now you also
+have to make sure the imap folder you want to sync with is set for offline downloading and
+downloaded (I added some code to download it, but it doesnt work yet... I guess). Just rightclick 
+the folder you want, go to Offline, select "Select this folder for offline use" and press
+"Download Now". After that it should sync just fine.
+</p>
+<h2>In the wild...</h2>
+<p>I started a few threads around the globe on different sites during development. If you are interested in some insight you can check them out.
+</p>
+<p>My homepage can be found in <a href="http://www.gargan.org">www.gargan.org</a> including a mirror of this + some other usefull things</p>
+<p>This one is for those who have ideas on how I overcome some of my biggest problems: <a href="http://forums.mozillazine.org/viewtopic.php?t=223578" target="_blank">open a tb message in read/write mode</a><br/>
+Antoher problem I ran into (which could have been avoided if the rewrite stuff had worked): <a href="http://xulplanet.com/forum/viewtopic.php?t=282" target="_blank">Copying mail folder content from temp folder to imap</a>
+I took some of the code from the TB Attachment Tools and TB Header tools for the writing of messages. You can get those pretty usefull extensions from <a href="http://www.supportware.net/mozilla/" target="_blank">Frank DiLecce (Ausdilecce)</a>.
+
+</p>
 <p><strong>Note:</strong> If you want to add an area for user feedback to any of your pages, take a look at the <a href="notes.html">notes.html</a>
 template.</p>
