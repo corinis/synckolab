@@ -17,7 +17,7 @@ var ios = Components.classes["@mozilla.org/network/io-service;1"].getService(Com
 // folder data source
 var gFolderDatasource = Components.classes["@mozilla.org/rdf/datasource;1?name=mailnewsfolders"].createInstance(Components.interfaces.nsIRDFDataSource);
 // imap message service
-var gMsgService=Components.classes["@mozilla.org/messenger/messageservice;1?type=imap"].getService(Components.interfaces.nsIMsgMessageService); 
+var gMessageService=Components.classes["@mozilla.org/messenger/messageservice;1?type=imap"].getService(Components.interfaces.nsIMsgMessageService); 
 
 // holds required content
 var gContactFolder; // the contact folder type nsIMsgFolder
@@ -62,22 +62,6 @@ function DoRDFCommand(dataSource, command, srcArray, argumentArray)
   }
 }
 
-function goWindow (wnd)
-{
-		var statusMsg1 = wnd.document.getElementById('current-action');
-		if (statusMsg1 == null || !statusMsg1)
-		{
-			window.setTimeout(goWindow, 100, wnd);		 
-		}
-		else
-		{
-				// some window elements for displaying the status
-				meter = wnd.document.getElementById('progress');
-				statusMsg = wnd.document.getElementById('current-action');
-				window.setTimeout(startSync, 100);		 
-		}
-}
-
 
 function syncKolab(event) {
 	// copy a file to a folder
@@ -95,9 +79,24 @@ function syncKolab(event) {
 	} catch(e) {
 	}
 	
-	
 	// wait until loaded
 	window.setTimeout(goWindow, 100, gWnd);		 
+}
+
+function goWindow (wnd)
+{
+		var statusMsg1 = wnd.document.getElementById('current-action');
+		if (statusMsg1 == null || !statusMsg1)
+		{
+			window.setTimeout(goWindow, 100, wnd);		 
+		}
+		else
+		{
+				// some window elements for displaying the status
+				meter = wnd.document.getElementById('progress');
+				statusMsg = wnd.document.getElementById('current-action');
+				window.setTimeout(startSync, 100);		 
+		}
 }
 
 var gTmpFile;
@@ -111,140 +110,87 @@ function startSync(event) {
 	file.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0664);
 	gTmpFile = file.path;
 	
-	getAddressBook ();
-}
+	// sync the address book
+	syncAddressBook.init();	
+	// get and set the message folder
+	syncAddressBook.folder = getMsgFolder(syncAddressBook.serverKey, syncAddressBook.folderPath);
+	syncAddressBook.folderMsgURI = syncAddressBook.folder.baseMessageURI;
+	consoleService.logStringMessage("got folder: " + syncAddressBook.folder.URI + 
+		"\nMessage Folder: " + syncAddressBook.folderMsgURI);
 
-
-
-// Step 1
-// get the address book
-function getAddressBook ()
-{
-	statusMsg.value ="Getting Address Book...";
-
-	// get the rdf for the Addresbook list
-	// for configuration
-	var directory = rdf.GetResource("moz-abdirectory://").QueryInterface(Components.interfaces.nsIAbDirectory);
-	
-	var cn = directory.childNodes;
-	var ABook = cn.getNext();
-	
-	book = null;
-	while (ABook != null)
-	{
-		var cur = ABook.QueryInterface(Components.interfaces.nsIAbDirectory);
-		if (cur.directoryProperties.fileName == gAddressBook)
-		{
-			book = cur;
-			break;
-		}
-		ABook = cn.getNext();
-	}
-	// we got the address book in cur
-	// Step 2
-	statusMsg.value ="Getting Contact Message Folder...";
-	// easy 2% go on
-	meter.setAttribute("value", "2%");
-	window.setTimeout(getContactMsgFolder, 100);	
-}
-
-// Step 2
-// gets the contact folder and saves it in gcontactFolder
-function getContactMsgFolder ()
-{
-	
-	var gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
-	var gInc = null;
-	for (var i = 0; i < gAccountManager.allServers.Count(); i++)
-	{
-		var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-		if (account.rootMsgFolder.baseMessageURI == gIncomingServerKey)
-		{
-			gInc = account;
-		}
-	}
-	
-	if (gInc == null)
-	{
-		alert("You have to set the Account and Folder first!");
-		// close the status window
-		gWnd.close();
-
-		return;
-	}
-	
-	gContactFolder = gInc.getMsgFolderFromURI(gInc.rootFolder, gContactFolderPath);
-	gContactFolderMsgPath = gContactFolder.baseMessageURI;
-	consoleService.logStringMessage("got folder: " + gContactFolder.URI + "\nMessage Folder: " + gContactFolderMsgPath);
-
-	// check if folder REALLY exists
-	gContactFolder.clearNewMessages ();
-	
 	// Step 3
 	statusMsg.value ="Getting Content ...";
 	meter.setAttribute("value", "5%");
 
-	window.setTimeout(getContactsContent, 100);	
+	// all initialized, lets run
+	window.setTimeout(getContent, 100, syncAddressBook);	
 }
 
 // globals for step3
 var totalMessages;
-var curMessage;
+var curMessage; 
+var gCurMessageKey;
 var updateMessages;
-var updateMessagesCard;
+var updateMessagesContent;
 
 var folderMessageUids;
 
-var consumer=Components.classes["@mozilla.org/network/async-stream-listener;1"].createInstance(Components.interfaces.nsIAsyncStreamListener);
-var msgs;
+var gMessages;
+var gSync;
 
-// Step 3 15%
+// start with the sync with the sync class
 // saves the contact folder into fileContent
-// 		gContactFolder.downloadAllForOffline (myUrlListener, msgWindow);
-function getContactsContent ()
+function getContent (sync)
 {
+	// remember the sync class
+	gSync = sync;
+	
+	// check if folder REALLY exists
+	sync.folder.clearNewMessages ();
+	sync.folder.downloadAllForOffline (myUrlListener, msgWindow);
+
 	// get the number of messages to go through
-	totalMessages = gContactFolder.getTotalMessages(false);
+	totalMessages = sync.folder.getTotalMessages(false);
 		
 	// get the message keys
-	msgs = gContactFolder.getMessages(msgWindow);	
+	gMessages = sync.folder.getMessages(msgWindow);	
 		
 	curMessage = 0;
 	updateMessages = new Array(); // saves the the message url to delete
-	updateMessagesCard = new Array(); // saves the card to use to update
+	updateMessagesContent = new Array(); // saves the card to use to update
 	folderMessageUids = new Array(); // the checked uids - for better sync
 	
-	// the file content
-  consumer.init(myStreamListener, null); 
 	
 	curStep = 4;
 	statusMsg.value = "Syncing addresses...";
-	meter.setAttribute("value", "20%");
-	window.setTimeout(getCardMessage, 100);	
+	meter.setAttribute("value", "5%");
+	window.setTimeout(getMessage, 100);	
 	// the unique id is in second token in the mail subject (f.e. pas-id-3EF6F3700000002E) and
 	// saved in the custom4 field of the card (is there an id field??)
 }
 
 
-// Get the current message into a string and then go to parseFolderToAddressRunner
-function getCardMessage ()
+// Get the current message into a string and then go to parseMessageRunner
+function getMessage ()
 {
  	var cur = null
  	try
  	{
-		cur = msgs.getNext().QueryInterface(Components.interfaces.nsIMsgDBHdr);
+		cur = gMessages.getNext().QueryInterface(Components.interfaces.nsIMsgDBHdr);
 	}
 	catch (ex)
 	{
     consoleService.logStringMessage("skipping read of messages - since there are none :)");
 		updateContentAfterSave ();
-    //parseFolderToAddressFinish ();
     return;
 	}
+	// get the message content into fileContent
+	// parseMessageRunner is called when we got the message
 	fileContent = "";
+	gCurMessageKey = cur.messageKey;
 	var aurl = new Object();	
-	gMsgService.CopyMessage(
-        gContactFolderMsgPath +"#"+cur.messageKey,
+	gMessageService.CopyMessage(
+        gSync.folderMsgURI +"#"+cur.messageKey,
         myStreamListener, false, null, msgWindow, aurl
         ); 
 }
@@ -279,58 +225,33 @@ var myStreamListener = {
  onStartRequest: function(request, context) {
  },
  onStopRequest: function(aRequest, aContext, aStatusCode) {
-    consoleService.logStringMessage("got Message [" + gContactFolderMsgPath + "#" + curMessage + "]:\n" + fileContent);
+    consoleService.logStringMessage("got Message [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]:\n" + fileContent);
     // stop here for testing
-    parseFolderToAddressRunner ();
+    parseMessageRunner ();
  }
 };
     
-    
-function parseFolderToAddressRunner ()
+/**
+ * we now got the message content. this needs to parsed and checked 
+ */
+function parseMessageRunner ()
 {
-	var cards = book.childCards;
-	
-	var newCard = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);	
-	if (message2Card (fileContent, newCard))
+	var content = gSync.parseMessage(fileContent, updateMessagesContent);
+	if (content != null)
 	{
-		// remember that we did this uid already
-		folderMessageUids.push(newCard.custom4);
-		
-		// ok lets see if we have this one already (remember custom4=UID)
-		var acard = findCard (cards, newCard.custom4);
-	
-		// a new card				
-		if (acard == null)
-		{
-			book.addCard (newCard);
-		}
-		else
-		{
-			// we got that already, see which is newer and update the message or the card
-			if (newCard.lastModifiedDate > acard.lastModifiedDate)
-			{
-				var list = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);
-				list.AppendElement(acard);
-				book.deleteCards(list)
-				book.addCard (newCard);
-			}
-			else
-			{
-				// remember this message for update
-		    consoleService.logStringMessage("updating [" + gContactFolderMsgPath + "#" + curMessage + "]");
-				updateMessages.push(gContactFolderMsgPath +"#"+curMessage); 
-				updateMessagesCard.push(acard); 
-			}
-		}
+	    consoleService.logStringMessage("updating [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]");
+			updateMessages.push(gSync.folderMsgURI +"#"+gCurMessageKey); 
+			updateMessagesContent.push(content); 
 	}
+	
 	
 	curMessage++;
 	if (curMessage < totalMessages)
 	{
-		var curpointer = 20 + (60*(curMessage/totalMessages));
+		var curpointer = 5 + (55*(curMessage/totalMessages));
 		meter.setAttribute("value", curpointer + "%");
 		// next message
-		window.setTimeout(getCardMessage, 20);	
+		window.setTimeout(getMessage, 20);	
 	}
 	else
 	{
@@ -338,7 +259,7 @@ function parseFolderToAddressRunner ()
 	}
 }
 
-// for step 5
+
 var cards;
 var writeDone;
 
@@ -347,19 +268,8 @@ function parseFolderToAddressFinish ()
 	// do step 5
 	curStep = 5;
 	writeDone = false;
-	cards = book.childCards;
-	try
-	{
-		cards.first();
-	}
-	// this will be called when there are no cards in the address book
-	catch (ex)
-	{
-		window.setTimeout(writeContent, 100);	
-	}
-	
 
-	meter.setAttribute("value", "80%");
+	meter.setAttribute("value", "60%");
 	statusMsg.value = "Writing changed cards...";
 	window.setTimeout(updateContent, 100);	
 }
@@ -375,11 +285,11 @@ function updateContent()
 			for (var i = 0; i < updateMessages.length; i++)
 			{
 		    consoleService.logStringMessage("deleting [" + updateMessages[i] + "]");
-				var hdr = gMsgService.messageURIToMsgHdr(updateMessages[i]);
+				var hdr = gMessageService.messageURIToMsgHdr(updateMessages[i]);
 				list.AppendElement(hdr);		
 		    
 			}
-			gContactFolder.deleteMessages (list, msgWindow, true, false, null, false);		
+			gSync.folder.deleteMessages (list, msgWindow, true, false, null, false);		
 		}
 		catch (ex)
 		{
@@ -395,12 +305,10 @@ function updateContent()
 function updateContentWrite ()
 {
 	curMessage++;
-	if (curMessage < updateMessagesCard.length)
+	if (curMessage < updateMessagesContent.length)
 	{
-		var content = null;
-		var cur = updateMessagesCard[i].QueryInterface(Components.interfaces.nsIAbCard);
+		var content = updateMessagesContent[i];
 		// write the message
-		content = card2Message(cur);
 
 		if (gSaveImap)
 		{
@@ -420,7 +328,7 @@ function updateContentWrite ()
 			stream.close();
 			
 			// write the temp file back to the original directory
-			copyToFolder (gTmpFile, gContactFolder.folderURL);
+			copyToFolder (gTmpFile, gSync.folder.folderURL);
 			//copyToFolder (gTmpFile, tempFolderUri); // to the temp folder for testing!!!
 		}
 		else
@@ -436,117 +344,57 @@ function updateContentAfterSave ()
   consoleService.logStringMessage("starting update content...");
 	curStep = 6;
 	writeDone = false;
-	cards = book.childCards;
-	try
+	
+	if (!gSync.initUpdate())
 	{
-		cards.first();
-	}
-	catch (ex)
-	{
-    consoleService.logStringMessage("no cards found...");
+    consoleService.logStringMessage("Nothing there to update...");
 		writeContentAfterSave ();
 	}
-	
 
-	meter.setAttribute("value", "90%");
+	meter.setAttribute("value", "80%");
 	statusMsg.value = "Writing new cards...";
 	window.setTimeout(writeContent, 100);	
 }
 
 // Step 6  10%
-// write everything in a temp folder
+// write all everything thats not yet in the message folder
 function writeContent ()
 {
 	// if there happens an exception, we are done
-	try
+	content = gSync.nextUpdate();		
+	if (content == "done")
 	{
-		cards.currentItem()
-	}
-	catch (ext)
-	{
-	  consoleService.logStringMessage("currentitem exception...");
-		writeDone = true;
-	}
-	
-	
-	if (!writeDone)
-	{
-		var content = null;
-		var cur = cards.currentItem().QueryInterface(Components.interfaces.nsIAbCard);
-    var writeCur = false;
-    
-		if (cur.custom4.length < 2)
-		{
-			// look a new card
-			// generate a unique id (will random be enough for the future?)
-			cur.custom4 = "pas-id-" + get_randomVcardId();
-	    consoleService.logStringMessage("adding unsaved card: " + cur.custom4);
-			writeCur = true;
-			cur.editCardToDatabase ("moz-abmdbdirectory://"+gAddressBook);
-		}
-		else
-		{
-			writeCur = true;
-			// check if we have this uid in the messages
-			for (var i = 0; i < folderMessageUids.length; i++)
-			{
-				if (cur.custom4 == folderMessageUids[i])
-				{
-			    consoleService.logStringMessage("adding card: " + cur.custom4);
-					writeCur = false;
-					break;
-				}
-			}
-		}
-		
-		if (writeCur)
-		{
-			// and write the message
-			content = card2Message(cur);
-	    consoleService.logStringMessage("New Card [" + content + "]");
-		}
-
-		try
-		{
-			// select the next card
-			cards.next();
-		}
-		catch (ext)
-		{
-			writeDone = true;
-		}
-		
-		if (content == null)
-		{
-			if (!writeDone)
-				window.setTimeout(writeContent, 100);	
-			else
-				writeContentAfterSave ();
+			writeContentAfterSave ();
 			return;
-		}
+	}
+	
+	if (content == null)
+	{
+		window.setTimeout(writeContent, 50);	
+		return;
+	}
+	
+	
+	
+	
+	if (gSaveImap)
+	{
+		// write the message in the temp file
+		var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
+		// temp path
+		sfile.initWithPath(gTmpFile);
+		if (sfile.exists()) 
+			sfile.remove(true);
+		sfile.create(sfile.NORMAL_FILE_TYPE, 0666);
+	  
+		// create a new message in there
+	 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
+	 	stream.init(sfile, 2, 0x200, false); // open as "write only"
+		stream.write(content, content.length);
+		stream.close();
 		
-
-		if (gSaveImap)
-		{
-			// write the message in the temp file
-			var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
-			// temp path
-			sfile.initWithPath(gTmpFile);
-			if (sfile.exists()) 
-				sfile.remove(true);
-			sfile.create(sfile.NORMAL_FILE_TYPE, 0666);
-		  
-			// create a new message in there
-		 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
-		 	stream.init(sfile, 2, 0x200, false); // open as "write only"
-			stream.write(content, content.length);
-			stream.close();
-			
-			// write the temp file back to the original directory
-			copyToFolder (gTmpFile, gContactFolder.folderURL);
-		}
-		else
-				writeContentAfterSave ();
+		// write the temp file back to the original directory
+		copyToFolder (gTmpFile, gSync.folder.folderURL);
 	}
 	else
 			writeContentAfterSave ();
@@ -598,7 +446,7 @@ var kolabCopyServiceListener = {
 	OnStopCopy: function(status) {
 		// on step 4 we gotta finish up
 		if (curStep == 4)
-			window.setTimeout(parseFolderToAddressRunnerAfterSave, 1);	
+			window.setTimeout(parseMessageRunnerAfterSave, 1);	
 		if (curStep == 5)
 			window.setTimeout(updateContentWrite, 100);	
 		if (curStep == 6)

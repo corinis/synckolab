@@ -65,7 +65,6 @@ function copyToLocalFolder (fileName, folderUri)
  */
 function findCard (cards, vId)
 {
-	var cards = book.childCards;
 	// start from beginning
 	try
 	{
@@ -190,3 +189,27 @@ function URLDecode(encoded )
 	} // while
    return plaintext;
 };
+
+/**
+ * @param accountKey the key for the account (baseMessageURI)
+ * @param path the path of the folder
+ * @return the nsIMsgFolder for the given account and path
+ */
+function getMsgFolder (accountKey, path)
+{
+	var accountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
+	var gInc = null;
+	for (var i = 0; i < accountManager.allServers.Count(); i++)
+	{
+		var account = accountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
+		if (account.rootMsgFolder.baseMessageURI == accountKey)
+		{
+			gInc = account;
+		}
+	}
+	
+	if (gInc == null)
+		return null;
+	
+	return gInc.getMsgFolderFromURI(gInc.rootFolder, path);
+}
