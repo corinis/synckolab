@@ -98,7 +98,15 @@ function message2Card (message, card)
 					// now we gotta check times... convert the message first
 					// save the date in microseconds
 					// Date: Fri, 17 Dec 2004 15:06:42 +0100
-					card.lastModifiedDate = (new Date(Date.parse(lines[i].substring(lines[i].indexOf(":")+1, lines[i].length)))).getTime() / 1000;
+					try
+					{
+						card.lastModifiedDate = (new Date(Date.parse(lines[i].substring(lines[i].indexOf(":")+1, lines[i].length)))).getTime() / 1000;
+					}
+					catch (ex)
+					{
+					    consoleService.logStringMessage("unable to convert to date: " + lines[i]);
+					    alert(("unable to convert to date: " + lines[i] + "\nPlease copy the date string in a bug report an submit!\n(Also available in the information)"));
+					}
 					break;						
 			case "NICKNAME":
 					card.nickName = tok[1];

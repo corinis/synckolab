@@ -23,6 +23,9 @@ var gMsgService=Components.classes["@mozilla.org/messenger/messageservice;1?type
 var gContactFolder; // the contact folder type nsIMsgFolder
 var book;	// the address book
 
+var gSyncContact; // sync the contacts
+var gSyncCalendar; // sync the calendar
+
 var fileContent; // holds the file content
 var lines;	// the file content as lines
 var addLines; // an array that saves the added lines one the content
@@ -83,9 +86,12 @@ function syncKolab(event) {
 	try {
     var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 		gContactFolderPath = pref.getCharPref("SyncKolab.ContactFolderPath");
-		gIncomingServerKey = pref.getCharPref("SyncKolab.IncomingServer");
+		gIncomingServerKey = pref.getCharPref("SyncKolab.ContactIncomingServer");
 		gAddressBook = pref.getCharPref("SyncKolab.AddressBook");
-		gSaveImap = pref.getBoolPref("SyncKolab.saveToImap");
+		gSaveImap = pref.getBoolPref("SyncKolab.saveToContactImap");
+		gSyncContact = pref.getBoolPref("SyncKolab.syncContacts");
+		gSyncCalendar = pref.getBoolPref("SyncKolab.syncCalendar");
+
 	} catch(e) {
 	}
 	
@@ -363,28 +369,35 @@ function updateContent()
 	// first lets delete the old messages
 	if (updateMessages.length > 0)
 	{
-		var list = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);
-		for (var i = 0; i < updateMessages.length; i++)
+		try
 		{
-			var hdr = gMsgService.messageURIToMsgHdr(updateMessages[i]);
-			list.AppendElement(hdr);		
-	    consoleService.logStringMessage("deleting [" + updateMessages[i] + "]");
+			var list = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);
+			for (var i = 0; i < updateMessages.length; i++)
+			{
+		    consoleService.logStringMessage("deleting [" + updateMessages[i] + "]");
+				var hdr = gMsgService.messageURIToMsgHdr(updateMessages[i]);
+				list.AppendElement(hdr);		
+		    
+			}
+			gContactFolder.deleteMessages (list, msgWindow, true, false, null, false);		
 		}
-		gContactFolder.deleteMessages (list, msgWindow, true, false, null, false);		
+		catch (ex)
+		{
+		    consoleService.logStringMessage("Exception while deleting - skipping");
+		}
 	}
 	curMessage = -1;
 	// now write the new ones
 	window.setTimeout(updateContentWrite, 100);	
-
 }
 
 // write all changed contacts
 function updateContentWrite ()
 {
 	curMessage++;
-	var content = null;
 	if (curMessage < updateMessagesCard.length)
 	{
+		var content = null;
 		var cur = updateMessagesCard[i].QueryInterface(Components.interfaces.nsIAbCard);
 		// write the message
 		content = card2Message(cur);
@@ -393,7 +406,7 @@ function updateContentWrite ()
 		{
 			// write the message in the temp file
 			var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
-			consoleService.logStringMessage("adding [" + content + "] to messages");
+	    consoleService.logStringMessage("adding [" + content + "] to messages");
 			// temp path
 			sfile.initWithPath(gTmpFile);
 			if (sfile.exists()) 
@@ -401,8 +414,8 @@ function updateContentWrite ()
 			sfile.create(sfile.NORMAL_FILE_TYPE, 0666);
 		  
 			// create a new message in there
-			var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
-			stream.init(sfile, 2, 0x200, false); // open as "write only"
+		 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
+		 	stream.init(sfile, 2, 0x200, false); // open as "write only"
 			stream.write(content, content.length);
 			stream.close();
 			
@@ -420,7 +433,7 @@ function updateContentWrite ()
 
 function updateContentAfterSave ()
 {
-	consoleService.logStringMessage("starting update content...");
+  consoleService.logStringMessage("starting update content...");
 	curStep = 6;
 	writeDone = false;
 	cards = book.childCards;
@@ -430,7 +443,7 @@ function updateContentAfterSave ()
 	}
 	catch (ex)
 	{
-		consoleService.logStringMessage("no cards found...");
+    consoleService.logStringMessage("no cards found...");
 		writeContentAfterSave ();
 	}
 	
@@ -444,7 +457,6 @@ function updateContentAfterSave ()
 // write everything in a temp folder
 function writeContent ()
 {
-	var content = null;
 	// if there happens an exception, we are done
 	try
 	{
@@ -452,22 +464,23 @@ function writeContent ()
 	}
 	catch (ext)
 	{
-		consoleService.logStringMessage("currentitem exception...");
+	  consoleService.logStringMessage("currentitem exception...");
 		writeDone = true;
 	}
 	
 	
 	if (!writeDone)
 	{
+		var content = null;
 		var cur = cards.currentItem().QueryInterface(Components.interfaces.nsIAbCard);
-		var writeCur = false;
+    var writeCur = false;
     
 		if (cur.custom4.length < 2)
 		{
 			// look a new card
 			// generate a unique id (will random be enough for the future?)
 			cur.custom4 = "pas-id-" + get_randomVcardId();
-			consoleService.logStringMessage("adding unsaved card: " + cur.custom4);
+	    consoleService.logStringMessage("adding unsaved card: " + cur.custom4);
 			writeCur = true;
 			cur.editCardToDatabase ("moz-abmdbdirectory://"+gAddressBook);
 		}
@@ -479,7 +492,7 @@ function writeContent ()
 			{
 				if (cur.custom4 == folderMessageUids[i])
 				{
-					consoleService.logStringMessage("adding card: " + cur.custom4);
+			    consoleService.logStringMessage("adding card: " + cur.custom4);
 					writeCur = false;
 					break;
 				}
@@ -490,7 +503,7 @@ function writeContent ()
 		{
 			// and write the message
 			content = card2Message(cur);
-			consoleService.logStringMessage("Writing Message to Imap Folder:\n" + content);
+	    consoleService.logStringMessage("New Card [" + content + "]");
 		}
 
 		try
@@ -501,17 +514,12 @@ function writeContent ()
 		catch (ext)
 		{
 			writeDone = true;
-			consoleService.logStringMessage("Nothing left... cards.next() threw Exception...");
-			
 		}
 		
 		if (content == null)
 		{
-			consoleService.logStringMessage("No content, next.");
 			if (!writeDone)
-			{
 				window.setTimeout(writeContent, 100);	
-			}
 			else
 				writeContentAfterSave ();
 			return;
@@ -529,19 +537,19 @@ function writeContent ()
 			sfile.create(sfile.NORMAL_FILE_TYPE, 0666);
 		  
 			// create a new message in there
-			var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
-			stream.init(sfile, 2, 0x200, false); // open as "write only"
+		 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
+		 	stream.init(sfile, 2, 0x200, false); // open as "write only"
 			stream.write(content, content.length);
 			stream.close();
 			
 			// write the temp file back to the original directory
 			copyToFolder (gTmpFile, gContactFolder.folderURL);
-			// the continuing is in the runner!
-			return;
 		}
+		else
+				writeContentAfterSave ();
 	}
-	
-	writeContentAfterSave ();
+	else
+			writeContentAfterSave ();
 
 }
 
@@ -571,7 +579,7 @@ function writeContentAfterSave ()
  */
 function copyToFolder (fileName, folderUri)
 {
-	var mailFolder = RDF.GetResource(folderUri).QueryInterface(Components.interfaces.nsIMsgFolder);
+  var mailFolder = RDF.GetResource(folderUri).QueryInterface(Components.interfaces.nsIMsgFolder);
 	var fileSpec = Components.classes["@mozilla.org/filespec;1"].createInstance(Components.interfaces.nsIFileSpec);
 	fileSpec.nativePath = fileName;
 
@@ -580,7 +588,7 @@ function copyToFolder (fileName, folderUri)
 	
 	copyservice = Components.classes["@mozilla.org/messenger/messagecopyservice;1"].getService(Components.interfaces.nsIMsgCopyService);
 	// in order to be able to REALLY copy the message setup a listener
-	copyservice.CopyFileMessage(fileSpec, mailFolder, null, false, kolabCopyServiceListener, null);
+  copyservice.CopyFileMessage(fileSpec, mailFolder, null, false, kolabCopyServiceListener, null);
 }
 
 var kolabCopyServiceListener = {

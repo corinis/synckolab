@@ -11,35 +11,87 @@
         title="Sync Kolab">
 
   <script type="application/x-javascript" src="chrome://synckolab/content/settings.js"/>
+  <script type="application/x-javascript" src="chrome://synckolab/content/calTools.js"/>
+  <script type="application/x-javascript" src="chrome://calendar/content/jslib/jslib.js"/>
+
+  <script type="application/x-javascript" src="chrome://synckolab/content/jslib/io/io.js"/>
+  <script type="application/x-javascript" src="chrome://synckolab/content/jslib/rdf/rdf.js"/>
+  <script type="application/x-javascript" src="chrome://synckolab/content/jslib/rdf/rdfFile.js"/>
 
     <stringbundleset id="stringbundleset">
         <stringbundle id="bundle_messenger" src="chrome://messenger/locale/messenger.properties"/>
     </stringbundleset>
+  <groupbox align="start">
 
+<tabbox>
+  <tabs>
+    <tab label="Contact"/>
+    <tab label="Calendar"/>
+  </tabs>
+  <tabpanels>
+    <tabpanel id="contactTab">
+    
   <groupbox align="start">
     <caption label="Address Sync"/>
       <label value="Address Book"/>
       
-			<menulist id="ab_URL">
+			<menulist id="conURL">
 			</menulist> 
     	<separator class="thin"/>
 
       <label value="Account"/>
-			<menulist id="imap_Acct" oncommand="updateFolder(this.value);">
+			<menulist id="conImapAcct" oncommand="updateFolder(this.value);">
 			</menulist> 
 
     	<separator class="thin"/>
       
-      <tree flex="7" id="imap_Folder" rows="7" width="250" hidecolumnpicker="true" seltype="single" onselect="setFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
+      <tree flex="7" id="conImapFolder" rows="7" width="250" hidecolumnpicker="true" seltype="single" onselect="setFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
       	<treecols>
-		      <treecol id="folder" label="Contact Folder" primary="true" flex="1"/>
+		      <treecol id="conFolder" label="Contact Folder" primary="true" flex="1"/>
   			</treecols>
   			
       </tree>
       
-      <checkbox id="saveToImap" label="Save to Imap Folder"/>
+      <checkbox id="saveToConImap" label="Save to Imap Folder"/>
+    <separator class="thin"/>
+  </groupbox>
+  
+ 		</tabpanel>
+ 		
+    <tabpanel id="calTab">
+    
+  <groupbox align="start">
+    <caption label="Calendar Sync"/>
+      <label value="Calendar"/>
+      
+			<menulist id="calURL">
+			</menulist> 
+    	<separator class="thin"/>
+
+      <label value="Account"/>
+			<menulist id="calImapAcct" oncommand="updateCalFolder(this.value);">
+			</menulist> 
+
+    	<separator class="thin"/>
+      
+      <tree flex="7" id="calImapFolder" rows="7" width="250" hidecolumnpicker="true" seltype="single" onselect="setCalFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
+      	<treecols>
+		      <treecol id="calFolder" label="Calendar Folder" primary="true" flex="1"/>
+  			</treecols>
+  			
+      </tree>
+      
+      <checkbox id="saveToCalImap" label="Save to Imap Folder"/>
     <separator class="thin"/>
   </groupbox>
 
+ 		</tabpanel>
+  </tabpanels>
+  
+</tabbox>
+    <separator class="thin"/>
+    <checkbox id="syncCon" label="Sync Contacts"/>
+    <checkbox id="syncCal" label="Sync Calendar"/>
 
+  </groupbox>
 </dialog>
