@@ -22,6 +22,40 @@ Step 6: click the icon and the sync will start<br/>
 </p>
 
 <h5 class="page-header">Release Notes</h5>
+<h6>synckolab 0.2.6</h6>
+<p>Fixed a bug where it stops when no contact is in the address book.<br/>
+<pre>
+Just so its easier for some of you to analyze the errors here is a basic layout on whats going on:
+1. it gets the adress book and the message folder
+2. it reads every message in the folder and parses it as a contact object. If the uid is not found in any contact (checks for custom4), the address is added. The changedates are then checked to see if there were any changes in either the contact or message (I dont know of any other way to handle updates)
+3. for all changed contacts: the message is being deleted, the contact is converted to a message and written back
+4. all contacts that do not have a custom4 field filled out are being written to the contact folder
+thats it.
+
+The extension writes a temp file (synckolab.tmp) in your systems temp folder for the message to write back.
+</pre>
+</p>
+<h6>synckolab 0.2.6</h6>
+<p>
+This version fixes some errors with the temp file and implements a new version to read the contact folder. This speeds up the sync quite a lot, and it's not any more necessary to download the folder offline.<br/>
+There is a problem if you have an imap account where the username has a % or a @ in it (like with vpopmail) that seems to be a bug in tb. <br>
+This and all prior versions only save new contacts to the selected folder if the custom4 field is empty. I will fix that in the next version.
+</p>
+<h6>synckolab 0.2.4</h6>
+<p>
+Added update URL. You may have to call the options twice in order to be displayed right (after changing an account).
+</p>
+<h6>synckolab 0.2.3</h6>
+<p>
+Fixed a bug found by <a href="http://forums.mozillazine.org/viewtopic.php?p=1296848#1296848">whodaresgin</a>.
+Stripping of \r\n versus only \n works now.
+</p>
+<h6>synckolab 0.2.2</h6>
+<p>
+Configuration now with drop-down and tree instead of manual input (reduces errors). some minor fixes.<br/>
+This version also prepares for a new way of reading the messages which will be implemented in the next version.
+</p>
+
 <h6>synckolab 0.2.1</h6>
 <p>
 Added a checkbox to sync without writing back to imap (helps speeding things up and pretty useful to make sure nothing is changed)<br/>

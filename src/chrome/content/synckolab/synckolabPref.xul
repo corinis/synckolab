@@ -24,13 +24,19 @@
 			</menulist> 
     	<separator class="thin"/>
 
-      <label value="IMAP Account ('server1' (local) or 'server2' (first account)"/>
+      <label value="Account"/>
+			<menulist id="imap_Acct" oncommand="updateFolder(this.value);">
+			</menulist> 
 
-      <textbox id="imap_Acct" size="15"/>
     	<separator class="thin"/>
-
-      <label value="Contact Folder (Inbox/contacts)"/>
-      <textbox id="imap_URL" size="15"/>
+      
+      <tree flex="7" id="imap_Folder" rows="7" width="250" hidecolumnpicker="true" seltype="single" onselect="setFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
+      	<treecols>
+		      <treecol id="folder" label="Contact Folder" primary="true" flex="1"/>
+  			</treecols>
+  			
+      </tree>
+      
       <checkbox id="saveToImap" label="Save to Imap Folder"/>
     <separator class="thin"/>
   </groupbox>
