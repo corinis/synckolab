@@ -1,5 +1,27 @@
 <!-- MAIN CONTENT -->
-<p>This is a page with <a href="http://www.mozdev.org/docs/notes.html">user notes</a> on it.</p>
+<p>
+<img src="synckolab-options.png" alt="synkolab option"/>
+<br>
+To open the configuration go to Tools->Extensions, then select the synckolab extension and click on options (see image).
+<br/><br/>
+<img src="synckolab-ab.png"/>
+<ol>
+        <li>Select the address book to sync with (a list of available address books is shown)</li>
+        <li>Select the email account to sync with (has to be an imap account)</li>
+        <li>In the list of folders, select an imap folder to sync with</li>
+        <li><b>Save to Imap Folder</b>: if not selected the syncronisation will work one way, no data will be changed on the imap folder (no new messages will be added/nothing deleted) the contacts will be changed</li>
+        <li><b>Sync Contacts</b>: if not selected, the contact synchronisation will be skipped</li>
+        <li><b>Sync Calendar</b>: If not not selected, the calendar (and todo) synchronisation will be skipped</li>
+</ol>
+<br/><br/>
+<img src="synckolab-cal.png"/>
+<ol>
+        <li>Select a calendar to sync with</li>
+        <li>select the email account to sync with (has to be an imap account)</li>
+        <li>In the list of folders, select an imap folder to sync with</li>
+        <li><b>Save to Imap Folder</b>: if not selected the syncronisation will work one way, no data will be changed on the imap folder (no new messages will be added/nothing deleted) the calendar will be changed</li>
+</ol>
+</p>
 
 <!-- uncomment if you want user notes feature -->
-<?php /*require(NOTES);*/ ?>
+<?php require(NOTES); ?>
