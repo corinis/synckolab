@@ -1,8 +1,11 @@
 <!-- MAIN CONTENT -->
 <h5 class="page-header"><a id="content" name="content">Download</a></h5>
 
-<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.2.6.xpi">SyncKolab 0.2.6</a></p>
+
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.2.8.xpi">SyncKolab 0.2.8</a></p>
 <h6>Previous Releases</h6>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.2.7.xpi">SyncKolab 0.2.7</a></p>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.2.6.xpi">SyncKolab 0.2.6</a></p>
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.2.5.xpi">SyncKolab 0.2.5</a></p>
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.2.4.xpi">SyncKolab 0.2.4</a></p>
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.2.3.xpi">SyncKolab 0.2.3</a></p>
@@ -27,6 +30,15 @@ Step 6: click the icon and the sync will start<br/>
 </p>
 
 <h5 class="page-header">Release Notes</h5>
+<h6>synckolab 0.2.8</h6>
+<p>
+fixed bug when there are no messages in folder
+</p>
+<h6>synckolab 0.2.7</h6>
+<p>
+Split into a few js for easier development.
+Added morea dvanced sync check. Now all contacts are being written back to the folder, even if they have an uid set already. The reading of messages has been fixed now - it was a UID problem. So sorry to all I bugged :) There should really be a little better documentation on the xpcom functions. (For those interested: I tried generating the message URIs by using the folderuri and adding #(counter)- which works on clean boxes since then the messages start with id #0. If there is already something there you HAVE to get the messages and use the msgHdr key!)
+</p>
 <h6>synckolab 0.2.6</h6>
 <p>Fixed a bug where it stops when no contact is in the address book.<br/>
 <pre>
