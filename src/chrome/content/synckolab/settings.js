@@ -41,6 +41,7 @@ function init() {
 	try {
 	document.getElementById ("imap_URL").value = pref.getCharPref("SyncKolab.ContactFolderPath");
 	document.getElementById ("imap_Acct").value = pref.getCharPref("SyncKolab.IncomingServerKey");
+	document.getElementById ("saveToImap").checked = pref.getBoolPref("SyncKolab.saveToImap");
 	} catch (ex) {}
 	
 }
@@ -50,4 +51,5 @@ function savePrefs() {
 	pref.setCharPref("SyncKolab.ContactFolderPath", document.getElementById ("imap_URL").value);
 	pref.setCharPref("SyncKolab.IncomingServerKey", document.getElementById ("imap_Acct").value);
 	pref.setCharPref("SyncKolab.AddressBook", document.getElementById ("ab_URL").value);
+	pref.setBoolPref("SyncKolab.saveToImap", document.getElementById ("saveToImap").checked);
 }

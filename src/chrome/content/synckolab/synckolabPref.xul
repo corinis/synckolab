@@ -31,7 +31,7 @@
 
       <label value="Contact Folder (Inbox/contacts)"/>
       <textbox id="imap_URL" size="15"/>
-
+      <checkbox id="saveToImap" label="Save to Imap Folder"/>
     <separator class="thin"/>
   </groupbox>
 
