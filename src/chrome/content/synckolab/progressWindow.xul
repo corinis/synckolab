@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<window
+    id="progress-window"
+    title="Synchronizing with Kolab Folders"
+    orient="horizontal"
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <script src="synckolab.js"/>
+  <style type="text/css">
+  progressmeter { color=blue }
+  :PROGRESSMETER-STRIPE { color: yellow }
+</style>
+
+  <vbox flex="1">
+	<groupbox orient="horizontal">
+	  <caption label="Current Action"/>
+  	<description id="current-action">
+  		Initialising...
+  	</description>
+	</groupbox>
+  <spacer style="height: 10px"/>
+		<hbox>
+		  <progressmeter mode="determined" id="progress" value="0%" flex="1" style="margin: 4px; border: 1px solid"/>
+		  <spacer flex="1"/>
+		  <button id="cancel-button" default="true" oncommand="window.close();" label="Cancel"/>
+		</hbox>
+	</vbox>
+</window>

@@ -1,0 +1,4 @@
+<!-- buttons -->
+
+<!ENTITY synckolab.sync.label					"Sync Kolab">
+<!ENTITY synckolab.sync.tip						"Synchronize Kolab Folders">

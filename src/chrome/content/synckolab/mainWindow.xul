@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet href="chrome://synckolab/skin/synckolab.css" type="text/css"?>
+
+<!DOCTYPE overlay [
+<!ENTITY % messengerDTD SYSTEM "chrome://messenger/locale/messenger.dtd" >
+%messengerDTD;
+<!ENTITY % window SYSTEM "chrome://synckolab/content/synckolab.dtd" >
+%window;
+]>  
+
+<overlay id="synckolabTbOverlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+    <keyset id="mailKeys">
+        <key id="key_synckolab_sync" modifiers="shift,alt,control,accel" keycode="VK_SCROLL_LOCK" command="cmd_synckolab_sync"/>
+    </keyset>
+
+	<commandset id="mailCommands">
+		<command id="cmd_synckolab_sync"
+            label="&synckolab.sync.label;"
+            tooltiptext="&synckolab.sync.tip;"
+            oncommand="syncKolab();"/>
+    </commandset>
+	
+		<script type="application/x-javascript" src="chrome://global/content/nsUserSettings.js"/>
+    <script type="application/x-javascript" src="chrome://synckolab/content/synckolab.js"/>
+    <script type="application/x-javascript" src="chrome://messenger/content/am-smtp.js"/>
+    <script type="application/x-javascript" src="chrome://messenger/content/AccountManager.js"/>
+  
+    <toolbarpalette id="MailToolbarPalette">
+        <toolbarbutton id="SyncKolab" type="menu-button" class="toolbarbutton-1"
+			command="cmd_synckolab_sync">
+        </toolbarbutton>
+    </toolbarpalette>
+</overlay>
