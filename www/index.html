@@ -44,6 +44,44 @@ What it does is, that it loads all your contacts (from a selected address book),
 
 The idea behind this is, that you can now have your contacts+calendar entries stored on the imap server. so you can actually have the same addresses on more than one computer. The kolab project has a  groupware server that uses imap to exchange calendar entries and vcards.
 </p>
+<h2>Status of the Kolab Extension</h2>
+To V 0.2.0
+<ul>
+        <li>Reading of the address book: DONE</li>
+        <li>Writing of the address book: DONE</li>        
+	<li>Configuration: Addressbook: DONE</li>
+	<li>Configuration: Mail Folder: DONE</li>        
+	<li>Reading of the mail folder: 50% - reading works, but only getOfflineStream, which breakes most of the time</li>        
+	<li>parsing mail to card: 75% - works, but there are a few fields missing </li>        
+	<li>parsing card to mail: 75% - works, but there are a few fields missing</li>        
+	<li>saving cards to address book: DONE</li>        
+	<li><i>saving mail to local folder: DONE</i> - this is a debug step</li>        
+	<li>saving mail to imap folder: DONE</li>        
+	<li>saving mail to ANY folder: 50% - imap works, local should but untested</li>        
+	<li>works under windows: YES</li>        
+	<li>works under linux: 50% - it works kinda, but I gotta test more...</li>        
+	<li>works under mac: no clue - anyone wanna test??</li>
+</ul>
+<p>        
+So basically all thats missing are the not implemented vcard fields (some address stuff, but mail/name/phone/.. work) and the correct writing back to the imap folder. I will release V 0.2.0 when this works</p>
+
+To V 0.3.0
+<ul>
+        <li>Reading of Calendar Entries: 0%</li>        
+	<li>Writing of Calendar Entries: 0%</li>        
+	<li>Configuration: Calendar: 0%</li>        
+	<li>parsing calendar to mail: 0%</li>        
+	<li>parsing mail to calendar: 0%</li>
+</ul>
+To V 0.4.0
+<ul>
+        <li>Configuration: multiple address books/calendars to folder</li>
+        <li>testing with different kolab clients</li></ul>To V 1.0.0<ul>        
+	<li>TESTING TESTING TESTING</li>
+</ul>
+
+<p>I think I should be able to reach V1 within a month (depending on my time), except some of the testing since I do not have only linux or windows systems.</p>
+
 <h2>In the wild...</h2>
 <p>I started a few threads around the globe on different sites during development. If you are interested in some insight you can check them out.
 </p>
