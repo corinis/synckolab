@@ -6,9 +6,8 @@
     orient="horizontal"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
   <script src="synckolab.js"/>
-  <style type="text/css">
-  progressmeter { color=blue }
-  :PROGRESSMETER-STRIPE { color: yellow }
+<style type="text/css">
+  progressmeter { color: blue; }
 </style>
 
   <vbox flex="1">

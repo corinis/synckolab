@@ -23,11 +23,14 @@
 	
 		<script type="application/x-javascript" src="chrome://global/content/nsUserSettings.js"/>
     <script type="application/x-javascript" src="chrome://synckolab/content/synckolab.js"/>
+    <script type="application/x-javascript" src="chrome://synckolab/content/tools.js"/>
+    <script type="application/x-javascript" src="chrome://synckolab/content/contactTools.js"/>
+    <script type="application/x-javascript" src="chrome://synckolab/content/calTools.js"/>
     <script type="application/x-javascript" src="chrome://messenger/content/am-smtp.js"/>
     <script type="application/x-javascript" src="chrome://messenger/content/AccountManager.js"/>
   
     <toolbarpalette id="MailToolbarPalette">
-        <toolbarbutton id="SyncKolab" type="menu-button" class="toolbarbutton-1"
+        <toolbarbutton id="SyncKolab" class="toolbarbutton-1"
 			command="cmd_synckolab_sync">
         </toolbarbutton>
     </toolbarpalette>
