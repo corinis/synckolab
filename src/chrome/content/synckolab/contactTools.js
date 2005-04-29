@@ -272,6 +272,7 @@ function message2Card (message, card, format)
 		return xml2Card(message, card);
 	
 	// decode utf8
+	message = decode_utf8(DecodeQuoted(message));
 	
 	// make an array of all lines for easier parsing
 	var lines = message.split("\n");
@@ -473,7 +474,7 @@ function card2Message (card, format)
 	var sdate = "Date: " + getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " +
 		getMonthString (cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime
 		 + " " + (((cdate.getTimezoneOffset()/60) < 0)?"-":"+") +
-		(((cdate.getTimezoneOffset()/60) < 10)?"0":"") + cdate.getTimezoneOffset() + "00\n";
+		(((cdate.getTimezoneOffset()/60) < 10)?"0":"") + cdate.getTimezoneOffset() + "\n";
 /*		
 	msg += "From - " + getDayString(cdate.getDay()) + " " + getMonthString (cdate.getMonth()) + " " + 
 		cdate.getDate()	+ " " + sTime + " " + cdate.getFullYear() + "\n";
@@ -551,5 +552,5 @@ function card2Message (card, format)
 	msg += "UID:"+card.custom4 + "\n";	
 	msg += "VERSION:3.0\n";
 	msg += "END:VCARD\n\n";
-	return header + encodeQuoted(msg);
+	return header + encodeQuoted(encode_utf8(msg));
 }

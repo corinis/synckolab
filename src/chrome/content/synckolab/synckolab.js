@@ -61,6 +61,15 @@ function goWindow (wnd)
 				totalMeter = wnd.document.getElementById('totalProgress');
 				statusMsg = wnd.document.getElementById('current-action');
 				processMsg = wnd.document.getElementById('current-process');
+				if (isCalendarAvailable ())
+				{
+					consoleService.logStringMessage("Calendar available");
+					include("chrome://calendar/content/importExport.js");
+					include("chrome://calendar/content/calendar.js");
+				}
+				else
+					consoleService.logStringMessage("Calendar not available - disabling");
+				
 				window.setTimeout(startSync, 100);		 
 		}
 }
@@ -95,11 +104,14 @@ function startSync(event) {
 	{
 	}
 	
-	try {
-		var calConfig = pref.getCharPref("SyncKolab.CalendarConfigs");
-		calConfigs = calConfig.split(';');
+	if (isCalendarAvailable ())
+	{
+		try {
+			var calConfig = pref.getCharPref("SyncKolab.CalendarConfigs");
+			calConfigs = calConfig.split(';');
+		}
+		catch(ex) {}
 	}
-	catch(ex) {}
 
 	// all initialized, lets run
 	window.setTimeout(nextSync, 100);	
@@ -132,7 +144,7 @@ function nextSync()
 		window.setTimeout(getContent, 100, syncAddressBook);	
 	}
 	else
-	if (gSyncCalendar && curCalConfig < calConfigs.length)
+	if (isCalendarAvailable () && gSyncCalendar && curCalConfig < calConfigs.length)
 	{
 
 		// skip problematic configs :)

@@ -15,7 +15,7 @@ function xml2Event (xml, card)
 	var email = 0;
 
 	// we want to convert to unicode
-	xml = DecodeQuoted(decode_utf8(xml));
+	xml = decode_utf8(DecodeQuoted(xml));
 	
 	// convert the string to xml
 	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser); 
@@ -121,7 +121,8 @@ function getCalendarDirectory ()
  */
 function isCalendarAvailable ()
 {
-	return getCalendarDirectory().exists();
+	// the file should be missing and the function readDataFromFile
+	return getCalendarDirectory().exists() && this.readDataFromFile;
 }
 
 /**

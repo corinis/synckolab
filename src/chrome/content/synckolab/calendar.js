@@ -15,6 +15,9 @@ var syncCalendar = {
 	folderMessageUids: '',
 
 	init: function(config) {
+		if (!isCalendarAvailable ())
+			return;
+			
 		var calFile;
 		// initialize the configuration
 		try {
@@ -43,6 +46,7 @@ var syncCalendar = {
 	 * new message content is returned otehrwise null
 	 */	
 	parseMessage: function(fileContent) {
+		fileContent = decode_utf8(DecodeQuoted(fileContent));
 		var newCard;
 		if (this.format == "Xml")
 		{
@@ -90,12 +94,8 @@ var syncCalendar = {
 				var sdate = "Date: " + getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " +
 					getMonthString (cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime
 					 + " " + (((cdate.getTimezoneOffset()/60) < 0)?"-":"+") +
-					(((cdate.getTimezoneOffset()/60) < 10)?"0":"") + cdate.getTimezoneOffset() + "00\n";
-/*				msg += "From - " + getDayString(cdate.getDay()) + " " + getMonthString (cdate.getMonth()) + " " + 
-						cdate.getDate()	+ " " + sTime + " " + cdate.getFullYear() + "\n";
-				msg += "X-Mozilla-Status: 0001\n";
-				msg += "X-Mozilla-Status2: 00000000\n";
-*/				
+					(((cdate.getTimezoneOffset()/60) < 10)?"0":"") + cdate.getTimezoneOffset() + "\n";
+
 				msg += "From: synckolab@no.tld\n";
 				msg += "Reply-To: \n";
 				msg += "Bcc: \n";
@@ -106,7 +106,7 @@ var syncCalendar = {
 				msg += 'Content-Transfer-Encoding: quoted-printable\n';
 				msg += "User-Agent: SyncKolab\n\r\n\r\n";
 
-				msg += encodeQuoted(acard.getIcalString());
+				msg += encodeQuoted(encode_utf8(acard.getIcalString()));
 				msg += "\n\n";
 				// remember this message for update
 				return msg;
@@ -181,7 +181,7 @@ var syncCalendar = {
 				msg += 'Content-Transfer-Encoding: quoted-printable\n';
 				msg += "User-Agent: SyncKolab\n\r\n\r\n";
 				
-				msg += encodeQuoted(cur.getIcalString());
+				msg += encodeQuoted(encode_utf8(cur.getIcalString()));
 				msg += "\n\n";
 		    consoleService.logStringMessage("New Card [" + msg + "]");
 			}
@@ -235,7 +235,7 @@ var syncCalendar = {
 				msg += 'Content-Transfer-Encoding: quoted-printable\n';
 				msg += "User-Agent: SyncKolab\n\r\n\r\n";
 				
-				msg += encodeQuoted(cur.getIcalString());
+				msg += encodeQuoted(encode_utf8(cur.getIcalString()));
 				msg += "\n\n";
 				
 		    consoleService.logStringMessage("New Card [" + msg + "]");
