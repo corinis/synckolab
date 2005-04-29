@@ -31,16 +31,25 @@
   <tabpanels>
     <tabpanel id="contactTab">
     
-  <groupbox align="start">
-    <caption label="Address Sync"/>
-      <label value="Address Book"/>
+  <vbox>
+
+      <groupbox>
+		    <caption label="Configuration"/>
+				<menulist id="conConfig" oncommand="updateCon(this.value);">
+				</menulist> 
+				<hbox>
+					<button label="Add" oncommand="addConConfig();" tooltiptext="After adding a new configuration, make sure to select it."/>
+					<button label="Del" oncommand="delConConfig();"/>
+				</hbox>
+			</groupbox>
       
+      <label value="Address Book"/>
 			<menulist id="conURL">
 			</menulist> 
     	<separator class="thin"/>
 
       <label value="Account"/>
-			<menulist id="conImapAcct" oncommand="updateFolder(this.value);">
+			<menulist id="conImapAcct" oncommand="updateFolder(this.value);" tooltiptext="Only imap accounts are supported, other account types will not sync.">
 			</menulist> 
 
     	<separator class="thin"/>
@@ -54,22 +63,31 @@
       
       <checkbox id="saveToConImap" label="Save to Imap Folder"/>
     <separator class="thin"/>
-  </groupbox>
+  </vbox>
   
  		</tabpanel>
  		
     <tabpanel id="calTab">
     
-  <groupbox align="start">
-    <caption label="Calendar Sync"/>
-      <label value="Calendar"/>
+  <vbox>
       
+      <groupbox>
+		    <caption label="Configuration"/>
+				<menulist id="calConfig" oncommand="updateCal(this.value);">
+				</menulist> 
+	      <hbox>
+					<button label="Add" oncommand="addCalConfig();" tooltiptext="After adding a new configuration, make sure to select it."/>
+					<button label="Del" oncommand="delCalConfig();"/>
+				</hbox>
+			</groupbox>
+      
+      <label value="Calendar"/>
 			<menulist id="calURL">
 			</menulist> 
     	<separator class="thin"/>
 
       <label value="Account"/>
-			<menulist id="calImapAcct" oncommand="updateCalFolder(this.value);">
+			<menulist id="calImapAcct" oncommand="updateCalFolder(this.value);" tooltiptext="Only imap accounts are supported, other account types will not sync.">
 			</menulist> 
 
     	<separator class="thin"/>
@@ -83,7 +101,7 @@
       
       <checkbox id="saveToCalImap" label="Save to Imap Folder"/>
     <separator class="thin"/>
-  </groupbox>
+  </vbox>
 
  		</tabpanel>
   </tabpanels>

@@ -8,17 +8,20 @@ var syncAddressBook = {
 	gCards: '', // remember the current card list
 	folder: '', // the contact folder type nsIMsgFolder
 	folderMsgURI: '', // the message uri
+	folderMessageUids: '',
 
-	init: function() {
+	init: function(config) {
 		var addressBookName;
 		
+    this.folderMessageUids = new Array(); // the checked uids - for better sync
 		// initialize the configuration
-		try {
+		try 
+		{
 	    var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
-			this.folderPath = pref.getCharPref("SyncKolab.ContactFolderPath");
-			this.serverKey = pref.getCharPref("SyncKolab.ContactIncomingServer");
-			addressBookName = pref.getCharPref("SyncKolab.AddressBook");
-			this.gSaveImap = pref.getBoolPref("SyncKolab.saveToContactImap");
+			this.folderPath = pref.getCharPref("SyncKolab."+config+".ContactFolderPath");
+			this.serverKey = pref.getCharPref("SyncKolab."+config+".ContactIncomingServer");
+			addressBookName = pref.getCharPref("SyncKolab."+config+".AddressBook");
+			this.gSaveImap = pref.getBoolPref("SyncKolab."+config+".saveToContactImap");
 		} catch(e) {
 			return;
 		}
@@ -55,7 +58,7 @@ var syncAddressBook = {
 		if (message2Card (fileContent, newCard))
 		{
 			// remember that we did this uid already
-			folderMessageUids.push(newCard.custom4);
+			this.folderMessageUids.push(newCard.custom4);
 			
 			// ok lets see if we have this one already (remember custom4=UID)
 			var acard = findCard (cards, newCard.custom4);
@@ -76,6 +79,7 @@ var syncAddressBook = {
 					this.gAddressBook.addCard (newCard);
 				}
 				else
+				if (newCard.lastModifiedDate < acard.lastModifiedDate)
 				{
 					// remember this message for update
 					//updateMessagesCard.push(acard); 
@@ -104,10 +108,11 @@ var syncAddressBook = {
 	 * read the next card and return the content if we need an update
 	 */
 	nextUpdate: function () {
+		var cur;
 		// if there happens an exception, we are done
 		try
 		{
-			this.gCards.currentItem()
+			cur = this.gCards.currentItem().QueryInterface(Components.interfaces.nsIAbCard);
 		}
 		catch (ext)
 		{
@@ -115,9 +120,8 @@ var syncAddressBook = {
 			return "done";
 		}
 		
-		
 		var content = null;
-		var cur = this.gCards.currentItem().QueryInterface(Components.interfaces.nsIAbCard);
+		
     var writeCur = false;
 	    
 		if (cur.custom4.length < 2)
@@ -127,15 +131,15 @@ var syncAddressBook = {
 			cur.custom4 = "pas-id-" + get_randomVcardId();
 	    consoleService.logStringMessage("adding unsaved card: " + cur.custom4);
 			writeCur = true;
-			cur.editCardToDatabase ("moz-abmdbdirectory://"+gAddressBook);
+			cur.editCardToDatabase ("moz-abmdbdirectory://"+this.gAddressBook);
 		}
 		else
 		{
 			writeCur = true;
 			// check if we have this uid in the messages
-			for (var i = 0; i < folderMessageUids.length; i++)
+			for (var i = 0; i < this.folderMessageUids.length; i++)
 			{
-				if (cur.custom4 == folderMessageUids[i])
+				if (cur.custom4 == this.folderMessageUids[i])
 				{
 			    consoleService.logStringMessage("we got this card: " + cur.custom4);
 					writeCur = false;
@@ -158,8 +162,7 @@ var syncAddressBook = {
 		}
 		catch (ext)
 		{
-			// no next
-			return "done";
+			// no next.. but we find that out early enough
 		}
 		
 		// return the cards content

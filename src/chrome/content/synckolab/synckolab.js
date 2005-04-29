@@ -2,12 +2,6 @@
 // global variables 
 
 
-// these should be setup in config
-var gContactFolderPath = "";
-var gContactFolderMsgPath = "";
-var gAddressBook = "abook-1.mab";
-var gSaveImap = true;
-
 // print debug information out to console
 var consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService);
 // for rdf content
@@ -20,9 +14,6 @@ var gFolderDatasource = Components.classes["@mozilla.org/rdf/datasource;1?name=m
 var gMessageService=Components.classes["@mozilla.org/messenger/messageservice;1?type=imap"].getService(Components.interfaces.nsIMsgMessageService); 
 
 // holds required content
-var gContactFolder; // the contact folder type nsIMsgFolder
-var book;	// the address book
-
 var gSyncContact; // sync the contacts
 var gSyncCalendar; // sync the calendar
 
@@ -34,51 +25,24 @@ var addLinesNum; // element is where to add the line (Number)
 // hold window elements
 var gWnd; 	// the message window
 var meter;	// the progress meter
+var totalMeter; // the total progress meter
 var statusMsg;	// the status message
+var processMsg; // process message
 
 // progress variables 
 var curStep;
 
-// taken from mailCommands.js
-function DoRDFCommand(dataSource, command, srcArray, argumentArray)
-{
-  var commandResource = rdf.GetResource(command);
-  if (commandResource) {
-    try {
-      if (!argumentArray)
-        argumentArray = Components.classes["@mozilla.org/supports-array;1"]
-                        .createInstance(Components.interfaces.nsISupportsArray);
-
-        if (argumentArray)
-          argumentArray.AppendElement(msgWindow);
-	dataSource.DoCommand(srcArray, commandResource, argumentArray);
-    }
-    catch(e) { 
-      if (command == "http://home.netscape.com/NC-rdf#NewFolder") {
-        throw(e); // so that the dialog does not automatically close.
-      }
-      dump("Exception : In mail commands\n");
-    }
-  }
-}
-
-
 function syncKolab(event) {
 	// copy a file to a folder
 	// call external func
-	gWnd = window.open("chrome://synckolab/content/progressWindow.xul", "bmarks", "chrome,width=350,height=100");
+	gWnd = window.open("chrome://synckolab/content/progressWindow.xul", "bmarks", "chrome,width=350,height=180");
+	
 	try {
     var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
-		gContactFolderPath = pref.getCharPref("SyncKolab.ContactFolderPath");
-		gIncomingServerKey = pref.getCharPref("SyncKolab.ContactIncomingServer");
-		gAddressBook = pref.getCharPref("SyncKolab.AddressBook");
-		gSaveImap = pref.getBoolPref("SyncKolab.saveToContactImap");
 		gSyncContact = pref.getBoolPref("SyncKolab.syncContacts");
 		gSyncCalendar = pref.getBoolPref("SyncKolab.syncCalendar");
-
 	} catch(e) {
 	}
-	
 	// wait until loaded
 	window.setTimeout(goWindow, 100, gWnd);		 
 }
@@ -94,14 +58,23 @@ function goWindow (wnd)
 		{
 				// some window elements for displaying the status
 				meter = wnd.document.getElementById('progress');
+				totalMeter = wnd.document.getElementById('totalProgress');
 				statusMsg = wnd.document.getElementById('current-action');
+				processMsg = wnd.document.getElementById('current-process');
 				window.setTimeout(startSync, 100);		 
 		}
 }
 
 var gTmpFile;
+var conConfigs; // the addressbook configuration array
+var calConfigs; // the calendar configuration array
+var curConConfig; // the current addressbook config
+var curCalConfig; // the current calendar config
 
 function startSync(event) {
+	meter.setAttribute("value", "0%");
+	totalMeter.setAttribute("value", "0%");
+
 	// get temp file
 	var file = Components.classes["@mozilla.org/file/directory_service;1"].
 	   getService(Components.interfaces.nsIProperties).
@@ -110,21 +83,96 @@ function startSync(event) {
 	file.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0664);
 	gTmpFile = file.path;
 	
-	// sync the address book
-	syncAddressBook.init();	
-	// get and set the message folder
-	syncAddressBook.folder = getMsgFolder(syncAddressBook.serverKey, syncAddressBook.folderPath);
-	syncAddressBook.folderMsgURI = syncAddressBook.folder.baseMessageURI;
-	consoleService.logStringMessage("got folder: " + syncAddressBook.folder.URI + 
-		"\nMessage Folder: " + syncAddressBook.folderMsgURI);
+	conConfigs = new Array();
+	calConfigs = new Array();		
+	curConConfig = 0;
+	curCalConfig = 0;
+	
+	try {
+		var conConfig = pref.getCharPref("SyncKolab.AddressBookConfigs");
+		conConfigs = conConfig.split(';');
+	} catch(ex) 
+	{
+	}
+	
+	try {
+		var calConfig = pref.getCharPref("SyncKolab.CalendarConfigs");
+		calConfigs = calConfig.split(';');
+	}
+	catch(ex) {}
 
+	// all initialized, lets run
+	window.setTimeout(nextSync, 100);	
+}
+
+// this function is called after everything is done
+function nextSync()
+{
+	totalMeter.setAttribute("value", (((curConConfig+curCalConfig)*100)/(conConfigs.length+calConfigs.length)) +"%");
+
+	if (gSyncContact && curConConfig < conConfigs.length)
+	{
+		// skip problematic configs :)
+		if (conConfigs[curConConfig].length <= 0)
+		{
+			curConConfig++;
+			window.setTimeout(nextSync, 100);	
+			return;
+		}
+		
+		processMsg.value ="AddressBook Configuration " + conConfigs[curConConfig];
+		// sync the address book
+		syncAddressBook.init(conConfigs[curConConfig]);	
+		// get and set the message folder
+		syncAddressBook.folder = getMsgFolder(syncAddressBook.serverKey, syncAddressBook.folderPath);
+		syncAddressBook.folderMsgURI = syncAddressBook.folder.baseMessageURI;
+		consoleService.logStringMessage("Contacts: got folder: " + syncAddressBook.folder.URI + 
+			"\nMessage Folder: " + syncAddressBook.folderMsgURI);
+		curConConfig++;
+		window.setTimeout(getContent, 100, syncAddressBook);	
+	}
+	else
+	if (gSyncCalendar && curCalConfig < calConfigs.length)
+	{
+
+		// skip problematic configs :)
+		if (calConfigs[curCalConfig].length <= 0)
+		{
+			curCalConfig++;
+			window.setTimeout(nextSync, 100);	
+			return;
+		}
+
+		processMsg.value ="Calendar Configuration " + calConfigs[curCalConfig];
+		syncCalendar.init(calConfigs[curCalConfig]);
+		syncCalendar.folder = getMsgFolder(syncCalendar.serverKey, syncCalendar.folderPath);
+		syncCalendar.folderMsgURI = syncCalendar.folder.baseMessageURI;
+		consoleService.logStringMessage("Calendar: got folder: " + syncCalendar.folder.URI + 
+			"\nMessage Folder: " + syncCalendar.folderMsgURI);
+		curCalConfig++;
+		window.setTimeout(getContent, 100, syncCalendar);	
+	}
+	else //done
+	{
+		meter.setAttribute("value", "100%");
+		statusMsg.value ="Done. You can close this window now!";
+		// delete the temp file
+		var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
+		sfile.initWithPath(gTmpFile);
+		if (sfile.exists()) 
+			sfile.remove(true);
+			
+		// close the status window
+		gWnd.close();
+		return;
+	}
+	
+	
 	// Step 3
 	statusMsg.value ="Getting Content ...";
 	meter.setAttribute("value", "5%");
-
-	// all initialized, lets run
-	window.setTimeout(getContent, 100, syncAddressBook);	
 }
+
 
 // globals for step3
 var totalMessages;
@@ -133,7 +181,6 @@ var gCurMessageKey;
 var updateMessages;
 var updateMessagesContent;
 
-var folderMessageUids;
 
 var gMessages;
 var gSync;
@@ -158,10 +205,8 @@ function getContent (sync)
 	curMessage = 0;
 	updateMessages = new Array(); // saves the the message url to delete
 	updateMessagesContent = new Array(); // saves the card to use to update
-	folderMessageUids = new Array(); // the checked uids - for better sync
 	
 	
-	curStep = 4;
 	statusMsg.value = "Syncing addresses...";
 	meter.setAttribute("value", "5%");
 	window.setTimeout(getMessage, 100);	
@@ -307,10 +352,10 @@ function updateContentWrite ()
 	curMessage++;
 	if (curMessage < updateMessagesContent.length)
 	{
-		var content = updateMessagesContent[i];
+		var content = updateMessagesContent[curMessage];
 		// write the message
 
-		if (gSaveImap)
+		if (gSync.gSaveImap)
 		{
 			// write the message in the temp file
 			var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
@@ -321,6 +366,9 @@ function updateContentWrite ()
 				sfile.remove(true);
 			sfile.create(sfile.NORMAL_FILE_TYPE, 0666);
 		  
+		  // make the message rfc compatible (make sure all lines en with \r\n)
+      content = content.replace(/\r\n|\n|\r/g, "\r\n");
+
 			// create a new message in there
 		 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
 		 	stream.init(sfile, 2, 0x200, false); // open as "write only"
@@ -374,10 +422,7 @@ function writeContent ()
 		return;
 	}
 	
-	
-	
-	
-	if (gSaveImap)
+	if (gSync.gSaveImap)
 	{
 		// write the message in the temp file
 		var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
@@ -387,6 +432,9 @@ function writeContent ()
 			sfile.remove(true);
 		sfile.create(sfile.NORMAL_FILE_TYPE, 0666);
 	  
+	  // make the message rfc compatible (make sure all lines en with \r\n)
+    content = content.replace(/\r\n|\n|\r/g, "\r\n");
+
 		// create a new message in there
 	 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
 	 	stream.init(sfile, 2, 0x200, false); // open as "write only"
@@ -402,20 +450,10 @@ function writeContent ()
 }
 
 
+// done this time
 function writeContentAfterSave ()
 {
-	meter.setAttribute("value", "100%");
-	statusMsg.value ="Done. You can close this window now!";
-
-	// delete the temp file
-	var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
-	sfile.initWithPath(gTmpFile);
-	if (sfile.exists()) 
-		sfile.remove(true);
-		
-	// close the status window
-	gWnd.close();
-
+		window.setTimeout(nextSync, 100, syncCalendar);	
 }
 
 
@@ -432,11 +470,11 @@ function copyToFolder (fileName, folderUri)
 	fileSpec.nativePath = fileName;
 
 	// at this pont, check the content, we do not write a load of bogus messages in the imap folder
-	//alert (fileSpec.fileContents);
+	//alert ("File content:" + fileSpec.fileContents);
 	
 	copyservice = Components.classes["@mozilla.org/messenger/messagecopyservice;1"].getService(Components.interfaces.nsIMsgCopyService);
 	// in order to be able to REALLY copy the message setup a listener
-  copyservice.CopyFileMessage(fileSpec, mailFolder, null, false, kolabCopyServiceListener, null);
+  copyservice.CopyFileMessage(fileSpec, mailFolder, null, false, kolabCopyServiceListener, msgWindow);
 }
 
 var kolabCopyServiceListener = {
@@ -444,9 +482,7 @@ var kolabCopyServiceListener = {
 	OnStartCopy: function() { },
 	SetMessageKey: function(key) { },
 	OnStopCopy: function(status) {
-		// on step 4 we gotta finish up
-		if (curStep == 4)
-			window.setTimeout(parseMessageRunnerAfterSave, 1);	
+//		alert("COPY DONE status: " + status);
 		if (curStep == 5)
 			window.setTimeout(updateContentWrite, 100);	
 		if (curStep == 6)

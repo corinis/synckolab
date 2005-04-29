@@ -1,24 +1,85 @@
-/*
-include('chrome://synckolab/content/jslib/io/io.js');
-include('chrome://synckolab/content/jslib/rdf/rdf.js');
-include('chrome://synckolab/content/jslib/rdf/rdfFile.js');
-*/
+/**
+ * TODO: make sure a selected contact folder isnt in cal yet and other way round)
+ */
 var isCalendar;
+var selectedCalConfig;
+var selectedConConfig;
 
 function init() {
 	isCalendar = isCalendarAvailable ();
+	selectedCalConfig = null;
+	selectedConConfig = null;
 	
 	var sCurFolder = "";
 	var rdf = Components.classes["@mozilla.org/rdf/rdf-service;1"].getService(Components.interfaces.nsIRDFService);
 
 	var directory = rdf.GetResource("moz-abdirectory://").QueryInterface(Components.interfaces.nsIAbDirectory);
 	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+	
+	var calConfigs = new Array(), conConfigs = new Array;
+	try {
+		var conConfig = pref.getCharPref("SyncKolab.AddressBookConfigs");
+		conConfigs = conConfig.split(';');
+	} catch(ex) {}
+	
+	try {
+		var calConfig = pref.getCharPref("SyncKolab.CalendarConfigs");
+		calConfigs = calConfig.split(';');
+	}
+	catch(ex) {}
 
+	// the addressbook configuration list	
+	var conConfigList = document.getElementById("conConfig");
+	var conConfigPopup = document.createElement("menupopup");
+
+	conConfigList.appendChild(conConfigPopup);
+
+	var i;
+	for (i=0; i < conConfigs.length; i++)
+		if (conConfigs[i].length > 0)
+		{
+			var abchild = document.createElement("menuitem");
+			conConfigPopup.appendChild(abchild);
+			abchild.setAttribute("label", conConfigs[i]);
+			abchild.setAttribute("value", conConfigs[i]);
+			if (selectedConConfig == null)
+			{
+				selectedConConfig = conConfigs[i];
+				abchild.setAttribute("selected", "true");
+				conConfigList.setAttribute("label", conConfigs[i]);
+				conConfigList.setAttribute("value", conConfigs[i]);
+			}
+		}
+		
+	// the calendar configuration list	
+	var calConfigList = document.getElementById("calConfig");
+	var calConfigPopup = document.createElement("menupopup");
+
+	calConfigList.appendChild(calConfigPopup);
+	for (i=0; i < calConfigs.length; i++)
+		if (calConfigs[i].length > 0)
+		{
+			var abchild = document.createElement("menuitem");
+			calConfigPopup.appendChild(abchild);
+			abchild.setAttribute("label", calConfigs[i]);
+			abchild.setAttribute("value", calConfigs[i]);
+			if (selectedCalConfig == null)
+			{
+				selectedCalConfig = calConfigs[i];
+				abchild.setAttribute("selected", "true");
+				calConfigList.setAttribute("label", calConfigs[i]);
+				calConfigList.setAttribute("value", calConfigs[i]);
+			}
+			
+		}
+	
+	// do we even sync cal or contacts at all?
 	try {
 		document.getElementById ("syncCon").checked = pref.getBoolPref("SyncKolab.syncContacts");
 		document.getElementById ("syncCal").checked = pref.getBoolPref("SyncKolab.syncCalendar");
 	} catch (ex) {}
 
+	// fill the contact selection
 	var cn = directory.childNodes;
 	var ABook = cn.getNext();
 	
@@ -26,9 +87,11 @@ function init() {
 	var abpopup = document.createElement("menupopup");
 
 	abList.appendChild(abpopup);
+	// default selected
 	var ab = "";
 	try {
-		ab = pref.getCharPref("SyncKolab.AddressBook");
+		if (selectedConConfig != null)
+			ab = pref.getCharPref("SyncKolab."+selectedConConfig+".AddressBook");
 	}
 	catch (ex) {}
 	while (ABook != null)
@@ -43,7 +106,6 @@ function init() {
 			abchild.setAttribute("selected", "true");
 			abList.setAttribute("label", cur.directoryProperties.description);
 			abList.setAttribute("value", cur.directoryProperties.fileName);
-			
 		}
 		try
 		{	
@@ -61,13 +123,17 @@ function init() {
 	actList.appendChild(actpopup);
 	var act = "";
 	try {
-		act = pref.getCharPref("SyncKolab.ContactIncomingServer");
+		if (selectedConConfig != null)
+			act = pref.getCharPref("SyncKolab."+selectedConConfig+".ContactIncomingServer");
 	}
 	catch (ex) {}
 
 	try {
-		sCurFolder = pref.getCharPref("SyncKolab.ContactFolderPath");
-		document.getElementById ("saveToConImap").checked = pref.getBoolPref("SyncKolab.saveToContactImap");
+		if (selectedConConfig != null)
+		{
+			sCurFolder = pref.getCharPref("SyncKolab."+selectedConConfig+".ContactFolderPath");
+			document.getElementById ("saveToConImap").checked = pref.getBoolPref("SyncKolab."+selectedConConfig+".saveToContactImap");
+		}
 	} catch (ex) {}
 
 	var gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
@@ -106,7 +172,8 @@ function init() {
 		abList.appendChild(abpopup);
 		var ab = "";
 		try {
-			ab = pref.getCharPref("SyncKolab.Calendar");
+			if (selectedCalConfig != null)
+				ab = pref.getCharPref("SyncKolab."+selectedCalConfig+".Calendar");
 		}
 		catch (ex) {}
 		
@@ -144,14 +211,18 @@ function init() {
 		calActList.appendChild(actpopup);
 		var act = "";
 		try {
-			act = pref.getCharPref("SyncKolab.CalendarIncomingServer");
+			if (selectedCalConfig != null)
+				act = pref.getCharPref("SyncKolab."+selectedCalConfig+".CalendarIncomingServer");
 		}
 		catch (ex) {}
 	
 		sCurFolder = "";
 		try {
-			sCurFolder = pref.getCharPref("SyncKolab.CalendarFolderPath");
-			document.getElementById ("saveToCalImap").checked = pref.getBoolPref("SyncKolab.saveToCalendarImap");
+			if (selectedCalConfig != null)
+			{
+				sCurFolder = pref.getCharPref("SyncKolab."+selectedCalConfig+".CalendarFolderPath");
+				document.getElementById ("saveToCalImap").checked = pref.getBoolPref("SyncKolab."+selectedCalConfig+".saveToCalendarImap");
+			}
 		} catch (ex) {}
 	
 		for (var i = 0; i < gAccountManager.allServers.Count(); i++)
@@ -182,6 +253,125 @@ function init() {
 	}
 }
 
+// called when a new profile is selected
+function updateCon(value)
+{
+	// save the old prefs
+	saveConPrefs ();
+	
+	selectedConConfig = value;
+
+	// get the prefs
+	try
+	{
+		var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+		var act = pref.getCharPref("SyncKolab."+selectedConConfig+".ContactIncomingServer");
+		
+		// select the account
+		var actList = document.getElementById("conImapAcct");
+		// go through the items
+		var cur = actList.firstChild.firstChild;
+		while (cur != null)
+		{
+			if (cur.getAttribute("value") == act)
+			{
+				actList.selectedItem = cur;
+				actList.setAttribute("label", cur.getAttribute("label"));
+				actList.setAttribute("value", cur.getAttribute("value"));
+				break;
+			}
+			cur = cur.nextSibling;
+		}
+						
+		// the address book
+		var ab = pref.getCharPref("SyncKolab."+selectedConConfig+".AddressBook");
+		actList = document.getElementById("conURL");
+		// go through the items
+		var cur = actList.firstChild.firstChild;
+		while (cur != null)
+		{
+			if (cur.getAttribute("value") == ab)
+			{
+				actList.selectedItem = cur;
+				actList.setAttribute("label", cur.getAttribute("label"));
+				actList.setAttribute("value", cur.getAttribute("value"));
+				break;
+			}
+			cur = cur.nextSibling;
+		}
+		document.getElementById ("saveToConImap").checked = pref.getBoolPref("SyncKolab."+selectedConConfig+".saveToContactImap");
+		
+		var sCurFolder = pref.getCharPref("SyncKolab."+selectedConConfig+".ContactFolderPath");
+		updateFolder (act);
+		updateFolder (act);
+		var tree= document.getElementById ("conImapFolder");
+		var treei = tree.view.getIndexOfItem(document.getElementById(sCurFolder));
+		tree.view.selection.select(treei); 
+		tree.boxObject.scrollToRow(treei);
+
+	}
+	catch(ex){};
+}
+
+function updateCal(value)
+{
+	// save the old prefs
+	saveCalPrefs ();
+	
+	selectedCalConfig = value;
+
+	// get the prefs
+	try
+	{
+		var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+		var act = pref.getCharPref("SyncKolab."+selectedCalConfig+".CalendarIncomingServer");
+		
+		// select the account
+		var actList = document.getElementById("calImapAcct");
+		// go through the items
+		var cur = actList.firstChild.firstChild;
+		while (cur != null)
+		{
+			if (cur.getAttribute("value") == act)
+			{
+				actList.selectedItem = cur;
+				actList.setAttribute("label", cur.getAttribute("label"));
+				actList.setAttribute("value", cur.getAttribute("value"));
+				break;
+			}
+			cur = cur.nextSibling;
+		}
+						
+		// the address book
+		var ab = pref.getCharPref("SyncKolab."+selectedCalConfig+".Calendar");
+		actList = document.getElementById("calURL");
+		// go through the items
+		var cur = actList.firstChild.firstChild;
+		while (cur != null)
+		{
+			if (cur.getAttribute("value") == ab)
+			{
+				actList.selectedItem = cur;
+				actList.setAttribute("label", cur.getAttribute("label"));
+				actList.setAttribute("value", cur.getAttribute("value"));
+				break;
+			}
+			cur = cur.nextSibling;
+		}
+		document.getElementById ("saveToCalImap").checked = pref.getBoolPref("SyncKolab."+selectedCalConfig+".saveToCalendarImap");
+		
+		var sCurFolder = pref.getCharPref("SyncKolab."+selectedCalConfig+".CalendarFolderPath");
+		updateCalFolder (act);
+		updateCalFolder (act);
+		var tree= document.getElementById ("calImapFolder");
+		var treei = tree.view.getIndexOfItem(document.getElementById(sCurFolder));
+		tree.view.selection.select(treei); 
+		tree.boxObject.scrollToRow(treei);
+
+	}
+	catch(ex){};
+}
+
 function updateFolder (act)
 {
 	// dynamically read this...
@@ -189,38 +379,55 @@ function updateFolder (act)
 	var gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
 	for (var i = 0; i < gAccountManager.allServers.Count(); i++)
 	{
-		var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-		if (account.rootMsgFolder.baseMessageURI == act)
+		try
 		{
-			var cfold = document.getElementById ("conImapFolder");
-			// delete the treechildren if exist
-			var cnode = cfold.firstChild;
-			while (cnode != null)
+			var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
+			if (account.rootMsgFolder.baseMessageURI == act)
 			{
-				if (cnode.nodeName == "treechildren")
+				var cfold = document.getElementById ("conImapFolder");
+				// delete the treechildren if exist
+				var cnode = cfold.firstChild;
+				while (cnode != null)
 				{
-					cfold.removeChild(cnode);
-					break;
+					if (cnode.nodeName == "treechildren")
+					{
+						cfold.removeChild(cnode);
+						break;
+					}
+					cnode = cnode.nextSibling;
 				}
-				cnode = cnode.nextSibling;
+				
+	
+				// ok show some folders:
+				var tChildren = document.createElement("treechildren");
+				cfold.appendChild(tChildren);
+				updateFolderElements (account.rootFolder, tChildren, "");
+				return;			
+				
 			}
-			
-
-			// ok show some folders:
-			var tChildren = document.createElement("treechildren");
-			cfold.appendChild(tChildren);
-
-			updateFolderElements (account.rootFolder, tChildren, "");
-			return;			
-			
 		}
+		catch (ex){}
 	}
 }
 
 function setFolder(uri)
 {
+	if (selectedConConfig == null)
+	{
+		alert("Select/Create a Configuration first");
+		return;
+	}
+	
 	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
-	pref.setCharPref("SyncKolab.ContactFolderPath", uri);
+	if (selectedCalConfig != null)
+	{
+		if (uri == pref.getCharPref("SyncKolab."+selectedCalConfig+".CalendarFolderPath"))
+		{
+			alert("You have to select a different folder for Calendar and Contacts!");
+			return;
+		}
+	}
+	pref.setCharPref("SyncKolab."+selectedConConfig+".ContactFolderPath", uri);
 }
 
 
@@ -279,8 +486,22 @@ function updateFolderElements (msgFolder, root, appendChar)
 
 function setCalFolder(uri)
 {
+	if (selectedCalConfig == null)
+	{
+		alert("Select/create a configuration first!");
+		return;
+	}
+
 	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
-	pref.setCharPref("SyncKolab.CalendarFolderPath", uri);
+	if (selectedConConfig != null)
+	{
+		if (uri == pref.getCharPref("SyncKolab."+selectedConConfig+".ContactFolderPath"))
+		{
+			alert("You have to select a different folder for Calendar and Contacts!");
+			return;
+		}
+	}
+	pref.setCharPref("SyncKolab."+selectedCalConfig+".CalendarFolderPath", uri);
 }
 
 function updateCalFolder (act)
@@ -317,21 +538,160 @@ function updateCalFolder (act)
 	}
 }
 
-
-function savePrefs() {
-	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
-	pref.setCharPref("SyncKolab.ContactIncomingServer", document.getElementById ("conImapAcct").value);
-	pref.setCharPref("SyncKolab.AddressBook", document.getElementById ("conURL").value);
-	pref.setBoolPref("SyncKolab.saveToContactImap", document.getElementById ("saveToConImap").checked);
-
-	pref.setBoolPref("SyncKolab.syncContacts", document.getElementById ("syncCon").checked);
+function saveCalPrefs () {
+	if (selectedCalConfig == null)
+		return;
 
 	// if we do not have a calendar, we can easily skip this
 	if (isCalendar)
 	{
-		pref.setBoolPref("SyncKolab.syncCalendar", document.getElementById ("syncCal").checked);
-		pref.setCharPref("SyncKolab.CalendarIncomingServer", document.getElementById ("calImapAcct").value);
-		pref.setCharPref("SyncKolab.Calendar", document.getElementById ("calURL").value);
-		pref.setBoolPref("SyncKolab.saveToCalendarImap", document.getElementById ("saveToCalImap").checked);
+		var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+		pref.setCharPref("SyncKolab."+selectedCalConfig+".CalendarIncomingServer", document.getElementById ("calImapAcct").value);
+		pref.setCharPref("SyncKolab."+selectedCalConfig+".Calendar", document.getElementById ("calURL").value);
+		pref.setBoolPref("SyncKolab."+selectedCalConfig+".saveToCalendarImap", document.getElementById ("saveToCalImap").checked);
+	}
+}
+
+function saveConPrefs () {
+	if (selectedConConfig == null)
+		return;
+	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+	pref.setCharPref("SyncKolab."+selectedConConfig+".ContactIncomingServer", document.getElementById ("conImapAcct").value);
+	pref.setCharPref("SyncKolab."+selectedConConfig+".AddressBook", document.getElementById ("conURL").value);
+	pref.setBoolPref("SyncKolab."+selectedConConfig+".saveToContactImap", document.getElementById ("saveToConImap").checked);
+}
+
+// called when closed (OK)
+function savePrefs() {
+	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+
+	pref.setBoolPref("SyncKolab.syncContacts", document.getElementById ("syncCon").checked);
+	pref.setBoolPref("SyncKolab.syncCalendar", document.getElementById ("syncCal").checked);
+	saveCalPrefs ();
+	saveConPrefs ();
+}
+
+function addConConfig()
+{
+	var newconfig = prompt("Insert the name of the new Configuration");
+	if (newconfig != null && newconfig != "")
+	{
+		var conConfigList = document.getElementById("conConfig");
+		var conConfigPopup = conConfigList.firstChild;
+
+		var abchild = document.createElement("menuitem");
+		conConfigPopup.appendChild(abchild);
+		abchild.setAttribute("label", newconfig);
+		abchild.setAttribute("value", newconfig);
+		
+		// first menuitem
+		var cur = conConfigPopup.firstChild;
+		var configs = "";
+		while (cur != null)
+		{
+			configs += cur.getAttribute("value") + ";";
+			cur = cur.nextSibling;
+		}
+		
+		var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+		pref.setCharPref("SyncKolab.AddressBookConfigs", configs);
+	}
+}
+
+function delConConfig()
+{
+	var config = selectedConConfig;
+	if (confirm("Are you sure you want delete the configuration " + config + "?"))
+	{
+		var conConfigList = document.getElementById("conConfig");
+		var conConfigPopup = conConfigList.firstChild;
+		
+		// first menuitem
+		var delNode = null;
+		var cur = conConfigPopup.firstChild;
+		var configs = "";
+		while (cur != null)
+		{
+			if (cur.getAttribute("value") == config)
+			{
+				delNode = cur;
+			}
+			else
+			{
+				configs += cur.getAttribute("value") + ";";
+			}
+			cur = cur.nextSibling;
+		}
+		if (delNode != null)
+		{
+			conConfigPopup.removeChild(delNode);
+		}
+		
+		var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+		pref.setCharPref("SyncKolab.AddressBookConfigs", configs);
+		selectedConConfig = null;
+	}
+}
+
+function addCalConfig()
+{
+	var newconfig = prompt("Insert the name of the new Configuration");
+	if (newconfig != null && newconfig != "")
+	{
+		var conConfigList = document.getElementById("calConfig");
+		var conConfigPopup = conConfigList.firstChild;
+
+		var abchild = document.createElement("menuitem");
+		conConfigPopup.appendChild(abchild);
+		abchild.setAttribute("label", newconfig);
+		abchild.setAttribute("value", newconfig);
+		
+		// first menuitem
+		var cur = conConfigPopup.firstChild;
+		var configs = "";
+		while (cur != null)
+		{
+			configs += cur.getAttribute("value") + ";";
+			cur = cur.nextSibling;
+		}
+		
+		var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+		pref.setCharPref("SyncKolab.CalendarConfigs", configs);
+	}
+}
+
+function delCalConfig()
+{
+	var config = selectedCalConfig;
+	
+	if (confirm("Are you sure you want delete the configuration " + config + "?"))
+	{
+		var calConfigList = document.getElementById("calConfig");
+		var calConfigPopup = conConfigList.firstChild;
+		
+		// first menuitem
+		var delNode = null;
+		var cur = calConfigPopup.firstChild;
+		var configs = "";
+		while (cur != null)
+		{
+			if (cur.getAttribute("value") == config)
+			{
+				delNode = cur;
+			}
+			else
+			{
+				configs += cur.getAttribute("value") + ";";
+			}
+			cur = cur.nextSibling;
+		}
+		if (delNode != null)
+		{
+			conConfigPopup.removeChild(delNode);
+		}
+		
+		var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+		pref.setCharPref("SyncKolab.CalendarConfigs", configs);
+		selectedCalConfig = null;
 	}
 }

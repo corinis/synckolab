@@ -18,3 +18,105 @@ function isCalendarAvailable ()
 {
 	return getCalendarDirectory().exists();
 }
+
+/**
+ * @return the event with the given id
+ */
+function findEvent(events, uid)
+{
+	for (var i =0; i < events.length; i++)
+		if (events[i].id == uid)
+			return events[i];
+	return null;
+}
+
+function saveIcal (eventArray, todoArray, fileName)
+{
+	var len = 0;
+	var eventStrings = new Array();
+	var begin = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Mozilla.org/NONSGML Mozilla Calendar V1.0//EN\n";
+	var end = "END:VCALENDAR";
+	var i = 0, j;
+	for( i = 0;  eventArray != null && i < eventArray.length; i++ )
+	{
+    var calendarEvent = eventArray[i].clone();
+      
+    // convert time to represent local to produce correct DTSTART and DTEND
+    if(calendarEvent.allDay != true)
+       convertLocalToZuluEvent( calendarEvent );
+      
+    // check if all required properties are available
+    if (calendarEvent.method == 0 )
+       calendarEvent.method = calendarEvent.ICAL_METHOD_PUBLISH;
+    if (calendarEvent.stamp.year ==  0 )
+       calendarEvent.stamp.setTime( new Date() );
+
+    var eventString = calendarEvent.getIcalString();
+    
+    // include VCALENDAR version, prodid, method only on first component
+    var ibegin = eventString.indexOf("BEGIN:", 15+eventString.indexOf("BEGIN:VCALENDAR"));
+    // include END:VCALENDAR only on last component
+    var iend = eventString.lastIndexOf("END:VCALENDAR");
+    // Include components between begin and end.
+    // (Since times are all Zulu times, no VTIMEZONEs are expected,
+    // so safe to assume no duplicate VTIMEZONES need to be removed.)
+    eventString = eventString.slice(ibegin, iend);
+
+    // patch TRIGGER for Outlook compatibility (before \r\n fix)
+    eventString = patchICalStringForExport(eventString);
+    // make sure all line terminators are full \r\n as required by rfc2445
+    eventString = eventString.replace(/\r\n|\n|\r/g, "\r\n");
+    
+    // collect result in array, will join at end
+    eventStrings.push(eventString);
+   }
+
+   for( j = 0; todoArray != null && j < todoArray.length; i++ )
+   {
+      var calendarEvent = todoArray[j].clone();
+      
+      // convert time to represent local to produce correct DTSTART and DTEND
+      if(calendarEvent.allDay != true)
+         convertLocalToZuluEvent( calendarEvent );
+      
+      // check if all required properties are available
+      if (calendarEvent.method == 0 )
+         calendarEvent.method = calendarEvent.ICAL_METHOD_PUBLISH;
+      if (calendarEvent.stamp.year ==  0 )
+         calendarEvent.stamp.setTime( new Date() );
+
+      var eventString = calendarEvent.getIcalString();
+      // include VCALENDAR version, prodid, method only on first component
+      var ibegin = eventString.indexOf("BEGIN:", 15+eventString.indexOf("BEGIN:VCALENDAR"));
+      // include END:VCALENDAR only on last component
+      var iend = eventString.lastIndexOf("END:VCALENDAR");
+      // Include components between begin and end.
+      // (Since times are all Zulu times, no VTIMEZONEs are expected,
+      // so safe to assume no duplicate VTIMEZONES need to be removed.)
+      eventString = eventString.slice(ibegin, iend);
+
+      // patch TRIGGER for Outlook compatibility (before \r\n fix)
+      eventString = patchICalStringForExport(eventString);
+      // make sure all line terminators are full \r\n as required by rfc2445
+      eventString = eventString.replace(/\r\n|\n|\r/g, "\r\n");
+      
+      // collect result in array, will join at end
+      eventStrings[i+j] = eventString;
+  }
+   
+   // concatenate all at once to avoid excess string copying on long calendars.
+	var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
+	// temp path
+	sfile.initWithPath(fileName);
+	if (sfile.exists()) 
+		sfile.remove(true);
+	sfile.create(sfile.NORMAL_FILE_TYPE, 0666);
+	
+	var content = begin + eventStrings.join("") + end;
+	// create a new message in there
+	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
+	stream.init(sfile, 2, 0x200, false); // open as "write only"
+	stream.write(content, content.length);
+	stream.close();
+//  return ;
+}
