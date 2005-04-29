@@ -242,20 +242,15 @@ function getMessage ()
 
 var myUrlListener = {
 	OnStartRunningUrl: function ( url )
-	{
-    consoleService.logStringMessage("myUrlListener:startrunning ["+url.prePath  + "/" + url.path + "]:\n");
-	},
+	{	},
 	
 	OnStopRunningUrl: function ( url, exitCode )
-	{
-    consoleService.logStringMessage("myUrlListener:stoprunning ["+url+"]:\n");
-	}
+	{	}
 }
 
 // nsIStreamListener
 var myStreamListener = {
  onDataAvailable: function(request, context, inputStream, offset, count){
-    consoleService.logStringMessage("myStreamListener:myOnDataAvailable ["+offset+":"+count+"]:\n");
     try
     {
         var sis=Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance(Components.interfaces.nsIScriptableInputStream);
@@ -270,7 +265,7 @@ var myStreamListener = {
  onStartRequest: function(request, context) {
  },
  onStopRequest: function(aRequest, aContext, aStatusCode) {
-    consoleService.logStringMessage("got Message [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]:\n" + fileContent);
+    //consoleService.logStringMessage("got Message [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]:\n" + fileContent);
     // stop here for testing
     parseMessageRunner ();
  }
@@ -368,7 +363,8 @@ function updateContentWrite ()
 		  
 		  // make the message rfc compatible (make sure all lines en with \r\n)
       content = content.replace(/\r\n|\n|\r/g, "\r\n");
-
+			content += "\0";
+			
 			// create a new message in there
 		 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
 		 	stream.init(sfile, 2, 0x200, false); // open as "write only"
@@ -434,6 +430,7 @@ function writeContent ()
 	  
 	  // make the message rfc compatible (make sure all lines en with \r\n)
     content = content.replace(/\r\n|\n|\r/g, "\r\n");
+		content += "\0";
 
 		// create a new message in there
 	 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
