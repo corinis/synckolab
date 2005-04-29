@@ -364,7 +364,6 @@ function updateContentWrite ()
 		  
 		  // make the message rfc compatible (make sure all lines en with \r\n)
       content = content.replace(/\r\n|\n|\r/g, "\r\n");
-			content += "\0";
 			
 			// create a new message in there
 		 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);

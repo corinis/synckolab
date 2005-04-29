@@ -210,7 +210,7 @@ function getMsgFolder (accountKey, path)
 	// no account
 	if (gInc == null)
 	{
-		alert("Mailaccount not found!\nPlease Check configuration");
+		alert("Mailaccount '"+accountKey+"'not found!\nPlease Check configuration");
 		return null;
 	}
 	
@@ -234,9 +234,14 @@ function getMsgFolder (accountKey, path)
 			// we found it
 			if (path == cur.URI)
 				return cur;
+				
 			// if the currents path is the start of what we are lookiong for, go deeper
-			if (path.indexOf(cur.URI) == 0)
+			var cp = path.substring(0, path.indexOf('/', cur.URI.length));
+			
+			if (cp == cur.URI)
 			{
+				consoleService.logStringMessage("got folder: '" +  cur.URI + "'");
+			
 				cFolder = cur;
 				break;
 			}
@@ -254,7 +259,10 @@ function getMsgFolder (accountKey, path)
 		}
 		// we didnt found the path somehow
 		if (cFolder == null)
+		{
+			alert("Folder '"+path+"' not found!\nPlease Check configuration");
 			return null;
+		}
 	}
 	
 	// get the folder
