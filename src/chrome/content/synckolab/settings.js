@@ -262,7 +262,7 @@ function init() {
 		abpopup.appendChild(abchild);
 		abchild.setAttribute("label", "iCal/Kolab1");
 		abchild.setAttribute("value", "iCal");
-		if (selConFormat == "iCal")
+		if (selCalFormat == "iCal")
 		{
 			abchild.setAttribute("selected", "true");
 			abList.setAttribute("label", "iCal/Kolab1");
@@ -272,7 +272,7 @@ function init() {
 		abpopup.appendChild(abchild);
 		abchild.setAttribute("label", "Xml/Kolab2");
 		abchild.setAttribute("value", "Xml");
-		if (selConFormat == "Xml")
+		if (selCalFormat == "Xml")
 		{
 			abchild.setAttribute("selected", "true");
 			abList.setAttribute("label", "Xml/Kolab2");

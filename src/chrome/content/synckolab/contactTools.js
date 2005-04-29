@@ -272,7 +272,6 @@ function message2Card (message, card, format)
 		return xml2Card(message, card);
 	
 	// decode utf8
-	message = decode_utf8(message);
 	
 	// make an array of all lines for easier parsing
 	var lines = message.split("\n");
@@ -283,7 +282,7 @@ function message2Card (message, card, format)
 	for (var i = 0; i < lines.length; i++)
 	{
 		// decode utf8
-		var vline = decode_utf8(lines[i]);
+		var vline = lines[i];
 		
 		// strip the \n at the end
 		if (vline.charAt(vline.length-1) == '\r')
@@ -465,7 +464,7 @@ function card2Message (card, format)
 {
 	if (card.custom4 == null || card.custom4.length < 2)
 		return null;
-	var msg = "";
+
 	// save the date in microseconds
 	// Date: Fri, 17 Dec 2004 15:06:42 +0100
 	var cdate = new Date (card.lastModifiedDate*1000);
@@ -481,15 +480,17 @@ function card2Message (card, format)
 	msg += "X-Mozilla-Status: 0001\n";
 	msg += "X-Mozilla-Status2: 00000000\n";
 */	
-	msg += "From: synckolab@no.tld\n";
-	msg += "Reply-To: \n";
-	msg += "Bcc: \n";
-	msg += "To: synckolab@no.tld\n";
-	msg += "Subject: vCard " + card.custom4 + "\n";
-	msg += sdate;
-	msg += 'Content-Type: text/x-vcard;charset="utf-8"\n';
-	msg += "User-Agent: SyncKolab\n\r\n\r\n";
-	msg += "BEGIN:VCARD\n";
+	var header = "From: synckolab@no.tld\n";
+	header += "Reply-To: \n";
+	header += "Bcc: \n";
+	header += "To: synckolab@no.tld\n";
+	header += "Subject: vCard " + card.custom4 + "\n";
+	header += sdate;
+	header += 'Content-Type: text/x-vcard;charset="utf-8"\n';
+	header += 'Content-Transfer-Encoding: quoted-printable\n';
+	header += "User-Agent: SyncKolab\n\n";
+	
+	var msg = "BEGIN:VCARD\n";
 	// N:firstName;LastName;Nickname
 	if (checkExist (card.firstName) || checkExist (card.lastName))
 		msg += "N:"+card.firstName+";"+card.lastName+";\n";
@@ -550,5 +551,5 @@ function card2Message (card, format)
 	msg += "UID:"+card.custom4 + "\n";	
 	msg += "VERSION:3.0\n";
 	msg += "END:VCARD\n\n";
-	return encode_utf8(msg);
+	return header + encodeQuoted(msg);
 }

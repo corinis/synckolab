@@ -15,7 +15,7 @@ function xml2Event (xml, card)
 	var email = 0;
 
 	// we want to convert to unicode
-	xml = decode_utf8(DecodeQuoted(xml));
+	xml = DecodeQuoted(decode_utf8(xml));
 	
 	// convert the string to xml
 	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser); 
@@ -36,6 +36,7 @@ function xml2Event (xml, card)
 						// now we gotta check times... convert the message first
 						// save the date in microseconds
 						// 2005-03-30T15:28:52Z
+						card.lastModifiedTime.setTime(string2DateTime(s).getTime());
 						//card.lastModifiedDate = string2DateTime(s).getTime() / 1000;
 						break;						
 
@@ -62,10 +63,24 @@ function xml2Event (xml, card)
 				case "RECURRENCE":
 					card.recur = true;
 					//card.interval = getXmlResult(cur, "INTERVAL", "1");
-					
+					card.recurrenceStartDate.setTime(card.start.getTime());
+					//calIRecurrenceInfo  card.recurrenceInfo
+					//calIAttendee 
+					/*
+					calIRecurrenceRule type  //null/"", "SECONDLY", "MINUTELY", "HOURLY", "DAILY", "WEEKLY", "MONTHLY", "YEARLY"
+							interval // repeat every N of type
+							count //long
+								or
+							endDate
+					*/							
 					found = true;
 				break;
 	
+				case "ORGANIZER":
+					cur.organizer.commonName = getXmlResult(cur, "DISPLAY-NAME", "") + "<"+ getXmlResult(cur, "SMTP-ADDRESS", "") +">";
+					found = true;
+					break;
+					
 			  case "LOCATION":
 			  	card.location = cur.firstChild.data;
 					found = true;

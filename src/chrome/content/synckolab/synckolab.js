@@ -277,7 +277,7 @@ var myStreamListener = {
  */
 function parseMessageRunner ()
 {
-	var content = gSync.parseMessage(fileContent, updateMessagesContent);
+	var content = gSync.parseMessage(DecodeQuoted(fileContent), updateMessagesContent);
 	if (content != null)
 	{
 	    consoleService.logStringMessage("updating [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]");
@@ -402,7 +402,7 @@ function updateContentAfterSave ()
 }
 
 // Step 6  10%
-// write all everything thats not yet in the message folder
+// write everything thats not yet in the message folder
 function writeContent ()
 {
 	// if there happens an exception, we are done
@@ -430,8 +430,8 @@ function writeContent ()
 		sfile.create(sfile.NORMAL_FILE_TYPE, 0666);
 	  
 	  // make the message rfc compatible (make sure all lines en with \r\n)
-    content = content.replace(/\r\n|\n|\r/g, "\r\n");
-		content += "\0";
+    content = content.replace(/\r\n|\n\r|\n|\r/g, "\r\n");
+		//content += "\0";
 
 		// create a new message in there
 	 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
@@ -440,6 +440,7 @@ function writeContent ()
 		stream.close();
 		
 		// write the temp file back to the original directory
+    consoleService.logStringMessage("WriteContent Writing...");
 		copyToFolder (gTmpFile, gSync.folder.folderURL);
 	}
 	else
@@ -476,11 +477,13 @@ function copyToFolder (fileName, folderUri)
 }
 
 var kolabCopyServiceListener = {
-	OnProgress: function(progress, progressMax) { },
-	OnStartCopy: function() { },
-	SetMessageKey: function(key) { },
+	OnProgress: function(progress, progressMax) { 
+	},
+	OnStartCopy: function() { 
+	},
+	SetMessageKey: function(key) { 
+	},
 	OnStopCopy: function(status) {
-//		alert("COPY DONE status: " + status);
 		if (curStep == 5)
 			window.setTimeout(updateContentWrite, 100);	
 		if (curStep == 6)

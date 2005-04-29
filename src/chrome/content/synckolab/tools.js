@@ -144,7 +144,6 @@ function deleteTempFolders ()
 	try {
 	    DoRDFCommand(gFolderDatasource, "http://home.netscape.com/NC-rdf#ReallyDelete", parentArray, deletedArray);  
 	} catch(e) {
-	    alert('AttachmentTools: error deleting the temp folder >' + e);
 	}
 	// lets just make sure the temp folder files are gone
 	var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
@@ -485,8 +484,8 @@ function encode_utf8(rohtext) {
    return utftext;
 }
 
-/*
-const char QpEncodeMap[] = {
+
+var QpEncodeMap = new Array(
      SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
      SKIP,   SKIP,   NOSKIP,   SKIP,   SKIP,   NOSKIP,   SKIP,   SKIP,
      SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
@@ -519,27 +518,26 @@ const char QpEncodeMap[] = {
      SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
      SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
      SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP
-};
+);
 
-char* CQPUtils::Encode(char *input)
+function encodeQuoted(s)
 {
-  int BufSize = strlen(input) + BufAdd; //size of the result buffer
-  int UsedSize = 0; //used space in result buffer
-  int LineLen = 0; //length of the current line...
-  char *finalresult = (char*)calloc(BufSize, sizeof(char)); //the result buffer
-  char *fresult = finalresult;
-  char *s = input;
-  while (*s != '\0')
+  var fresult = "";
+	var cur = 0;
+	var LineLen = 0;
+
+  for (cur = 0; cur < s.length; cur++)
   {
     //convert the signed char to an unsigned char...
-    unsigned char mid = (256 - (0 - *s));
+    var mid = s.charCodeAt(cur);
     //should we reset the linelength...
-    if (*s == '\n')
+    if (s.charCodeAt(cur) == '\n')
       LineLen = 0; //we are starting on a new line...
     if (QpEncodeMap[mid] == SKIP)
     {
       //we need to encode this char...
       //is the line too long...
+      /*
       if (LineLen >= MaxLineLength - 4)
       {
         //wrap the line...
@@ -550,41 +548,30 @@ char* CQPUtils::Encode(char *input)
         UsedSize += 3;
         LineLen = 0;
       }
-      //check buffersize...
-      finalresult = ExpandBuffer(finalresult, UsedSize, &BufSize, false);
+      */
+      
       //add the hex value for the char...
-      char mids[3];
-      itoa(mid, mids, 16);
-      strupr(mids);
-      *(fresult++) = '=';
-      *(fresult++) = mids[0];
-      *(fresult++) = mids[1];
-      UsedSize += 3;
-      LineLen += 2;
-      s++;
+      fresult += "=";
+			fresult += mid.toString(16).toUpperCase();
     }
     else
     {
       //just add the char...
       //is the line too long...
+      /*
       if (LineLen >= MaxLineLength - 4)
       {
         //wrap the line...
-        finalresult = ExpandBuffer(finalresult, UsedSize, &BufSize, false);
         *(fresult++) = '=';
         *(fresult++) = '\r';
         *(fresult++) = '\n';
         UsedSize += 3;
         LineLen = 0;
       }
+      */
       //check buffersize...
-      finalresult = ExpandBuffer(finalresult, UsedSize, &BufSize);
-      UsedSize++;
-      LineLen++;
-      *(fresult++) = *(s++);
+      fresult += s.charAt(cur);
     }
   }
-  *(fresult++) = '\0';
-  return finalresult;
+  return fresult;
 }
-*/

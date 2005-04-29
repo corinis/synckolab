@@ -103,10 +103,11 @@ var syncCalendar = {
 				msg += "Subject: iCal " + acard.id + "\n";
 				msg += sdate;
 				msg += 'Content-Type: text/calendar;charset="utf-8"\n';
+				msg += 'Content-Transfer-Encoding: quoted-printable\n';
 				msg += "User-Agent: SyncKolab\n\r\n\r\n";
-				
-				msg += acard.getIcalString();
-				msg += "\n\r\n\r";
+
+				msg += encodeQuoted(acard.getIcalString());
+				msg += "\n\n";
 				// remember this message for update
 				return msg;
 			}
@@ -177,9 +178,11 @@ var syncCalendar = {
 				msg += "Subject: iCal " + cur.id + "\n";
 				msg += sdate;
 				msg += 'Content-Type: text/calendar;charset="utf-8"\n';
+				msg += 'Content-Transfer-Encoding: quoted-printable\n';
 				msg += "User-Agent: SyncKolab\n\r\n\r\n";
 				
-				msg += cur.getIcalString();
+				msg += encodeQuoted(cur.getIcalString());
+				msg += "\n\n";
 		    consoleService.logStringMessage("New Card [" + msg + "]");
 			}
 		}	
@@ -229,9 +232,12 @@ var syncCalendar = {
 				msg += "Subject: iCal " + cur.id + "\n";
 				msg += sdate;
 				msg += 'Content-Type: text/calendar;charset="utf-8"\n';
+				msg += 'Content-Transfer-Encoding: quoted-printable\n';
 				msg += "User-Agent: SyncKolab\n\r\n\r\n";
 				
-				msg += cur.getIcalString();
+				msg += encodeQuoted(cur.getIcalString());
+				msg += "\n\n";
+				
 		    consoleService.logStringMessage("New Card [" + msg + "]");
 			}
 		}
