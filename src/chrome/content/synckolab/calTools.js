@@ -36,7 +36,7 @@ function xml2Event (xml, card)
 						// now we gotta check times... convert the message first
 						// save the date in microseconds
 						// 2005-03-30T15:28:52Z
-						card.lastModifiedTime.setTime(string2DateTime(s).getTime());
+						card.lastModifiedDate.setTime(string2DateTime(s).getTime());
 						//card.lastModifiedDate = string2DateTime(s).getTime() / 1000;
 						break;						
 
