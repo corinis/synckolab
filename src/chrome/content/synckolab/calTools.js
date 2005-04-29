@@ -1,4 +1,94 @@
 
+function xml2Event (xml, card)
+{
+  //    calendarToDo.due.clear();
+   // calendarToDo.start.setTime( startDate );
+   //var iCalToDo = Components.classes["@mozilla.org/icaltodo;1"].createInstance().QueryInterface(Components.interfaces.oeIICalTodo);
+
+	// find the boundary
+	var boundary = xml.substring(xml.indexOf("boundary=")+10, xml.indexOf('"', xml.indexOf("boundary=")+11));
+
+	// get the start of the xml
+	xml = xml.substring(xml.indexOf("<?xml"));
+	// until the boundary = end of xml
+	xml = xml.substring(0, xml.indexOf("--"+boundary));
+	var email = 0;
+
+	// we want to convert to unicode
+	xml = decode_utf8(DecodeQuoted(xml));
+	
+	// convert the string to xml
+	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser); 
+	var doc = parser.parseFromString(xml, "text/xml");
+	
+	
+	var cur = doc.firstChild.firstChild;
+	
+	while(cur != null)
+	{
+		
+		if (cur.nodeType == Node.ELEMENT_NODE)//1
+		{
+			switch (cur.nodeName.toUpperCase())
+			{
+				case "LAST-MODIFICATION-DATE":
+						var s = cur.firstChild.data;
+						// now we gotta check times... convert the message first
+						// save the date in microseconds
+						// 2005-03-30T15:28:52Z
+						//card.lastModifiedDate = string2DateTime(s).getTime() / 1000;
+						break;						
+
+				case "START-DATE":
+						var s = cur.firstChild.data;
+						// 2005-03-30T15:28:52Z
+						if (s.indexOf(":") == -1)
+							card.allDay = true;						
+						card.start.setTime (string2DateTime(s).getTime());
+						found = true;
+						break;						
+
+				case "END-DATE":
+						var s = cur.firstChild.data;
+						// 2005-03-30T15:28:52Z
+						card.end.setTime (string2DateTime(s).getTime());
+						found = true;
+						break;						
+
+				case "SUMMARY":
+					card.title = cur.firstChild.data;
+					break;
+
+				case "RECURRENCE":
+					card.recur = true;
+					//card.interval = getXmlResult(cur, "INTERVAL", "1");
+					
+					found = true;
+				break;
+	
+			  case "LOCATION":
+			  	card.location = cur.firstChild.data;
+					found = true;
+					break;
+
+			  case "BODY":
+			  	card.description = cur.firstChild.data;
+					found = true;
+			  	break;
+			  case "UID":
+			  	card.id = cur.firstChild.data;
+			  	break;
+			} // end switch
+		}
+		
+		cur = cur.nextSibling;
+	}
+	
+	return found;
+
+}
+
+
 /**
  * retrieve the calendar directory
  */

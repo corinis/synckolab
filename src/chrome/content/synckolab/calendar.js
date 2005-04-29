@@ -11,6 +11,7 @@ var syncCalendar = {
 	folder: '', // the contact folder type nsIMsgFolder
 	folderMsgURI: '', // the message uri
 	gCalFile: '',
+	format: 'iCal', // the format iCal/Xml	
 	folderMessageUids: '',
 
 	init: function(config) {
@@ -21,11 +22,16 @@ var syncCalendar = {
 			this.folderPath = pref.getCharPref("SyncKolab."+config+".CalendarFolderPath");
 			this.serverKey = pref.getCharPref("SyncKolab."+config+".CalendarIncomingServer");
 			this.gCalFile = pref.getCharPref("SyncKolab."+config+".Calendar");
+			this.format = pref.getCharPref("SyncKolab."+config+".CalendarFormat");			
 			this.gSaveImap = pref.getBoolPref("SyncKolab."+config+".saveToCalendarImap");
+			// since Imap savine does not work with xml - disable this
+			if (this.format == "Xml")
+				this.gSaveImap = false;
 		} catch(e) {
 			return;
 		}
 		var aDataStream = readDataFromFile( this.gCalFile, "UTF-8" );
+		
 		this.gEvents = parseIcalEvents( aDataStream );
     this.gToDo = parseIcalToDos( aDataStream );		 
     this.folderMessageUids = new Array(); // the checked uids - for better sync
@@ -37,7 +43,14 @@ var syncCalendar = {
 	 * new message content is returned otehrwise null
 	 */	
 	parseMessage: function(fileContent) {
-		var newCard = parseIcalEvents(fileContent)[0].QueryInterface(Components.interfaces.oeIICalEvent);
+		var newCard;
+		if (this.format == "Xml")
+		{
+			newCard = Components.classes["@mozilla.org/icalevent;1"].createInstance().QueryInterface(Components.interfaces.oeIICalEvent);
+			xml2Event(fileContent, newCard)
+		}
+		else
+			newCard = parseIcalEvents(fileContent)[0].QueryInterface(Components.interfaces.oeIICalEvent);
 		
 		// remember that we did this uid already
 		this.folderMessageUids.push(newCard.id);

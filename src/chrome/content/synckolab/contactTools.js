@@ -1,9 +1,13 @@
 function xml2Card (xml, card)
 {
 
-	// we should do a WAY nicer attachment extraction here!
+	// find the boundary
+	var boundary = xml.substring(xml.indexOf("boundary=")+10, xml.indexOf('"', xml.indexOf("boundary=")+11));
+
+	// get the start of the xml
 	xml = xml.substring(xml.indexOf("<?xml"));
-	xml = xml.substring(0, xml.lastIndexOf("--Boundary"));
+	// until the boundary = end of xml
+	xml = xml.substring(0, xml.indexOf("--"+boundary));
 	var email = 0;
 
 	// we want to convert to unicode
@@ -266,7 +270,10 @@ function message2Card (message, card, format)
 */
 	if (format == "Xml")
 		return xml2Card(message, card);
-
+	
+	// decode utf8
+	message = decode_utf8(message);
+	
 	// make an array of all lines for easier parsing
 	var lines = message.split("\n");
 
@@ -477,7 +484,7 @@ function card2Message (card, format)
 	msg += "From: synckolab@no.tld\n";
 	msg += "Reply-To: \n";
 	msg += "Bcc: \n";
-	msg += "To: v\n";
+	msg += "To: synckolab@no.tld\n";
 	msg += "Subject: vCard " + card.custom4 + "\n";
 	msg += sdate;
 	msg += 'Content-Type: text/x-vcard;charset="utf-8"\n';

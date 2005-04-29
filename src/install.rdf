@@ -17,7 +17,7 @@
     <!-- Front End MetaData -->
     <em:id>{571CFACF-0F7D-49b4-BD77-E6FC7B209ADC}</em:id>
     <em:name>Sync Kolab</em:name>
-    <em:version>0.4.3</em:version>
+    <em:version>0.4.4</em:version>
     <em:description>Syncronize the address book and calendar with IMAP folder or Kolab1/2 server</em:description>
     <em:creator>Niko Berger</em:creator>
     <em:homepageURL>http://www.gargan.org/extensions/synckolab</em:homepageURL>

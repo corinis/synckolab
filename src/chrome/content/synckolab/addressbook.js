@@ -24,6 +24,9 @@ var syncAddressBook = {
 			addressBookName = pref.getCharPref("SyncKolab."+config+".AddressBook");
 			this.format = pref.getCharPref("SyncKolab."+config+".AddressBookFormat");
 			this.gSaveImap = pref.getBoolPref("SyncKolab."+config+".saveToContactImap");
+			// since Imap savine does not work with xml - disable this
+			if (this.format == "Xml")
+				this.gSaveImap = false;
 		} catch(e) {
 			return;
 		}
