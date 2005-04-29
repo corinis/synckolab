@@ -60,6 +60,11 @@
   			</treecols>
   			
       </tree>
+
+      <label value="Contact Format"/>
+			<menulist id="conFormat">
+			</menulist> 
+    	<separator class="thin"/>
       
       <checkbox id="saveToConImap" label="Save to Imap Folder"/>
     <separator class="thin"/>
@@ -98,6 +103,10 @@
   			</treecols>
   			
       </tree>
+
+      <label value="Calendar Format"/>
+			<menulist id="calFormat">
+			</menulist> 
       
       <checkbox id="saveToCalImap" label="Save to Imap Folder"/>
     <separator class="thin"/>

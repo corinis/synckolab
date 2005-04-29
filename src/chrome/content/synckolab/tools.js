@@ -208,8 +208,379 @@ function getMsgFolder (accountKey, path)
 		}
 	}
 	
+	// no account
 	if (gInc == null)
+	{
+		alert("Mailaccount not found!\nPlease Check configuration");
 		return null;
+	}
 	
-	return gInc.getMsgFolderFromURI(gInc.rootFolder, path);
+	var cFolder = gInc.rootFolder;
+	while (cFolder != null)
+	{
+		var subfolders = cFolder.GetSubFolders ();
+		cFolder = null;
+		try
+		{
+			subfolders.first ();
+		}
+		catch (ex)
+		{
+			alert("NOTHING: " + msgFolder.prettyName);
+			return;
+		}
+		while (subfolders != null)
+		{
+			var cur = subfolders.currentItem().QueryInterface(Components.interfaces.nsIMsgFolder);
+			// we found it
+			if (path == cur.URI)
+				return cur;
+			// if the currents path is the start of what we are lookiong for, go deeper
+			if (path.indexOf(cur.URI) == 0)
+			{
+				cFolder = cur;
+				break;
+			}
+			
+			if (subfolders.isDone())
+				break;
+			try
+			{
+				subfolders.next();
+			}
+			catch (ex)
+			{
+				break;
+			}
+		}
+		// we didnt found the path somehow
+		if (cFolder == null)
+			return null;
+	}
+	
+	// get the folder
+	return null;
+//	return gInc.getMsgFolderFromURI(gInc.rootFolder, path);
 }
+
+
+
+function getXmlResult (node, name, def)
+{
+	var cur = node.firstChild;
+	while(cur != null)
+	{
+		if (cur.nodeName.toUpperCase() == name.toUpperCase())
+		{
+			return cur.firstChild.data;
+		}
+		cur = cur.nextSibling;
+	}
+	return def;
+}
+// takes: 2005-03-30T15:28:52Z or 2005-03-30 15:28:52
+function string2DateTime (val)
+{
+	var s = val.replace('T', ' ');
+	s = s.replace('Z', '');
+	var both = s.split(' ');
+	var cdate = both[0].split('-');
+	var ctime = both[1].split(':');
+	return new Date(cdate[0], cdate[1], cdate[2], ctime[0], ctime[1], ctime[2]);
+
+}
+
+function string2Date (val)
+{
+	var s = val.replace('T', '');
+	var cdate = s.split('-');
+	return new Date(cdate[0], cdate[1], cdate[2]);
+}
+
+var SKIP = 202;
+var NOSKIP = 'A';
+
+
+var hexmap = new Array(
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+      0 ,    1 ,    2 ,    3 ,    4 ,    5 ,    6 ,    7 ,
+      8 ,    9 ,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,    10,    11,    12,    13,    14,    15,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP
+);
+
+var QpEncodeMap = new Array(
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   NOSKIP,   SKIP,   SKIP,   NOSKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     NOSKIP,   SKIP,   SKIP,   SKIP,   SKIP,   NOSKIP,   NOSKIP,   NOSKIP,
+     NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
+     NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
+     NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   SKIP,   NOSKIP,   NOSKIP,
+     SKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
+     NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
+     NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
+     NOSKIP,   NOSKIP,   NOSKIP,   SKIP,   SKIP,   SKIP,   SKIP,   NOSKIP,
+     SKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
+     NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
+     NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
+     NOSKIP,   NOSKIP,   NOSKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP
+);
+
+
+function DecodeQuoted(s)
+{
+	var p = 0, i;
+  var result = '';
+  while (p < s.length) //loop through the entire string...
+  {
+    if (s.charAt(p) == '=') //woops, needs to be decoded...
+    {
+      for (i = 0; i < 3; i++) //is s more than 3 chars long...
+      {
+        if (p+i == s.length)
+        {
+          //error in the decoding...
+          return result;
+        }
+      }
+      
+      var mid = "";
+      
+      p++; //move past the "="
+      //let's put the hex part into mid...
+      var ok = true;
+      for (i = 0; i < 2; i++)
+      {
+        if (hexmap[s.charCodeAt(p+i)] == SKIP)
+        {
+          //we have an error, or a linebreak, in the encoding...
+          ok = false;
+          if (s.charAt(p+i) == '\r' && s.charAt(p+i+1) == '\n')
+          {
+            p += 2;
+            break;
+          }
+          else
+          {
+            //we have an error in the encoding...
+            //s--;
+            result += "=";
+            break;
+          }
+        }
+        mid += s.charAt(p+i);
+      }
+      //now we just have to convert the hex string to an char...
+      if (ok)
+      {
+        p += 2;
+        var m = hexmap[mid.charCodeAt(0)];
+        m <<= 4;
+        m |= hexmap[mid.charCodeAt(1)];
+        result += String.fromCharCode(m);
+      }
+    }
+    else
+    {
+      result += s.charAt(p);
+      p++;
+    }
+  }
+
+  return result;
+}
+
+
+function decode_utf8(utftext) {
+   var plaintext = ""; var i=0; var c=c1=c2=0;
+   // while-Schleife, weil einige Zeichen uebersprungen werden
+   while(i<utftext.length)
+       {
+       c = utftext.charCodeAt(i);
+       if (c<128) {
+           plaintext += String.fromCharCode(c);
+           i++;}
+       else if((c>191) && (c<224)) {
+           c2 = utftext.charCodeAt(i+1);
+           plaintext += String.fromCharCode(((c&31)<<6) | (c2&63));
+           i+=2;}
+       else {
+           c2 = utftext.charCodeAt(i+1); c3 = utftext.charCodeAt(i+2);
+           plaintext += String.fromCharCode(((c&15)<<12) | ((c2&63)<<6) | (c3&63));
+           i+=3;}
+       }
+   return plaintext;
+}
+
+function encode_utf8(rohtext) {
+   // dient der Normalisierung des Zeilenumbruchs
+   rohtext = rohtext.replace(/\r\n/g,"\n");
+   var utftext = "";
+   for(var n=0; n<rohtext.length; n++)
+       {
+       // ermitteln des Unicodes des  aktuellen Zeichens
+       var c=rohtext.charCodeAt(n);
+       // alle Zeichen von 0-127 => 1byte
+       if (c<128)
+           utftext += String.fromCharCode(c);
+       // alle Zeichen von 127 bis 2047 => 2byte
+       else if((c>127) && (c<2048)) {
+           utftext += String.fromCharCode((c>>6)|192);
+           utftext += String.fromCharCode((c&63)|128);}
+       // alle Zeichen von 2048 bis 66536 => 3byte
+       else {
+           utftext += String.fromCharCode((c>>12)|224);
+           utftext += String.fromCharCode(((c>>6)&63)|128);
+           utftext += String.fromCharCode((c&63)|128);}
+       }
+   return utftext;
+}
+
+/*
+const char QpEncodeMap[] = {
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   NOSKIP,   SKIP,   SKIP,   NOSKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     NOSKIP,   SKIP,   SKIP,   SKIP,   SKIP,   NOSKIP,   NOSKIP,   NOSKIP,
+     NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
+     NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
+     NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   SKIP,   NOSKIP,   NOSKIP,
+     SKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
+     NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
+     NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
+     NOSKIP,   NOSKIP,   NOSKIP,   SKIP,   SKIP,   SKIP,   SKIP,   NOSKIP,
+     SKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
+     NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
+     NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
+     NOSKIP,   NOSKIP,   NOSKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
+     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP
+};
+
+char* CQPUtils::Encode(char *input)
+{
+  int BufSize = strlen(input) + BufAdd; //size of the result buffer
+  int UsedSize = 0; //used space in result buffer
+  int LineLen = 0; //length of the current line...
+  char *finalresult = (char*)calloc(BufSize, sizeof(char)); //the result buffer
+  char *fresult = finalresult;
+  char *s = input;
+  while (*s != '\0')
+  {
+    //convert the signed char to an unsigned char...
+    unsigned char mid = (256 - (0 - *s));
+    //should we reset the linelength...
+    if (*s == '\n')
+      LineLen = 0; //we are starting on a new line...
+    if (QpEncodeMap[mid] == SKIP)
+    {
+      //we need to encode this char...
+      //is the line too long...
+      if (LineLen >= MaxLineLength - 4)
+      {
+        //wrap the line...
+        finalresult = ExpandBuffer(finalresult, UsedSize, &BufSize, false);
+        *(fresult++) = '=';
+        *(fresult++) = '\r';
+        *(fresult++) = '\n';
+        UsedSize += 3;
+        LineLen = 0;
+      }
+      //check buffersize...
+      finalresult = ExpandBuffer(finalresult, UsedSize, &BufSize, false);
+      //add the hex value for the char...
+      char mids[3];
+      itoa(mid, mids, 16);
+      strupr(mids);
+      *(fresult++) = '=';
+      *(fresult++) = mids[0];
+      *(fresult++) = mids[1];
+      UsedSize += 3;
+      LineLen += 2;
+      s++;
+    }
+    else
+    {
+      //just add the char...
+      //is the line too long...
+      if (LineLen >= MaxLineLength - 4)
+      {
+        //wrap the line...
+        finalresult = ExpandBuffer(finalresult, UsedSize, &BufSize, false);
+        *(fresult++) = '=';
+        *(fresult++) = '\r';
+        *(fresult++) = '\n';
+        UsedSize += 3;
+        LineLen = 0;
+      }
+      //check buffersize...
+      finalresult = ExpandBuffer(finalresult, UsedSize, &BufSize);
+      UsedSize++;
+      LineLen++;
+      *(fresult++) = *(s++);
+    }
+  }
+  *(fresult++) = '\0';
+  return finalresult;
+}
+*/

@@ -8,6 +8,7 @@ var syncAddressBook = {
 	gCards: '', // remember the current card list
 	folder: '', // the contact folder type nsIMsgFolder
 	folderMsgURI: '', // the message uri
+	format: 'VCard', // the format VCard/Xml
 	folderMessageUids: '',
 
 	init: function(config) {
@@ -21,6 +22,7 @@ var syncAddressBook = {
 			this.folderPath = pref.getCharPref("SyncKolab."+config+".ContactFolderPath");
 			this.serverKey = pref.getCharPref("SyncKolab."+config+".ContactIncomingServer");
 			addressBookName = pref.getCharPref("SyncKolab."+config+".AddressBook");
+			this.format = pref.getCharPref("SyncKolab."+config+".AddressBookFormat");
 			this.gSaveImap = pref.getBoolPref("SyncKolab."+config+".saveToContactImap");
 		} catch(e) {
 			return;
@@ -55,7 +57,7 @@ var syncAddressBook = {
 		var cards = this.gAddressBook.childCards;
 		
 		var newCard = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);	
-		if (message2Card (fileContent, newCard))
+		if (message2Card (fileContent, newCard, this.format))
 		{
 			// remember that we did this uid already
 			this.folderMessageUids.push(newCard.custom4);
@@ -83,7 +85,7 @@ var syncAddressBook = {
 				{
 					// remember this message for update
 					//updateMessagesCard.push(acard); 
-					return card2Message(acard);
+					return card2Message(acard, this.format);
 				}
 			}
 		}
@@ -151,7 +153,7 @@ var syncAddressBook = {
 		if (writeCur)
 		{
 			// and write the message
-			content = card2Message(cur);
+			content = card2Message(cur, this.format);
 	    consoleService.logStringMessage("New Card [" + content + "]");
 		}
 	

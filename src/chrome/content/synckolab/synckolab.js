@@ -146,6 +146,7 @@ function nextSync()
 		processMsg.value ="Calendar Configuration " + calConfigs[curCalConfig];
 		syncCalendar.init(calConfigs[curCalConfig]);
 		syncCalendar.folder = getMsgFolder(syncCalendar.serverKey, syncCalendar.folderPath);
+		
 		syncCalendar.folderMsgURI = syncCalendar.folder.baseMessageURI;
 		consoleService.logStringMessage("Calendar: got folder: " + syncCalendar.folder.URI + 
 			"\nMessage Folder: " + syncCalendar.folderMsgURI);
