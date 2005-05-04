@@ -1,5 +1,3 @@
-// FIXME this should be under Mozilla license like so
-
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
