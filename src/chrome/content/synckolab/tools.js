@@ -271,7 +271,6 @@ function getMsgFolder (accountKey, path)
 }
 
 
-
 function getXmlResult (node, name, def)
 {
 	var cur = node.firstChild;
@@ -279,12 +278,51 @@ function getXmlResult (node, name, def)
 	{
 		if (cur.nodeName.toUpperCase() == name.toUpperCase())
 		{
-			return cur.firstChild.data;
+			// FIXME return cur.firstChild.data;
+			if (cur.hasChildNodes())
+			{
+				var value = cur.firstChild.nodeValue;
+				if (value != null)
+					return value;
+			}
 		}
 		cur = cur.nextSibling;
 	}
 	return def;
 }
+
+
+function getXmlChildNode (node, name)
+{
+	var cur = node.firstChild;
+	while(cur != null)
+	{
+		if (cur.nodeName.toUpperCase() == name.toUpperCase())
+		{
+			return cur;
+		}
+		cur = cur.nextSibling;
+	}
+	return null;
+}
+
+
+function getXmlAttributeValue (node, attrName)
+{
+	if (node.hasAttributes())
+	{
+		var attrList = node.attributes;
+		var node = attrList.getNamedItem(attrName);
+		if (node != null)
+			return node.nodeValue;
+		else consoleService.logStringMessage("attribute not found: " + attrName);
+	}
+	else
+		consoleService.logStringMessage("node has no attributes");
+	return null;
+}
+
+
 // takes: 2005-03-30T15:28:52Z or 2005-03-30 15:28:52
 function string2DateTime (val)
 {
@@ -297,7 +335,7 @@ function string2DateTime (val)
 	var both = s.split(' ');
 	var cdate = both[0].split('-');
 	var ctime = both[1].split(':');
-	return new Date(cdate[0], cdate[1], cdate[2], ctime[0], ctime[1], ctime[2]);
+	return new Date(cdate[0], cdate[1]-1, cdate[2], ctime[0], ctime[1], ctime[2]);
 
 }
 
@@ -305,7 +343,7 @@ function string2Date (val)
 {
 	var s = val.replace('T', '');
 	var cdate = s.split('-');
-	return new Date(cdate[0], cdate[1], cdate[2]);
+	return new Date(cdate[0], cdate[1]-1, cdate[2]);
 }
 
 var SKIP = 202;
