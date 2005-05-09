@@ -123,7 +123,7 @@ var syncAddressBook = {
 					var curEntry = new Array();
 					curEntry.push(newCard.custom4);
 					curEntry.push(genConSha1(newCard));
-					db.push(curEntry);
+					this.db.push(curEntry);
 	
 					this.gAddressBook.addCard (newCard);
 				}

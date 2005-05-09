@@ -116,7 +116,7 @@ var syncCalendar = {
 				var curEntry = new Array();
 				curEntry.push(newCard.id);
 				curEntry.push(genCalSha1(newCard));
-				db.push(curEntry);
+				this.db.push(curEntry);
 
 				this.gAddressBook.addCard (newCard);
 			}
