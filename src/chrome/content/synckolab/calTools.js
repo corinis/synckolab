@@ -105,7 +105,7 @@ function xml2Event (xml, event)
 	// convert the string to xml
 	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser); 
 	var doc = parser.parseFromString(xml, "text/xml");
-	
+	var found = false;	
 	
 	var cur = doc.firstChild.firstChild;
 	// FIXME we better start with doc.firstChild and check for ELEMENT_NODE
@@ -344,6 +344,50 @@ consoleService.logStringMessage("setting recurEnd to " + rangeSpec);
 	
 	return found;
 
+}
+
+function geniCalMailHeader (cid)
+{
+	var msg = "";
+	var cdate = new Date();
+	var sTime = (cdate.getHours()<10?"0":"") + cdate.getHours() + ":" + (cdate.getMinutes()<10?"0":"") + cdate.getMinutes() + ":" +
+		(cdate.getSeconds()<10?"0":"") + cdate.getSeconds();
+	var sdate = "Date: " + getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " +
+		getMonthString (cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime
+		 + " " + (((cdate.getTimezoneOffset()/60) < 0)?"-":"+") +
+		(((cdate.getTimezoneOffset()/60) < 10)?"0":"") + cdate.getTimezoneOffset() + "\n";
+
+	msg += "From: synckolab@no.tld\n";
+	msg += "Reply-To: \n";
+	msg += "Bcc: \n";
+	msg += "To: synckolab@no.tld\n";
+	msg += "Subject: iCal " + acard.id + "\n";
+	msg += sdate;
+	msg += 'Content-Type: text/calendar;charset="utf-8"\n';
+	msg += 'Content-Transfer-Encoding: quoted-printable\n';
+	msg += "User-Agent: SyncKolab\n\r\n\r\n";
+	return msg;
+}
+
+// generate a sha1 over the most important fields
+function genCalSha1 (event)
+{
+	return hex_sha1(event.allDay + ":" +
+	event.start.getTime() + ":" +
+	event.end.getTime() + ":" +
+	event.title + ":" +
+	event.description + ":" +
+	event.location + ":" +
+	event.categories + ":" +
+	event.alarm + ":" +
+	event.alarmLength + ":" +
+	event.privateEvent + ":" +
+	event.recurUnits + ":" +
+	event.recurInterval + ":" +
+	event.recurCount + ":" +
+	event.recurEnd.getTime() + ":" +
+	event.recurCount + ":" +
+	event.recurForever);
 }
 
 

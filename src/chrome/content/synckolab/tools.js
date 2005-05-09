@@ -35,6 +35,92 @@ function checkExist (value)
 	return (value != null && value.length > 0)
 }
 
+/**
+ * Retrieves a file in the user profile dir which includes the config database
+ * make sure to add .cal or .con at the config so there are no duplicate names
+ */
+function getHashDataBaseFile (config)
+{
+	var file = Components.classes["@mozilla.org/file/directory_service;1"].
+	   getService(Components.interfaces.nsIProperties).
+	   get("ProfD", Components.interfaces.nsIFile);
+	file.append(config+".hdb");
+	return file;
+}
+
+/**
+ * reads a database in a twodim array
+ */
+function readHashDataBase (dbf)
+{
+	var db = new Array();
+	
+	if ((!dbf.exists()) || (!dbf.isReadable()))
+		return db;
+	
+	 // setup the input stream on the file
+	var istream = Components.classes["@mozilla.org/network/file-input-stream;1"]
+		.createInstance(Components.interfaces.nsIFileInputStream);
+	istream.init(dbf, 0x01, 4, null);
+	var fileScriptableIO = Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance(Components.interfaces.nsIScriptableInputStream); 
+	fileScriptableIO.init(istream);
+	// parse the xml into our internal document
+	istream.QueryInterface(Components.interfaces.nsILineInputStream); 
+	var fileContent = "";
+	var csize = 0; 
+	while ((csize = fileScriptableIO.available()) != 0)
+	{
+		fileContent += fileScriptableIO.read( csize );
+	}
+	fileScriptableIO.close(); 	
+	istream.close();
+	
+	var lines = fileContent.split("\n");
+	for (var i = 0; i < lines.length; i++)
+		if (lines[i].indexOf(":") != -1)
+		{
+			var content = lines[i].split(":");
+			db.push(content);
+	    }
+
+	return db;
+}
+
+/**
+ * returns the position of this entry in the db
+ */
+function getDbEntry (key, db)
+{
+ 	for (var i = 0; i < db.length; i++)
+		if (db[i][0] == key)
+			return i;
+	return -1;	
+}
+
+/**
+ * writes a database file (key:hashvalue)
+ */
+function writeHashDataBase(dbf, db)
+{
+	if (dbf.exists()) 
+		dbf.remove(true);
+	dbf.create(dbf.NORMAL_FILE_TYPE, 0666);
+ 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
+ 	stream.init(dbf, 2, 0x200, false); // open as "write only"
+ 	for (var i = 0; i < db.length; i++)
+ 	{
+ 		if (db[i][0] != "")
+ 		{
+ 			var s = db[i][0] + ":" + db[i][1] + "\n";
+			stream.write(s, s.length);
+		}
+	}
+	stream.close();
+
+}
+
+
+
 function getMonthString (month)
 {
 	switch (month) {
@@ -351,6 +437,13 @@ function getXmlAttributeValue (node, attrName)
 	return null;
 }
 
+function nodeWithContent (nodeName, nodeValue, createNonExist)
+{
+	if (!createNonExist && checkExist (nodeValue))
+		return "";
+	return "<"+nodeName+">" + (checkExist (nodeValue)?nodeValue:"") + "</"+nodeName+">\n";
+}
+
 
 // takes: 2005-03-30T15:28:52Z or 2005-03-30 15:28:52
 function string2DateTime (val)
@@ -367,6 +460,20 @@ function string2DateTime (val)
 	return new Date(cdate[0], cdate[1]-1, cdate[2], ctime[0], ctime[1], ctime[2]);
 
 }
+
+// produces: 2005-03-30
+function date2String (cdate)
+{
+	return cdate.getFullYear() + "-" + (cdate.getMonth()+1 < 10?"0":"") + (cdate.getMonth()+1) + "-" +
+		(cdate.getDay() < 10?"0":"") + cdate.getDay();
+}
+// produces 15:28:52
+function time2String (cdate)
+{
+	return (cdate.getHours()<10?"0":"") + cdate.getHours() + ":" + (cdate.getMinutes()<10?"0":"") + cdate.getMinutes() + ":" +
+		(cdate.getSeconds()<10?"0":"") + cdate.getSeconds();
+}
+
 
 function string2Date (val)
 {

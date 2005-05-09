@@ -47,11 +47,14 @@ var syncAddressBook = {
 	folderMsgURI: '', // the message uri
 	format: 'VCard', // the format VCard/Xml
 	folderMessageUids: '',
+	
+	dbFile: '', // the current sync database file
+	db: '', // the current sync database 
 
 	init: function(config) {
 		var addressBookName;
 		
-    this.folderMessageUids = new Array(); // the checked uids - for better sync
+		this.folderMessageUids = new Array(); // the checked uids - for better sync
 		// initialize the configuration
 		try 
 		{
@@ -86,9 +89,15 @@ var syncAddressBook = {
 			}
 			ABook = cn.getNext();
 		}
+		
 		// we got the address book in gAddressBook
+		
+		// get the sync db
+		this.dbFile = getHashDataBaseFile (config + ".con");
+		this.db = readHashDataBase (this.dbFile);
 	},
 
+	
 	/**
 	 * parses the given content, if an update is required the 
 	 * new message content is returned otehrwise null
@@ -105,34 +114,105 @@ var syncAddressBook = {
 			// ok lets see if we have this one already (remember custom4=UID)
 			var acard = findCard (cards, newCard.custom4);
 		
-			// a new card				
+			// a new card or locally deleted 
 			if (acard == null)
 			{
-				this.gAddressBook.addCard (newCard);
+				var cEntry = getDbEntry (newCard.custom4, this.db);
+				if (cEntry == -1)
+				{
+					var curEntry = new Array();
+					curEntry.push(newCard.custom4);
+					curEntry.push(genConSha1(newCard));
+					db.push(curEntry);
+	
+					this.gAddressBook.addCard (newCard);
+				}
+				else
+				{
+					return "DELETEME";
+				}				
 			}
 			else
 			{
-				// we got that already, see which is newer and update the message or the card
-				if (newCard.lastModifiedDate > acard.lastModifiedDate)
+				var cdb = getDbEntry (newCard.custom4, this.db);
+				var lastSyncEntry = cdb!=-1?this.db[cdb][1]:null;
+				var newSyncEntry = genConSha1 (newCard);
+				var curSyncEntry = genConSha1 (acard);
+
+				if (lastSyncEntry != null && lastSyncEntry != curSyncEntry && lastSyncEntry != newSyncEntry)
 				{
+					if (window.confirm("Changes were made on the server and local. Click ok to use the server version.\nClient card: " + 
+						acard.displayName + "<"+ acard.defaultEmail + ">\nServer Card: " + newCard.displayName + "<"+ newCard.defaultEmail + ">"))
+					{
+						// server changed - update local
+						var list = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);
+						list.AppendElement(acard);
+						this.gAddressBook.deleteCards(list);
+						this.gAddressBook.addCard (newCard);
+						var newdb = new Array();
+						newdb.push(newCard.custom4);
+						newdb.push(newSyncEntry);
+						if (lastSyncEntry != null)
+						{
+							this.db[cdb][0] = ""; // mark for delete
+						}
+						this.db.push(newdb);
+					}
+					else
+					{
+						var newdb = new Array();
+						newdb.push(acard.custom4);
+						newdb.push(curSyncEntry);
+						if (lastSyncEntry != null)
+						{
+							this.db[cdb][0] = ""; // mark for delete
+						}
+						this.db.push(newdb);
+	
+						// remember this message for update
+						return card2Message(acard, this.format);
+					}
+				}
+				else
+				// we got that already, see which to update
+				if (lastSyncEntry == null || (lastSyncEntry == curSyncEntry && lastSyncEntry != newSyncEntry))
+				{
+				    consoleService.logStringMessage("server changed: " + acard.custom4);
+					// server changed - update local
 					var list = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);
 					list.AppendElement(acard);
 					this.gAddressBook.deleteCards(list);
 					this.gAddressBook.addCard (newCard);
+					var newdb = new Array();
+					newdb.push(newCard.custom4);
+					newdb.push(newSyncEntry);
+					if (lastSyncEntry != null)
+					{
+						this.db[cdb][0] = ""; // mark for delete
+					}
+					this.db.push(newdb);
 				}
 				else
-				if (newCard.lastModifiedDate < acard.lastModifiedDate)
+				if (lastSyncEntry != curSyncEntry && lastSyncEntry == newSyncEntry)
 				{
+				    consoleService.logStringMessage("client changed: " + acard.custom4);
+					var newdb = new Array();
+					newdb.push(acard.custom4);
+					newdb.push(curSyncEntry);
+					if (lastSyncEntry != null)
+					{
+						this.db[cdb][0] = ""; // mark for delete
+					}
+					this.db.push(newdb);
+
 					// remember this message for update
-					//updateMessagesCard.push(acard); 
 					return card2Message(acard, this.format);
 				}
 			}
 		}
 		return null;
 	},
-	
-	
+
 	initUpdate: function () {
 		this.gCards = this.gAddressBook.childCards;
 		try
@@ -164,14 +244,14 @@ var syncAddressBook = {
 		
 		var content = null;
 		
-    var writeCur = false;
+    	var writeCur = false;
 	    
 		if (cur.custom4.length < 2)
 		{
 			// look a new card
 			// generate a unique id (will random be enough for the future?)
 			cur.custom4 = "pas-id-" + get_randomVcardId();
-	    consoleService.logStringMessage("adding unsaved card: " + cur.custom4);
+	    	consoleService.logStringMessage("adding unsaved card: " + cur.custom4);
 			writeCur = true;
 			cur.editCardToDatabase ("moz-abmdbdirectory://"+this.gAddressBook);
 		}
@@ -183,7 +263,7 @@ var syncAddressBook = {
 			{
 				if (cur.custom4 == this.folderMessageUids[i])
 				{
-			    consoleService.logStringMessage("we got this card: " + cur.custom4);
+					consoleService.logStringMessage("we got this card: " + cur.custom4);
 					writeCur = false;
 					break;
 				}
@@ -194,7 +274,7 @@ var syncAddressBook = {
 		{
 			// and write the message
 			content = card2Message(cur, this.format);
-	    consoleService.logStringMessage("New Card [" + content + "]");
+		        consoleService.logStringMessage("New Card [" + content + "]");
 		}
 	
 		try
@@ -209,7 +289,10 @@ var syncAddressBook = {
 		
 		// return the cards content
 		return content;			
+	},
+	
+	doneParsing: function ()
+	{
+		writeHashDataBase (this.dbFile, this.db);
 	}
-	
-	
 }

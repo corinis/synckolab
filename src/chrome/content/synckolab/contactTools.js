@@ -212,6 +212,10 @@ function xml2Card (xml, card)
 			  case "UID":
 			  	card.custom4 = cur.firstChild.data;
 			  	break;
+			  	
+			  case "IM-ADDRESS":
+			  	card.aimScreenName = cur.firstChild.data;
+			  	break;
 			} // end switch
 		}
 		
@@ -221,6 +225,194 @@ function xml2Card (xml, card)
 	return found;
 
 }
+
+
+/**
+ * Creates xml (kolab2) out of a given card. 
+ * The return is the xml as string.
+ */
+function card2Xml (card)
+{
+	var displayName = "";
+	var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+	xml += "<contact version=\"1.0\" >\n";
+	xml += " <product-id>SyncKolab, Kolab resource</product-id>\n";
+	xml += " <uid>"+card.custom4+"</uid>\n";
+" <body></body>\n";
+	xml += nodeWithContent("categories", card.category, false);
+	xml += " <creation-date>"+date2String(new Date(card.lastModifiedDate*1000))+"T"+time2String(new Date(card.lastModifiedDate*1000))+"Z</creation-date>\n";
+	xml += " <last-modification-date>"+date2String(new Date(card.lastModifiedDate*1000))+"T"+time2String(new Date(card.lastModifiedDate*1000))+"Z</last-modification-date>\n";
+	// ??
+	xml += " <sensitivity>public</sensitivity>\n";
+	if (checkExist (card.firstName) || checkExist (card.lastName) ||checkExist (card.displayName) ||
+		checkExist (card.nickName))
+	{
+		xml += " <name>\n";
+		if (checkExist (card.firstName))
+			xml += "  <given-name>"+card.firstName+"</given-name>\n";
+//			xml += "  <middle-names>"+card.nickName+"</middle-names>\n"; // not really correct...
+		if (checkExist (card.lastName))
+			xml += "  <last-name>"+card.lastName+"</last-name>\n";
+		if (checkExist (card.displayName))		
+		{
+			xml += "  <full-name>"+card.displayName+"</full-name>\n";
+			displayName = card.displayName;
+		}
+		else
+		if (checkExist (card.firstName) || checkExist (card.lastName))
+		{
+			displayName = card.firstName + " " + card.lastName;
+			xml += "  <full-name>" + displayName + "</full-name>\n";
+		}
+			
+		
+		xml += " </name>\n";
+	}
+	xml += nodeWithContent("organization", card.company, false);
+	xml += nodeWithContent("web-page", card.webPage1, false);
+	xml += nodeWithContent("im-address", card.aimScreenName, false);
+	xml += nodeWithContent("department", card.department, false);
+//" <office-location>zuhaus</office-location>\n";
+//" <profession>programmierer</profession>\n";
+	xml += nodeWithContent("job-title", card.jobTitle, false);
+	xml += nodeWithContent("nick-name", card.nickName, false);
+	var adate = card.birthYear + "-" + card.birthMonth + "-" + card.birthDay;
+	if (adate != "--")
+		xml += nodeWithContent("birthday", adate, false);
+	adate = card.anniversaryYear + "-" + card.anniversaryMonth + "-" + card.anniversaryDay;
+	if (adate != "--")
+		xml += nodeWithContent("anniversary", adate, false);
+	if (checkExist(card.homePhone))
+	{	
+		xml += " <phone>\n";
+		xml += "  <type>home1</type>\n";
+		xml += "  <number>"+card.homePhone+"</number>\n";
+		xml += " </phone>\n";
+	}
+	if (checkExist(card.workPhone))
+	{	
+		xml += " <phone>\n";
+		xml += "  <type>business1</type>\n";
+		xml += "  <number>"+card.workPhone+"</number>\n";
+		xml += " </phone>\n";
+	}
+	if (checkExist(card.cellularNumber))
+	{	
+		xml += " <phone>\n";
+		xml += "  <type>mobile</type>\n";
+		xml += "  <number>"+card.cellularNumber+"</number>\n";
+		xml += " </phone>\n";
+	}
+	
+	if (checkExist(card.defaultEmail))
+	{
+		xml += " <email>\n";
+		xml += "  <display-name>"+displayName+"</display-name>\n";
+		xml += "  <smtp-address>"+card.defaultEmail+"</smtp-address>\n";
+		xml += " </email>\n";
+	}
+	
+	if (checkExist(card.secondEmail))
+	{
+		xml += " <email>\n";
+		xml += "  <display-name>"+displayName+"</display-name>\n";
+		xml += "  <smtp-address>"+card.secondEmail+"</smtp-address>\n";
+		xml += " </email>\n";
+	}
+	if (checkExist(card.homeAddress) || checkExist(card.homeAddress2) ||
+		checkExist(card.homeCity) || checkExist(card.homeState) ||
+		checkExist(card.homeZipCode) || checkExist(card.homeCountry))
+	{
+		xml += " <address>\n";
+		xml += "  <type>home</type>\n";
+		xml += nodeWithContent("street", card.homeAddress+"\n"+card.homeAddress2, false);
+		xml += nodeWithContent("locality", card.homeCity, false);
+		xml += nodeWithContent("region", card.homeState, false);
+		xml += nodeWithContent("postal-code", card.homeZipCode, false);
+		xml += nodeWithContent("country", card.homeCountry, false);
+		xml += " </address>\n";
+	}
+
+	if (checkExist(card.workAddress) || checkExist(card.workAddress2) ||
+		checkExist(card.workCity) || checkExist(card.workState) ||
+		checkExist(card.workZipCode) || checkExist(card.workCountry))
+	{
+		xml += " <address>\n";
+		xml += "  <type>business</type>\n";
+		xml += nodeWithContent("street", card.workAddress+"\n"+card.workAddress2, false);
+		xml += nodeWithContent("locality", card.workCity, false);
+		xml += nodeWithContent("region", card.workState, false);
+		xml += nodeWithContent("postal-code", card.workZipCode, false);
+		xml += nodeWithContent("country", card.workCountry, false);
+		xml += " </address>\n";
+	}
+		
+	xml += nodeWithContent("preferred-address", card.defaultAddress, false);
+	xml += "</contact>\n";
+	
+	return xml;	
+}
+
+/**
+ * Generate a sha1 key out of a vcard - used for database
+ */
+function genConSha1 (card)
+{
+	return hex_sha1(card.aimScreenName + ":" +
+	card.anniversaryDay + ":" +
+	card.anniversaryMonth + ":" +
+	card.anniversaryYear + ":" +
+	card.birthDay + ":" +
+	card.birthMonth + ":" +
+	card.birthYear + ":" +
+	card.cardType + ":" +
+	card.category + ":" +
+	card.cellularNumber + ":" +
+	card.cellularNumberType + ":" +
+	card.company + ":" +
+	card.custom1 + ":" +
+	card.custom2 + ":" +
+	card.custom3 + ":" +
+	card.custom4 + ":" +
+	card.defaultAddress + ":" +
+	card.defaultEmail + ":" +
+	card.department + ":" +
+	card.displayName + ":" +
+	card.familyName + ":" +
+	card.faxNumber + ":" +
+	card.faxNumberType + ":" +
+	card.firstName + ":" +
+	card.homeAddress + ":" +
+	card.homeAddress2 + ":" +
+	card.homeCity + ":" +
+	card.homeCountry + ":" +
+	card.homePhone + ":" +
+	card.homePhoneType + ":" +
+	card.homeState + ":" +
+	card.homeZipCode + ":" +
+	card.jobTitle + ":" +
+	card.lastName + ":" +
+	card.nickName + ":" +
+	card.notes + ":" +
+	card.pagerNumber + ":" +
+	card.pagerNumberType + ":" +
+	card.phoneticFirstName + ":" +
+	card.phoneticLastName + ":" +
+	card.primaryEmail + ":" +
+	card.secondEmail + ":" +
+	card.spouseName + ":" +
+	card.webPage1 + ":" + // WebPage1 is work web page
+	card.webPage2 + ":" + // WebPage2 is home web page
+	card.workAddress + ":" +
+	card.workAddress2 + ":" +
+	card.workCity + ":" +
+	card.workCountry + ":" +
+	card.workPhone + ":" +
+	card.workPhoneType + ":" +
+	card.workState + ":" +
+	card.workZipCode);
+}
+
 
 /**
  * Parses a vcard message to a addressbook card.

@@ -53,6 +53,9 @@ var syncCalendar = {
 	gCalFile: '',
 	format: 'iCal', // the format iCal/Xml	
 	folderMessageUids: '',
+	
+	dbFile: '', // the current sync database file
+	db: '', // the current sync database 
 
 	init: function(config) {
 		if (!isCalendarAvailable ())
@@ -76,9 +79,12 @@ var syncCalendar = {
 		var aDataStream = readDataFromFile( this.gCalFile, "UTF-8" );
 		
 		this.gEvents = parseIcalEvents( aDataStream );
-    this.gToDo = parseIcalToDos( aDataStream );		 
-    this.folderMessageUids = new Array(); // the checked uids - for better sync
-
+    	this.gToDo = parseIcalToDos( aDataStream );		 
+    	this.folderMessageUids = new Array(); // the checked uids - for better sync
+    	
+    	// get the sync db
+		this.dbFile = getHashDataBaseFile (config + ".cal");
+		this.db = readHashDataBase (this.dbFile);
 	},
 
 	/**
@@ -104,48 +110,116 @@ var syncCalendar = {
 		// a new card				
 		if (acard == null)
 		{
+			var cEntry = getDbEntry (newCard.id, this.db);
+			if (cEntry == -1)
+			{
+				var curEntry = new Array();
+				curEntry.push(newCard.id);
+				curEntry.push(genCalSha1(newCard));
+				db.push(curEntry);
+
+				this.gAddressBook.addCard (newCard);
+			}
+			else
+			{
+				return "DELETEME";
+			}
+
 			this.gEvents.push(newCard);
- 		  saveIcal (this.gEvents, this.gTodo, this.gCalFile);
+ 		  	saveIcal (this.gEvents, this.gTodo, this.gCalFile);
 		}
 		else
 		{
-			// we got that already, see which is newer and update the message or the card
-			if (newCard.stamp.getTime() > acard.stamp.getTime())
+			var cdb = getDbEntry (newCard.id, this.db);
+			var lastSyncEntry = cdb!=-1?this.db[cdb][1]:null;
+			var newSyncEntry = genCalSha1 (newCard);
+			var curSyncEntry = genCalSha1 (acard);
+
+			if (lastSyncEntry != null && lastSyncEntry != curSyncEntry && lastSyncEntry != newSyncEntry)
 			{
+				if (window.confirm("Changes were made on the server and local. Click ok to use the server version.\nClient card: " + 
+					acard.displayName + "<"+ acard.defaultEmail + ">\nServer Card: " + newCard.displayName + "<"+ newCard.defaultEmail + ">"))
+				{
+					var newdb = new Array();
+					newdb.push(newCard.id);
+					newdb.push(newSyncEntry);
+					if (lastSyncEntry != null)
+					{
+						this.db[cdb][0] = ""; // mark for delete
+					}
+					this.db.push(newdb);
+	
+					for (var i = 0; i < this.gEvents.length; i++)
+					{
+						if (this.gEvents[i].id == newCard.id)
+						{
+							 this.gEvents[i] = newCard;
+							 // save the cards
+							 saveIcal (this.gEvents, this.gTodo, this.gCalFile);
+							 return null;
+						}
+					}
+				}
+				else
+				{
+					var newdb = new Array();
+					newdb.push(acard.id);
+					newdb.push(curSyncEntry);
+					if (lastSyncEntry != null)
+					{
+						this.db[cdb][0] = ""; // mark for delete
+					}
+					this.db.push(newdb);
+	
+					var msg = geniCalMailHeader(acard.id);
+					msg += encodeQuoted(encode_utf8(acard.getIcalString()));
+					msg += "\n\n";
+					// remember this message for update
+					return msg;
+				}
+			}
+			else
+
+			// we got that already, see which is newer and update the message or the card
+			if (lastSyncEntry == null || (lastSyncEntry == curSyncEntry && lastSyncEntry != newSyncEntry))
+			{
+			    consoleService.logStringMessage("server changed: " + acard.id);
+			    
+				var newdb = new Array();
+				newdb.push(newCard.id);
+				newdb.push(newSyncEntry);
+				if (lastSyncEntry != null)
+				{
+					this.db[cdb][0] = ""; // mark for delete
+				}
+				this.db.push(newdb);
+
 				for (var i = 0; i < this.gEvents.length; i++)
 				{
 					if (this.gEvents[i].id == newCard.id)
 					{
-					 this.gEvents[i] = newCard;
-					 // save the cards
-					 saveIcal (this.gEvents, this.gTodo, this.gCalFile);
-					 return null;
+						 this.gEvents[i] = newCard;
+						 // save the cards
+						 saveIcal (this.gEvents, this.gTodo, this.gCalFile);
+						 return null;
 					}
 				}
 				
 			}
 			else
-			if (newCard.stamp.getTime() < acard.stamp.getTime())
+			if (lastSyncEntry != curSyncEntry && lastSyncEntry == newSyncEntry)
 			{
-				var msg ="";
-				cdate = new Date();
-				var sTime = (cdate.getHours()<10?"0":"") + cdate.getHours() + ":" + (cdate.getMinutes()<10?"0":"") + cdate.getMinutes() + ":" +
-					(cdate.getSeconds()<10?"0":"") + cdate.getSeconds();
-				var sdate = "Date: " + getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " +
-					getMonthString (cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime
-					 + " " + (((cdate.getTimezoneOffset()/60) < 0)?"-":"+") +
-					(((cdate.getTimezoneOffset()/60) < 10)?"0":"") + cdate.getTimezoneOffset() + "\n";
+			    consoleService.logStringMessage("client changed: " + acard.id);
+				var newdb = new Array();
+				newdb.push(acard.id);
+				newdb.push(curSyncEntry);
+				if (lastSyncEntry != null)
+				{
+					this.db[cdb][0] = ""; // mark for delete
+				}
+				this.db.push(newdb);
 
-				msg += "From: synckolab@no.tld\n";
-				msg += "Reply-To: \n";
-				msg += "Bcc: \n";
-				msg += "To: synckolab@no.tld\n";
-				msg += "Subject: iCal " + acard.id + "\n";
-				msg += sdate;
-				msg += 'Content-Type: text/calendar;charset="utf-8"\n';
-				msg += 'Content-Transfer-Encoding: quoted-printable\n';
-				msg += "User-Agent: SyncKolab\n\r\n\r\n";
-
+				var msg = geniCalMailHeader(acard.id);
 				msg += encodeQuoted(encode_utf8(acard.getIcalString()));
 				msg += "\n\n";
 				// remember this message for update
@@ -284,8 +358,12 @@ var syncCalendar = {
 		
 		// return the cards content
 		return msg;
+	},
+	
+	
+	doneParsing: function ()
+	{
+		writeHashDataBase (this.dbFile, this.db);
 	}
-	
-	
 }
 

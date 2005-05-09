@@ -395,19 +395,19 @@ function updateContentWrite ()
 		var content = updateMessagesContent[curMessage];
 		// write the message
 
-		if (gSync.gSaveImap)
+		if (gSync.gSaveImap && content != "DELETEME")
 		{
 			// write the message in the temp file
 			var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
-	    consoleService.logStringMessage("adding [" + content + "] to messages");
+			consoleService.logStringMessage("adding [" + content + "] to messages");
 			// temp path
 			sfile.initWithPath(gTmpFile);
 			if (sfile.exists()) 
 				sfile.remove(true);
 			sfile.create(sfile.NORMAL_FILE_TYPE, 0666);
 		  
-		  // make the message rfc compatible (make sure all lines en with \r\n)
-      content = content.replace(/\r\n|\n|\r/g, "\r\n");
+			// make the message rfc compatible (make sure all lines en with \r\n)
+			content = content.replace(/\r\n|\n|\r/g, "\r\n");
 			
 			// create a new message in there
 		 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
@@ -429,13 +429,13 @@ function updateContentWrite ()
 
 function updateContentAfterSave ()
 {
-  consoleService.logStringMessage("starting update content...");
+	consoleService.logStringMessage("starting update content...");
 	curStep = 6;
 	writeDone = false;
 	
 	if (!gSync.initUpdate())
 	{
-    consoleService.logStringMessage("Nothing there to update...");
+		consoleService.logStringMessage("Nothing there to update...");
 		writeContentAfterSave ();
 	}
 
@@ -472,9 +472,8 @@ function writeContent ()
 			sfile.remove(true);
 		sfile.create(sfile.NORMAL_FILE_TYPE, 0666);
 	  
-	  // make the message rfc compatible (make sure all lines en with \r\n)
-    content = content.replace(/\r\n|\n\r|\n|\r/g, "\r\n");
-		//content += "\0";
+		// make the message rfc compatible (make sure all lines en with \r\n)
+    	content = content.replace(/\r\n|\n\r|\n|\r/g, "\r\n");
 
 		// create a new message in there
 	 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
@@ -483,7 +482,7 @@ function writeContent ()
 		stream.close();
 		
 		// write the temp file back to the original directory
-    consoleService.logStringMessage("WriteContent Writing...");
+		consoleService.logStringMessage("WriteContent Writing...");
 		copyToFolder (gTmpFile, gSync.folder.folderURL);
 	}
 	else
@@ -495,7 +494,8 @@ function writeContent ()
 // done this time
 function writeContentAfterSave ()
 {
-		window.setTimeout(nextSync, 100, syncCalendar);	
+	gSync.doneParsing();
+	window.setTimeout(nextSync, 100, syncCalendar);	
 }
 
 

@@ -1,0 +1,55 @@
+<?xml version="1.0"?> 
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xul-overlay href="chrome://messenger/content/msgFolderPickerOverlay.xul"?>
+<!DOCTYPE window SYSTEM "chrome://buttons/content/buttons.dtd" >
+
+<dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        buttons="accept"
+        ondialogaccept="return doOK();"
+        persist="screenX screenY"
+        title="Sync Kolab">
+
+<script>
+var ret = true;
+function doOK()
+{
+  return ret;
+}
+
+function selOld()
+{
+	ret = true;
+	document.getElementById("oldBtn").value	 ="selected";
+	document.getElementById("newBtn").value	 ="        ";
+}
+
+function selNew()
+{
+	ret = false;
+	document.getElementById("newBtn").value	 ="selected";
+	document.getElementById("oldBtn").value	 ="        ";
+}
+
+function init()
+{
+	document.getElementById("old").value = window.arguments[0];
+	document.getElementById("new").value = window.arguments[1];
+	solOld();
+}
+</script>
+
+<vbox>
+	<label value="Conflict detected. Please select which version to use."/>
+	<hbox>
+		<vbox>
+			<button id="oldBtn" label="selected" oncommand="selOld();" tooltiptext="Click here to use the original value."/>
+			<label id="old"/>
+		</vbox>
+		<vbox>
+			<button id="newBtn" label="        " oncommand="selNew();" tooltiptext="Click here to use the new value."/>
+			<label id="new"/>
+		</vbox>
+	</hbox>
+</vbox>
+
+</dialog>
