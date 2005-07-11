@@ -2,8 +2,14 @@
 <h5 class="page-header"><a id="content" name="content">Download</a></h5>
 
 
-<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.12.xpi">SyncKolab 0.4.12</a></p>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.18.xpi">SyncKolab 0.4.18</a></p>
 <h6>Previous Releases</h6>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.17.xpi">SyncKolab 0.4.17</a></p>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.16.xpi">SyncKolab 0.4.16</a></p>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.15.xpi">SyncKolab 0.4.15</a></p>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.14.xpi">SyncKolab 0.4.14</a></p>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.13.xpi">SyncKolab 0.4.13</a></p>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.12.xpi">SyncKolab 0.4.12</a></p>
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.10.xpi">SyncKolab 0.4.10</a></p>
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.3.2.xpi">SyncKolab 0.3.2</a></p>
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.3.0.xpi">SyncKolab 0.3.0</a></p>
@@ -37,6 +43,122 @@ Step 6: click the icon and the sync will start<br/>
 
 <h5 class="page-header">Release Notes</h5>
 <h6>For updated release notes see <a href="http://www.gargan.org/extensions/synckolab.html">www.gargan.org</a></h6>
+<h3>synckolab 0.4.18</h3>
+<p>
+- fixed the timezone bug<br/>
+
+- email addresses fixed in contacts xml format
+</p>
+<h3>synckolab 0.4.17</h3>
+<p>
+- fixed a bug that wrote on imap server even if save to imap is unchecked<br/>
+- some more kolab2 xml fixes provided by andreas
+</p>
+<h3>synckolab 0.4.16</h3>
+<p>
+- removed debug alert
+- added counter to have a better feeling of whats going on
+- the config dialog should be fixed now
+</p>
+<h3>synckolab 0.4.15</h3>
+<p>
+
+fixed deletion of calendar configs <br/>
+the date error should not happen any more when syncing contacts
+</p>
+<h3>synckolab 0.4.14</h3>
+<p>
+Included fixes from Andreas Gungl<br>
+calendar works better and messages are currently not deleted on the server (even if they are locally)
+</p>
+<h3>synckolab 0.4.13</h3>
+<p>
+Deleted Messages are in trash and can be undone.<br/>
+finished writing of kolab2 xml contact format.<br/>
+
+</p>
+<h3>synckolab 0.4.12</h3>
+<p>
+Fixed error when there are no local contacts/events yet.
+</p>
+<h3>synckolab 0.4.11</h3>
+<p>
+Added internal sync db (extension .hdb) created on sync.<br/>
+update and delete now work correctly (not using timestamp any more)<br/>
+added function to create kolab2 address book (not yet fully implemented)
+</p>
+<h3>synckolab 0.4.10</h3>
+
+<p>
+Included fixes from Andreas Gungl<br>
+Added license information on all .js<br>
+</p>
+<h3>synckolab 0.4.9</h3>
+<p>
+Calendar config works again. Please note that the calendar support is only minimal because the internals of calendar change with 0.3 (next version of the calendar extension). It imports quite ok, but not all fields (f.e. reoccuring does not work) plus it syncs calendar entries every time, because the mopdified field does not get written correctly. This will change with the release of the new calendar, I will release the next synckolab version as soon as calendar is out (at least nightly for windows).
+</p>
+<h3>synckolab 0.4.8</h3>
+<p>
+changed the install.rdf back<br/>
+got rid of the error "lastmodifieddate"...
+
+</p>
+<h3>synckolab 0.4.7</h3>
+<p>
+Should work now even if calendar is not installed<br/>
+A few fixes to display the timezone correctly<br/>
+Better encoding/decoding fr unicode<br/>
+</p>
+<h3>synckolab 0.4.6</h3>
+<p>
+Missed a few \0 - now removed<br>
+Fixed configuration error where it would not find the right folder.
+
+</p>
+<h3>synckolab 0.4.5</h3>
+<p>
+Fixed Problem with some mail server (didnt work with \0 at the end)<br/>
+Added quoted-printable and utf8 de/encoding for all message<br/>
+Fixed Problem when saving format for calendar
+</p>
+<h3>synckolab 0.4.4</h3>
+<p>
+Reading support for kolab2 calendar format (no todo or reoccurance yet!)<br/>
+some minor stability fixes.<br/>
+
+added check for kolab2 format so no data gets written to imap when selected.
+</p>
+<h3>synckolab 0.4.3</h3>
+<p>
+Added UTF8 en/decoding and quoted-printable en/decoding<br>
+Added support for <b>READING</b> of kolab2 contact format (WRITING AND CALENDAR ARE NOT IMPLEMENTED YET!)<br>
+</p>
+<h3>synckolab 0.4.2</h3>
+<p>
+Added a fix if folders are not under INBOX (untested)<br>
+
+added configuration for xml format (kolab2)
+</p>
+<h3>synckolab 0.4.1</h3>
+<p>
+Got rid of some debug messages, since the upload works and is tested. <br/>
+Added the \0 fix.
+</p>
+<h3>synckolab 0.4.0</h3>
+<p>
+Fixed all upload problems (the messages werent standard complient). <br>
+Time checks are now correct<br>
+Added tooltips to configuration<br>
+
+New Icon<br>
+
+<b>This is an important update that should fix all previous problems with messages not written back to the server! you should really get that one!</b>
+</p>
+<h3>synckolab 0.3.3</h3>
+<p>
+Fixed problems with missing From Header<br/>
+Added multiple configurations (make sure you update the configuration when updating from a previous version). Added a few additional error checking lines. 
+</p>
 <h6>synckolab 0.3.2</h6>
 Fixed Error: gAddressBook is not defined<br>
 Fixed Error: Null Pointer in calendar<br>
