@@ -78,11 +78,8 @@ function findEvent(events, uid)
  */
 function xml2Event (xml, event)
 {
-	
-	// TODO use a conversion from UTC to local time zone
-	// TODO honor the character set
 	// TODO improve recurrence settings
-	// TODO handle attendees
+	// TODO handle attendees - currently not supported in Mozilla calendar
 	// TODO find a solution for Kolab fields not supported in Sunbird
 	
 	// FIXME clean up
@@ -96,25 +93,37 @@ function xml2Event (xml, event)
 	// get the start of the xml
 	xml = xml.substring(xml.indexOf("<?xml"));
 	
-	if (xml.indexOf(boundary) != -1)
-		xml = xml.substring(0, xml.indexOf(boundary));
-		
 	// until the boundary = end of xml
-	xml = decode_utf8(DecodeQuoted(xml));
+	if (xml.indexOf(boundary) != -1)
+		xml = xml.substring(0, xml.indexOf("--"+boundary));
 
-	var email = 0;
+	// UTF-8 has been decoded before but is mentioned in the encoding attribute in the XML structure
+	// in normal Kolab XML data. So we convert the data back to UTF-8 here. This can opnly be changed in 
+	// parallel to a change in calendar.js in parseMessage: function(fileContent)!
+	xml = encode_utf8(xml);
 
-	
 	// convert the string to xml
 	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser); 
 	var doc = parser.parseFromString(xml, "text/xml");
-	var found = false;	
 	
-	var cur = doc.firstChild.firstChild;
-	// FIXME we better start with doc.firstChild and check for ELEMENT_NODE
+	// we start with doc.firstChild and check for ELEMENT_NODE
 	// and nodeName == event. As we know the structure of Kolab XML for
-	// events, we can access the child nodes directly.
+	// events, this is a good place to sort out invalid XML structures.
+	var topNode = doc.firstChild;
+	if (topNode.nodeName == "parsererror")
+	{
+		// so this message has no valid XML part :-(
+		consoleService.logStringMessage("Error parsing the XML content of this message.");
+		return false;
+	}
+	if ((topNode.nodeType != Node.ELEMENT_NODE) || (topNode.nodeName.toUpperCase() != "EVENT"))
+	{
+		// this can't be an event in Kolab XML format
+		consoleService.logStringMessage("This message doesn't contain an event in Kolab XML format.");
+		return false;
+	}
 
+	var cur = topNode.firstChild;
 	// iterate over the DOM tree of the XML structure of the event
 	while(cur != null)
 	{
@@ -147,48 +156,44 @@ function xml2Event (xml, event)
 					if (s.indexOf(":") == -1)
 						event.allDay = true;						
 					event.start.setTime (string2DateTime(s).getTime());
-					found = true;
+					event.start.utc = true;
+					convertZuluToLocalOEDateTime(event.start);
 					break;						
 
 				case "END-DATE":
 					var s = cur.firstChild.data;
 					// 2005-03-30T15:28:52Z
 					event.end.setTime (string2DateTime(s).getTime());
-					found = true;
+					event.end.utc = true;
+					convertZuluToLocalOEDateTime(event.end);
 					break;						
 
 				case "SUMMARY":
 					event.title = cur.firstChild.data;
-					found = true;
 					break;
 
 				case "BODY":
 			  		event.description = cur.firstChild.data;
-					found = true;
 					break;
 					
 				case "CREATOR":
 					var name = getXmlResult(cur, "DISPLAY-NAME", "") 
 						+ "<"+ getXmlResult(cur, "SMTP-ADDRESS", "") +">";
-					// FIXME
-					found = true;
+					// FIXME - currently unsupported in Mozilla calendar
 					break;
 					
 				case "ORGANIZER":
 					var name = getXmlResult(cur, "DISPLAY-NAME", "") 
 						+ "<"+ getXmlResult(cur, "SMTP-ADDRESS", "") +">";
-					// FIXME cur.organizer.commonName = name;
-					found = true;
+					// FIXME - currently unsupported in Mozilla calendar
 					break;
 					
 				case "LOCATION":
 			  		event.location = cur.firstChild.data;
-					found = true;
 					break;
 
 				case "CATEGORIES":
 			  		event.categories = cur.firstChild.data;
-					found = true;
 					break;
 
 				case "ALARM":
@@ -196,13 +201,11 @@ function xml2Event (xml, event)
 					event.alarmLength = cur.firstChild.data;
 					// event.alarmUnits remains at the default which is 
 					// in minutes like in Kolab XML
-					found = true;
 					break;
 					
 				case "SENSITIVITY":
 					if (cur.firstChild.data == "public")
 						event.privateEvent = false;
-					found = true;
 					break;
 
 				case "RECURRENCE":
@@ -312,11 +315,10 @@ consoleService.logStringMessage("setting recurEnd to " + rangeSpec);
       }
    }
 */
-					found = true;
 					break;
 	
 				case "ATTENDEE":
-			  		// FIXME
+			  		// FIXME  - currently unsupported in Mozilla calendar
 					getXmlResult(cur, "DISPLAY-NAME", "");
 					getXmlResult(cur, "SMTP-ADDRESS", "");
 					// The status must be one of none, tentative, accepted, or declined.
@@ -324,29 +326,23 @@ consoleService.logStringMessage("setting recurEnd to " + rangeSpec);
 					getXmlResult(cur, "REQUEST-RESPONSE", "1");
 					// Role is one of required, optional, or resource.
 					getXmlResult(cur, "ROLE", "optional");
-					found = true;
 					break;
 					
 				case "SHOW-TIME-AS":
 					// default is "none"
 			  		// FIXME event.??? = cur.firstChild.data;
-					found = true;
 					break;
 					
 				case "COLOR-LABEL":
 					// default is "none"
 			  		// FIXME event.??? = cur.firstChild.data;
-					found = true;
 					break;
 					
 			} // end switch
 		}
-		
 		cur = cur.nextSibling;
 	}
-	
-	return found;
-
+	return true;
 }
 
 // generate a sha1 over the most important fields

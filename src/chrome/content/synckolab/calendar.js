@@ -13,6 +13,7 @@
  * License.
  *
  * Contributor(s): Niko Berger <niko.berger@corinis.com>
+ *                 Andreas Gungl <a.gungl@gmx.de>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -89,7 +90,7 @@ var syncCalendar = {
 
 	/**
 	 * parses the given content, if an update is required the 
-	 * new message content is returned otehrwise null
+	 * new message content is returned otherwise null
 	 */	
 	parseMessage: function(fileContent) {
 		fileContent = decode_utf8(DecodeQuoted(fileContent));
@@ -97,10 +98,13 @@ var syncCalendar = {
 		if (this.format == "Xml")
 		{
 			newCard = Components.classes["@mozilla.org/icalevent;1"].createInstance().QueryInterface(Components.interfaces.oeIICalEvent);
-			xml2Event(fileContent, newCard)
+			if (xml2Event(fileContent, newCard) == false)
+				return null;
 		}
 		else
+		{
 			newCard = parseIcalEvents(fileContent)[0].QueryInterface(Components.interfaces.oeIICalEvent);
+		}
 		
 		// remember that we did this uid already
 		this.folderMessageUids.push(newCard.id);
@@ -117,14 +121,16 @@ var syncCalendar = {
 				curEntry.push(newCard.id);
 				curEntry.push(genCalSha1(newCard));
 				this.db.push(curEntry);
-
-				this.gAddressBook.addCard (newCard);
+				
 			}
 			else
 			{
-				return "DELETEME";
+				// normally now this should be deleted, since it was in the db already
+				// but since calendar isnt finished yet we will comment this out
+				//return "DELETEME";
 			}
 
+			// add the new card
 			this.gEvents.push(newCard);
  		  	saveIcal (this.gEvents, this.gTodo, this.gCalFile);
 		}

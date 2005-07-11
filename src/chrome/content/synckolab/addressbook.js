@@ -58,15 +58,15 @@ var syncAddressBook = {
 		// initialize the configuration
 		try 
 		{
-	    var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+			var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 			this.folderPath = pref.getCharPref("SyncKolab."+config+".ContactFolderPath");
 			this.serverKey = pref.getCharPref("SyncKolab."+config+".ContactIncomingServer");
 			addressBookName = pref.getCharPref("SyncKolab."+config+".AddressBook");
 			this.format = pref.getCharPref("SyncKolab."+config+".AddressBookFormat");
 			this.gSaveImap = pref.getBoolPref("SyncKolab."+config+".saveToContactImap");
 			// since Imap savine does not work with xml - disable this
-			if (this.format == "Xml")
-				this.gSaveImap = false;
+			//if (this.format == "Xml")
+			//	this.gSaveImap = false;
 		} catch(e) {
 			return;
 		}
@@ -110,7 +110,7 @@ var syncAddressBook = {
 		{
 			// remember that we did this uid already
 			this.folderMessageUids.push(newCard.custom4);
-			
+			consoleService.logStringMessage("got card from message: " + newCard.custom4);	
 			// ok lets see if we have this one already (remember custom4=UID)
 			var acard = findCard (cards, newCard.custom4);
 		
@@ -126,9 +126,11 @@ var syncAddressBook = {
 					this.db.push(curEntry);
 	
 					this.gAddressBook.addCard (newCard);
+					consoleService.logStringMessage("card is new, add to address book: " + newCard.custom4);	
 				}
 				else
 				{
+					consoleService.logStringMessage("card deleted locally: " + newCard.custom4);	
 					return "DELETEME";
 				}				
 			}
@@ -254,6 +256,12 @@ var syncAddressBook = {
 	    	consoleService.logStringMessage("adding unsaved card: " + cur.custom4);
 			writeCur = true;
 			cur.editCardToDatabase ("moz-abmdbdirectory://"+this.gAddressBook);
+			// add the new card into the db
+			var curSyncEntry = genConSha1 (cur);
+			var newdb = new Array();
+			newdb.push(cur.custom4);
+			newdb.push(curSyncEntry);
+			this.db.push(newdb);
 		}
 		else
 		{
@@ -268,13 +276,35 @@ var syncAddressBook = {
 					break;
 				}
 			}
+
+			// ok we should have this card in our db (since it has a custom4)
+			// but not on the imap acct. if we got this entry in our internal db
+			// it has been deleted on the server, and we dont know about it yet
+			if (writeCur)
+			{
+				var curSyncEntry = genConSha1 (cur);
+				var cdb = getDbEntry (cur.custom4, this.db);
+				if (cdb != -1)
+				{
+					writeCur = false;
+					this.db[cdb][0] = ""; // mark for delete
+				}
+				// ok its NOT in our internal db... add it
+				else
+				{
+					var newdb = new Array();
+					newdb.push(cur.custom4);
+					newdb.push(curSyncEntry);
+					this.db.push(newdb);
+				}				
+			}
 		}
 	
 		if (writeCur)
 		{
 			// and write the message
 			content = card2Message(cur, this.format);
-		        consoleService.logStringMessage("New Card [" + content + "]");
+	        consoleService.logStringMessage("New Card " + cur.custom4);
 		}
 	
 		try

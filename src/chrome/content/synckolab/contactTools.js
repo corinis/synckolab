@@ -36,23 +36,29 @@ function xml2Card (xml, card)
 {
 
 	// find the boundary
-	var boundary = xml.substring(xml.indexOf("boundary=")+10, xml.indexOf('"', xml.indexOf("boundary=")+11));
+	var boundary = xml.substring(xml.indexOf('boundary="')+10, xml.indexOf('"', xml.indexOf('boundary="')+12));
 
 	// get the start of the xml
 	xml = xml.substring(xml.indexOf("<?xml"));
+	
+	if (xml.indexOf(boundary) != -1)
+		xml = xml.substring(0, xml.indexOf(boundary));
+		
 	// until the boundary = end of xml
-	xml = xml.substring(0, xml.indexOf("--"+boundary));
+	xml = decode_utf8(DecodeQuoted(xml));
+	
 	var email = 0;
 
 	// we want to convert to unicode
-	xml = decode_utf8(DecodeQuoted(xml));
-	
+	xml = DecodeQuoted(xml);
+	alert(xml);
 	// convert the string to xml
 	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser); 
 	var doc = parser.parseFromString(xml, "text/xml");
 	
 	
 	var cur = doc.firstChild.firstChild;
+	var found = false;
 	
 	while(cur != null)
 	{
@@ -85,7 +91,16 @@ function xml2Card (xml, card)
 				break;
 
 				case "JOB-TITLE":
+			  		if (cur.firstChild == null)
+			  			break;
 					card.jobTitle = cur.firstChild.data;
+					found = true;
+					break;
+
+				case "NICK-NAME":
+			  		if (cur.firstChild == null)
+			  			break;
+					card.nickName = cur.firstChild.data;
 					found = true;
 					break;
 
@@ -104,11 +119,13 @@ function xml2Card (xml, card)
 					break;
 					
 				case "CATEGORIES":
-					card.category = cur.firstChild.data;
+					if (cur.firstChild != null)
+						card.category = cur.firstChild.data;
 					break;
 
 			  case "ORGANIZATION":
-			  	card.company = cur.firstChild.data;
+			  		if (cur.firstChild != null)
+				  		card.company = cur.firstChild.data;
 					found = true;
 			  	break;
 			  	
@@ -136,30 +153,35 @@ function xml2Card (xml, card)
 			  			card.pagerNumber = num;
 			  			break;
 			  	}
-					found = true;
+				found = true;
 			  	break;
 			  	
 			  case "BIRTHDAY":
+			  		if (cur.firstChild == null)
+			  			break;
 					var tok = cur.firstChild.data.split("-");
 					card.birthYear = tok[0];
 					card.birthMonth = tok[1];
 					// BDAY: 1987-09-27
-			  	card.birthDay = tok[2];
+			  		card.birthDay = tok[2];
 					found = true;
 			  	break;
 			  	// anniversary - not in vcard rfc??
 			  case "ANNIVERSARY":
+			  		if (cur.firstChild == null)
+			  			break;
 					var tok = cur.firstChild.data.split("-");
 	
 					card.anniversaryYear = tok[0];
 					card.anniversaryMonth = tok[1];
 					// BDAY:1987-09-27T08:30:00-06:00
-			  	card.anniversaryDay = tok[2];
+			  		card.anniversaryDay = tok[2];
 					found = true;
 			  	break;
 			  	
 			  case "PREFERRED-ADDRESS":
-			  	card.defaultAddress = cur.firstChild.data;
+		  		if (cur.firstChild != null)
+				  	card.defaultAddress = cur.firstChild.data;
 			  	break;
 			  case "ADDRESS":
 			  	switch (getXmlResult(cur, "TYPE", "HOME").toUpperCase())
@@ -184,36 +206,34 @@ function xml2Card (xml, card)
 					found = true;
 			  	break;
 			  case "BODY":
-			  	card.notes = cur.firstChild.data;
+			  		if (cur.firstChild == null)
+			  			break;
+				  	card.notes = cur.firstChild.data;
 					found = true;
 			  	break;
 			  case "DEPARTMENT":
-			  	card.department = cur.firstChild.data;
-					found = true;
-			  	break;
-			  case "CUSTOM1":
-			  	card.custom1 = tok[1];
-					found = true;
-			  	break;
-			  case "CUSTOM2":
-			  	card.custom2 = tok[1];
-					found = true;
-			  	break;
-			  case "CUSTOM3":
-			  	card.custom3 = tok[1];
+			  		if (cur.firstChild == null)
+			  			break;
+				  	card.department = cur.firstChild.data;
 					found = true;
 			  	break;
 	
 			  case "WEB-PAGE":
-			  	card.webPage1 = cur.firstChild.data;
+			  		if (cur.firstChild == null)
+			  			break;
+				  	card.webPage1 = cur.firstChild.data;
 					found = true;
 					break;
 
 			  case "UID":
+		  		if (cur.firstChild == null)
+		  			break;
 			  	card.custom4 = cur.firstChild.data;
 			  	break;
 			  	
 			  case "IM-ADDRESS":
+		  		if (cur.firstChild == null)
+		  			break;
 			  	card.aimScreenName = cur.firstChild.data;
 			  	break;
 			} // end switch
@@ -238,12 +258,14 @@ function card2Xml (card)
 	xml += "<contact version=\"1.0\" >\n";
 	xml += " <product-id>SyncKolab, Kolab resource</product-id>\n";
 	xml += " <uid>"+card.custom4+"</uid>\n";
-" <body></body>\n";
 	xml += nodeWithContent("categories", card.category, false);
 	xml += " <creation-date>"+date2String(new Date(card.lastModifiedDate*1000))+"T"+time2String(new Date(card.lastModifiedDate*1000))+"Z</creation-date>\n";
 	xml += " <last-modification-date>"+date2String(new Date(card.lastModifiedDate*1000))+"T"+time2String(new Date(card.lastModifiedDate*1000))+"Z</last-modification-date>\n";
 	// ??
 	xml += " <sensitivity>public</sensitivity>\n";
+	if (checkExist(card.notes))
+			xml +=" <body>"+card.notes+"</body>\n";
+
 	if (checkExist (card.firstName) || checkExist (card.lastName) ||checkExist (card.displayName) ||
 		checkExist (card.nickName))
 	{
@@ -303,6 +325,13 @@ function card2Xml (card)
 		xml += "  <number>"+card.cellularNumber+"</number>\n";
 		xml += " </phone>\n";
 	}
+	if (checkExist(card.pagerNumber))
+	{	
+		xml += " <phone>\n";
+		xml += "  <type>page</type>\n";
+		xml += "  <number>"+card.cellularNumber+"</number>\n";
+		xml += " </phone>\n";
+	}
 	
 	if (checkExist(card.defaultEmail))
 	{
@@ -325,7 +354,8 @@ function card2Xml (card)
 	{
 		xml += " <address>\n";
 		xml += "  <type>home</type>\n";
-		xml += nodeWithContent("street", card.homeAddress+"\n"+card.homeAddress2, false);
+		xml += nodeWithContent("street", card.homeAddress, false);
+		xml += nodeWithContent("street2", card.homeAddress2, false);
 		xml += nodeWithContent("locality", card.homeCity, false);
 		xml += nodeWithContent("region", card.homeState, false);
 		xml += nodeWithContent("postal-code", card.homeZipCode, false);
@@ -339,7 +369,8 @@ function card2Xml (card)
 	{
 		xml += " <address>\n";
 		xml += "  <type>business</type>\n";
-		xml += nodeWithContent("street", card.workAddress+"\n"+card.workAddress2, false);
+		xml += nodeWithContent("street", card.workAddress, false);
+		xml += nodeWithContent("street2", card.workAddress2, false);
 		xml += nodeWithContent("locality", card.workCity, false);
 		xml += nodeWithContent("region", card.workState, false);
 		xml += nodeWithContent("postal-code", card.workZipCode, false);
@@ -691,6 +722,12 @@ function card2Message (card, format)
 {
 	if (card.custom4 == null || card.custom4.length < 2)
 		return null;
+	
+	if(format == "Xml")
+	{
+		return genMailHeader(card.custom4, "", "application/x-vnd.kolab.contact", true) + encodeQuoted(encode_utf8(card2Xml(card)));
+	}
+	
 
 	// save the date in microseconds
 	// Date: Fri, 17 Dec 2004 15:06:42 +0100
@@ -701,21 +738,7 @@ function card2Message (card, format)
 		getMonthString (cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime
 		 + " " + (((cdate.getTimezoneOffset()/60) < 0)?"-":"+") +
 		(((cdate.getTimezoneOffset()/60) < 10)?"0":"") + cdate.getTimezoneOffset() + "\n";
-/*		
-	msg += "From - " + getDayString(cdate.getDay()) + " " + getMonthString (cdate.getMonth()) + " " + 
-		cdate.getDate()	+ " " + sTime + " " + cdate.getFullYear() + "\n";
-	msg += "X-Mozilla-Status: 0001\n";
-	msg += "X-Mozilla-Status2: 00000000\n";
-*/	
-	var header = "From: synckolab@no.tld\n";
-	header += "Reply-To: \n";
-	header += "Bcc: \n";
-	header += "To: synckolab@no.tld\n";
-	header += "Subject: vCard " + card.custom4 + "\n";
-	header += sdate;
-	header += 'Content-Type: text/x-vcard;charset="utf-8"\n';
-	header += 'Content-Transfer-Encoding: quoted-printable\n';
-	header += "User-Agent: SyncKolab\n\n";
+
 	
 	var msg = "BEGIN:VCARD\n";
 	// N:firstName;LastName;Nickname
@@ -778,5 +801,5 @@ function card2Message (card, format)
 	msg += "UID:"+card.custom4 + "\n";	
 	msg += "VERSION:3.0\n";
 	msg += "END:VCARD\n\n";
-	return header + encodeQuoted(encode_utf8(msg));
+	return genMailHeader(card.custom4, "vCard", "text/x-vcard", false) + encodeQuoted(encode_utf8(msg));
 }
