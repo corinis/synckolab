@@ -72,15 +72,18 @@ function xml2Card (xml, card)
 						// now we gotta check times... convert the message first
 						// save the date in microseconds
 						// 2005-03-30T15:28:52Z
+						/*
 						try
 						{
-							card.lastModifiedDate = string2DateTime(s).getTime() / 1000;
+							// we dont need the date anyways.. so lets skip that part
+							// card.lastModifiedDate = string2DateTime(s).getTime() / 1000;
 						}
 						catch (ex)
 						{
 						    consoleService.logStringMessage("unable to convert to date: " + s);
 						    alert(("unable to convert to date: " + s + "\nPlease copy the date string in a bug report an submit!\n(Also available in the information)"));
 						}
+						*/
 						break;						
 
 				case "NAME":

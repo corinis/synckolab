@@ -812,7 +812,7 @@ function delCalConfig()
 	if (confirm("Are you sure you want delete the configuration " + config + "?"))
 	{
 		var calConfigList = document.getElementById("calConfig");
-		var calConfigPopup = conConfigList.firstChild;
+		var calConfigPopup = calConfigList.firstChild;
 		
 		// first menuitem
 		var delNode = null;
@@ -832,7 +832,7 @@ function delCalConfig()
 		}
 		if (delNode != null)
 		{
-			conConfigPopup.removeChild(delNode);
+			calConfigPopup.removeChild(delNode);
 		}
 		
 		var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
