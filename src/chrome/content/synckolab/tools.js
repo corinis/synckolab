@@ -32,7 +32,7 @@
 
 function checkExist (value)
 {
-	return (value != null && value.length > 0)
+	return (value != null && value != "");
 }
 
 /**
@@ -79,6 +79,7 @@ function readHashDataBase (dbf)
 	for (var i = 0; i < lines.length; i++)
 		if (lines[i].indexOf(":") != -1)
 		{
+			lines[i] = trim(lines[i]);
 			var content = lines[i].split(":");
 			db.push(content);
 	    }
@@ -86,6 +87,16 @@ function readHashDataBase (dbf)
 	return db;
 }
 
+function trim(s) {
+  while (s.substring(0,1) == ' ' || s.substring(0,1) == '\n' || s.substring(0,1) == '\r' || s.substring(0,1) == '\t') {
+    s = s.substring(1,s.length);
+  }
+  
+  while (s.substring(s.length-1,s.length) == ' ' || s.substring(s.length-1,s.length) == '\n' || s.substring(s.length-1,s.length) == '\r' || s.substring(s.length-1,s.length) == '\t') {
+    s = s.substring(0,s.length-1);
+  }
+  return s;
+}
 /**
  * returns the position of this entry in the db
  */
@@ -115,6 +126,8 @@ function writeHashDataBase(dbf, db)
 			stream.write(s, s.length);
 		}
 	}
+	s = "\n\n";
+	stream.write(s, s.length);
 	stream.close();
 
 }
@@ -439,7 +452,7 @@ function getXmlAttributeValue (node, attrName)
 
 function nodeWithContent (nodeName, nodeValue, createNonExist)
 {
-	if (!createNonExist && checkExist (nodeValue))
+	if (!createNonExist && !checkExist (nodeValue))
 		return "";
 	return "<"+nodeName+">" + (checkExist (nodeValue)?nodeValue:"") + "</"+nodeName+">\n";
 }
@@ -756,4 +769,61 @@ function encodeQuoted(s)
     }
   }
   return fresult;
+}
+
+/**
+ * cid: the id of the card/event
+ * adsubject: optional additional subject (iCal or vCard)
+ * mime: the mime type (application/x-vnd.kolab.contact, application/x-vnd.kolab.event, application/x-vnd.kolab.task, application/x-vnd.kolab.journal, text/x-vcard, text/calendar)
+ * part: true if this is a multipart message
+ */
+function genMailHeader (cid, adsubject, mime, part)
+{
+	var msg = "";
+	var bound = get_randomVcardId();
+	var cdate = new Date();
+	var sTime = (cdate.getHours()<10?"0":"") + cdate.getHours() + ":" + (cdate.getMinutes()<10?"0":"") + cdate.getMinutes() + ":" +
+		(cdate.getSeconds()<10?"0":"") + cdate.getSeconds();
+	var sdate = "Date: " + getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " +
+		getMonthString (cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime
+		 + " " + (((cdate.getTimezoneOffset()/60) < 0)?"-":"+") +
+		(((cdate.getTimezoneOffset()/60) < 10)?"0":"") + cdate.getTimezoneOffset() + "\n";
+
+	msg += "From: synckolab@no.tld\n";
+	msg += "Reply-To: \n";
+	msg += "Bcc: \n";
+	msg += "To: synckolab@no.tld\n";
+	
+	msg += "Subject: "; 
+	if (!part)
+		msg += adsubject+" ";
+	msg += cid + "\n";
+	
+	msg += sdate;
+	if (!part)
+		msg += 'Content-Type: '+mime+';charset="utf-8"\n';
+	else
+		msg += 'Content-Type: Multipart/Mixed;boundary="Boundary-00='+bound+'"\n';
+	msg += 'Content-Transfer-Encoding: quoted-printable\n';
+	msg += "User-Agent: SyncKolab\n";
+	if (part)
+		msg += "X-Kolab-Type: "+mime+"\n";
+	msg += "\n"
+	if (part)
+	{
+
+		msg += '--Boundary-00='+bound+'\n';
+		msg += 'Content-Type: Text/Plain;charset="us-ascii"\n';
+		msg += 'Content-Transfer-Encoding: 7bit\n\n';
+		msg += 'This is a Kolab Groupware object.\n';
+		msg += 'To view this object you will need an email client that can understand the Kolab Groupware format.\n';
+		msg += 'For a list of such email clients please visit\n';
+		msg += 'http://www.kolab.org/kolab2-clients.html\n';
+		msg += '--Boundary-00='+bound+'\n'
+		msg += 'Content-Type: '+mime+';name="kolab.xml"\n';
+		msg += 'Content-Transfer-Encoding: quoted-printable\n'
+		msg += 'Content-Disposition: attachment;filename="kolab.xml"\n\n';
+	}
+	
+	return msg;
 }

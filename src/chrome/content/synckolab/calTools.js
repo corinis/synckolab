@@ -91,16 +91,19 @@ function xml2Event (xml, event)
    //var iCalToDo = Components.classes["@mozilla.org/icaltodo;1"].createInstance().QueryInterface(Components.interfaces.oeIICalTodo);
 
 	// find the boundary
-	var boundary = xml.substring(xml.indexOf("boundary=")+10, xml.indexOf('"', xml.indexOf("boundary=")+11));
+	var boundary = xml.substring(xml.indexOf('boundary="')+10, xml.indexOf('"', xml.indexOf('boundary="')+12));
 
 	// get the start of the xml
 	xml = xml.substring(xml.indexOf("<?xml"));
+	
+	if (xml.indexOf(boundary) != -1)
+		xml = xml.substring(0, xml.indexOf(boundary));
+		
 	// until the boundary = end of xml
-	xml = xml.substring(0, xml.indexOf("--"+boundary));
+	xml = decode_utf8(DecodeQuoted(xml));
+
 	var email = 0;
 
-	// we want to convert to unicode
-	xml = decode_utf8(DecodeQuoted(xml));
 	
 	// convert the string to xml
 	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser); 
@@ -344,29 +347,6 @@ consoleService.logStringMessage("setting recurEnd to " + rangeSpec);
 	
 	return found;
 
-}
-
-function geniCalMailHeader (cid)
-{
-	var msg = "";
-	var cdate = new Date();
-	var sTime = (cdate.getHours()<10?"0":"") + cdate.getHours() + ":" + (cdate.getMinutes()<10?"0":"") + cdate.getMinutes() + ":" +
-		(cdate.getSeconds()<10?"0":"") + cdate.getSeconds();
-	var sdate = "Date: " + getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " +
-		getMonthString (cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime
-		 + " " + (((cdate.getTimezoneOffset()/60) < 0)?"-":"+") +
-		(((cdate.getTimezoneOffset()/60) < 10)?"0":"") + cdate.getTimezoneOffset() + "\n";
-
-	msg += "From: synckolab@no.tld\n";
-	msg += "Reply-To: \n";
-	msg += "Bcc: \n";
-	msg += "To: synckolab@no.tld\n";
-	msg += "Subject: iCal " + acard.id + "\n";
-	msg += sdate;
-	msg += 'Content-Type: text/calendar;charset="utf-8"\n';
-	msg += 'Content-Transfer-Encoding: quoted-printable\n';
-	msg += "User-Agent: SyncKolab\n\r\n\r\n";
-	return msg;
 }
 
 // generate a sha1 over the most important fields

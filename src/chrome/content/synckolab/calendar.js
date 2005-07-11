@@ -171,7 +171,7 @@ var syncCalendar = {
 					}
 					this.db.push(newdb);
 	
-					var msg = geniCalMailHeader(acard.id);
+					var msg = genMailHeader(acard.id, "iCal", "text/calendar", false);
 					msg += encodeQuoted(encode_utf8(acard.getIcalString()));
 					msg += "\n\n";
 					// remember this message for update
@@ -219,7 +219,7 @@ var syncCalendar = {
 				}
 				this.db.push(newdb);
 
-				var msg = geniCalMailHeader(acard.id);
+				var msg = genMailHeader(acard.id, "iCal", "text/calendar", false);
 				msg += encodeQuoted(encode_utf8(acard.getIcalString()));
 				msg += "\n\n";
 				// remember this message for update
@@ -251,7 +251,7 @@ var syncCalendar = {
 		{
 			var cur = this.gEvents[this.gCurEvent++];
 			var msg = null;
-	    var writeCur = false;
+			var writeCur = false;
 		    
 			writeCur = true;
 			// check if we have this uid in the messages
@@ -260,44 +260,49 @@ var syncCalendar = {
 			{
 				if (cur.id == this.folderMessageUids[i])
 				{
-			    consoleService.logStringMessage("we got this card: " + cur.id);
+					consoleService.logStringMessage("we got this card: " + cur.id);
 					writeCur = false;
 					break;
 				}
 			}
+			
+			// ok we should have this event in our db but 
+			// not on the imap acct. if we got this entry in our internal db
+			// it has been deleted on the server and we dont know about it yet
+			if (writeCur)
+			{
+				var curSyncEntry = genCalSha1 (cur);
+				var cdb = getDbEntry (cur.id, this.db);
+				if (cdb != -1)
+				{
+					writeCur = false;
+					this.db[cdb][0] = ""; // mark for delete
+				}
+				// ok its NOT in our internal db... add it
+				else
+				{
+					var newdb = new Array();
+					newdb.push(cur.id);
+					newdb.push(curSyncEntry);
+					this.db.push(newdb);
+				}
+			}
+
 		
 			if (writeCur)
 			{
 				// and write the message
-				msg ="";
-				cdate = new Date();
-				var sTime = (cdate.getHours()<10?"0":"") + cdate.getHours() + ":" + (cdate.getMinutes()<10?"0":"") + cdate.getMinutes() + ":" +
-					(cdate.getSeconds()<10?"0":"") + cdate.getSeconds();
-				var sdate = "Date: " + getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " +
-					getMonthString (cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime
-					 + " " + (((cdate.getTimezoneOffset()/60) < 0)?"-":"+") +
-					(((cdate.getTimezoneOffset()/60) < 10)?"0":"") + cdate.getTimezoneOffset() + "00\n";
-	/*
-				msg += "From - " + getDayString(cdate.getDay()) + " " + getMonthString (cdate.getMonth()) + " " + 
-						cdate.getDate()	+ " " + sTime + " " + cdate.getFullYear() + "\n";
-				msg += "X-Mozilla-Status: 0001\n";
-				msg += "X-Mozilla-Status2: 00000000\n";
-				msg += "Content-Type: Text/X-VCalendar;\n";
-			  msg += '\tcharset="utf-8"\n';
-*/
-				msg += "From: synckolab@no.tld\n";
-				msg += "Reply-To: \n";
-				msg += "Bcc: \n";
-				msg += "To: synckolab@no.tld\n";
-				msg += "Subject: iCal " + cur.id + "\n";
-				msg += sdate;
-				msg += 'Content-Type: text/calendar;charset="utf-8"\n';
-				msg += 'Content-Transfer-Encoding: quoted-printable\n';
-				msg += "User-Agent: SyncKolab\n\r\n\r\n";
-				
+				var msg = genMailHeader(cur.id, "iCal", "text/calendar", false);
 				msg += encodeQuoted(encode_utf8(cur.getIcalString()));
 				msg += "\n\n";
-		    consoleService.logStringMessage("New Card [" + msg + "]");
+		    	consoleService.logStringMessage("New Card");
+				// add the new card into the db
+				var curSyncEntry = genCalSha1 (cur);
+				var newdb = new Array();
+				newdb.push(cur.id);
+				newdb.push(curSyncEntry);
+				this.db.push(newdb);
+
 			}
 		}	
 		else
@@ -323,32 +328,7 @@ var syncCalendar = {
 			if (writeCur)
 			{
 				// and write the message
-				msg ="";
-				cdate = new Date();
-				var sTime = (cdate.getHours()<10?"0":"") + cdate.getHours() + ":" + (cdate.getMinutes()<10?"0":"") + cdate.getMinutes() + ":" +
-					(cdate.getSeconds()<10?"0":"") + cdate.getSeconds();
-				var sdate = "Date: " + getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " +
-					getMonthString (cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime
-					 + " " + (((cdate.getTimezoneOffset()/60) < 0)?"-":"+") +
-					(((cdate.getTimezoneOffset()/60) < 10)?"0":"") + cdate.getTimezoneOffset() + "00\n";
-/*	
-				msg += "From - " + getDayString(cdate.getDay()) + " " + getMonthString (cdate.getMonth()) + " " + 
-						cdate.getDate()	+ " " + sTime + " " + cdate.getFullYear() + "\n";
-				msg += "X-Mozilla-Status: 0001\n";
-				msg += "X-Mozilla-Status2: 00000000\n";
-				msg += "Content-Type: Text/X-VCalendar;\n";
-			  msg += '\tcharset="utf-8"\n';
-*/			  
-				msg += "From: \n";
-				msg += "Reply-To: \n";
-				msg += "Bcc: \n";
-				msg += "To: \n";
-				msg += "Subject: iCal " + cur.id + "\n";
-				msg += sdate;
-				msg += 'Content-Type: text/calendar;charset="utf-8"\n';
-				msg += 'Content-Transfer-Encoding: quoted-printable\n';
-				msg += "User-Agent: SyncKolab\n\r\n\r\n";
-				
+				var msg = genMailHeader(cur.id, "iCal", "text/calendar", false);
 				msg += encodeQuoted(encode_utf8(cur.getIcalString()));
 				msg += "\n\n";
 				

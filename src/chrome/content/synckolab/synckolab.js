@@ -266,13 +266,20 @@ function getMessage ()
  	var cur = null
  	try
  	{
-		cur = gMessages.getNext().QueryInterface(Components.interfaces.nsIMsgDBHdr);
+ 		if (gMessages.hasMoreElements ())
+			cur = gMessages.getNext().QueryInterface(Components.interfaces.nsIMsgDBHdr);
+		else
+		{
+	    	consoleService.logStringMessage("DONE");
+			updateContentAfterSave ();
+	    	return;
+		}					
 	}
 	catch (ex)
 	{
-    consoleService.logStringMessage("skipping read of messages - since there are none :)");
+    	consoleService.logStringMessage("skipping read of messages - since there are none :)");
 		updateContentAfterSave ();
-    return;
+    	return;
 	}
 	// get the message content into fileContent
 	// parseMessageRunner is called when we got the message
@@ -321,7 +328,8 @@ var myStreamListener = {
  */
 function parseMessageRunner ()
 {
-	var content = gSync.parseMessage(DecodeQuoted(fileContent), updateMessagesContent);
+   	consoleService.logStringMessage("parsing message...");
+	var content = gSync.parseMessage(fileContent, updateMessagesContent);
 	if (content != null)
 	{
 	    consoleService.logStringMessage("updating [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]");
@@ -331,7 +339,7 @@ function parseMessageRunner ()
 	
 	
 	curMessage++;
-	if (curMessage < totalMessages)
+	if (curMessage <= totalMessages)
 	{
 		var curpointer = 5 + (55*(curMessage/totalMessages));
 		meter.setAttribute("value", curpointer + "%");
@@ -374,7 +382,7 @@ function updateContent()
 				list.AppendElement(hdr);		
 		    
 			}
-			gSync.folder.deleteMessages (list, msgWindow, true, false, null, false);		
+			gSync.folder.deleteMessages (list, msgWindow, true, false, null, true);		
 		}
 		catch (ex)
 		{
