@@ -374,7 +374,7 @@ function parseFolderToAddressFinish ()
 function updateContent()
 {
 	// first lets delete the old messages
-	if (updateMessages.length > 0)
+	if (gSync.gSaveImap && updateMessages.length > 0) 
 	{
 		try
 		{

@@ -222,10 +222,46 @@ consoleService.logStringMessage("Parsing this card: " + event.id);
 							// FIXME verify the Sunbird value
 							units = "days";
 							break;
-						case "WEEKLY":
-							units = "weeks";
-							// FIXME need to process the <day> value here
-							break;
+							case "WEEKLY":
+							    units = "weeks";
+							    // FIXME need to process the <day> value here
+							    var recur = cur.firstChild;
+							    event.recurWeekdays = 0;
+							    // iterate over the DOM subtre
+							    while(recur != null)
+							    {
+							        if ((recur.nodeType == Node.ELEMENT_NODE)
+							           && (recur.nodeName.toUpperCase() == "DAY"))
+							        {
+							            var day = recur.firstChild.data;
+							            switch (day.toUpperCase())
+							            {
+							                case "SUNDAY":
+							                    event.recurWeekdays |= 1<<0;
+							                    break;
+							                case "MONDAY":
+							                    event.recurWeekdays |= 1<<1;
+							                    break;
+							                case "TUESDAY":
+							                    event.recurWeekdays |= 1<<2;
+							                    break;
+							                case "WEDNESDAY":
+							                    event.recurWeekdays |= 1<<3;
+							                    break;
+							                case "THURSDAY":
+							                    event.recurWeekdays |= 1<<4;
+							                    break;
+							                case "FRIDAY":
+							                    event.recurWeekdays |= 1<<5;
+							                    break;
+							                case "SATURDAY":
+							                    event.recurWeekdays |= 1<<6;
+							                    break;
+							            }
+							        }
+							        recur = recur.nextSibling;
+							    }
+							    break;
 						case "MONTHLY":
 							// FIXME need to process extra type "type" which can be
 							// "daynumber" or "weekday"
