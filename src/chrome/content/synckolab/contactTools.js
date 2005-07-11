@@ -51,7 +51,7 @@ function xml2Card (xml, card)
 
 	// we want to convert to unicode
 	xml = DecodeQuoted(xml);
-	alert(xml);
+
 	// convert the string to xml
 	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser); 
 	var doc = parser.parseFromString(xml, "text/xml");

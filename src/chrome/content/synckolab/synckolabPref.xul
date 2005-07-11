@@ -55,7 +55,7 @@
 
     	<separator class="thin"/>
       
-      <tree flex="7" id="conImapFolder" rows="7" width="250" hidecolumnpicker="true" seltype="single" onselect="setFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
+      <tree flex="7" id="conImapFolder" rows="7" height="150" width="250" hidecolumnpicker="true" seltype="single" onselect="setFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
       	<treecols>
 		      <treecol id="conFolder" label="Contact Folder" primary="true" flex="1"/>
   			</treecols>
@@ -98,7 +98,7 @@
 
     	<separator class="thin"/>
       
-      <tree flex="7" id="calImapFolder" rows="7" width="250" hidecolumnpicker="true" seltype="single" onselect="setCalFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
+      <tree flex="7" id="calImapFolder" rows="7" height="150" width="250" hidecolumnpicker="true" seltype="single" onselect="setCalFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
       	<treecols>
 		      <treecol id="calFolder" label="Calendar Folder" primary="true" flex="1"/>
   			</treecols>

@@ -60,6 +60,7 @@ var meter;	// the progress meter
 var totalMeter; // the total progress meter
 var statusMsg;	// the status message
 var processMsg; // process message
+var curCounter;
 
 // progress variables 
 var curStep;
@@ -67,7 +68,7 @@ var curStep;
 function syncKolab(event) {
 	// copy a file to a folder
 	// call external func
-	gWnd = window.open("chrome://synckolab/content/progressWindow.xul", "bmarks", "chrome,width=350,height=180");
+	gWnd = window.open("chrome://synckolab/content/progressWindow.xul", "bmarks", "chrome,width=350,height=220");
 	
 	try {
     var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
@@ -93,6 +94,7 @@ function goWindow (wnd)
 				totalMeter = wnd.document.getElementById('totalProgress');
 				statusMsg = wnd.document.getElementById('current-action');
 				processMsg = wnd.document.getElementById('current-process');
+				curCounter = wnd.document.getElementById('current-counter');
 				if (isCalendarAvailable ())
 				{
 					consoleService.logStringMessage("Calendar available");
@@ -343,6 +345,7 @@ function parseMessageRunner ()
 	{
 		var curpointer = 5 + (55*(curMessage/totalMessages));
 		meter.setAttribute("value", curpointer + "%");
+		curCounter.setAttribute("value", curMessage + "/" + totalMessages);
 		// next message
 		window.setTimeout(getMessage, 20);	
 	}
@@ -364,6 +367,7 @@ function parseFolderToAddressFinish ()
 
 	meter.setAttribute("value", "60%");
 	statusMsg.value = "Writing changed cards...";
+	curCounter.setAttribute("value", "0/0");
 	window.setTimeout(updateContent, 100);	
 }
 
@@ -397,6 +401,8 @@ function updateContent()
 // write all changed contacts
 function updateContentWrite ()
 {
+	curCounter.setAttribute("value", curMessage + "/" + updateMessagesContent.length);
+
 	curMessage++;
 	if (curMessage < updateMessagesContent.length)
 	{
@@ -449,6 +455,7 @@ function updateContentAfterSave ()
 
 	meter.setAttribute("value", "80%");
 	statusMsg.value = "Writing new cards...";
+	curCounter.setAttribute("value", "...");
 	window.setTimeout(writeContent, 100);	
 }
 

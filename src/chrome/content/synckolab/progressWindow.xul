@@ -27,6 +27,12 @@
   		Initialising...
   	</description>
 	</groupbox>
+	<groupbox orient="horizontal">
+	  <caption label="Message"/>
+  	<description id="current-counter">
+  		0/0
+  	</description>
+	</groupbox>
 
   <spacer style="height: 10px"/>
 		<hbox>
