@@ -336,11 +336,11 @@ function card2Xml (card)
 		xml += " </phone>\n";
 	}
 	
-	if (checkExist(card.defaultEmail))
+	if (checkExist(card.primaryEmail))
 	{
 		xml += " <email>\n";
 		xml += "  <display-name>"+displayName+"</display-name>\n";
-		xml += "  <smtp-address>"+card.defaultEmail+"</smtp-address>\n";
+		xml += "  <smtp-address>"+card.primaryEmail+"</smtp-address>\n";
 		xml += " </email>\n";
 	}
 	
@@ -349,6 +349,14 @@ function card2Xml (card)
 		xml += " <email>\n";
 		xml += "  <display-name>"+displayName+"</display-name>\n";
 		xml += "  <smtp-address>"+card.secondEmail+"</smtp-address>\n";
+		xml += " </email>\n";
+	}
+
+	if (checkExist(card.defaultEmail))
+	{
+		xml += " <email>\n";
+		xml += "  <display-name>"+displayName+"</display-name>\n";
+		xml += "  <smtp-address>"+card.defaultEmail+"</smtp-address>\n";
 		xml += " </email>\n";
 	}
 	if (checkExist(card.homeAddress) || checkExist(card.homeAddress2) ||
@@ -633,7 +641,7 @@ function message2Card (message, card, format)
 				found = true;
 		  	break;
 		  case "TEL;TYPE=PAGE":
-		  	card.pagerNumber = tok[1];
+			  	card.pagerNumber = tok[1];
 				found = true;
 		  	break;
 		  case "BDAY":
@@ -641,7 +649,7 @@ function message2Card (message, card, format)
 				card.birthYear = cur[0];
 				card.birthMonth = cur[1];
 				// BDAY:1987-09-27T08:30:00-06:00
-		  	card.birthDay = (cur[2].indexOf("T") != -1)?cur[2].substring(0,cur[2].indexOf("T")):cur[2];
+			  	card.birthDay = (cur[2].indexOf("T") != -1)?cur[2].substring(0,cur[2].indexOf("T")):cur[2];
 				found = true;
 		  	break;
 		  	// anniversary - not in vcard rfc??
@@ -651,7 +659,7 @@ function message2Card (message, card, format)
 				card.anniversaryYear = cur[0];
 				card.anniversaryMonth = cur[1];
 				// BDAY:1987-09-27T08:30:00-06:00
-		  	card.anniversaryDay = (cur[2].indexOf("T") != -1)?cur[2].substring(0,cur[2].indexOf("T")):cur[2];
+			  	card.anniversaryDay = (cur[2].indexOf("T") != -1)?cur[2].substring(0,cur[2].indexOf("T")):cur[2];
 				found = true;
 		  	break;
 		  	

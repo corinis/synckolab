@@ -783,11 +783,11 @@ function genMailHeader (cid, adsubject, mime, part)
 	var bound = get_randomVcardId();
 	var cdate = new Date();
 	var sTime = (cdate.getHours()<10?"0":"") + cdate.getHours() + ":" + (cdate.getMinutes()<10?"0":"") + cdate.getMinutes() + ":" +
-		(cdate.getSeconds()<10?"0":"") + cdate.getSeconds();
+		(cdate.getSeconds()<10?"0":"") + cdate.getSeconds();		
 	var sdate = "Date: " + getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " +
-		getMonthString (cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime
-		 + " " + (((cdate.getTimezoneOffset()/60) < 0)?"-":"+") +
-		(((cdate.getTimezoneOffset()/60) < 10)?"0":"") + cdate.getTimezoneOffset() + "\n";
+           getMonthString (cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime
+          + " " + ((cdate.getTimezoneOffset() < 0)?"+":"-") +
+          (Math.abs(cdate.getTimezoneOffset()/60)<10?"0":"") + Math.abs(cdate.getTimezoneOffset()/60) +"00\n"; 
 
 	msg += "From: synckolab@no.tld\n";
 	msg += "Reply-To: \n";
