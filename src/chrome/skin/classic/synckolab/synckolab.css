@@ -1,38 +1,38 @@
 /* Sync Kolab */
 
-#SyncKolab {
+#SyncKolab-button {
   list-style-image: url("chrome://synckolab/skin/selectsmtp.png");
   -moz-image-region: rect(0px 24px 24px 0px);
 }
 
-#SyncKolab:hover {
+#SyncKolab-button:hover {
   -moz-image-region: rect(24px 24px 48px 0px);
 } 
 
-#SyncKolab:hover:active,
+#SyncKolab-button:hover:active,
 #SyncKolab[open] {
   -moz-image-region: rect(24px 24px 48px 0px);
 } 
 
-#SyncKolab[disabled] {
+#SyncKolab-button[disabled] {
   -moz-image-region: rect(48px 24px 72px 0px);
 } 
 
-toolbar[iconsize="small"] #SyncKolab {
+toolbar[iconsize="small"] #SyncKolab-button {
   list-style-image: url("chrome://synckolab/skin/selectsmtp-small.png");
   -moz-image-region: rect(0px 16px 16px 0px);
 }
 
-toolbar[iconsize="small"] #SyncKolab:hover {
+toolbar[iconsize="small"] #SyncKolab-button:hover {
   -moz-image-region: rect(16px 16px 32px 0px);
 } 
 
-toolbar[iconsize="small"] #SyncKolab:hover:active,
-toolbar[iconsize="small"] #SyncKolab[open] {
+toolbar[iconsize="small"] #SyncKolab-button:hover:active,
+toolbar[iconsize="small"] #SyncKolab-button[open] {
   -moz-image-region: rect(16px 16px 32px 0px);
 } 
 
-toolbar[iconsize="small"] #SyncKolab[disabled] {
+toolbar[iconsize="small"] #SyncKolab-button[disabled] {
   -moz-image-region: rect(32px 16px 48px 0px);
 }
 

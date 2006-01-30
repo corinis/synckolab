@@ -44,10 +44,7 @@
   };
 </script>  
 		
-
     <toolbarpalette id="MailToolbarPalette">
-        <toolbarbutton id="SyncKolab" class="toolbarbutton-1"
-			command="cmd_synckolab_sync">
-        </toolbarbutton>
+        <toolbarbutton id="SyncKolab-button" command="cmd_synckolab_sync" class="toolbarbutton-1"/>
     </toolbarpalette>
 </overlay>

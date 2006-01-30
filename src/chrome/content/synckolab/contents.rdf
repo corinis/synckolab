@@ -8,7 +8,7 @@
 
   <!-- package information -->
   <RDF:Description about="urn:mozilla:package:synckolab"
-        chrome:displayName="SyncKolab 0.4.18"
+        chrome:displayName="SyncKolab 0.4.19"
         chrome:author="Niko Berger"
         chrome:name="synckolab"
         chrome:description="Synchronize an IMAP Folder with the mozilla Address Book and Calendar " 
@@ -18,12 +18,7 @@
   
   <!-- overlay information -->
   <RDF:Seq about="urn:mozilla:overlays">
-    <RDF:li resource="chrome://global/content/customizeToolbar.xul"/>
     <RDF:li resource="chrome://messenger/content/messenger.xul"/>
-  </RDF:Seq>
-
-  <RDF:Seq about="chrome://global/content/customizeToolbar.xul">
-    <RDF:li>chrome://synckolab/content/toolbar.xul</RDF:li>
   </RDF:Seq>
 
   <RDF:Seq about="chrome://messenger/content/messenger.xul">

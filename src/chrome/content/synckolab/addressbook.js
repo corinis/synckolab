@@ -28,7 +28,7 @@
  * 
  * 
  ***** END LICENSE BLOCK ***** */
- 
+
 /*
  * A kinda "provider" class for syncing the address book.
  * The functions are called by the main synckolab loop to
@@ -64,6 +64,7 @@ var syncAddressBook = {
 			addressBookName = pref.getCharPref("SyncKolab."+config+".AddressBook");
 			this.format = pref.getCharPref("SyncKolab."+config+".AddressBookFormat");
 			this.gSaveImap = pref.getBoolPref("SyncKolab."+config+".saveToContactImap");
+			
 			// since Imap savine does not work with xml - disable this
 			//if (this.format == "Xml")
 			//	this.gSaveImap = false;
@@ -111,6 +112,7 @@ var syncAddressBook = {
 			// remember that we did this uid already
 			this.folderMessageUids.push(newCard.custom4);
 			consoleService.logStringMessage("got card from message: " + newCard.custom4);	
+
 			// ok lets see if we have this one already (remember custom4=UID)
 			var acard = findCard (cards, newCard.custom4);
 		
@@ -147,31 +149,26 @@ var syncAddressBook = {
 						acard.displayName + "<"+ acard.defaultEmail + ">\nServer Card: " + newCard.displayName + "<"+ newCard.defaultEmail + ">"))
 					{
 						// server changed - update local
+						
+						// delete the card
 						var list = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);
 						list.AppendElement(acard);
 						this.gAddressBook.deleteCards(list);
+						
+						// add the new one
 						this.gAddressBook.addCard (newCard);
 						var newdb = new Array();
 						newdb.push(newCard.custom4);
 						newdb.push(newSyncEntry);
-						if (lastSyncEntry != null)
-						{
-							this.db[cdb][0] = ""; // mark for delete
-						}
+
+						this.db[cdb][0] = ""; // mark for delete
+						
 						this.db.push(newdb);
+						return null; // no update on server
 					}
 					else
 					{
-						var newdb = new Array();
-						newdb.push(acard.custom4);
-						newdb.push(curSyncEntry);
-						if (lastSyncEntry != null)
-						{
-							this.db[cdb][0] = ""; // mark for delete
-						}
-						this.db.push(newdb);
-	
-						// remember this message for update
+						// update on server - leave local alone
 						return card2Message(acard, this.format);
 					}
 				}
@@ -189,23 +186,14 @@ var syncAddressBook = {
 					newdb.push(newCard.custom4);
 					newdb.push(newSyncEntry);
 					if (lastSyncEntry != null)
-					{
 						this.db[cdb][0] = ""; // mark for delete
-					}
 					this.db.push(newdb);
+					return null;
 				}
 				else
 				if (lastSyncEntry != curSyncEntry && lastSyncEntry == newSyncEntry)
 				{
 				    consoleService.logStringMessage("client changed: " + acard.custom4);
-					var newdb = new Array();
-					newdb.push(acard.custom4);
-					newdb.push(curSyncEntry);
-					if (lastSyncEntry != null)
-					{
-						this.db[cdb][0] = ""; // mark for delete
-					}
-					this.db.push(newdb);
 
 					// remember this message for update
 					return card2Message(acard, this.format);

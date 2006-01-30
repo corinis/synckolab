@@ -522,8 +522,8 @@ function writeContentAfterSave ()
  */
 function copyToFolder (fileName, folderUri)
 {
-  var mailFolder = RDF.GetResource(folderUri).QueryInterface(Components.interfaces.nsIMsgFolder);
-	var fileSpec = Components.classes["@mozilla.org/filespec;1"].createInstance(Components.interfaces.nsIFileSpec);
+	var mailFolder = RDF.GetResource(folderUri).QueryInterface(Components.interfaces.nsIMsgFolder);
+	var fileSpec = Components.classes["@mozilla.org/filespec;1"].createInstance(Components.interfaces.nsIFileSpec);	
 	fileSpec.nativePath = fileName;
 
 	// at this pont, check the content, we do not write a load of bogus messages in the imap folder
@@ -531,7 +531,7 @@ function copyToFolder (fileName, folderUri)
 	
 	copyservice = Components.classes["@mozilla.org/messenger/messagecopyservice;1"].getService(Components.interfaces.nsIMsgCopyService);
 	// in order to be able to REALLY copy the message setup a listener
-  copyservice.CopyFileMessage(fileSpec, mailFolder, null, false, kolabCopyServiceListener, msgWindow);
+	copyservice.CopyFileMessage(fileSpec, mailFolder, null, false, 0, kolabCopyServiceListener, msgWindow);
 }
 
 var kolabCopyServiceListener = {

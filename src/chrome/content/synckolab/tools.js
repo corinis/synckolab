@@ -120,7 +120,7 @@ function writeHashDataBase(dbf, db)
  	stream.init(dbf, 2, 0x200, false); // open as "write only"
  	for (var i = 0; i < db.length; i++)
  	{
- 		if (db[i][0] != "")
+ 		if (db[i][0] != "" && db[i][0] != null)
  		{
  			var s = db[i][0] + ":" + db[i][1] + "\n";
 			stream.write(s, s.length);
