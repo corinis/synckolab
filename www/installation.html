@@ -1,9 +1,17 @@
 <!-- MAIN CONTENT -->
 <h5 class="page-header"><a id="content" name="content">Download</a></h5>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.26.xpi">SyncKolab 0.4.26</a></p>
 
 
-<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.18.xpi">SyncKolab 0.4.18</a></p>
+
 <h6>Previous Releases</h6>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.25.xpi">SyncKolab 0.4.25</a></p>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.24.xpi">SyncKolab 0.4.24</a></p>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.23.xpi">SyncKolab 0.4.23</a></p>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.21.xpi">SyncKolab 0.4.21</a></p>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.20.xpi">SyncKolab 0.4.20</a></p>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.19.xpi">SyncKolab 0.4.19</a></p>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.18.xpi">SyncKolab 0.4.18</a></p>
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.17.xpi">SyncKolab 0.4.17</a></p>
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.16.xpi">SyncKolab 0.4.16</a></p>
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.15.xpi">SyncKolab 0.4.15</a></p>
@@ -29,20 +37,99 @@
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.1.0.xpi">SyncKolab 0.1.0</a></p>
 
 <h5 class="page-header">Installation Instructions</h5>
-<b>Synckolab requires Thunderbird 1.02+, do not install it with any version before, or it will not work!</b><br/>
+<h6>SyncKolab 0.4.20+</h6>
 <p>
-Step 1: download it from a link above (use "rightclick/save as" otherwise firefox will try to install) <br/>
-Step 2: Open Thunderbird use Tools/Extensions then Install and install the xpi<br/>
+<b>0.4.20 is currently in a testing state, because support for lightning has just be added - use with care!</b>
+
+Step 1: Since 0.4.20 <b>lightning is required</b>. <a href="http://www.mozilla.org/projects/calendar/lightning/index.html" target="_blank">Download the lightning plugin</a> then the
+extension (use "rightclick/save as" otherwise firefox will try to install) <br/>
+Step 2: Open Thunderbird use Tools/Extensions then Install the calendar and the synckolab xpi<br/>
 Step 3: Restart Thunderbird<br/>
-Step 4: Add a configuration then configure the server, address book and folder (see description) - same goes for calendar<br/>
+Step 4: Configure the server, address book, calendar and folder (see description)<br/>
 Step 5: rightclick on the icon bar (next to Stop) go to customize and drag the "Sync Kolab" Icon to the
-bar<br/>
+bar, this way you can also include the calendar icon<br/>
+
 Step 6: click the icon and the sync will start<br/>
+<h3>IMPORTANT: the address book folder and the calendar folder MUST NOT BE the same one! There is no check for that yet!</h3>
 <b>MAKE SURE YOU READ THE RELEASE NOTES OF THE VERSION!!!</b>
 </p>
 
+<h6>synckolab 0.4.&lt;20</h6>
+<p>
+Step 1: from 0.3.0 to 0.4.19 <b>calendar is required</b>. <a href="http://www.mozilla.org/projects/calendar/download.html" target="_blank">Download the calendar plugin</a> then the  
+
+<a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.19.xpi">extension</a> (use "rightclick/save as" otherwise firefox will try to install) <br/>
+</p>
 <h5 class="page-header">Release Notes</h5>
 <h6>For updated release notes see <a href="http://www.gargan.org/extensions/synckolab.html">www.gargan.org</a></h6>
+
+<h3>synckolab 0.4.26</h3>
+<p><pre>
+Fixed a bug with the conflict resolution dialog (wrong filename)
+</pre>
+</p>
+
+<h3>synckolab 0.4.25</h3>
+<p><pre>
+Updated contact sync thanks to Steven D Miller (Copart):
+- conflict resolution dialog that allows selecting which fields should be updated
+- removed bugs that prevented the email address and the webpages to sync correctly
+
+- implemented a fix for the toltec connector (lines were truncated)
+
+If you find any bugs please tell us on the synckolab mailing list (see above).
+</pre>
+
+</p>
+<h3>synckolab 0.4.24</h3>
+<p><pre>
+Updated calendar sync.
+- exceptions on recuring events are working
+- removal of calendar events should be working now
+- coloring is synced should be working
+
+</pre>
+</p>
+<h3>synckolab 0.4.23</h3>
+<p><pre>
+- loads of fixes to the calendar sync (especially with kolab xml) thanks to Andreas Gungl
+- added a status display to view the current in work messages
+- fixed a bug preventing contacts to be deleted locally
+- fixed a bug that prevented locally deleted items to be removed from server (both contacts and calendar)
+- added option to close the status window when done (or let it stay open...)
+
+
+This version was tested successfully with lightning 0.1 build 2006031011
+
+following issues are known:
+
+addressbook:
+- i still have to use the custom4 field to store the id of the card, i will add a configuration option to select with of the 4 custom fields to use in the next release
+
+calendar:
+- calendar sync does not remove local events even if deleted from server
+- yearly reoccuring events are not yet supported (others should work fine)
+- reoccuring events with exceptions are not yet supported
+- coloring of events does not work (color will be set to white) 
+</pre></p>
+
+<h3>synckolab 0.4.21</h3>
+<p><pre>
+- fixed the error with contacts
+
+</pre></p>
+<h3>synckolab 0.4.20</h3>
+<p><pre>
+- added support for lightning (tested with 0.1)
+- included submitted patches for vcard parsing (should work much better now)
+- added many debug messages to track problems
+- please use this release with care, especially the calendar syncing - its a new function and not yet fully tested
+</pre></p>
+<h3>synckolab 0.4.19</h3>
+<p>
+- changed way contacts are checked for updated ones - hopefilly this will fix some bugs
+- updated to work with tbird 1.5!
+</p>
 <h3>synckolab 0.4.18</h3>
 <p>
 - fixed the timezone bug<br/>
