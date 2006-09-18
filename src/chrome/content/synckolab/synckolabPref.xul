@@ -120,6 +120,7 @@
     <separator class="thin"/>
     <checkbox id="syncCon" label="Sync Contacts"/>
     <checkbox id="syncCal" label="Sync Calendar"/>
+    <checkbox id="closeWnd" label="Close Sync Window when done"/>
 
   </groupbox>
 </dialog>

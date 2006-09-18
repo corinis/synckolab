@@ -116,6 +116,9 @@ function init() {
 	try {
 		document.getElementById ("syncCal").checked = pref.getBoolPref("SyncKolab.syncCalendar");
 	} catch (ex) {}
+	try {
+		document.getElementById ("closeWnd").checked = pref.getBoolPref("SyncKolab.closeWindow");
+	} catch (ex) {}
 
 	// fill the contact selection
 	var cn = directory.childNodes;
@@ -711,6 +714,8 @@ function savePrefs() {
 
 	pref.setBoolPref("SyncKolab.syncContacts", document.getElementById ("syncCon").checked);
 	pref.setBoolPref("SyncKolab.syncCalendar", document.getElementById ("syncCal").checked);
+	pref.setBoolPref("SyncKolab.closeWindow", document.getElementById ("closeWnd").checked);
+	
 	saveCalPrefs ();
 	saveConPrefs ();
 }

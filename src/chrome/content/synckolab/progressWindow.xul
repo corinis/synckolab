@@ -34,6 +34,21 @@
   	</description>
 	</groupbox>
 
+	<spacer style="height: 10px"/>
+	
+	<listbox id="itemList" rows="6" suppressonselect="true">
+		<listhead>
+			<listheader label="id"/>
+			<listheader label="status"/>
+			<listheader label="content"/>
+		</listhead>
+	
+		<listcols>
+			<listcol/>
+			<listcol/>
+			<listcol flex="1"/>
+		</listcols>
+	</listbox>
   <spacer style="height: 10px"/>
 		<hbox>
 			<label value="Current Progress"/>

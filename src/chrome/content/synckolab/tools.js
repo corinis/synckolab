@@ -12,6 +12,7 @@
  * License.
  *
  * Contributor(s): Niko Berger <niko.berger@corinis.com>
+ *                 Andreas Gungl <a.gungl@gmx.de>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -399,6 +400,12 @@ function getMsgFolder (accountKey, path)
 }
 
 
+/* ------ convenience functions to deal with an XML DOM tree ------------- */
+
+/**
+ * return the content of a child node with name "name" of the node "node"
+ * or the given default "def" if no such node exists
+ */
 function getXmlResult (node, name, def)
 {
 	var cur = node.firstChild;
@@ -406,7 +413,6 @@ function getXmlResult (node, name, def)
 	{
 		if (cur.nodeName.toUpperCase() == name.toUpperCase())
 		{
-			// FIXME return cur.firstChild.data;
 			if (cur.hasChildNodes())
 			{
 				var value = cur.firstChild.nodeValue;
@@ -420,6 +426,9 @@ function getXmlResult (node, name, def)
 }
 
 
+/**
+ * return a direct child node with the name "name" of the node "node"
+ */
 function getXmlChildNode (node, name)
 {
 	var cur = node.firstChild;
@@ -435,6 +444,10 @@ function getXmlChildNode (node, name)
 }
 
 
+/**
+ * return the value of the attribute with name "attrName" of the node "node"
+ * or null, if no attribute with that name exists
+ */
 function getXmlAttributeValue (node, attrName)
 {
 	if (node.hasAttributes())
@@ -458,6 +471,8 @@ function nodeWithContent (nodeName, nodeValue, createNonExist)
 }
 
 
+/* ------ functions for date / string conversions ------------------------ */
+
 // takes: 2005-03-30T15:28:52Z or 2005-03-30 15:28:52
 function string2DateTime (val)
 {
@@ -474,11 +489,33 @@ function string2DateTime (val)
 
 }
 
+// takes: 2005-03-30T15:28:52Z or 2005-03-30 15:28:52
+function string2CalDateTime (val, useUTC)
+{
+	// in case its a date without time fall back to string2CalDate()
+	if (val.indexOf(":") == -1)
+		return string2CalDate(val);
+		
+	var s = val.replace('T', ' ');
+	s = s.replace('Z', '');
+	var both = s.split(' ');
+	var cdate = both[0].split('-');
+	var ctime = both[1].split(':');
+    var calDateTime = new CalDateTime();
+    var jsDate = null;
+    if (useUTC)
+        jsDate = new Date(Date.UTC(cdate[0], cdate[1]-1, cdate[2], ctime[0], ctime[1], ctime[2]));
+    else
+        jsDate = new Date(cdate[0], cdate[1]-1, cdate[2], ctime[0], ctime[1], ctime[2]);
+    calDateTime.jsDate = jsDate
+	return calDateTime;
+}
+
 // produces: 2005-03-30
 function date2String (cdate)
 {
 	return cdate.getFullYear() + "-" + (cdate.getMonth()+1 < 10?"0":"") + (cdate.getMonth()+1) + "-" +
-		(cdate.getDay() < 10?"0":"") + cdate.getDay();
+		(cdate.getDate() < 10?"0":"") + cdate.getDate();
 }
 // produces 15:28:52
 function time2String (cdate)
@@ -487,13 +524,59 @@ function time2String (cdate)
 		(cdate.getSeconds()<10?"0":"") + cdate.getSeconds();
 }
 
+// produces: 2005-03-30T15:28:52Z for allday = false,
+// produces: 2005-03-30 for allday = true
+function calDateTime2String (val, allday)
+{
+    var datetime = val.jsDate
+    var string = date2String(datetime);
+    if (!allday)
+    {
+        string = datetime.getUTCFullYear() + "-" + 
+                (datetime.getUTCMonth()+1 < 10 ? "0" : "") + (datetime.getUTCMonth()+1) + "-" +
+                (datetime.getUTCDate() < 10 ? "0" : "") + datetime.getUTCDate();
+        string += 'T';
+        string += (datetime.getUTCHours() < 10 ? "0" : "") + datetime.getUTCHours() + ":" + 
+                  (datetime.getUTCMinutes() < 10 ? "0" : "") + datetime.getUTCMinutes() + ":" +
+                  (datetime.getUTCSeconds() < 10 ? "0" : "") + datetime.getUTCSeconds();
+        string += 'Z';
+    }
+	return string;
+}
 
+// takes: 2005-03-30
 function string2Date (val)
 {
 	var s = val.replace('T', '');
 	var cdate = s.split('-');
 	return new Date(cdate[0], cdate[1]-1, cdate[2]);
 }
+
+// takes: 2005-03-30
+function string2CalDate (val)
+{
+	var s = val.replace('T', '');
+	var cdate = s.split('-');
+    var calDateTime = new CalDateTime();
+    calDateTime.jsDate = new Date(Date.UTC(cdate[0], cdate[1]-1, cdate[2], 0, 0, 0));
+    calDateTime.isDate = true;
+	return calDateTime;
+}
+
+// Create a duration object for an alarm time
+function createDuration (minutes)
+{
+    var duration = Components.classes["@mozilla.org/calendar/duration;1"]
+                             .createInstance(Components.interfaces.calIDuration);
+    if (minutes > 0)
+    {
+        minutes = minutes * -1;
+    }
+    duration.inSeconds = minutes * 60;
+    duration.normalize();
+    return duration;
+}
+
 
 var SKIP = 202;
 var NOSKIP = 'A';

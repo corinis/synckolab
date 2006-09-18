@@ -38,8 +38,10 @@ var activeCalendarManager;
  */
 function getCalendarManager()
 {
-     if (!activeCalendarManager) {
-         activeCalendarManager = Components.classes["@mozilla.org/calendar/manager;1"].getService(Components.interfaces["calICalendarManager"]);
+    // TODO somehow a Lightning calendar looses its event color after it's accessed in synckolab
+    if (!activeCalendarManager) {
+         activeCalendarManager = Components.classes["@mozilla.org/calendar/manager;1"]
+                                           .getService(Components.interfaces["calICalendarManager"]);
 //         activeCalendarManager.addObserver(ltnCalendarManagerObserver);
      }
  
@@ -49,19 +51,17 @@ function getCalendarManager()
          activeCalendarManager.registerCalendar(homeCalendar);
  
          var sbs = Components.classes["@mozilla.org/intl/stringbundle;1"]
-                             .getService(
-                              Components.interfaces.nsIStringBundleService);
-         var props = sbs.createBundle(
-                     "chrome://calendar/locale/calendar.properties");
+                             .getService(Components.interfaces.nsIStringBundleService);
+         var props = sbs.createBundle("chrome://calendar/locale/calendar.properties");
          homeCalendar.name = props.GetStringFromName("homeCalendarName");
  
          var composite = getCompositeCalendar();
          composite.addCalendar(homeCalendar);
          // XXX this doesn't make it selected, but you do add to it
      }
- 
      return activeCalendarManager;
 }
+
  
 /**
  * Returns a list of calendars (calICalendar)
@@ -75,6 +75,7 @@ function getCalendars()
          return [];
 	}
 }
+
 
 /**
  * @return true if the calendar exists
@@ -98,30 +99,144 @@ function findEvent(events, uid)
 
 
 /**
- * OLD stuff
+ * generate a sha1 over the most important fields
  */
+function genCalSha1 (event)
+{
+    // Use the Kolab 2 XML representation as base for the hash.
+    // This may slow down the process, but it should be possible
+    // to switch back to something faster if needed.
+    var aString = event2xml(event);
+    hashValue = hex_sha1(aString);
+    return hashValue;
 
+    /* This is pretty annoying to go all over the attributes
+       as we can simply use the existing event to xml conversion
+       to build a unique string containing the values of all
+       relevant attributes.
+    var aString = event.id + ":" +
+        event.startDate.icalString() + ":" +
+        event.endDate.icalString() + ":" +
+        event.title + ":" +
+        event.getProperty("description") + ":" +
+        event.getProperty("location") + ":" +
+        event.getProperty("categories") + ":" +
+        event.getProperty("class") + ":" +
+        //event.getProperty("last-modified") +
+        event.alarmOffset /*+ ":" +
+        event.privateEvent + ":" +
+        event.recurUnits + ":" +
+        event.recurInterval + ":" +
+        event.recurCount + ":" +
+        event.recurEnd.getTime() + ":" +
+        event.recurCount + ":" +
+        event.recurForever*/
+}
 
 
 /* ----- functions to handle the Kolab 2 XML event format ----- */
+
+/**
+ * return the name of the week day like it is expected
+ * by the Kolab 2 XML format
+ *
+ * @parm index The index of the day in the week starting with 1 => Sunday
+ *
+ * @return a string with the name of the week day
+ */
+function getKolabXmlDayName (index)
+{
+    var name = "sunday";
+    switch (index)
+    {
+        case 1:
+            name = "sunday";
+            break;
+        case 2:
+            name = "monday";
+            break;
+        case 3:
+            name = "tuesday";
+            break;
+        case 4:
+            name = "wednesday";
+            break;
+        case 5:
+            name = "thursday";
+            break;
+        case 6:
+            name = "friday";
+            break;
+        case 7:
+            name = "saturday";
+            break;
+    }
+    return name;
+}
+
+
+/**
+ * return the index for name of the week day used by the Kolab 2 XML format
+ *
+ * @parm name a string with the name of the week day
+ *
+ * @return The index of the day in the week starting with 1 => Sunday
+ */
+function getDayIndex (name)
+{
+    var index = 1;
+    switch (name.toLowerCase())
+    {
+        case "sunday":
+            index = 1;
+            break;
+        case "monday":
+            index = 2;
+            break;
+        case "tuesday":
+            index = 3;
+            break;
+        case "wednesday":
+            index = 4;
+            break;
+        case "thursday":
+            index = 5;
+            break;
+        case "friday":
+            index = 6;
+            break;
+        case "saturday":
+            index = 7;
+            break;
+    }
+    return index;
+}
+
 
 /**
  * parse a string containing a Kolab XML message and put the information
  * in a preinitialized event object
  * Sometimes when syncing, there are empty events, that should not be put 
  * into calendar, so this function returns if we actually got an event
+ *
  * @return true, if this event actually existed  
  */
 function xml2Event (xml, event)
 {
+// XXX take me out ASAP
+consoleService.logStringMessage("Parsing an XML event:\n" + xml);
 	// TODO improve recurrence settings
-	// TODO handle attendees - currently not supported in Mozilla calendar
+	//      not working ATM:
+	//          - yearly recurrence
+	//          - exclusions for recurrence
 	// TODO find a solution for Kolab fields not supported in Sunbird
 	
-	// FIXME clean up
-  //    calendarToDo.due.clear();
-   // calendarToDo.start.setTime( startDate );
-   //var iCalToDo = Components.classes["@mozilla.org/icaltodo;1"].createInstance().QueryInterface(Components.interfaces.oeIICalTodo);
+	// FIXME clean up - ToDos have a folder on their own in Kolab, 
+	// so we don't need to support them in this function
+	//
+    //calendarToDo.due.clear();
+    //calendarToDo.start.setTime( startDate );
+    //var iCalToDo = Components.classes["@mozilla.org/icaltodo;1"].createInstance().QueryInterface(Components.interfaces.oeIICalTodo);
 
 	// find the boundary
 	var boundary = xml.substring(xml.indexOf('boundary="')+10, xml.indexOf('"', xml.indexOf('boundary="')+12));
@@ -132,11 +247,6 @@ function xml2Event (xml, event)
 	// until the boundary = end of xml
 	if (xml.indexOf(boundary) != -1)
 		xml = xml.substring(0, xml.indexOf("--"+boundary));
-
-	// UTF-8 has been decoded before but is mentioned in the encoding attribute in the XML structure
-	// in normal Kolab XML data. So we convert the data back to UTF-8 here. This can opnly be changed in 
-	// parallel to a change in calendar.js in parseMessage: function(fileContent)!
-	xml = encode_utf8(xml);
 
 	// convert the string to xml
 	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser); 
@@ -163,7 +273,6 @@ function xml2Event (xml, event)
 	// iterate over the DOM tree of the XML structure of the event
 	while(cur != null)
 	{
-		
 		if (cur.nodeType == Node.ELEMENT_NODE)
 		{
 			switch (cur.nodeName.toUpperCase())
@@ -173,35 +282,46 @@ function xml2Event (xml, event)
 					// FIXME - for faster debugging only, so you can see the 
 					// uid resp. the msg subject in the URL field when opening the event, 
 					// you can find the appropriate msg very easily afterwards
-					event.url = cur.firstChild.data;
+					event.setProperty("URL", cur.firstChild.data);
 					break;
 					
+				case "CREATION-DATE":
+					var s = cur.firstChild.data;
+					// 2005-03-30T15:28:52Z
+					event.setProperty("CREATED", string2CalDateTime(s, true));
+					break;						
+
 				case "LAST-MODIFICATION-DATE":
 					var s = cur.firstChild.data;
-					// now we gotta check times... convert the message first
-					// save the date in microseconds
 					// 2005-03-30T15:28:52Z
-					//event.lastModifiedDate.setTime(string2DateTime(s).getTime());
-					//event.lastModifiedDate = string2DateTime(s).getTime() / 1000;
+					event.setProperty("LAST-MODIFIED", string2CalDateTime(s, true));
 					break;						
 
 				case "START-DATE":
 					var s = cur.firstChild.data;
 					// 2005-03-30T15:28:52Z
-					// date values witout time part specify a full day event
 					if (s.indexOf(":") == -1)
-						event.allDay = true;						
-					event.start.setTime (string2DateTime(s).getTime());
-					event.start.utc = true;
-					convertZuluToLocalOEDateTime(event.start);
+					{
+    					// date values witout time part specify a full day event
+                        event.startDate = string2CalDate(s);
+						event.startDate.isDate = true;
+					}
+					else
+                        event.startDate = string2CalDateTime(s, true);
 					break;						
 
 				case "END-DATE":
 					var s = cur.firstChild.data;
 					// 2005-03-30T15:28:52Z
-					event.end.setTime (string2DateTime(s).getTime());
-					event.end.utc = true;
-					convertZuluToLocalOEDateTime(event.end);
+					if (s.indexOf(":") == -1)
+					{
+    					// date values witout time part specify a full day event
+                        event.endDate = string2CalDate(s);
+						event.endDate.day += 1;
+						event.endDate.isDate = true;
+					}
+					else
+                        event.endDate = string2CalDateTime(s, true);
 					break;						
 
 				case "SUMMARY":
@@ -209,7 +329,7 @@ function xml2Event (xml, event)
 					break;
 
 				case "BODY":
-			  		event.description = cur.firstChild.data;
+			  		event.setProperty("DESCRIPTION", cur.firstChild.data);
 					break;
 					
 				case "CREATOR":
@@ -219,185 +339,279 @@ function xml2Event (xml, event)
 					break;
 					
 				case "ORGANIZER":
-					var name = getXmlResult(cur, "DISPLAY-NAME", "") 
-						+ "<"+ getXmlResult(cur, "SMTP-ADDRESS", "") +">";
-					// FIXME - currently unsupported in Mozilla calendar
+					organizer = Components.classes["@mozilla.org/calendar/attendee;1"]
+                                          .createInstance(Components.interfaces.calIAttendee);
+                    organizer.id = "MAILTO:" + getXmlResult(cur, "SMTP-ADDRESS", "unknown");
+					organizer.commonName = getXmlResult(cur, "DISPLAY-NAME", "");
+                    organizer.participationStatus = "ACCEPTED";
+                    organizer.rsvp = false;
+                    organizer.role = "CHAIR";
+					organizer.isOrganizer = true;
+					event.addAttendee(organizer);
 					break;
 					
 				case "LOCATION":
-			  		event.location = cur.firstChild.data;
+			  		event.setProperty("LOCATION", cur.firstChild.data);
 					break;
 
 				case "CATEGORIES":
-			  		event.categories = cur.firstChild.data;
+			  		event.setProperty("CATEGORIES", cur.firstChild.data);
 					break;
 
 				case "ALARM":
-					event.alarm       = true;
-					event.alarmLength = cur.firstChild.data;
-					// event.alarmUnits remains at the default which is 
-					// in minutes like in Kolab XML
+					event.alarmOffset = createDuration(cur.firstChild.data);
 					break;
 					
 				case "SENSITIVITY":
-					if (cur.firstChild.data == "public")
-						event.privateEvent = false;
+                    event.setProperty("CLASS", 'PUBLIC');
+        			switch (cur.firstChild.data)
+                    {
+                        case "private":
+                            event.setProperty("CLASS", 'PRIVATE');
+                            break;
+                        case "confidential":
+                            event.setProperty("CLASS", 'CONFIDENTIAL');
+                            break;
+                    }
 					break;
 
 				case "RECURRENCE":
-					consoleService.logStringMessage("Parsing this card: " + event.id);
-					event.recur = true;
+					consoleService.logStringMessage("Parsing this event: " + event.id);
+                    recInfo = Components.classes["@mozilla.org/calendar/recurrence-info;1"] 
+                                      .createInstance(Components.interfaces.calIRecurrenceInfo);
+                    recInfo.item = event;
+					recRule = Components.classes["@mozilla.org/calendar/recurrence-rule;1"] 
+                                        .createInstance(Components.interfaces.calIRecurrenceRule);
 					// read the "cycle" attribute for the units and
 					// map the Kolab XML values to the Sunbird values
-					var units = getXmlAttributeValue(cur, "cycle");
+					units = getXmlAttributeValue(cur, "cycle");
 					if (units == null)
-						units = "weeks";
-					else switch (units.toUpperCase())
+						units = "weekly";
+					recRule.type = units.toUpperCase();
+					switch (recRule.type)
 					{
 						case "DAILY":
-							// FIXME verify the Sunbird value
-							units = "days";
+							// nothing else to do here
 							break;
-							case "WEEKLY":
-							    units = "weeks";
-							    // FIXME need to process the <day> value here
-							    var recur = cur.firstChild;
-							    event.recurWeekdays = 0;
-							    // iterate over the DOM subtre
-							    while(recur != null)
-							    {
-							        if ((recur.nodeType == Node.ELEMENT_NODE)
-							           && (recur.nodeName.toUpperCase() == "DAY"))
-							        {
-							            var day = recur.firstChild.data;
-							            switch (day.toUpperCase())
-							            {
-							                case "SUNDAY":
-							                    event.recurWeekdays |= 1<<0;
-							                    break;
-							                case "MONDAY":
-							                    event.recurWeekdays |= 1<<1;
-							                    break;
-							                case "TUESDAY":
-							                    event.recurWeekdays |= 1<<2;
-							                    break;
-							                case "WEDNESDAY":
-							                    event.recurWeekdays |= 1<<3;
-							                    break;
-							                case "THURSDAY":
-							                    event.recurWeekdays |= 1<<4;
-							                    break;
-							                case "FRIDAY":
-							                    event.recurWeekdays |= 1<<5;
-							                    break;
-							                case "SATURDAY":
-							                    event.recurWeekdays |= 1<<6;
-							                    break;
-							            }
-							        }
-							        recur = recur.nextSibling;
-							    }
-							    break;
+						case "WEEKLY":
+						    // need to process the <day> value here
+						    var onDays = [];
+						    var recur = cur.firstChild;
+						    // iterate over the DOM subtre
+						    while(recur != null)
+						    {
+						        if ((recur.nodeType == Node.ELEMENT_NODE)
+						           && (recur.nodeName.toUpperCase() == "DAY"))
+						        {
+						            var day = recur.firstChild.data;
+						            onDays.push(getDayIndex(day));
+						        }
+						        recur = recur.nextSibling;
+						    }
+						    if (onDays.length > 0)
+                                recRule.setComponent("BYDAY", onDays.length, onDays);
+						    break;
 						case "MONTHLY":
-							// FIXME need to process extra type "type" which can be
+							// need to process extra type "type" which can be
 							// "daynumber" or "weekday"
-							// daynumber has <date>
-							// weekday has <daynumber> and <day>
-							units = "months";
+                            mode = getXmlAttributeValue(cur, "type");
+                            switch (mode.toUpperCase())
+                            {
+                                case "DAYNUMBER":
+                                    // daynumber has <daynumber>
+        						    var detail = getXmlChildNode(cur, "daynumber");
+                                    if ((detail != null)
+                                        && (detail.nodeType == Node.ELEMENT_NODE)
+                                        && (detail.nodeName.toUpperCase() == "DAYNUMBER"))
+                                    {
+                                        var daynumber = detail.firstChild.data;
+                                        recRule.setComponent("BYMONTHDAY", 1, [daynumber]);
+    						        }
+                                    break;
+                                case "WEEKDAY":
+        							// weekday has <daynumber> and <day>
+                                    var detail = cur.firstChild;
+                                    var day;
+                                    var daynumber;
+                                    var dayindex;
+                                    while(detail != null)
+                                    {
+                                        if ((detail.nodeType == Node.ELEMENT_NODE)
+                                            && (detail.nodeName.toUpperCase() == "DAY"))
+                                        {
+        						            day = detail.firstChild.data;
+                                        }
+                                        if ((detail.nodeType == Node.ELEMENT_NODE)
+                                            && (detail.nodeName.toUpperCase() == "DAYNUMBER"))
+                                        {
+                                            daynumber = detail.firstChild.data;
+                                        }
+                                        detail = detail.nextSibling;
+                                    }
+						            dayindex = getDayIndex(day);
+						            if (daynumber == -1)
+                                        recRule.setComponent("BYDAY", 1, [(-1)*(8+dayindex)]);
+                                    else
+                                        recRule.setComponent("BYDAY", 1, [daynumber*8 + dayindex]);
+                                    break;
+                            }
 							break;
 						case "YEARLY":
-							// FIXME need to process extra type "type" which can be
-							// "monthday" or "yearday"
-							// monthday has <date> and <month>
-							// yearday has <daynumber>
-							// FIXME verify the Sunbird value
-							units = "years";
+							// need to process extra type "type" which can be
+							// "weekday", monthday" or "yearday"
+                            mode = getXmlAttributeValue(cur, "type");
+                            var day;
+                            var daynumber;
+                            var month;
+                            switch (mode.toUpperCase())
+                            {
+                                case "YEARDAY":
+                                    // yearday has <daynumber>
+        						    var detail = cur.firstChild;
+                                    if ((detail != null)
+                                        && (detail.nodeType == Node.ELEMENT_NODE)
+                                        && (detail.nodeName.toUpperCase() == "DAYNUMBER"))
+                                    {
+                                        daynumber = detail.firstChild.data;
+                                        // FIXME this needs to be written to the event when supported by Lightning
+    						        }
+                                    break;
+                                case "MONTHDAY":
+                                    // monthday has <daynumber> and <month>
+                                    var detail = cur.firstChild;
+                                    var day;
+                                    var daynumber;
+                                    while(detail != null)
+                                    {
+                                        if ((detail.nodeType == Node.ELEMENT_NODE)
+                                            && (detail.nodeName.toUpperCase() == "MONTH"))
+                                        {
+        						            month = detail.firstChild.data;
+                                        }
+                                        if ((detail.nodeType == Node.ELEMENT_NODE)
+                                            && (detail.nodeName.toUpperCase() == "DAYNUMBER"))
+                                        {
+                                            daynumber = detail.firstChild.data;
+                                        }
+                                        detail = detail.nextSibling;
+                                    }
+                                    // FIXME this needs to be written to the event when supported by Lightning
+                                    break;
+                                case "WEEKDAY":
+                                    // weekday has <day>, <daynumber> and <month>
+                                    var detail = cur.firstChild;
+                                    while(detail != null)
+                                    {
+                                        if ((detail.nodeType == Node.ELEMENT_NODE)
+                                            && (detail.nodeName.toUpperCase() == "DAY"))
+                                        {
+        						            day = detail.firstChild.data;
+                                        }
+                                        if ((detail.nodeType == Node.ELEMENT_NODE)
+                                            && (detail.nodeName.toUpperCase() == "MONTH"))
+                                        {
+        						            month = detail.firstChild.data;
+                                        }
+                                        if ((detail.nodeType == Node.ELEMENT_NODE)
+                                            && (detail.nodeName.toUpperCase() == "DAYNUMBER"))
+                                        {
+                                            daynumber = detail.firstChild.data;
+                                        }
+                                        detail = detail.nextSibling;
+                                    }
+                                    // FIXME this needs to be written to the event when supported by Lightning
+                                    break;
+                            }
 							break;
-						default:
-							units = "weeks";
 					}
-consoleService.logStringMessage("cycle = " + units);
-					event.recurUnits = units;
-					event.recurInterval = getXmlResult(cur, "INTERVAL", "1");
-					// this hould not happen
-					if( event.recurInterval == 0 )
-						event.recur = false;
 					
+					recRule.interval = getXmlResult(cur, "INTERVAL", "1");
 					var node = getXmlChildNode(cur, "RANGE");
 					if (node != null)
 					{
-						event.recurForever = false;
-						event.recurCount = 0;
 						// read the "type" attribute of the range
 						var rangeType = getXmlAttributeValue(node, "type");
 						if (rangeType != null)
 						{
-consoleService.logStringMessage("type = " + rangeType);
 							var rangeSpec = getXmlResult(cur, "RANGE", "dummy");
-consoleService.logStringMessage("RANGE = " + rangeSpec);
 							switch (rangeType.toUpperCase())
 							{
 								case "DATE":
 									if (rangeSpec != "dummy")
 									{
 										// XML type is Date, not DateTime
-consoleService.logStringMessage("setting recurEnd to " + rangeSpec);
-										event.recurEnd.setTime(string2Date(rangeSpec).getTime());
-										//event.recurEnd.hour = event.start.hour;
-										//event.recurEnd.minute = event.start.minute;
+										recRule.endDate = string2CalDate(rangeSpec);
 									}
 									else
-										event.recurEnd.clear();
+										recRule.count = -1;
 									break;
 								case "NUMBER":
 									if (rangeSpec != "dummy")
-										event.recurCount = rangeSpec;
+										recRule.count = rangeSpec;
 									else
-										event.recurCount = 1;
+										recRule.count = 1;
 									break;
 								case "NONE":
-									event.recurForever = true;
+									recRule.count = -1;
 									break;
 							}
 						}
 					}
-					// FIXME read 0..n exclusions
-/* FIXME - this is code from Sunbird to demonstrate the API of the event class
-   if( gEvent.recur == true )
-   {
-      if( gEvent.recurUnits == "weeks" )
-      {
-         // advanced weekly repeating, choosing the days to repeat
-         gEvent.recurWeekdays = getAdvancedWeekRepeat();
-      }
-      else if( gEvent.recurUnits == "months" )
-      {
-         // advanced month repeating, either every day or every date
-         if( getFieldValue( "advanced-repeat-dayofweek", "selected" ) == true )
-         {
-            gEvent.recurWeekNumber = getWeekNumberOfMonth();
-         } 
-         else if( getFieldValue( "advanced-repeat-dayofweek-last", "selected" ) == true )
-         {
-            gEvent.recurWeekNumber = 5;
-         }
-         else
-            gEvent.recurWeekNumber = 0;
-      
-      }
-   }
-*/
+					else
+					{
+					   // no range set
+					   recRule.count = -1;
+					}
+					
+					// FIXME read 0..n exclusions when supported by Lightning
+					recInfo.insertRecurrenceItemAt(recRule, 0);
+                    event.recurrenceInfo = recInfo;
 					break;
 	
 				case "ATTENDEE":
-			  		// FIXME  - currently unsupported in Mozilla calendar
-					getXmlResult(cur, "DISPLAY-NAME", "");
-					getXmlResult(cur, "SMTP-ADDRESS", "");
+					attendee = Components.classes["@mozilla.org/calendar/attendee;1"]
+                                         .createInstance(Components.interfaces.calIAttendee);
+                    attendee.id = "MAILTO:" + getXmlResult(cur, "SMTP-ADDRESS", "unknown");
+					attendee.commonName = getXmlResult(cur, "DISPLAY-NAME", "");
 					// The status must be one of none, tentative, accepted, or declined.
-					getXmlResult(cur, "STATUS", "none");
-					getXmlResult(cur, "REQUEST-RESPONSE", "1");
+					switch (getXmlResult(cur, "STATUS", "none"))
+					{
+                        case "tentative":
+                            attendee.participationStatus = "TENTATIVE";
+                            break;
+                        case "accepted":
+                            attendee.participationStatus = "ACCEPTED";
+                            break;
+                        case "declined":
+                            attendee.participationStatus = "DECLINED";
+                            break;
+                        default:
+                            attendee.participationStatus = "NEEDS-ACTION";
+					}
+                    // The request response status is true or false
+					if (getXmlResult(cur, "REQUEST-RESPONSE", "false") == "true")
+                        attendee.rsvp = true;
+                    else
+                        attendee.rsvp = false;
 					// Role is one of required, optional, or resource.
-					getXmlResult(cur, "ROLE", "optional");
+					switch (getXmlResult(cur, "ROLE", "optional"))
+					{
+                        case "required":
+                            attendee.role = "REQ-PARTICIPANT";
+                            break;
+                        case "optional":
+                            attendee.role = "OPT-PARTICIPANT";
+                            break;
+                        case "resource":
+                            // FIXME it's currently the only way to map a "resource" attendee
+                            attendee.role = "NON-PARTICIPANT";
+                            break;
+                        default:
+                            attendee.role = "NON-PARTICIPANT";
+                    }
+					attendee.isOrganizer = false;
+					event.addAttendee(attendee);
+					// "invitation-sent" is missing, it can be "true" or false"
 					break;
 					
 				case "SHOW-TIME-AS":
@@ -411,125 +625,261 @@ consoleService.logStringMessage("setting recurEnd to " + rangeSpec);
 					break;
 					
 			} // end switch
-		}
+		} // end if
 		cur = cur.nextSibling;
-	}
+	} // end while
+// XXX take me out ASAP
+consoleService.logStringMessage("Parsed event in ICAL:\n" + event.icalString);
 	return true;
 }
 
-// generate a sha1 over the most important fields
-function genCalSha1 (event)
+
+/**
+ * convert an ICAL event into a Kolab XML string representation
+ *
+ * @return XML string in Kolab 2 format
+ */
+function event2xml (event)
 {
-	return hex_sha1(event.allDay + ":" +
-	event.id + ":" +
-	event.startDate.toString() + ":" +
-	event.endDate.toString() + ":" +
-	event.title + ":" +
-	event.getProperty("description") + ":" +
-	event.getProperty("location") + ":" +
-	event.getProperty("categories") + ":" /*+
-	event.alarm + ":" +
-	event.alarmLength + ":" +
-	event.privateEvent + ":" +
-	event.recurUnits + ":" +
-	event.recurInterval + ":" +
-	event.recurCount + ":" +
-	event.recurEnd.getTime() + ":" +
-	event.recurCount + ":" +
-	event.recurForever*/);
+	// TODO improve recurrence settings
+	//      not working ATM:
+	//          - yearly recurrence
+	//          - exclusions for recurrence
+// XXX take me out ASAP
+consoleService.logStringMessage("Event in ICAL:\n" + event.icalString);
+    var hasOrganizer = false;
+    var isAllDay = event.startDate.isDate;
+    var endDate = event.endDate;
+//    if (isAllDay)
+//        endDate.day -= 1;
+    var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+    xml += "<event version=\"1.0\" >\n"
+    xml += " <product-id>Synckolab 0.4.21-ag, Calendar Sync</product-id>\n";
+    xml += " <uid>" + event.id + "</uid>\n"
+    xml += " <creation-date>" + calDateTime2String(event.getProperty("CREATED"), false) + "</creation-date>\n";
+    xml += " <last-modification-date>" + calDateTime2String(event.getProperty("LAST-MODIFIED"), false) + "</last-modification-date>\n";
+    xml += " <start-date>" + calDateTime2String(event.startDate, isAllDay) + "</start-date>\n";
+    xml += " <end-date>" + calDateTime2String(endDate, isAllDay) + "</end-date>\n";
+    xml += " <summary>" + event.title +"</summary>\n";
+
+    if (event.getProperty("DESCRIPTION"))
+        xml += " <body>" + event.getProperty("DESCRIPTION") + "</body>\n";
+    if (event.getProperty("CLASS"))
+        xml += " <sensitivity>" + event.getProperty("CLASS").toLowerCase() + "</sensitivity>\n";
+    else
+        xml += " <sensitivity>public</sensitivity>\n";
+    if (event.getProperty("LOCATION"))
+        xml += " <location>" + event.getProperty("LOCATION") +"</location>\n";
+    if (event.alarmOffset && event.alarmOffset != 0)
+        xml += " <alarm>" + event.alarmOffset + "</alarm>\n";
+    if (event.getProperty("CATEGORIES"))
+        xml += " <categories>" + event.getProperty("CATEGORIES") + "</categories>\n";
+
+    var recInfo = event.recurrenceInfo;
+    if (recInfo && recInfo.countRecurrenceItems() >= 1)
+    {
+        // read the first recurrence rule and process it
+        recRule = recInfo.getRecurrenceItemAt(0);
+		switch (recRule.type)
+		{
+			case "DAILY":
+                xml += " <recurrence cycle=\"daily\">\n";
+				break;
+			case "WEEKLY":
+                xml += " <recurrence cycle=\"weekly\" type=\"weekday\">\n";
+			    // need to process the <day> value here
+                for each (var i in recRule.getComponent("BYDAY", {})) {
+                    xml += "  <day>" + getKolabXmlDayName(i) + "</day>\n";
+                }
+			    break;
+			case "MONTHLY":
+				// "daynumber" or "weekday"
+                var days = recRule.getComponent("BYMONTHDAY", {});
+                if (days && days.length > 0 && days[0]) {
+				    // daynumber has <daynumber>
+                    xml += " <recurrence cycle=\"monthly\" type=\"daynumber\">\n";
+                    xml += "  <daynumber>" + days[0] + "</daynumber>\n";
+                }
+                else
+                {
+                    xml += " <recurrence cycle=\"monthly\" type=\"weekday\">\n";
+    				// weekday has <daynumber> and <day>
+    				days = recRule.getComponent("BYDAY", {});
+    				if (days && days.length > 0 && days[0] > 0)
+                    {
+                        dayindex = days[0] % 8
+                        daynumber = (days[0] - dayindex) / 8
+                        xml += "  <daynumber>" + daynumber + "</daynumber>\n";
+                        xml += "  <day>" + getKolabXmlDayName(dayindex) + "</day>\n";
+    		        }
+                    else
+                    {
+                        xml += "  <daynumber>-1</daynumber>\n";
+                        if (days && days.length > 0 && days[0] < 0)
+                            dayindex = days[0] * -1 - 8;
+                        else
+                            dayindex = 1;
+                        xml += "  <day>" + getKolabXmlDayName(dayindex) + "</day>\n";
+                    }
+				}
+				break;
+			case "YEARLY":
+				// "weekday", monthday" or "yearday"
+				// weekday has <day>, <daynumber> and <month>
+				// FIXME weekday is not yet supported by Lightning
+                //xml += " <recurrence cycle=\"yearly\" type=\"weekday\">\n";
+                //xml += "  <day>tuesday</day>\n";
+                //xml += "  <daynumber>2</daynumber>\n";
+                //xml += "  <month>july</month>\n";
+
+				// monthday has <daynumber> and <month>
+				// FIXME monthday is not yet supported by Lightning
+                //xml += " <recurrence cycle=\"yearly\" type=\"monthday\">\n";
+                //xml += "  <daynumber>2</daynumber>\n";
+                //xml += "  <month>july</month>\n";
+
+				// yearday has <daynumber>
+                xml += " <recurrence cycle=\"yearly\" type=\"yearday\">\n";
+                // FIXME we have no matching field in Lighning yet
+                xml += "  <daynumber>1</daynumber>\n";
+				break;
+		}
+        xml += "  <interval>" + recRule.interval + "</interval>\n";
+        if (recRule.isByCount)
+        {
+            if (recRule.count > 0)
+                xml += "  <range type=\"number\">" + recRule.count + "</range>\n";
+            else
+                xml += "  <range type=\"none\"/>\n";
+        }
+        else
+        {
+            var endDate = recRule.endDate;
+            if (endDate)
+                xml += "  <range type=\"date\">" + date2String(endDate.jsDate) + "</range>\n";
+            else
+                xml += "  <range type=\"none\"/>\n";
+        }
+        // FIXME xml += "  <exclusion>2006-01-13</exclusion>\n";
+        xml += " </recurrence>\n";
+    }
+
+    var attendees = event.getAttendees({});
+    if (attendees && attendees.length > 0) 
+    {
+        for each (var attendee in attendees) 
+        {
+            mail = attendee.id.replace(/MAILTO:/, '');
+            if (attendee.isOrganizer)
+            {
+                xml += " <organizer>\n";
+                xml += "  <display-name>" + attendee.commonName + "</display-name>\n";
+                xml += "  <smtp-address>" + mail + "</smtp-address>\n";
+                xml += " </organizer>\n";
+                hasOrganizer = true;
+            }
+            else
+            {
+    			var status = "none";
+                switch (attendee.participationStatus)
+                {
+                    case "TENTATIVE":
+                        status = "tentative";
+                        break;
+                    case "ACCEPTED":
+                        status = "accepted";
+                        break;
+                    case "DECLINED":
+                        status = "declined";
+                        break;
+                    case "NEEDS-ACTION":
+                        status = "none";
+                        break;
+                }
+                xml += " <attendee>\n";
+                xml += "  <display-name>" + attendee.commonName + "</display-name>\n";
+                xml += "  <smtp-address>" + attendee.id + "</smtp-address>\n";
+                xml += "  <status>" + status + "</status>\n";
+                xml += "  <request-response>" + (attendee.rsvp ? "true" : "false") + "</request-response>\n";
+                switch (attendee.role)
+                {
+                    case "REQ-PARTICIPANT":
+                        xml += "  <role>required</role>\n";
+                        break;
+                    case "OPT-PARTICIPANT":
+                        xml += "  <role>optional</role>\n";
+                        break;
+                    case "NON-PARTICIPANT":
+                        xml += "  <role>resource</role>\n";
+                        break;
+                    default:
+                        xml += "  <role>required</role>\n";
+                }
+                xml += " </attendee>\n";
+            }
+        }
+    }
+
+    if (!hasOrganizer)
+    {
+        // FIXME Try to read the sender data from the settings of the 
+        // account specified in the synckolab settings
+        xml += " <organizer>\n";
+        xml += "  <display-name>" + "Egon" + "</display-name>\n";
+        xml += "  <smtp-address>" + "Egon@Post" + "</smtp-address>\n";
+        xml += " </organizer>\n";
+    }
+    xml += " <revision>0</revision>\n";
+    xml += "</event>\n"
+
+// XXX take me out ASAP
+consoleService.logStringMessage("Created XML event structure:\n" + xml);
+	return xml;
 }
+
+
+/**
+ * convert an ICAL event into a Kolab 2 XML format message
+ *
+ * @return a message in Kolab 2 format
+ */
+function event2kolabXmlMsg (event)
+{
+    var xml = "";
+    xml = event2xml(event);
+    var my_msg = genMailHeader(event.id, "", "application/x-vnd.kolab.event", true)
+	           + encodeQuoted(encode_utf8(xml))
+	return my_msg;
+}
+
+
+
+/**
+ * OLD stuff
+ */
+
 
 
 /* ----- functions to handle the iCal event format ----- */
 
-
-function saveIcal (eventArray, todoArray, fileName)
+function ical2event (content)
 {
-	var len = 0;
-	var eventStrings = new Array();
-	var begin = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Mozilla.org/NONSGML Mozilla Calendar V1.0//EN\n";
-	var end = "END:VCALENDAR";
-	var i = 0, j;
-	for( i = 0;  eventArray != null && i < eventArray.length; i++ )
-	{
-    var calendarEvent = eventArray[i].clone();
-      
-    // convert time to represent local to produce correct DTSTART and DTEND
-    if(calendarEvent.allDay != true)
-       convertLocalToZuluEvent( calendarEvent );
-      
-    // check if all required properties are available
-    if (calendarEvent.method == 0 )
-       calendarEvent.method = calendarEvent.ICAL_METHOD_PUBLISH;
-    if (calendarEvent.stamp.year ==  0 )
-       calendarEvent.stamp.setTime( new Date() );
-
-    var eventString = calendarEvent.getIcalString();
-    
-    // include VCALENDAR version, prodid, method only on first component
-    var ibegin = eventString.indexOf("BEGIN:", 15+eventString.indexOf("BEGIN:VCALENDAR"));
-    // include END:VCALENDAR only on last component
-    var iend = eventString.lastIndexOf("END:VCALENDAR");
-    // Include components between begin and end.
-    // (Since times are all Zulu times, no VTIMEZONEs are expected,
-    // so safe to assume no duplicate VTIMEZONES need to be removed.)
-    eventString = eventString.slice(ibegin, iend);
-
-    // patch TRIGGER for Outlook compatibility (before \r\n fix)
-    eventString = patchICalStringForExport(eventString);
-    // make sure all line terminators are full \r\n as required by rfc2445
-    eventString = eventString.replace(/\r\n|\n|\r/g, "\r\n");
-    
-    // collect result in array, will join at end
-    eventStrings.push(eventString);
-   }
-
-   for( j = 0; todoArray != null && j < todoArray.length; i++ )
-   {
-      var calendarEvent = todoArray[j].clone();
-      
-      // convert time to represent local to produce correct DTSTART and DTEND
-      if(calendarEvent.allDay != true)
-         convertLocalToZuluEvent( calendarEvent );
-      
-      // check if all required properties are available
-      if (calendarEvent.method == 0 )
-         calendarEvent.method = calendarEvent.ICAL_METHOD_PUBLISH;
-      if (calendarEvent.stamp.year ==  0 )
-         calendarEvent.stamp.setTime( new Date() );
-
-      var eventString = calendarEvent.getIcalString();
-      // include VCALENDAR version, prodid, method only on first component
-      var ibegin = eventString.indexOf("BEGIN:", 15+eventString.indexOf("BEGIN:VCALENDAR"));
-      // include END:VCALENDAR only on last component
-      var iend = eventString.lastIndexOf("END:VCALENDAR");
-      // Include components between begin and end.
-      // (Since times are all Zulu times, no VTIMEZONEs are expected,
-      // so safe to assume no duplicate VTIMEZONES need to be removed.)
-      eventString = eventString.slice(ibegin, iend);
-
-      // patch TRIGGER for Outlook compatibility (before \r\n fix)
-      eventString = patchICalStringForExport(eventString);
-      // make sure all line terminators are full \r\n as required by rfc2445
-      eventString = eventString.replace(/\r\n|\n|\r/g, "\r\n");
-      
-      // collect result in array, will join at end
-      eventStrings[i+j] = eventString;
-  }
-   
-   // concatenate all at once to avoid excess string copying on long calendars.
-	var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
-	// temp path
-	sfile.initWithPath(fileName);
-	if (sfile.exists()) 
-		sfile.remove(true);
-	sfile.create(sfile.NORMAL_FILE_TYPE, 0666);
-	
-	var content = begin + eventStrings.join("") + end;
-	// create a new message in there
-	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
-	stream.init(sfile, 2, 0x200, false); // open as "write only"
-	stream.write(content, content.length);
-	stream.close();
-//  return ;
+    var event;
+	var icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
+                           .getService(Components.interfaces.calIICSService);
+	var rootComp = icssrv.parseICS(content);
+  
+    if (rootComp.componentType == 'VCALENDAR') {
+		event = rootComp;
+	} else {
+		event = rootComp.getFirstSubcomponent('VCALENDAR');
+	}
+	var subComp = event.getFirstSubcomponent("ANY");
+	event = Components.classes["@mozilla.org/calendar/event;1"]
+                      .createInstance(Components.interfaces.calIEvent);
+    event.icalComponent = subComp;
+    consoleService.logStringMessage("parsed event: " + event + ":" + event.id);
+    return event;
 }
+
+

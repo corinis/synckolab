@@ -61,6 +61,8 @@ var totalMeter; // the total progress meter
 var statusMsg;	// the status message
 var processMsg; // process message
 var curCounter;
+var itemList; // display all processed items
+var gCloseWnd; // true if we want to close the window when sync is done
 
 // progress variables 
 var curStep;
@@ -68,12 +70,13 @@ var curStep;
 function syncKolab(event) {
 	// copy a file to a folder
 	// call external func
-	gWnd = window.open("chrome://synckolab/content/progressWindow.xul", "bmarks", "chrome,width=350,height=220");
+	gWnd = window.open("chrome://synckolab/content/progressWindow.xul", "bmarks", "chrome,width=350,height=350");
 	
 	try {
     var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 		gSyncContact = pref.getBoolPref("SyncKolab.syncContacts");
 		gSyncCalendar = pref.getBoolPref("SyncKolab.syncCalendar");
+		gCloseWnd = pref.getBoolPref("SyncKolab.closeWindow");
 	} catch(e) {
 	}
 	// wait until loaded
@@ -95,6 +98,7 @@ function goWindow (wnd)
 				statusMsg = wnd.document.getElementById('current-action');
 				processMsg = wnd.document.getElementById('current-process');
 				curCounter = wnd.document.getElementById('current-counter');
+				itemList = wnd.document.getElementById('itemList');
 				if (isCalendarAvailable ())
 				{
 					consoleService.logStringMessage("Calendar available");
@@ -172,8 +176,13 @@ function nextSync()
 		// get and set the message folder
 		syncAddressBook.folder = getMsgFolder(syncAddressBook.serverKey, syncAddressBook.folderPath);
 		syncAddressBook.folderMsgURI = syncAddressBook.folder.baseMessageURI;
+		
+		// display stuff
+		syncAddressBook.itemList = itemList;
+		
 		consoleService.logStringMessage("Contacts: got folder: " + syncAddressBook.folder.URI + 
 			"\nMessage Folder: " + syncAddressBook.folderMsgURI);
+			
 		curConConfig++;
 		window.setTimeout(getContent, 100, syncAddressBook);	
 	}
@@ -194,12 +203,17 @@ function nextSync()
 		syncCalendar.folder = getMsgFolder(syncCalendar.serverKey, syncCalendar.folderPath);
 		
 		syncCalendar.folderMsgURI = syncCalendar.folder.baseMessageURI;
+
+		// display stuff
+		syncCalendar.itemList = itemList;
+
 		consoleService.logStringMessage("Calendar: got calendar: " + syncCalendar.gCalendar.name + 
 			"\nMessage Folder: " + syncCalendar.folderMsgURI);
 		curCalConfig++;
-		// dont use setTimeout, init2 in calendar does that for us as soon as all data is loaded
-		syncCalendar.init2(getContent, syncCalendar);
-		//window.setTimeout(getContent, 100, syncCalendar);	
+
+		// only use setTimeout if init2 fails cause init2 in calendar does that for us as soon as all data is loaded
+		if (!syncCalendar.init2(getContent, syncCalendar))
+            window.setTimeout(getContent, 100, syncCalendar);		
 	}
 	else //done
 	{
@@ -212,7 +226,8 @@ function nextSync()
 			sfile.remove(true);
 			
 		// close the status window
-		gWnd.close();
+		if (gCloseWnd)
+			gWnd.close();
 		return;
 	}
 	
@@ -274,8 +289,8 @@ function getMessage ()
 			cur = gMessages.getNext().QueryInterface(Components.interfaces.nsIMsgDBHdr);
 		else
 		{
-	    	consoleService.logStringMessage("DONE");
-			updateContentAfterSave ();
+			// done with messages go on...
+			parseFolderToAddressFinish ();
 	    	return;
 		}					
 	}
@@ -291,7 +306,7 @@ function getMessage ()
 	gCurMessageKey = cur.messageKey;
 	var aurl = new Object();	
 	gMessageService.CopyMessage(
-        gSync.folderMsgURI +"#"+cur.messageKey,
+        gSync.folderMsgURI +"#"+gCurMessageKey,
         myStreamListener, false, null, msgWindow, aurl
         ); 
 }
@@ -334,11 +349,17 @@ function parseMessageRunner ()
 {
    	consoleService.logStringMessage("parsing message...");
 	var content = gSync.parseMessage(fileContent, updateMessagesContent);
+	// just to make sure there REALLY isnt any content left :)
+	fileContent = "";
 	if (content != null)
 	{
-	    consoleService.logStringMessage("updating [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]");
-			updateMessages.push(gSync.folderMsgURI +"#"+gCurMessageKey); 
-			updateMessagesContent.push(content); 
+		if (content == "DELETEME")
+			consoleService.logStringMessage("updating and deleting [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]");
+		else
+			consoleService.logStringMessage("updating [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]");
+		updateMessages.push(gSync.folderMsgURI +"#"+gCurMessageKey); 
+		updateMessagesContent.push(content); 
+		consoleService.logStringMessage("changed msg #" + updateMessages.length);
 	}
 	
 	
@@ -366,6 +387,7 @@ function parseFolderToAddressFinish ()
 	// do step 5
 	curStep = 5;
 	writeDone = false;
+    consoleService.logStringMessage("parseFolderToAddressFinish");
 
 	meter.setAttribute("value", "60%");
 	statusMsg.value = "Writing changed cards...";
@@ -375,20 +397,23 @@ function parseFolderToAddressFinish ()
 
 function updateContent()
 {
+    consoleService.logStringMessage("updating content:");
 	// first lets delete the old messages
 	if (gSync.gSaveImap && updateMessages.length > 0) 
 	{
 		try
 		{
+			consoleService.logStringMessage("deleting changed messages..");
 			var list = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);
 			for (var i = 0; i < updateMessages.length; i++)
 			{
-		    consoleService.logStringMessage("deleting [" + updateMessages[i] + "]");
+				consoleService.logStringMessage("deleting [" + updateMessages[i] + "]");
 				var hdr = gMessageService.messageURIToMsgHdr(updateMessages[i]);
 				list.AppendElement(hdr);		
 		    
 			}
 			gSync.folder.deleteMessages (list, msgWindow, true, false, null, true);		
+			consoleService.logStringMessage("done..");
 		}
 		catch (ex)
 		{
@@ -410,7 +435,6 @@ function updateContentWrite ()
 	{
 		var content = updateMessagesContent[curMessage];
 		// write the message
-
 		if (gSync.gSaveImap && content != "DELETEME")
 		{
 			// write the message in the temp file

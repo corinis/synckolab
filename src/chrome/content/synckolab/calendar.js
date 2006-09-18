@@ -58,7 +58,13 @@ var syncCalendar = {
 	folderMessageUids: '',
 	
 	dbFile: '', // the current sync database file
-	db: '', // the current sync database 
+	db: '', // the current sync database
+
+	itemList: '', // display the currently processed item with status
+	curItemInList: '', // the current item in the list (for updating the status)
+	curItemInListId: '',
+	curItemInListStatus: '',
+	curItemInListContent: '',
 
 	init: function(config) {
 		if (!isCalendarAvailable ())
@@ -73,9 +79,6 @@ var syncCalendar = {
 			this.gCalendarName = pref.getCharPref("SyncKolab."+config+".Calendar");
 			this.format = pref.getCharPref("SyncKolab."+config+".CalendarFormat");			
 			this.gSaveImap = pref.getBoolPref("SyncKolab."+config+".saveToCalendarImap");
-			// since Imap savine does not work with xml - disable this
-			if (this.format == "Xml")
-				this.gSaveImap = false;
 		} catch(e) {
 			return;
 		}
@@ -103,7 +106,20 @@ var syncCalendar = {
 		// get ALL the items from calendar - when done call nextfunc
 		this.gEvents.nextFunc = nextFunc;
 		this.gEvents.sync = sync;
-		this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_EVENT, 0, null, null, this.gEvents);
+		// gCalendar might be invalid if no calendar is selected in the settings
+		if (this.gCalendar) {
+		  this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_EVENT, 0, null, null, this.gEvents);
+          // if no item has been read, onGetResult has never been called 
+          // leaving us stuck in the events chain
+		  if (this.gEvents.events.length > 0)
+		      return true;
+		  else
+		      return false;
+		}
+		else {
+		  alert("Please select a calender as sync target before trying to synchronize.");
+		  return false;
+		}
 	},
 	
 	gEvents: {
@@ -111,19 +127,17 @@ var syncCalendar = {
 		events: new Array(),
 		sync: '',
 		onOperationComplete: function(aCalendar, aStatus, aOperator, aId, aDetail) {		
-			    consoleService.logStringMessage("operation: status="+aStatus + " Op=" + aOperator + " Detail=" + aDetail);
+// FIXME			    consoleService.logStringMessage("operation: status="+aStatus + " Op=" + aOperator + " Detail=" + aDetail);
 			},
 		onGetResult: function(aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {
-  		    consoleService.logStringMessage("got results: " + aCount + " items");
-		     for (var i = 0; i < aCount; i++) {
-               this.events.push(aItems[i]);
-             this.nextFunc(this.sync);
-           }
-		}
+                consoleService.logStringMessage("got results: " + aCount + " items");
+                for (var i = 0; i < aCount; i++) {
+                    this.events.push(aItems[i]);
+                }
+                this.nextFunc(this.sync);
+            }
 	},
-	
-	
-	
+
 
 	/**
 	 * parses the given content, if an update is required the 
@@ -131,74 +145,93 @@ var syncCalendar = {
 	 */	
 	parseMessage: function(fileContent) {
 		fileContent = decode_utf8(DecodeQuoted(fileContent));
-		var newCard;
+		
+		// create a new item in the itemList for display
+		this.curItemInList = document.createElement("listitem");
+		this.curItemInListId = document.createElement("listcell");
+		this.curItemInListStatus = document.createElement("listcell");
+		this.curItemInListContent = document.createElement("listcell");
+		this.curItemInListId.setAttribute("label", "unknown");
+		this.curItemInListStatus.setAttribute("label", "parsing");
+		this.curItemInListContent.setAttribute("label", "unknown");
+		
+
+		this.curItemInList.appendChild(this.curItemInListId);
+		this.curItemInList.appendChild(this.curItemInListStatus);
+		this.curItemInList.appendChild(this.curItemInListContent);
+		
+		this.itemList.appendChild(this.curItemInList);
+		
+		var newEvent;
 		if (this.format == "Xml")
 		{
-			newCard = Components.classes["@mozilla.org/icalevent;1"].createInstance().QueryInterface(Components.interfaces.oeIICalEvent);
-			if (xml2Event(fileContent, newCard) == false)
+			newEvent = Components.classes["@mozilla.org/calendar/event;1"]
+				.createInstance(Components.interfaces.calIEvent);
+			if (xml2Event(fileContent, newEvent) == false)
+			{
 				return null;
+				// update list item
+				this.curItemInListId.setAttribute("label", "unparseable");
+			}
 		}
 		else
 		{
-			var icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
-						.getService(Components.interfaces.calIICSService);
-			var rootComp = icssrv.parseICS(fileContent);
-  
-      		if (rootComp.componentType == 'VCALENDAR') {
-				newCard = rootComp;
-			} else {
-				newCard = rootComp.getFirstSubcomponent('VCALENDAR');
-			}
-			var subComp = newCard.getFirstSubcomponent("ANY");
-			newCard = Components.classes["@mozilla.org/calendar/event;1"]
-                                   .createInstance(Components.interfaces.calIEvent);
-            newCard.icalComponent = subComp;
-		    consoleService.logStringMessage("parsed card: " + newCard + ":" + newCard.id);
+            // this.format == 'iCal'
+		    newEvent = ical2event(fileContent);
 		}
+
+		// update list item
+		this.curItemInListId.setAttribute("label", newEvent.id);
+		this.curItemInListStatus.setAttribute("label", "checking");
+		this.curItemInListContent.setAttribute("label", newEvent.title);
 		
 		// remember that we did this uid already
-		this.folderMessageUids.push(newCard.id);
+		this.folderMessageUids.push(newEvent.id);
 		// ok lets see if we have this one already 
-		var acard = findEvent (this.gEvents, newCard.id);
+		var foundEvent = findEvent (this.gEvents, newEvent.id);
 	
-		// a new card				
-		if (acard == null)
+		if (foundEvent == null)
 		{
-		    consoleService.logStringMessage("a new card:" + newCard.id);
-			var cEntry = getDbEntry (newCard.id, this.db);
+		    // a new event
+		    consoleService.logStringMessage("a new event:" + newEvent.id);
+			var cEntry = getDbEntry (newEvent.id, this.db);
 			if (cEntry == -1)
 			{
 				var curEntry = new Array();
-				curEntry.push(newCard.id);
-				curEntry.push(genCalSha1(newCard));
+				curEntry.push(newEvent.id);
+				curEntry.push(genCalSha1(newEvent));
 				this.db.push(curEntry);
+				this.curItemInListStatus.setAttribute("label", "add local");
 				
 			}
 			else
 			{
 				// normally now this should be deleted, since it was in the db already
 				// but since calendar isnt finished yet we will comment this out
-				//return "DELETEME";
+				this.curItemInListStatus.setAttribute("label", "server delete");
+				return "DELETEME";
+				// return null;
 			}
 
-			// add the new card
-		    consoleService.logStringMessage("adding card:" + newCard.id);
-			this.gCalendar.addItem(newCard, this.gEvents);
+			// add the new event
+			this.gCalendar.addItem(newEvent, this.gEvents);
 		}
 		else
 		{
-			var cdb = getDbEntry (newCard.id, this.db);
+		    // event exists in local calendar
+			var cdb = getDbEntry (newEvent.id, this.db);
 			var lastSyncEntry = cdb!=-1?this.db[cdb][1]:null;
-			var newSyncEntry = genCalSha1 (newCard);
-			var curSyncEntry = genCalSha1 (acard);
+			var newSyncEntry = genCalSha1 (newEvent);
+			var curSyncEntry = genCalSha1 (foundEvent);
 
 			if (lastSyncEntry != null && lastSyncEntry != curSyncEntry && lastSyncEntry != newSyncEntry)
 			{
-				if (window.confirm("Changes were made on the server and local. Click ok to use the server version.\nClient card: " + 
-					acard.displayName + "<"+ acard.defaultEmail + ">\nServer Card: " + newCard.displayName + "<"+ newCard.defaultEmail + ">"))
+			    // changed locally and on server side
+				if (window.confirm("Changes were made on the server and local. Click ok to use the server version.\nClient Event: " + 
+					foundEvent.title + "<"+ foundEvent.id + ">\nServer Event: " + newEvent.title + "<"+ newEvent.id + ">"))
 				{
 					var newdb = new Array();
-					newdb.push(newCard.id);
+					newdb.push(newEvent.id);
 					newdb.push(newSyncEntry);
 					if (lastSyncEntry != null)
 					{
@@ -208,21 +241,23 @@ var syncCalendar = {
 	
 					for (var i = 0; i < this.gEvents.events.length; i++)
 					{
-						if (this.gEvents.events[i].id == newCard.id)
+						if (this.gEvents.events[i].id == newEvent.id)
 						{
-							 // modify the item
-							 this.gCalendar.addItem(newCard, this.gEvents.events[i], this.gEvents);
-
-							 this.gEvents[i] = newCard;
-							 
-							 return null;
+							// modify the item
+							this.gCalendar.modifyItem(newEvent, foundEvent, this.gEvents);
+							this.gEvents.events[i] = newEvent;
+							
+							//update list item
+							this.curItemInListStatus.setAttribute("label", "update local");
+							
+							return null;
 						}
 					}
 				}
 				else
 				{
 					var newdb = new Array();
-					newdb.push(acard.id);
+					newdb.push(foundEvent.id);
 					newdb.push(curSyncEntry);
 					if (lastSyncEntry != null)
 					{
@@ -230,22 +265,34 @@ var syncCalendar = {
 					}
 					this.db.push(newdb);
 	
-					var msg = genMailHeader(acard.id, "iCal", "text/calendar", false);
-					msg += encodeQuoted(encode_utf8(acard.getIcalString()));
-					msg += "\n\n";
+                    var msg = null;
+                    if (this.format == "Xml")
+                    {
+                        msg = event2kolabXmlMsg(foundEvent);
+                    } 
+                    else
+                    {
+    					msg = genMailHeader(foundEvent.id, "iCal", "text/calendar", false);
+                        msg += encodeQuoted(encode_utf8(foundEvent.getIcalString()));
+                        msg += "\n\n";
+					}
+
+						// update list item
+						this.curItemInListStatus.setAttribute("label", "update server");
+					
 					// remember this message for update
 					return msg;
 				}
 			}
 			else
 
-			// we got that already, see which is newer and update the message or the card
+			// we got that already, see which is newer and update the message or the event
 			if (lastSyncEntry == null || (lastSyncEntry == curSyncEntry && lastSyncEntry != newSyncEntry))
 			{
-			    consoleService.logStringMessage("server changed: " + acard.id);
+			    consoleService.logStringMessage("server changed: " + foundEvent.id);
 			    
 				var newdb = new Array();
-				newdb.push(newCard.id);
+				newdb.push(newEvent.id);
 				newdb.push(newSyncEntry);
 				if (lastSyncEntry != null)
 				{
@@ -253,24 +300,27 @@ var syncCalendar = {
 				}
 				this.db.push(newdb);
 
-				for (var i = 0; i < this.gEvents.length; i++)
+				for (var i = 0; i < this.gEvents.events.length; i++)
 				{
-					if (this.gEvents[i].id == newCard.id)
+					if (this.gEvents.events[i].id == newEvent.id)
 					{
-						 this.gEvents[i] = newCard;
-						 // save the cards
-						 saveIcal (this.gEvents, this.gTodo, this.gCalendar);
-						 return null;
+						// modify the item
+						this.gCalendar.modifyItem(newEvent, foundEvent, this.gEvents);
+						this.gEvents.events[i] = newEvent;
+
+						// update list item
+						this.curItemInListStatus.setAttribute("label", "update local");
+						 
+						return null;
 					}
 				}
-				
 			}
 			else
 			if (lastSyncEntry != curSyncEntry && lastSyncEntry == newSyncEntry)
 			{
-			    consoleService.logStringMessage("client changed: " + acard.id);
+			    consoleService.logStringMessage("client changed: " + foundEvent.id);
 				var newdb = new Array();
-				newdb.push(acard.id);
+				newdb.push(foundEvent.id);
 				newdb.push(curSyncEntry);
 				if (lastSyncEntry != null)
 				{
@@ -278,19 +328,33 @@ var syncCalendar = {
 				}
 				this.db.push(newdb);
 
-				var msg = genMailHeader(acard.id, "iCal", "text/calendar", false);
-				icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
-					.getService(Components.interfaces.calIICSService);
-				var calComp = icssrv.createIcalComponent("VCALENDAR");
-				calComp.version = "2.0";
-				calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
-				calComp.addSubcomponent(acard.icalComponent);
+                var msg = null;
+                if (this.format == "Xml")
+                {
+                    msg = event2kolabXmlMsg(foundEvent);
+                } 
+                else
+                {
+    				msg = genMailHeader(foundEvent.id, "iCal", "text/calendar", false);
+    				icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
+    					.getService(Components.interfaces.calIICSService);
+    				var calComp = icssrv.createIcalComponent("VCALENDAR");
+    				calComp.version = "2.0";
+    				calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
+    				calComp.addSubcomponent(foundEvent.icalComponent);
+    				
+    				msg += encodeQuoted(encode_utf8(calComp.serializeToICS()));
+    				msg += "\n\n";
+                }
 				
-				msg += encodeQuoted(encode_utf8(calComp.serializeToICS()));
-				msg += "\n\n";
+				// update list item
+				this.curItemInListStatus.setAttribute("label", "update server");
+				
 				// remember this message for update
 				return msg;
 			}
+
+			this.curItemInListStatus.setAttribute("label", "no change");
 		}
 		return null;
 	},
@@ -329,7 +393,7 @@ var syncCalendar = {
 			{
 				if (cur.id == this.folderMessageUids[i])
 				{
-					consoleService.logStringMessage("we got this card: " + cur.id);
+					consoleService.logStringMessage("we got this event: " + cur.id);
 					writeCur = false;
 					break;
 				}
@@ -346,6 +410,23 @@ var syncCalendar = {
 				{
 					writeCur = false;
 					this.db[cdb][0] = ""; // mark for delete
+					// TODO: deletion code to locally delete cur
+					
+					// create a new item in the itemList for display
+					this.curItemInList = document.createElement("listitem");
+					this.curItemInListId = document.createElement("listcell");
+					this.curItemInListStatus = document.createElement("listcell");
+					this.curItemInListContent = document.createElement("listcell");
+					this.curItemInListId.setAttribute("label", cur.id);
+					this.curItemInListStatus.setAttribute("label", "local delete");
+					this.curItemInListContent.setAttribute("label", cur.title);
+					
+			
+					this.curItemInList.appendChild(this.curItemInListId);
+					this.curItemInList.appendChild(this.curItemInListStatus);
+					this.curItemInList.appendChild(this.curItemInListContent);
+					
+					this.itemList.appendChild(this.curItemInList);
 				}
 				// ok its NOT in our internal db... add it
 				else
@@ -354,6 +435,23 @@ var syncCalendar = {
 					newdb.push(cur.id);
 					newdb.push(curSyncEntry);
 					this.db.push(newdb);
+					
+					
+					// create a new item in the itemList for display
+					this.curItemInList = document.createElement("listitem");
+					this.curItemInListId = document.createElement("listcell");
+					this.curItemInListStatus = document.createElement("listcell");
+					this.curItemInListContent = document.createElement("listcell");
+					this.curItemInListId.setAttribute("label", cur.id);
+					this.curItemInListStatus.setAttribute("label", "add to server");
+					this.curItemInListContent.setAttribute("label", cur.title);
+					
+			
+					this.curItemInList.appendChild(this.curItemInListId);
+					this.curItemInList.appendChild(this.curItemInListStatus);
+					this.curItemInList.appendChild(this.curItemInListContent);
+					
+					this.itemList.appendChild(this.curItemInList);
 				}
 			}
 
@@ -361,18 +459,26 @@ var syncCalendar = {
 			if (writeCur)
 			{
 				// and write the message
-				var msg = genMailHeader(cur.id, "iCal", "text/calendar", false);
-				icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
-					.getService(Components.interfaces.calIICSService);
-				var calComp = icssrv.createIcalComponent("VCALENDAR");
-				calComp.version = "2.0";
-				calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
-				calComp.addSubcomponent(cur.icalComponent);
-				
-				msg += encodeQuoted(encode_utf8(calComp.serializeToICS()));
-				msg += "\n\n";
-		    	consoleService.logStringMessage("New Card: " + msg);
-				// add the new card into the db
+                var msg = null;
+                if (this.format == "Xml")
+                {
+				    msg = event2kolabXmlMsg(cur);
+                } 
+                else
+                {
+				    msg = genMailHeader(cur.id, "iCal", "text/calendar", false);
+    				icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
+    					.getService(Components.interfaces.calIICSService);
+    				var calComp = icssrv.createIcalComponent("VCALENDAR");
+    				calComp.version = "2.0";
+    				calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
+    				calComp.addSubcomponent(cur.icalComponent);
+    				
+    				msg += encodeQuoted(encode_utf8(calComp.serializeToICS()));
+    				msg += "\n\n";
+				}
+		    	consoleService.logStringMessage("New event:\n" + msg);
+				// add the new event into the db
 				var curSyncEntry = genCalSha1 (cur);
 				var newdb = new Array();
 				newdb.push(cur.id);
@@ -395,7 +501,7 @@ var syncCalendar = {
 			{
 				if (cur.id == this.folderMessageUids[i])
 				{
-			    consoleService.logStringMessage("we got this card: " + cur.id);
+					consoleService.logStringMessage("we got this todo: " + cur.id);
 					writeCur = false;
 					break;
 				}
@@ -408,11 +514,11 @@ var syncCalendar = {
 				msg += encodeQuoted(encode_utf8(cur.getIcalString()));
 				msg += "\n\n";
 				
-		    consoleService.logStringMessage("New Card [" + msg + "]");
+		    consoleService.logStringMessage("New event [" + msg + "]");
 			}
 		}
 		
-		// return the cards content
+		// return the event's content
 		return msg;
 	},
 	
@@ -422,4 +528,3 @@ var syncCalendar = {
 		writeHashDataBase (this.dbFile, this.db);
 	}
 }
-

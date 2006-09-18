@@ -50,6 +50,12 @@ var syncAddressBook = {
 	
 	dbFile: '', // the current sync database file
 	db: '', // the current sync database 
+	
+	itemList: '', // display the currently processed item with status
+	curItemInList: '', // the current item in the list (for updating the status)
+	curItemInListId: '',
+	curItemInListStatus: '',
+	curItemInListContent: '',
 
 	init: function(config) {
 		var addressBookName;
@@ -101,17 +107,39 @@ var syncAddressBook = {
 	
 	/**
 	 * parses the given content, if an update is required the 
-	 * new message content is returned otehrwise null
+	 * new message content is returned otherwise null
 	 */	
 	parseMessage: function(fileContent) {
 		var cards = this.gAddressBook.childCards;
 		
-		var newCard = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);	
+		var newCard = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
+		
+		// create a new item in the itemList for display
+		this.curItemInList = document.createElement("listitem");
+		this.curItemInListId = document.createElement("listcell");
+		this.curItemInListStatus = document.createElement("listcell");
+		this.curItemInListContent = document.createElement("listcell");
+		this.curItemInListId.setAttribute("label", "unknown");
+		this.curItemInListStatus.setAttribute("label", "parsing");
+		this.curItemInListContent.setAttribute("label", "unknown");
+		
+
+		this.curItemInList.appendChild(this.curItemInListId);
+		this.curItemInList.appendChild(this.curItemInListStatus);
+		this.curItemInList.appendChild(this.curItemInListContent);
+		
+		this.itemList.appendChild(this.curItemInList);
+		
 		if (message2Card (fileContent, newCard, this.format))
 		{
 			// remember that we did this uid already
 			this.folderMessageUids.push(newCard.custom4);
 			consoleService.logStringMessage("got card from message: " + newCard.custom4);	
+
+			// update list item
+			this.curItemInListId.setAttribute("label", newCard.custom4);
+			this.curItemInListStatus.setAttribute("label", "checking");
+			this.curItemInListContent.setAttribute("label", newCard.firstName + " " + newCard.lastName + " <" + newCard.primaryEmail + ">");
 
 			// ok lets see if we have this one already (remember custom4=UID)
 			var acard = findCard (cards, newCard.custom4);
@@ -129,10 +157,16 @@ var syncAddressBook = {
 	
 					this.gAddressBook.addCard (newCard);
 					consoleService.logStringMessage("card is new, add to address book: " + newCard.custom4);	
+					
+					//update list item
+					this.curItemInListStatus.setAttribute("label", "add local");
 				}
 				else
 				{
 					consoleService.logStringMessage("card deleted locally: " + newCard.custom4);	
+
+					//update list item
+					this.curItemInListStatus.setAttribute("label", "delete on server");
 					return "DELETEME";
 				}				
 			}
@@ -164,11 +198,17 @@ var syncAddressBook = {
 						this.db[cdb][0] = ""; // mark for delete
 						
 						this.db.push(newdb);
+
+						//update list item
+						this.curItemInListStatus.setAttribute("label", "update local");
+						
 						return null; // no update on server
 					}
 					else
 					{
 						// update on server - leave local alone
+						// update list item
+						this.curItemInListStatus.setAttribute("label", "update server");
 						return card2Message(acard, this.format);
 					}
 				}
@@ -188,6 +228,9 @@ var syncAddressBook = {
 					if (lastSyncEntry != null)
 						this.db[cdb][0] = ""; // mark for delete
 					this.db.push(newdb);
+
+					// update list item
+					this.curItemInListStatus.setAttribute("label", "update local");
 					return null;
 				}
 				else
@@ -195,16 +238,28 @@ var syncAddressBook = {
 				{
 				    consoleService.logStringMessage("client changed: " + acard.custom4);
 
+					// update list item
+					this.curItemInListStatus.setAttribute("label", "update server");
+					
 					// remember this message for update
 					return card2Message(acard, this.format);
 				}
+				
+				this.curItemInListStatus.setAttribute("label", "no change");
+				
 			}
 		}
+		else
+				    consoleService.logStringMessage("unable to parse message, skipping");
 		return null;
 	},
+	
+	deleteList: "",
 
 	initUpdate: function () {
 		this.gCards = this.gAddressBook.childCards;
+		this.deleteList = Components.classes["@mozilla.org/supports-array;1"]
+							.createInstance(Components.interfaces.nsISupportsArray);		
 		try
 		{
 			this.gCards.first();
@@ -250,6 +305,23 @@ var syncAddressBook = {
 			newdb.push(cur.custom4);
 			newdb.push(curSyncEntry);
 			this.db.push(newdb);
+			
+			// create a new item in the itemList for display
+			this.curItemInList = document.createElement("listitem");
+			this.curItemInListId = document.createElement("listcell");
+			this.curItemInListStatus = document.createElement("listcell");
+			this.curItemInListContent = document.createElement("listcell");
+			this.curItemInListId.setAttribute("label", cur.custom4);
+			this.curItemInListStatus.setAttribute("label", "new add to server");
+			this.curItemInListContent.setAttribute("label", cur.firstName + " " + cur.lastName + " <" + cur.primaryEmail + ">");
+			
+	
+			this.curItemInList.appendChild(this.curItemInListId);
+			this.curItemInList.appendChild(this.curItemInListStatus);
+			this.curItemInList.appendChild(this.curItemInListContent);
+			
+			this.itemList.appendChild(this.curItemInList);
+			
 		}
 		else
 		{
@@ -276,6 +348,25 @@ var syncAddressBook = {
 				{
 					writeCur = false;
 					this.db[cdb][0] = ""; // mark for delete
+					this.deleteList.AppendElement(cur);
+
+					
+					// create a new item in the itemList for display
+					this.curItemInList = document.createElement("listitem");
+					this.curItemInListId = document.createElement("listcell");
+					this.curItemInListStatus = document.createElement("listcell");
+					this.curItemInListContent = document.createElement("listcell");
+					this.curItemInListId.setAttribute("label", cur.custom4);
+					this.curItemInListStatus.setAttribute("label", "local delete");
+					this.curItemInListContent.setAttribute("label", cur.firstName + " " + cur.lastName + " <" + cur.primaryEmail + ">");
+					
+			
+					this.curItemInList.appendChild(this.curItemInListId);
+					this.curItemInList.appendChild(this.curItemInListStatus);
+					this.curItemInList.appendChild(this.curItemInListContent);
+					
+					this.itemList.appendChild(this.curItemInList);
+
 				}
 				// ok its NOT in our internal db... add it
 				else
@@ -284,6 +375,22 @@ var syncAddressBook = {
 					newdb.push(cur.custom4);
 					newdb.push(curSyncEntry);
 					this.db.push(newdb);
+					// create a new item in the itemList for display
+					this.curItemInList = document.createElement("listitem");
+					this.curItemInListId = document.createElement("listcell");
+					this.curItemInListStatus = document.createElement("listcell");
+					this.curItemInListContent = document.createElement("listcell");
+					this.curItemInListId.setAttribute("label", cur.custom4);
+					this.curItemInListStatus.setAttribute("label", "add to server");
+					this.curItemInListContent.setAttribute("label", cur.firstName + " " + cur.lastName + " <" + cur.primaryEmail + ">");
+					
+			
+					this.curItemInList.appendChild(this.curItemInListId);
+					this.curItemInList.appendChild(this.curItemInListStatus);
+					this.curItemInList.appendChild(this.curItemInListContent);
+					
+					this.itemList.appendChild(this.curItemInList);
+					
 				}				
 			}
 		}
@@ -311,6 +418,7 @@ var syncAddressBook = {
 	
 	doneParsing: function ()
 	{
+		this.gAddressBook.deleteCards (this.deleteList);
 		writeHashDataBase (this.dbFile, this.db);
 	}
 }
