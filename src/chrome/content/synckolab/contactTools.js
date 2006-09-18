@@ -577,6 +577,7 @@ function message2Card (message, card, format)
  				
 			case "N":
 				// N:Lastname;Firstname;Other;Prexif;Suffix
+				var cur = tok[1].split(";"); 
 				card.lastName = cur[0];
 				card.firstName = cur[1];
 				found = true;
