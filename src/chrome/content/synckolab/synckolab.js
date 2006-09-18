@@ -350,6 +350,10 @@ var myStreamListener = {
 function parseMessageRunner ()
 {
    	consoleService.logStringMessage("parsing message...");
+	
+	// fix the message for line truncs (last char in line is =)
+	fileContent = fileContent.replace(/=\n/g, "");
+	
 	var content = gSync.parseMessage(fileContent, updateMessagesContent);
 	// just to make sure there REALLY isnt any content left :)
 	fileContent = "";

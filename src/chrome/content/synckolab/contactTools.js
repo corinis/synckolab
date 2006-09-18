@@ -705,15 +705,15 @@ function message2Card (message, card, format)
 				found = true;
 		  	break;
 		  case "CUSTOM1":
-		  	card.custom1 = = tok[1].replace (/\\n/g, "\n"); //Copart fix, carriage returns were stripped, add em back
+				card.custom1 = tok[1].replace (/\\n/g, "\n"); //Copart fix, carriage returns were stripped, add em back
 				found = true;
 		  	break;
 		  case "CUSTOM2":
-		  	card.custom2 = = tok[1].replace (/\\n/g, "\n"); //Copart fix, carriage returns were stripped, add em back
+				card.custom2 = tok[1].replace (/\\n/g, "\n"); //Copart fix, carriage returns were stripped, add em back
 				found = true;
 		  	break;
 		  case "CUSTOM3":
-		  	card.custom3 = = tok[1].replace (/\\n/g, "\n"); //Copart fix, carriage returns were stripped, add em back
+				card.custom3 = tok[1].replace (/\\n/g, "\n"); //Copart fix, carriage returns were stripped, add em back
 				found = true;
 		  	break;
 
