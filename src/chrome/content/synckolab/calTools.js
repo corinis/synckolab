@@ -31,27 +31,57 @@
 
 /* ----- general functions to access calendar and events ----- */
 
-/**
- * retrieve the calendar directory
- */
-function getCalendarDirectory ()
-{
-	var file = Components.classes["@mozilla.org/file/directory_service;1"].
-	   getService(Components.interfaces.nsIProperties).
-	   get("ProfD", Components.interfaces.nsIFile);
-	file.append("Calendar");
-	return file;
-}
+var activeCalendarManager;
 
+/**
+ * New and updated calendar functions (lightning 0.1)
+ */
+function getCalendarManager()
+{
+     if (!activeCalendarManager) {
+         activeCalendarManager = Components.classes["@mozilla.org/calendar/manager;1"].getService(Components.interfaces["calICalendarManager"]);
+//         activeCalendarManager.addObserver(ltnCalendarManagerObserver);
+     }
+ 
+     if (activeCalendarManager.getCalendars({}).length == 0) {
+         var homeCalendar = activeCalendarManager.createCalendar("storage", 
+                            makeURL("moz-profile-calendar://"));
+         activeCalendarManager.registerCalendar(homeCalendar);
+ 
+         var sbs = Components.classes["@mozilla.org/intl/stringbundle;1"]
+                             .getService(
+                              Components.interfaces.nsIStringBundleService);
+         var props = sbs.createBundle(
+                     "chrome://calendar/locale/calendar.properties");
+         homeCalendar.name = props.GetStringFromName("homeCalendarName");
+ 
+         var composite = getCompositeCalendar();
+         composite.addCalendar(homeCalendar);
+         // XXX this doesn't make it selected, but you do add to it
+     }
+ 
+     return activeCalendarManager;
+}
+ 
+/**
+ * Returns a list of calendars (calICalendar)
+ */
+function getCalendars()
+{
+     try {
+         return getCalendarManager().getCalendars({});
+     } catch (e) {
+         dump("Error getting calendars: " + e + "\n");
+         return [];
+	}
+}
 
 /**
  * @return true if the calendar exists
  */
 function isCalendarAvailable ()
 {
-	// the file should be missing and the function readDataFromFile
-	return getCalendarDirectory().exists();
-// FIXME && this.readDataFromFile;
+	return getCalendars() != [];
 }
 
 
@@ -60,11 +90,17 @@ function isCalendarAvailable ()
  */
 function findEvent(events, uid)
 {
-	for (var i =0; i < events.length; i++)
-		if (events[i].id == uid)
-			return events[i];
+	for (var i =0; i < events.events.length; i++)
+		if (events.events[i].id == uid)
+			return events.events[i];
 	return null;
 }
+
+
+/**
+ * OLD stuff
+ */
+
 
 
 /* ----- functions to handle the Kolab 2 XML event format ----- */
@@ -128,7 +164,7 @@ function xml2Event (xml, event)
 	while(cur != null)
 	{
 		
-		if (cur.nodeType == Node.ELEMENT_NODE)//1
+		if (cur.nodeType == Node.ELEMENT_NODE)
 		{
 			switch (cur.nodeName.toUpperCase())
 			{
@@ -209,7 +245,7 @@ function xml2Event (xml, event)
 					break;
 
 				case "RECURRENCE":
-consoleService.logStringMessage("Parsing this card: " + event.id);
+					consoleService.logStringMessage("Parsing this card: " + event.id);
 					event.recur = true;
 					// read the "cycle" attribute for the units and
 					// map the Kolab XML values to the Sunbird values
@@ -385,12 +421,13 @@ consoleService.logStringMessage("setting recurEnd to " + rangeSpec);
 function genCalSha1 (event)
 {
 	return hex_sha1(event.allDay + ":" +
-	event.start.getTime() + ":" +
-	event.end.getTime() + ":" +
+	event.id + ":" +
+	event.startDate.toString() + ":" +
+	event.endDate.toString() + ":" +
 	event.title + ":" +
-	event.description + ":" +
-	event.location + ":" +
-	event.categories + ":" +
+	event.getProperty("description") + ":" +
+	event.getProperty("location") + ":" +
+	event.getProperty("categories") + ":" /*+
 	event.alarm + ":" +
 	event.alarmLength + ":" +
 	event.privateEvent + ":" +
@@ -399,7 +436,7 @@ function genCalSha1 (event)
 	event.recurCount + ":" +
 	event.recurEnd.getTime() + ":" +
 	event.recurCount + ":" +
-	event.recurForever);
+	event.recurForever*/);
 }
 
 

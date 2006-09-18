@@ -41,17 +41,19 @@
  */
 
 var syncCalendar = {
-	folderPath: '', // String - the path for the contacts
+	folderPath: '', // String - the path for the entries
 	serverKey: '', // the incoming server
 	gSaveImap: true, // write back to folder
 
-	gEvents: '',
+//	gEvents: '', - now a listener
 	gToDo: '',
 	gCurTodo: 0,
 	gCurEvent: 0,
 	folder: '', // the contact folder type nsIMsgFolder
 	folderMsgURI: '', // the message uri
-	gCalFile: '',
+	gCalendarName: '', // the calendar name
+	gCalendar: '', // the calendar
+	gCalendarEvents: '', // all events from the calendar
 	format: 'iCal', // the format iCal/Xml	
 	folderMessageUids: '',
 	
@@ -68,7 +70,7 @@ var syncCalendar = {
 	    var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 			this.folderPath = pref.getCharPref("SyncKolab."+config+".CalendarFolderPath");
 			this.serverKey = pref.getCharPref("SyncKolab."+config+".CalendarIncomingServer");
-			this.gCalFile = pref.getCharPref("SyncKolab."+config+".Calendar");
+			this.gCalendarName = pref.getCharPref("SyncKolab."+config+".Calendar");
 			this.format = pref.getCharPref("SyncKolab."+config+".CalendarFormat");			
 			this.gSaveImap = pref.getBoolPref("SyncKolab."+config+".saveToCalendarImap");
 			// since Imap savine does not work with xml - disable this
@@ -77,16 +79,51 @@ var syncCalendar = {
 		} catch(e) {
 			return;
 		}
-		var aDataStream = readDataFromFile( this.gCalFile, "UTF-8" );
+
+		// get the correct calendar instance
+		var calendars = getCalendars();
+		for( var i = 0; i < calendars.length; i++ )
+	    {
+	    	if (calendars[i].name == this.gCalendarName)
+	    	{
+	    		this.gCalendar = calendars[i];
+	    		break;
+	    	}
+		}		
 		
-		this.gEvents = parseIcalEvents( aDataStream );
-    	this.gToDo = parseIcalToDos( aDataStream );		 
+		
     	this.folderMessageUids = new Array(); // the checked uids - for better sync
     	
     	// get the sync db
 		this.dbFile = getHashDataBaseFile (config + ".cal");
 		this.db = readHashDataBase (this.dbFile);
 	},
+	
+	init2: function (nextFunc, sync)	{
+		// get ALL the items from calendar - when done call nextfunc
+		this.gEvents.nextFunc = nextFunc;
+		this.gEvents.sync = sync;
+		this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_EVENT, 0, null, null, this.gEvents);
+	},
+	
+	gEvents: {
+		nextFunc: '',
+		events: new Array(),
+		sync: '',
+		onOperationComplete: function(aCalendar, aStatus, aOperator, aId, aDetail) {		
+			    consoleService.logStringMessage("operation: status="+aStatus + " Op=" + aOperator + " Detail=" + aDetail);
+			},
+		onGetResult: function(aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {
+  		    consoleService.logStringMessage("got results: " + aCount + " items");
+		     for (var i = 0; i < aCount; i++) {
+               this.events.push(aItems[i]);
+             this.nextFunc(this.sync);
+           }
+		}
+	},
+	
+	
+	
 
 	/**
 	 * parses the given content, if an update is required the 
@@ -103,17 +140,31 @@ var syncCalendar = {
 		}
 		else
 		{
-			newCard = parseIcalEvents(fileContent)[0].QueryInterface(Components.interfaces.oeIICalEvent);
+			var icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
+						.getService(Components.interfaces.calIICSService);
+			var rootComp = icssrv.parseICS(fileContent);
+  
+      		if (rootComp.componentType == 'VCALENDAR') {
+				newCard = rootComp;
+			} else {
+				newCard = rootComp.getFirstSubcomponent('VCALENDAR');
+			}
+			var subComp = newCard.getFirstSubcomponent("ANY");
+			newCard = Components.classes["@mozilla.org/calendar/event;1"]
+                                   .createInstance(Components.interfaces.calIEvent);
+            newCard.icalComponent = subComp;
+		    consoleService.logStringMessage("parsed card: " + newCard + ":" + newCard.id);
 		}
 		
 		// remember that we did this uid already
 		this.folderMessageUids.push(newCard.id);
-		// ok lets see if we have this one already (remember custom4=UID)
+		// ok lets see if we have this one already 
 		var acard = findEvent (this.gEvents, newCard.id);
 	
 		// a new card				
 		if (acard == null)
 		{
+		    consoleService.logStringMessage("a new card:" + newCard.id);
 			var cEntry = getDbEntry (newCard.id, this.db);
 			if (cEntry == -1)
 			{
@@ -131,8 +182,8 @@ var syncCalendar = {
 			}
 
 			// add the new card
-			this.gEvents.push(newCard);
- 		  	saveIcal (this.gEvents, this.gTodo, this.gCalFile);
+		    consoleService.logStringMessage("adding card:" + newCard.id);
+			this.gCalendar.addItem(newCard, this.gEvents);
 		}
 		else
 		{
@@ -155,13 +206,15 @@ var syncCalendar = {
 					}
 					this.db.push(newdb);
 	
-					for (var i = 0; i < this.gEvents.length; i++)
+					for (var i = 0; i < this.gEvents.events.length; i++)
 					{
-						if (this.gEvents[i].id == newCard.id)
+						if (this.gEvents.events[i].id == newCard.id)
 						{
+							 // modify the item
+							 this.gCalendar.addItem(newCard, this.gEvents.events[i], this.gEvents);
+
 							 this.gEvents[i] = newCard;
-							 // save the cards
-							 saveIcal (this.gEvents, this.gTodo, this.gCalFile);
+							 
 							 return null;
 						}
 					}
@@ -206,7 +259,7 @@ var syncCalendar = {
 					{
 						 this.gEvents[i] = newCard;
 						 // save the cards
-						 saveIcal (this.gEvents, this.gTodo, this.gCalFile);
+						 saveIcal (this.gEvents, this.gTodo, this.gCalendar);
 						 return null;
 					}
 				}
@@ -226,7 +279,14 @@ var syncCalendar = {
 				this.db.push(newdb);
 
 				var msg = genMailHeader(acard.id, "iCal", "text/calendar", false);
-				msg += encodeQuoted(encode_utf8(acard.getIcalString()));
+				icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
+					.getService(Components.interfaces.calIICSService);
+				var calComp = icssrv.createIcalComponent("VCALENDAR");
+				calComp.version = "2.0";
+				calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
+				calComp.addSubcomponent(acard.icalComponent);
+				
+				msg += encodeQuoted(encode_utf8(calComp.serializeToICS()));
 				msg += "\n\n";
 				// remember this message for update
 				return msg;
@@ -246,16 +306,19 @@ var syncCalendar = {
 	 * read the next todo/event and return the content if update needed
 	 */
 	nextUpdate: function () {
+		consoleService.logStringMessage("next update...");
 		// if there happens an exception, we are done
-		if ((this.gEvents == null || this.gCurEvent >= this.gEvents.length) && (this.gTodo == null || this.gCurTodo >= this.gTodo.length))
+		if ((this.gEvents == null || this.gCurEvent >= this.gEvents.events.length) && (this.gTodo == null || this.gCurTodo >= this.gTodo.length))
 		{
+			consoleService.logStringMessage("done update...");
 			// we are done
 			return "done";
 		}
+		consoleService.logStringMessage("get event");
 		
-		if (this.gEvents != null && this.gCurEvent <= this.gEvents.length )
+		if (this.gEvents != null && this.gCurEvent <= this.gEvents.events.length )
 		{
-			var cur = this.gEvents[this.gCurEvent++];
+			var cur = this.gEvents.events[this.gCurEvent++];
 			var msg = null;
 			var writeCur = false;
 		    
@@ -299,9 +362,16 @@ var syncCalendar = {
 			{
 				// and write the message
 				var msg = genMailHeader(cur.id, "iCal", "text/calendar", false);
-				msg += encodeQuoted(encode_utf8(cur.getIcalString()));
+				icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
+					.getService(Components.interfaces.calIICSService);
+				var calComp = icssrv.createIcalComponent("VCALENDAR");
+				calComp.version = "2.0";
+				calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
+				calComp.addSubcomponent(cur.icalComponent);
+				
+				msg += encodeQuoted(encode_utf8(calComp.serializeToICS()));
 				msg += "\n\n";
-		    	consoleService.logStringMessage("New Card");
+		    	consoleService.logStringMessage("New Card: " + msg);
 				// add the new card into the db
 				var curSyncEntry = genCalSha1 (cur);
 				var newdb = new Array();
@@ -312,11 +382,11 @@ var syncCalendar = {
 			}
 		}	
 		else
-		if (gTodo != null && this.gCurTodo <= this.gTodo.length)
+		if (this.gTodo != null && this.gCurTodo <= this.gTodo.length)
 		{
 			var cur = this.gTodo[this.gCurTodo++];
 			var msg = null;
-	    var writeCur = false;
+	    	var writeCur = false;
 		    
 			writeCur = true;
 			// check if we have this uid in the messages

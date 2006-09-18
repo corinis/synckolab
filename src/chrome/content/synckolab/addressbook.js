@@ -238,7 +238,7 @@ var syncAddressBook = {
 	    
 		if (cur.custom4.length < 2)
 		{
-			// look a new card
+			// look at new card
 			// generate a unique id (will random be enough for the future?)
 			cur.custom4 = "pas-id-" + get_randomVcardId();
 	    	consoleService.logStringMessage("adding unsaved card: " + cur.custom4);

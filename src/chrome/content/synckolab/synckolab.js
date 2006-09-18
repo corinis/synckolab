@@ -194,10 +194,12 @@ function nextSync()
 		syncCalendar.folder = getMsgFolder(syncCalendar.serverKey, syncCalendar.folderPath);
 		
 		syncCalendar.folderMsgURI = syncCalendar.folder.baseMessageURI;
-		consoleService.logStringMessage("Calendar: got folder: " + syncCalendar.folder.URI + 
+		consoleService.logStringMessage("Calendar: got calendar: " + syncCalendar.gCalendar.name + 
 			"\nMessage Folder: " + syncCalendar.folderMsgURI);
 		curCalConfig++;
-		window.setTimeout(getContent, 100, syncCalendar);	
+		// dont use setTimeout, init2 in calendar does that for us as soon as all data is loaded
+		syncCalendar.init2(getContent, syncCalendar);
+		//window.setTimeout(getContent, 100, syncCalendar);	
 	}
 	else //done
 	{
@@ -241,7 +243,7 @@ function getContent (sync)
 	
 	// check if folder REALLY exists
 	sync.folder.clearNewMessages ();
-	sync.folder.downloadAllForOffline (myUrlListener, msgWindow);
+	//sync.folder.downloadAllForOffline (myUrlListener, msgWindow);
 
 	// get the number of messages to go through
 	totalMessages = sync.folder.getTotalMessages(false);
@@ -254,7 +256,7 @@ function getContent (sync)
 	updateMessagesContent = new Array(); // saves the card to use to update
 	
 	
-	statusMsg.value = "Syncing addresses...";
+	statusMsg.value = "Synchronizing entries...";
 	meter.setAttribute("value", "5%");
 	window.setTimeout(getMessage, 100);	
 	// the unique id is in second token in the mail subject (f.e. pas-id-3EF6F3700000002E) and
@@ -464,7 +466,7 @@ function updateContentAfterSave ()
 function writeContent ()
 {
 	// if there happens an exception, we are done
-	content = gSync.nextUpdate();		
+	content = gSync.nextUpdate();
 	if (content == "done")
 	{
 			writeContentAfterSave ();

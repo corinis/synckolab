@@ -38,7 +38,10 @@ var isCalendar;
 var selectedCalConfig;
 var selectedConConfig;
 
+var consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService);
+
 function init() {
+
 	isCalendar = isCalendarAvailable ();
 	selectedCalConfig = null;
 	selectedConConfig = null;
@@ -236,9 +239,15 @@ function init() {
 		}
 	}	
 	
+	
+	
 	// if we do not have a calendar, we can easily skip this
-	if (isCalendar)
+	if (!isCalendar)
+			consoleService.logStringMessage("Calendar not available - disabling");
+	else
 	{
+		var calendars = getCalendars();
+
 		var abList = document.getElementById("calURL");
 		var abpopup = document.createElement("menupopup");
 	
@@ -251,31 +260,21 @@ function init() {
 		catch (ex) {}
 		
 		// get the calendar manager to find the right files
-		var calFile = getCalendarDirectory ()
-	  calFile.append("CalendarManager.rdf");
-		var rdf = new RDFFile( calFile.path, null);
-		var rootContainer = rdf.getRootContainers("seq")[0];
-		rdf.flush();
-		for( var i = 0; i < rootContainer.getSubNodes().length; i++ )
-    {
-    	var cur = rootContainer.getSubNodes()[i];
-    	// only non-remote calendars - hey we are already doin remote sync :)
-      if( cur.getAttribute( "http://home.netscape.com/NC-rdf#active" ) == "true" &&
-      	cur.getAttribute( "http://home.netscape.com/NC-rdf#remote" ) == "false")
-      {
-					var abchild = document.createElement("menuitem");
-					abpopup.appendChild(abchild);
-					abchild.setAttribute("label", cur.getAttribute( "http://home.netscape.com/NC-rdf#name" ));
-					abchild.setAttribute("value", cur.getAttribute( "http://home.netscape.com/NC-rdf#path" ));
-					if (cur.getAttribute( "http://home.netscape.com/NC-rdf#path" ) == ab)
-					{
-						abchild.setAttribute("selected", "true");
-						abList.setAttribute("label", cur.getAttribute( "http://home.netscape.com/NC-rdf#name" ));
-						abList.setAttribute("value", cur.getAttribute( "http://home.netscape.com/NC-rdf#path" ));
-						
-					}
-      }                
-    }
+		for( var i = 0; i < calendars.length; i++ )
+	    {
+    		// only non-remote calendars - hey we are already doin remote sync :)
+			var abchild = document.createElement("menuitem");
+			abpopup.appendChild(abchild);
+			abchild.setAttribute("label", calendars[i].name);
+			abchild.setAttribute("value", calendars[i].name);
+			if (calendars[i].name == ab)
+			{
+				abchild.setAttribute("selected", "true");
+				abList.setAttribute("label", calendars[i].name);
+				abList.setAttribute("value", calendars[i].name);
+				
+			}
+    	}
 
 		
 		// fill the format

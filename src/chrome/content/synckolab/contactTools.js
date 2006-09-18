@@ -80,8 +80,8 @@ function xml2Card (xml, card)
 						}
 						catch (ex)
 						{
-						    consoleService.logStringMessage("unable to convert to date: " + s);
-						    alert(("unable to convert to date: " + s + "\nPlease copy the date string in a bug report an submit!\n(Also available in the information)"));
+							consoleService.logStringMessage("unable to convert to date: " + s);
+							alert(("unable to convert to date: " + s + "\nPlease copy the date string in a bug report an submit!\n(Also available in the information)"));
 						}
 						*/
 						break;						
@@ -561,36 +561,40 @@ function message2Card (message, card, format)
 		switch (tok[0].toUpperCase())
 		{
 			case "DATE":
-					// now we gotta check times... convert the message first
-					// save the date in microseconds
-					// Date: Fri, 17 Dec 2004 15:06:42 +0100
-					try
-					{
-						card.lastModifiedDate = (new Date(Date.parse(lines[i].substring(lines[i].indexOf(":")+1, lines[i].length)))).getTime() / 1000;
-					}
-					catch (ex)
-					{
-					    consoleService.logStringMessage("unable to convert to date: " + lines[i]);
-					    alert(("unable to convert to date: " + lines[i] + "\nPlease copy the date string in a bug report an submit!\n(Also available in the information)"));
-					}
-					break;						
-			case "NICKNAME":
-					card.nickName = tok[1];
-					found = true;
-					break;
-			case "FN":
-					card.displayName = tok[1];
-					found = true;
-					break;
-			// N:firstName;LastName;Nickname
+				// now we gotta check times... convert the message first
+				// save the date in microseconds
+				// Date: Fri, 17 Dec 2004 15:06:42 +0100
+				try
+				{
+					card.lastModifiedDate = (new Date(Date.parse(lines[i].substring(lines[i].indexOf(":")+1, lines[i].length)))).getTime() / 1000;
+				}
+				catch (ex)
+				{
+					consoleService.logStringMessage("unable to convert to date: " + lines[i]);
+					alert(("unable to convert to date: " + lines[i] + "\nPlease copy the date string in a bug report an submit!\n(Also available in the information)"));
+				}
+				break;						
+ 				
 			case "N":
-				var cur = tok[1].split(";");
-				card.firstName = cur[0];
-				card.lastName = cur[1];
-					found = true;
-			break;
+				// N:Lastname;Firstname;Other;Prexif;Suffix
+				card.lastName = cur[0];
+				card.firstName = cur[1];
+				found = true;
+				break;
+			case "FN":
+				card.displayName = tok[1];
+				found = true;
+				break;
+			case "NICKNAME":
+				card.nickName = tok[1];
+				found = true;
+				break;
 			case "TITLE":
 				card.jobTitle = tok[1];
+				found = true;
+				break;
+			case "ORG":
+				card.company = tok[1];
 				found = true;
 				break;
 			case "EMAIL;TYPE=PREF":
@@ -603,68 +607,55 @@ function message2Card (message, card, format)
 				card.primaryEmail = tok[1];
 				found = true;
 		    break;
-		  case "FN":
-		  	card.displayName = tok[1];
+			case "TEL;TYPE=CELL;TYPE=VOICE":
+			case "TEL;TYPE=VOICE;TYPE=CELL":
+			case "TEL;TYPE=CELL":
+				card.cellularNumber = tok[1];
 				found = true;
-		  	break;
-		  case "TITLE":
-		  	card.jobTitle = tok[1];
+				break;
+			case "TEL;TYPE=VOICE;TYPE=HOME":
+			case "TEL;TYPE=HOME;TYPE=VOICE":
+			case "TEL;TYPE=VOICE":
+			case "TEL;TYPE=HOME":
+				card.homePhone = tok[1];
 				found = true;
-		  	break;
-		  case "ORG":
-		  	card.company = tok[1];
+				break;
+			case "TEL;TYPE=WORK;TYPE=VOICE":
+			case "TEL;TYPE=VOICE;TYPE=WORK":
+			case "TEL;TYPE=WORK":
+				card.workPhone = tok[1];
 				found = true;
-		  	break;
-			// these two are the same
-		  case "TEL;TYPE=CELL":
-		  case "TEL;TYPE=CELL;TYPE=VOICE":
-		  case "TEL;TYPE=VOICE;TYPE=CELL":
-		  	card.cellularNumber = tok[1];
+				break;
+			case "TEL;TYPE=FAX":
+				card.faxNumber = tok[1];	
+ 				found = true;
+				break;
+			case "TEL;TYPE=PAGER":
+				card.pagerNumber = tok[1];
 				found = true;
-		  	break;
-		  	
-		  case "TEL;TYPE=VOICE;TYPE=HOME":
-		  case "TEL;TYPE=HOME;TYPE=VOICE":
-		  case "TEL;TYPE=VOICE":
-		  case "TEL;TYPE=HOME":
-		  	card.homePhone = tok[1];
-				found = true;
-		  	break;
-		  case "TEL;TYPE=FAX":
-		  	card.faxNumber = tok[1];
-				found = true;
-		  	break;
-		  case "TEL;TYPE=WORK":
-		  case "TEL;TYPE=WORK;TYPE=VOICE":
-		  case "TEL;TYPE=VOICE;TYPE=WORK":
-		  	card.workPhone = tok[1];
-				found = true;
-		  	break;
-		  case "TEL;TYPE=PAGE":
-			  	card.pagerNumber = tok[1];
-				found = true;
-		  	break;
-		  case "BDAY":
+				break;
+			case "BDAY":
+				// BDAY:1987-09-27T08:30:00-06:00
 				var cur = tok[1].split("-");
 				card.birthYear = cur[0];
 				card.birthMonth = cur[1];
-				// BDAY:1987-09-27T08:30:00-06:00
-			  	card.birthDay = (cur[2].indexOf("T") != -1)?cur[2].substring(0,cur[2].indexOf("T")):cur[2];
+				card.birthDay = (cur[2].indexOf("T") != -1)?cur[2].substring(0,cur[2].indexOf("T")):cur[2];
 				found = true;
 		  	break;
-		  	// anniversary - not in vcard rfc??
-		  case "ANNIVERSARY":
-				var cur = tok[1].split("-");
+			case "ANNIVERSARY":
+				// This is not a standard vCard entry.
+ 				var cur = tok[1].split("-");
 
 				card.anniversaryYear = cur[0];
 				card.anniversaryMonth = cur[1];
 				// BDAY:1987-09-27T08:30:00-06:00
-			  	card.anniversaryDay = (cur[2].indexOf("T") != -1)?cur[2].substring(0,cur[2].indexOf("T")):cur[2];
+				card.anniversaryDay = (cur[2].indexOf("T") != -1)?cur[2].substring(0,cur[2].indexOf("T")):cur[2];
 				found = true;
 		  	break;
 		  	
-		  case "ADDR;TYPE=HOME,POSTAL":
-		  case "ADDR;TYPE=HOME":
+		  case "ADR;TYPE=HOME,POSTAL":
+		  case "ADR;TYPE=HOME":
+				// ADR:POBox;Ext. Address;Address;City;State;Zip Code;Country
 				var cur = tok[1].split(";");
 				card.homeAddress2 = cur[1];
 				card.homeAddress = cur[2];
@@ -674,8 +665,8 @@ function message2Card (message, card, format)
 				card.homeCountry = cur[6];
 				found = true;
 		  	break;
-		  case "ADDR;TYPE=WORK,POSTAL":
-		  case "ADDR;TYPE=WORK":
+		  case "ADR;TYPE=WORK,POSTAL":
+		  case "ADR;TYPE=WORK":
 				var cur = tok[1].split(";");
 				card.workAddress2 = cur[1];
 				card.workAddress = cur[2];
@@ -752,65 +743,106 @@ function card2Message (card, format)
 
 	
 	var msg = "BEGIN:VCARD\n";
-	// N:firstName;LastName;Nickname
-	if (checkExist (card.firstName) || checkExist (card.lastName))
-		msg += "N:"+card.firstName+";"+card.lastName+";\n";
-	if (checkExist (card.displayName))
-		msg += "FN:"+card.displayName+"\n";
-	if (checkExist (card.nickName))
-		msg += "NICKNAME:"+card.nickName+"\n";
-	if (checkExist (card.jobTitle))
-		msg += "TITLE:"+card.jobTitle + "\n";
-	if (checkExist (card.primaryEmail))
-		msg += "EMAIL:"+card.primaryEmail + "\n";
-	if (checkExist (card.defaultEmail))
-		msg += "EMAIL;TYPE=INTERNET,PREF:" + card.defaultEmail +"\n";
-	if (checkExist (card.displayName))
-		msg += "FN:"+card.displayName + "\n";
+	// N:Lastname;Firstname;Other;Prefix;Suffix
+ 	if (checkExist (card.firstName) || checkExist (card.lastName))
+		msg += "N:" + card.lastName + ";" + card.firstName + ";;;\n"
+ 	if (checkExist (card.displayName))
+		msg += "FN:" + card.displayName + "\n";
+ 	if (checkExist (card.nickName))
+		msg += "NICKNAME:" + card.nickName + "\n";
+ 	if (checkExist (card.jobTitle))
+		msg += "TITLE:" + card.jobTitle + "\n";
 	if (checkExist (card.company))
-		msg += "ORG:"+card.company + "\n";
-	if (checkExist (card.cellularNumber))
-		msg += "TEL;TYPE=CELL:"+card.cellularNumber + "\n";
-	if (checkExist (card.homePhone))
-		msg += "TEL;TYPE=VOICE:"+card.homePhone + "\n";
-	if (checkExist (card.faxNumber))
-		msg += "TEL;TYPE=FAX:"+card.faxNumber + "\n";
-	if (checkExist (card.workPhone))
-		msg += "TEL;TYPE=WORK:"+card.workPhone + "\n";
-	if (checkExist (card.pagerNumber))
-		msg += "TEL;TYPE=PAGE:"+card.pagerNumber + "\n";
-	if (checkExist (card.department))
-		msg += "DEPT:"+card.department + "\n";
-				// BDAY:1987-09-27T08:30:00-06:00
-	if (checkExist(card.birthYear) ||checkExist(card.birthDay) ||checkExist(card.birthMonth))
-		msg += "BDAY:" + card.birthYear + "-" + card.birthMonth + "-" + card.birthDay + "\n";
-	if (checkExist(card.anniversaryYear) ||checkExist(card.anniversaryDay) ||checkExist(card.anniversaryMonth))
-		msg += "ANNIVERSARY:" + card.anniversaryYear + "-" + card.anniversaryMonth + "-" + card.anniversaryDay + "\n";
-	if (checkExist (card.webPage1))
-		msg += "URL:"+card.webPage1 + "\n";
-	if (checkExist (card.webPage2))
-		msg += "URL;TYPE=PERSONAL:"+card.webPage2 + "\n";
-	if (checkExist (card.workAddress) || checkExist (card.workCountry) || checkExist (card.workCity) || checkExist (card.workState))
+		msg += "ORG:" + card.company + "\n";
+ 	if (checkExist (card.primaryEmail))
+		msg += "EMAIL:" + card.primaryEmail + "\n";
+ 	if (checkExist (card.defaultEmail))
+		msg += "EMAIL;TYPE=INTERNET,PREF:" + card.defaultEmail  + "\n";
+ 	if (checkExist (card.cellularNumber))
+		msg += "TEL;TYPE=CELL:" + card.cellularNumber + "\n";
+ 	if (checkExist (card.homePhone))
+		msg += "TEL;TYPE=HOME:" + card.homePhone + "\n";
+ 	if (checkExist (card.faxNumber))
+		msg += "TEL;TYPE=FAX:" + card.faxNumber + "\n";
+ 	if (checkExist (card.workPhone))
+		msg += "TEL;TYPE=WORK:" + card.workPhone + "\n";
+ 	if (checkExist (card.pagerNumber))
+		msg += "TEL;TYPE=PAGE:" + card.pagerNumber + "\n";
+ 	if (checkExist (card.department))
+		msg += "DEPT:" + card.department + "\n";
+	// BDAY:1987-09-27T08:30:00-06:00
+	if (checkExist(card.birthYear) 
+		||checkExist(card.birthDay) 
+		|| checkExist(card.birthMonth))
 	{
-		msg += "ADDR;TYPE=WORK:;"+card.workAddress2 + ";" + card.workAddress + ";" +
-			card.workCity + ";" + card.workState + ";" + card.workZipCode + ";" + card.workCountry + "\n";
+		msg += "BDAY:";
+		msg += card.birthYear + "-";
+		if (card.birthMonth < 10)
+			msg += "0";
+		msg += card.birthMonth + "-";
+		if (card.birthDay < 10)
+			msg += "0";
+		msg += card.birthDay + "\n";
 	}
-	if (checkExist (card.homeAddress) || checkExist (card.homeCountry) || checkExist (card.homeCity) || checkExist (card.homeState))
+	if (checkExist(card.anniversaryYear) 
+		||checkExist(card.anniversaryDay) 
+		||checkExist(card.anniversaryMonth))
 	{
-		msg += "ADDR;TYPE=home:;"+card.homeAddress2 + ";" + card.homeAddress + ";" +
-			card.homeCity + ";" + card.homeState + ";" + card.homeZipCode + ";" + card.homeCountry + "\n";
+		msg += "ANNIVERSARY:" 
+		msg += card.anniversaryYear + "-";
+		if (card.anniversaryMonth < 10)
+			msg += "0";
+		msg += card.anniversaryMonth + "-";
+		if (card.anniversaryDay < 10)
+			msg += "0";
+		msg += card.anniversaryDay + "\n";
 	}
-	if (checkExist (card.custom1))
-		msg += "CUSTOM1:"+card.custom1.replace (/\n/g, "\\n") + "\n";
-	if (checkExist (card.custom2))
-		msg += "CUSTOM2:"+card.custom2.replace (/\n/g, "\\n") + "\n";
-	if (checkExist (card.custom3))
-		msg += "CUSTOM3:"+card.custom3.replace (/\n/g, "\\n") + "\n";
-	// yeap one than more line (or something like that :P)
-	if (checkExist (card.notes))
-		msg += "NOTE:"+card.notes.replace (/\n/g, "\\n") + "\n";
-	msg += "UID:"+card.custom4 + "\n";	
-	msg += "VERSION:3.0\n";
-	msg += "END:VCARD\n\n";
+ 	if (checkExist (card.webPage1))
+		msg += "URL:" + card.webPage1 + "\n";
+ 	if (checkExist (card.webPage2))
+		msg += "URL;TYPE=PERSONAL:" + card.webPage2 + "\n";
+	// ADR:POBox;Ext. Address;Address;City;State;Zip Code;Country
+	if (checkExist (card.workAddress2) 
+		|| checkExist (card.workAddress) 
+		|| checkExist (card.workCountry) 
+		|| checkExist (card.workCity) 
+		|| checkExist (card.workState))
+	{
+		msg += "ADR;TYPE=WORK:;";
+		msg += card.workAddress2 + ";";
+		msg += card.workAddress + ";";
+		msg += card.workCity + ";";
+		msg += card.workState + ";";
+		msg += card.workZipCode + ";";
+		msg += card.workCountry + "\n";
+	}
+	// ADR:POBox;Ext. Address;Address;City;State;Zip Code;Country
+	if (checkExist (card.homeAddress2) 
+		|| checkExist (card.homeAddress) 
+		|| checkExist (card.homeCountry) 
+		|| checkExist (card.homeCity) 
+		|| checkExist (card.homeState))
+	{
+		msg += "ADR;TYPE=HOME:;";
+		msg += card.homeAddress2 + ";";
+		msg += card.homeAddress + ";";
+		msg += card.homeCity + ";";
+		msg += card.homeState + ";";
+		msg += card.homeZipCode + ";";
+		msg += card.homeCountry + "\n";
+ 	}
+ 	if (checkExist (card.custom1))
+		msg += "CUSTOM1:" + card.custom1.replace (/\n/g, "\\n") + "\n";
+ 	if (checkExist (card.custom2))
+		msg += "CUSTOM2:" + card.custom2.replace (/\n/g, "\\n") + "\n";
+ 	if (checkExist (card.custom3))
+		msg += "CUSTOM3:" + card.custom3.replace (/\n/g, "\\n") + "\n";
+ 	// yeap one than more line (or something like that :P)
+ 	if (checkExist (card.notes))
+		msg += "NOTE:" + card.notes.replace (/\n/g, "\\n") + "\n";
+	msg += "UID:" + card.custom4 + "\n";	
+ 	msg += "VERSION:3.0\n";
+ 	msg += "END:VCARD\n\n";
+
 	return genMailHeader(card.custom4, "vCard", "text/x-vcard", false) + encodeQuoted(encode_utf8(msg));
 }
