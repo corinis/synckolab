@@ -169,9 +169,9 @@ var syncCalendar = {
 				.createInstance(Components.interfaces.calIEvent);
 			if (xml2Event(fileContent, newEvent) == false)
 			{
-				return null;
 				// update list item
 				this.curItemInListId.setAttribute("label", "unparseable");
+				return null;
 			}
 		}
 		else
@@ -410,7 +410,7 @@ var syncCalendar = {
 				{
 					writeCur = false;
 					this.db[cdb][0] = ""; // mark for delete
-					// TODO: deletion code to locally delete cur
+					this.gCalendar.deleteItem(cur, this.gEvents);
 					
 					// create a new item in the itemList for display
 					this.curItemInList = document.createElement("listitem");

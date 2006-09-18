@@ -106,7 +106,7 @@ function genCalSha1 (event)
     // Use the Kolab 2 XML representation as base for the hash.
     // This may slow down the process, but it should be possible
     // to switch back to something faster if needed.
-    var aString = event2xml(event);
+    var aString = cnv_event2xml( event, true);
     hashValue = hex_sha1(aString);
     return hashValue;
 
@@ -228,8 +228,6 @@ consoleService.logStringMessage("Parsing an XML event:\n" + xml);
 	// TODO improve recurrence settings
 	//      not working ATM:
 	//          - yearly recurrence
-	//          - exclusions for recurrence
-	// TODO find a solution for Kolab fields not supported in Sunbird
 	
 	// FIXME clean up - ToDos have a folder on their own in Kolab, 
 	// so we don't need to support them in this function
@@ -333,9 +331,8 @@ consoleService.logStringMessage("Parsing an XML event:\n" + xml);
 					break;
 					
 				case "CREATOR":
-					var name = getXmlResult(cur, "DISPLAY-NAME", "") 
-						+ "<"+ getXmlResult(cur, "SMTP-ADDRESS", "") +">";
-					// FIXME - currently unsupported in Mozilla calendar
+			  		event.setProperty("X-KOLAB-CREATOR-DISPLAY-NAME", getXmlResult(cur, "DISPLAY-NAME", ""));
+			  		event.setProperty("X-KOLAB-CREATOR-SMTP-ADDRESS", getXmlResult(cur, "SMTP-ADDRESS", ""));
 					break;
 					
 				case "ORGANIZER":
@@ -563,8 +560,21 @@ consoleService.logStringMessage("Parsing an XML event:\n" + xml);
 					   recRule.count = -1;
 					}
 					
-					// FIXME read 0..n exclusions when supported by Lightning
 					recInfo.insertRecurrenceItemAt(recRule, 0);
+					// read 0..n exclusions
+					var node = getXmlChildNode(cur, "EXCLUSION");
+					while ((node != null) && (node.nodeType == Node.ELEMENT_NODE) 
+					   && (node.nodeName.toUpperCase() == "EXCLUSION"))
+					{
+					   date = string2CalDate(node.firstChild.data);
+                       recInfo.removeOccurrenceAt(date);
+                       node = node.nextSibling;
+                       // skip non-element nodes
+					   while ((node != null) && (node.nodeType != Node.ELEMENT_NODE))
+					   {
+                          node = node.nextSibling;
+                       }
+                    }
                     event.recurrenceInfo = recInfo;
 					break;
 	
@@ -616,12 +626,12 @@ consoleService.logStringMessage("Parsing an XML event:\n" + xml);
 					
 				case "SHOW-TIME-AS":
 					// default is "none"
-			  		// FIXME event.??? = cur.firstChild.data;
+			  		event.setProperty("X-KOLAB-SHOW-TIME-AS", cur.firstChild.data);
 					break;
 					
 				case "COLOR-LABEL":
 					// default is "none"
-			  		// FIXME event.??? = cur.firstChild.data;
+			  		event.setProperty("X-KOLAB-COLOR-LABEL", cur.firstChild.data);
 					break;
 					
 			} // end switch
@@ -636,17 +646,28 @@ consoleService.logStringMessage("Parsed event in ICAL:\n" + event.icalString);
 
 /**
  * convert an ICAL event into a Kolab XML string representation
+ * and include all fields
  *
  * @return XML string in Kolab 2 format
  */
 function event2xml (event)
 {
+    return cnv_event2xml( event, false);
+}
+
+/**
+ * convert an ICAL event into a Kolab XML string representation,
+ * allow to caller to skip fields which change frequently such as
+ * "last-modification-date" because this can confuse the hash IDs.
+ *
+ * @return XML string in Kolab 2 format
+ */
+function cnv_event2xml (event, skipVolatiles)
+{
 	// TODO improve recurrence settings
 	//      not working ATM:
 	//          - yearly recurrence
 	//          - exclusions for recurrence
-// XXX take me out ASAP
-consoleService.logStringMessage("Event in ICAL:\n" + event.icalString);
     var hasOrganizer = false;
     var isAllDay = event.startDate.isDate;
     var endDate = event.endDate;
@@ -654,13 +675,17 @@ consoleService.logStringMessage("Event in ICAL:\n" + event.icalString);
 //        endDate.day -= 1;
     var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     xml += "<event version=\"1.0\" >\n"
-    xml += " <product-id>Synckolab 0.4.21-ag, Calendar Sync</product-id>\n";
+    xml += " <product-id>Synckolab 0.4.24-ag, Calendar Sync</product-id>\n";
     xml += " <uid>" + event.id + "</uid>\n"
-    xml += " <creation-date>" + calDateTime2String(event.getProperty("CREATED"), false) + "</creation-date>\n";
-    xml += " <last-modification-date>" + calDateTime2String(event.getProperty("LAST-MODIFIED"), false) + "</last-modification-date>\n";
     xml += " <start-date>" + calDateTime2String(event.startDate, isAllDay) + "</start-date>\n";
     xml += " <end-date>" + calDateTime2String(endDate, isAllDay) + "</end-date>\n";
     xml += " <summary>" + event.title +"</summary>\n";
+
+    if (!skipVolatiles)
+    {
+        xml += " <creation-date>" + calDateTime2String(event.getProperty("CREATED"), false) + "</creation-date>\n";
+        xml += " <last-modification-date>" + calDateTime2String(event.getProperty("LAST-MODIFIED"), false) + "</last-modification-date>\n";
+    }
 
     if (event.getProperty("DESCRIPTION"))
         xml += " <body>" + event.getProperty("DESCRIPTION") + "</body>\n";
@@ -760,7 +785,14 @@ consoleService.logStringMessage("Event in ICAL:\n" + event.icalString);
             else
                 xml += "  <range type=\"none\"/>\n";
         }
-        // FIXME xml += "  <exclusion>2006-01-13</exclusion>\n";
+
+        var items = recInfo.getRecurrenceItems({});
+        for (var i in items)
+        {
+            var item = items[i];
+            if (item.isNegative)
+                xml += "  <exclusion>" + calDateTime2String(item.date, true) + "</exclusion>\n";
+        }
         xml += " </recurrence>\n";
     }
 
@@ -770,13 +802,16 @@ consoleService.logStringMessage("Event in ICAL:\n" + event.icalString);
         for each (var attendee in attendees) 
         {
             mail = attendee.id.replace(/MAILTO:/, '');
-            if (attendee.isOrganizer)
+            // FIXME the check for the array size == 1 is a hack to work around a Lightning bug
+            if (attendee.isOrganizer || (attendees.length == 1))
             {
                 xml += " <organizer>\n";
                 xml += "  <display-name>" + attendee.commonName + "</display-name>\n";
                 xml += "  <smtp-address>" + mail + "</smtp-address>\n";
                 xml += " </organizer>\n";
                 hasOrganizer = true;
+                // FIXME indicator for workaround
+                if (!attendee.isOrganizer) consoleService.logStringMessage("Organizer status expected!!!"); 
             }
             else
             {
@@ -829,11 +864,25 @@ consoleService.logStringMessage("Event in ICAL:\n" + event.icalString);
         xml += "  <smtp-address>" + "Egon@Post" + "</smtp-address>\n";
         xml += " </organizer>\n";
     }
+
+    if (event.getProperty("X-KOLAB-SHOW-TIME-AS"))
+        xml += " <show-time-as>" + event.getProperty("X-KOLAB-SHOW-TIME-AS") + "</show-time-as>\n";
+    if (event.getProperty("X-KOLAB-COLOR-LABEL"))
+        xml += " <color-label>" + event.getProperty("X-KOLAB-COLOR-LABEL") + "</color-label>\n";
+    if (event.getProperty("X-KOLAB-CREATOR-DISPLAY-NAME") && event.getProperty("X-KOLAB-CREATOR-SMTP-ADDRESS"))
+    {
+        xml += " <creator>\n";
+        xml += "  <display-name>" + event.getProperty("X-KOLAB-CREATOR-DISPLAY-NAME") + "</display-name>\n";
+        xml += "  <smtp-address>" + event.getProperty("X-KOLAB-CREATOR-SMTP-ADDRESS") + "</smtp-address>\n";
+        xml += " </creator>\n";
+    }
+
     xml += " <revision>0</revision>\n";
     xml += "</event>\n"
 
 // XXX take me out ASAP
-consoleService.logStringMessage("Created XML event structure:\n" + xml);
+	consoleService.logStringMessage("Event in ICAL:\n=============\n" + event.icalString + "\n" 
+		+ "Created XML event structure:\n=============================\n" + xml);
 	return xml;
 }
 
