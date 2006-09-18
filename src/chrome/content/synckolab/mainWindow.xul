@@ -29,8 +29,9 @@
     <script type="application/x-javascript" src="chrome://synckolab/content/tools.js"/>
     <script type="application/x-javascript" src="chrome://synckolab/content/contactTools.js"/>
     <script type="application/x-javascript" src="chrome://synckolab/content/calTools.js"/>
+	<script type="application/x-javascript" src="chrome://synckolab/content/contactConflictTools.js"/>
 
-		<script type="application/x-javascript" src="chrome://synckolab/content/jslib/jslib.js"/>
+	<script type="application/x-javascript" src="chrome://synckolab/content/jslib/jslib.js"/>
 
     <script type="application/x-javascript" src="chrome://messenger/content/am-smtp.js"/>
     <script type="application/x-javascript" src="chrome://messenger/content/AccountManager.js"/>

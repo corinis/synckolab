@@ -13,6 +13,8 @@
  * License. 
  * 
  * Contributor(s): Niko Berger <niko.berger@corinis.com> 
+ *				Steven D Miller (Copart) <stevendm@rellims.com>
+ *					
  * 
  * Alternatively, the contents of this file may be used under the terms of 
  * either the GNU General Public License Version 2 or later (the "GPL"), or 
@@ -179,12 +181,61 @@ var syncAddressBook = {
 
 				if (lastSyncEntry != null && lastSyncEntry != curSyncEntry && lastSyncEntry != newSyncEntry)
 				{
-					if (window.confirm("Changes were made on the server and local. Click ok to use the server version.\nClient card: " + 
-						acard.displayName + "<"+ acard.defaultEmail + ">\nServer Card: " + newCard.displayName + "<"+ newCard.defaultEmail + ">"))
-					{
-						// server changed - update local
+					//local and server were both updated, ut oh, what do we want to do?
+					consoleService.logStringMessage("Conflicts detected, opening resolution dialog.");
+					
+					//This function returns an array on conflicting fields
+					var conflicts = contactConflictTest(newCard,acard);
+										
+					//If there were no conflicts found, skip dialog and update the local copy (Changes to the way the SHA are calculated could cause this)
+					if ( conflicts.length > 0 ) {
+
+						//Holds the users response, must be an object so that we can pass by reference
+						conflictResolution = new Object();
+						conflictResolution.result = 0;
+    				
+						//Open the contact conflict dialog
+						var conflictDlg = window.openDialog("chrome://synckolab/content/contactConflictDialog.xul","conflictDlg","chrome,modal,resizable=1,width=600,height=400",conflicts,conflictResolution,newCard,acard);
 						
-						// delete the card
+						var bUpdateLocal = false;
+						var bUpdateServer = false;
+						switch ( conflictResolution.result ) {
+							case 0 :
+								//User clicked Cancel or X, we move to next record and user can deal with this issue on next sync
+								this.curItemInListStatus.setAttribute("label", "Conflict : skipped");
+								break;
+							case 1 :
+								//User chose to keep all server values
+								bUpdateLocal = true;
+								this.curItemInListStatus.setAttribute("label", "Conflict : local updated");
+								break;
+							case 2 :
+								//User chose to keep all local values
+								bUpdateServer = true;
+								this.curItemInListStatus.setAttribute("label", "Conflict : server updated");
+								break;
+							case 3 :
+								//User chose a mix of values, therefore, both local and server need updating
+								
+								//newCard and acard both already contain the new values
+								bUpdateLocal = true;
+								bUpdateServer = true;
+								this.curItemInListStatus.setAttribute("label", "Conflict : both updated");
+								break;
+						}
+					
+					} else {
+						//SHA values are different, however, no apparent differences
+						//Changes to the way the SHA (code revisions) are calculated could cause this
+						consoleService.logStringMessage("Sha values different, however, assumed no change, update local" + newCard.custom4);
+						bUpdateLocal = true;
+						this.curItemInListStatus.setAttribute("label", "Auto Conflict Resolved : update local");						
+					}
+					
+					if ( bUpdateLocal ) {
+						// Update local entry						
+						
+						// first delete the card 
 						var list = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);
 						list.AppendElement(acard);
 						this.gAddressBook.deleteCards(list);
@@ -192,25 +243,20 @@ var syncAddressBook = {
 						// add the new one
 						this.gAddressBook.addCard (newCard);
 						var newdb = new Array();
+						// regenerate internal db sha with possible changed values
 						newdb.push(newCard.custom4);
-						newdb.push(newSyncEntry);
+						newdb.push(genConSha1 (newCard));
 
 						this.db[cdb][0] = ""; // mark for delete
 						
 						this.db.push(newdb);
-
-						//update list item
-						this.curItemInListStatus.setAttribute("label", "update local");
-						
-						return null; // no update on server
 					}
-					else
-					{
+
+					if ( bUpdateServer ) {
 						// update on server - leave local alone
-						// update list item
-						this.curItemInListStatus.setAttribute("label", "update server");
 						return card2Message(acard, this.format);
 					}
+					return null; // Return null, we either updated nothing or updated only local
 				}
 				else
 				// we got that already, see which to update

@@ -12,6 +12,7 @@
  * License.
  *
  * Contributor(s): Niko Berger <niko.berger@corinis.com>
+ *                 Steven D Miller (Copart) <stevendm@rellims.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -332,7 +333,7 @@ function card2Xml (card)
 	{	
 		xml += " <phone>\n";
 		xml += "  <type>page</type>\n";
-		xml += "  <number>"+card.cellularNumber+"</number>\n";
+		xml += "  <number>"+card.pagerNumber+"</number>\n"; 
 		xml += " </phone>\n";
 	}
 	
@@ -440,6 +441,7 @@ function genConSha1 (card)
 	card.pagerNumberType + ":" +
 	card.phoneticFirstName + ":" +
 	card.phoneticLastName + ":" +
+	card.preferMailFormat + ":" + //Added by Copart, will evidently create a lot of SHA mismatches on first update after sync, auto update will occur
 	card.primaryEmail + ":" +
 	card.secondEmail + ":" +
 	card.spouseName + ":" +
@@ -510,6 +512,7 @@ function message2Card (message, card, format)
 	card.pagerNumberType = "";
 	card.phoneticFirstName = "";
 	card.phoneticLastName = "";
+	card.preferMailFormat = ""; //Added by Copart
 	//PRUint32 preferMailFormat = "";
 	card.primaryEmail = "";
 	card.secondEmail = "";
@@ -600,14 +603,30 @@ function message2Card (message, card, format)
 				break;
 			case "EMAIL;TYPE=PREF":
 			case "EMAIL;TYPE=INTERNET,PREF":
-				card.defaultEmail = tok[1];
+			case "EMAIL": //This is here to limit compact to existing vcards
+				//card.defaultEmail = tok[1]; I stopped setting this since I could not find where Thunderbird uses this, my NEW cards dont have it
+				card.primaryEmail = tok[1];
 				found = true;
 				break;
 			case "EMAIL;INTERNET":
-			case "EMAIL":
-				card.primaryEmail = tok[1];
+				card.secondEmail = tok[1];
 				found = true;
 		    break;
+			case "X-EMAILFORMAT": //Added By Copart, this will set the Email format to vCard, not part of vCard 3.0 spec, so the X- is there, I assume a Kolab server would just ignore this field
+				switch(tok[1]) {
+					case "Unknown":
+						card.preferMailFormat = 0;
+					case "Plain Text":
+						card.preferMailFormat = 1;
+					case "HTML":
+						card.preferMailFormat = 2;
+				}
+	    	found = true;
+    		break;
+			case "X-AIM": //Added by Copart, not standard vcard spec, therefore, prepended with an X
+				card.aimScreenName = tok[1];
+				found = true;
+			break;
 			case "TEL;TYPE=CELL;TYPE=VOICE":
 			case "TEL;TYPE=VOICE;TYPE=CELL":
 			case "TEL;TYPE=CELL":
@@ -678,7 +697,7 @@ function message2Card (message, card, format)
 				found = true;
 		  	break;
 		  case "NOTE":
-		  	card.notes = tok[1];
+				card.notes = tok[1].replace (/\\n/g, "\n"); //Copart fix, carriage returns were stripped, add em back
 				found = true;
 		  	break;
 		  case "DEPT":
@@ -686,26 +705,28 @@ function message2Card (message, card, format)
 				found = true;
 		  	break;
 		  case "CUSTOM1":
-		  	card.custom1 = tok[1];
+		  	card.custom1 = = tok[1].replace (/\\n/g, "\n"); //Copart fix, carriage returns were stripped, add em back
 				found = true;
 		  	break;
 		  case "CUSTOM2":
-		  	card.custom2 = tok[1];
+		  	card.custom2 = = tok[1].replace (/\\n/g, "\n"); //Copart fix, carriage returns were stripped, add em back
 				found = true;
 		  	break;
 		  case "CUSTOM3":
-		  	card.custom3 = tok[1];
+		  	card.custom3 = = tok[1].replace (/\\n/g, "\n"); //Copart fix, carriage returns were stripped, add em back
 				found = true;
 		  	break;
 
 		  case "URL;TYPE=WORK":
 		  case "URL":
-		  	card.webPage1 = tok[1]; // WebPage1 is work web page
+				// WebPage1 is work web page
+				card.webPage1 = decodeCardField(tok[1]); //Copart change, decode to convert the : char hex codes back to ascii
 				found = true;
 				break;
 		  case "URL;TYPE=PRIVATE":
 		  case "URL;TYPE=PERSONAL":
-		  	card.webPage2 = tok[1]; // WebPage2 is home web page
+				// WebPage2 is home web page
+				card.webPage2 = decodeCardField(tok[1]); //Copart change, decode to convert the : char hex codes back to ascii
 				found = true;
 				break;
 		  case "UID":
@@ -755,11 +776,23 @@ function card2Message (card, format)
 		msg += "TITLE:" + card.jobTitle + "\n";
 	if (checkExist (card.company))
 		msg += "ORG:" + card.company + "\n";
- 	if (checkExist (card.primaryEmail))
-		msg += "EMAIL:" + card.primaryEmail + "\n";
- 	if (checkExist (card.defaultEmail))
-		msg += "EMAIL;TYPE=INTERNET,PREF:" + card.defaultEmail  + "\n";
- 	if (checkExist (card.cellularNumber))
+ 	if (checkExist (card.primaryEmail)) 
+		msg += "EMAIL;TYPE=INTERNET,PREF:" + card.primaryEmail  + "\n";
+ 	if (checkExist (card.secondEmail)) 
+		msg += "EMAIL;TYPE=INTERNET:" + card.secondEmail + "\n";
+ 	if (checkExist (card.preferMailFormat)) { 
+		switch(card.preferMailFormat) {
+			case 0:
+				msg += "X-EMAILFORMAT:Unknown\n";break;
+			case 1:
+				msg += "X-EMAILFORMAT:Plain Text\n";break;
+			case 2:
+				msg += "X-EMAILFORMAT:HTML\n";break;
+		}
+	}
+ 	if (checkExist (card.aimScreenName)) 
+		msg += "X-AIM:" + card.aimScreenName + "\n"; 
+  	if (checkExist (card.cellularNumber))
 		msg += "TEL;TYPE=CELL:" + card.cellularNumber + "\n";
  	if (checkExist (card.homePhone))
 		msg += "TEL;TYPE=HOME:" + card.homePhone + "\n";
@@ -768,7 +801,7 @@ function card2Message (card, format)
  	if (checkExist (card.workPhone))
 		msg += "TEL;TYPE=WORK:" + card.workPhone + "\n";
  	if (checkExist (card.pagerNumber))
-		msg += "TEL;TYPE=PAGE:" + card.pagerNumber + "\n";
+		msg += "TEL;TYPE=PAGER:" + card.pagerNumber + "\n";
  	if (checkExist (card.department))
 		msg += "DEPT:" + card.department + "\n";
 	// BDAY:1987-09-27T08:30:00-06:00
@@ -799,9 +832,9 @@ function card2Message (card, format)
 		msg += card.anniversaryDay + "\n";
 	}
  	if (checkExist (card.webPage1))
-		msg += "URL:" + card.webPage1 + "\n";
+		msg += "URL:" + encodeCardField(card.webPage1) + "\n"; //Copart change, encode the : chars to HEX, vcard values cannot contain colons
  	if (checkExist (card.webPage2))
-		msg += "URL;TYPE=PERSONAL:" + card.webPage2 + "\n";
+		msg += "URL;TYPE=PERSONAL:" + encodeCardField(card.webPage2) + "\n";
 	// ADR:POBox;Ext. Address;Address;City;State;Zip Code;Country
 	if (checkExist (card.workAddress2) 
 		|| checkExist (card.workAddress) 
@@ -846,4 +879,27 @@ function card2Message (card, format)
  	msg += "END:VCARD\n\n";
 
 	return genMailHeader(card.custom4, "vCard", "text/x-vcard", false) + encodeQuoted(encode_utf8(msg));
+}
+
+
+/*
+ * Replaces any ; or : with their equivalent char codes since these are reserved characters in vcard spec
+ * By Copart
+ */
+function encodeCardField(fieldValue) 
+{
+	var safeStr;
+	safeStr = fieldValue.replace(/:/g, "=3A");
+	return safeStr.replace(/;/g, "=3B");
+}
+
+/*
+ * Decodes a string encoded by encodeCardField
+ * By Copart
+ */
+function decodeCardField(fieldValue) 
+{
+	var unsafeStr;
+	unsafeStr = fieldValue.replace(/=3A/g, ":");
+	return unsafeStr.replace(/=3B/g, ";");
 }

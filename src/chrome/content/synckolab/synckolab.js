@@ -70,7 +70,8 @@ var curStep;
 function syncKolab(event) {
 	// copy a file to a folder
 	// call external func
-	gWnd = window.open("chrome://synckolab/content/progressWindow.xul", "bmarks", "chrome,width=350,height=350");
+	//Copart, added resizeable property to allow user to enlarge window when needed
+	gWnd = window.open("chrome://synckolab/content/progressWindow.xul", "bmarks", "chrome,width=350,height=350,resizable=1");
 	
 	try {
     var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
@@ -219,6 +220,7 @@ function nextSync()
 	{
 		meter.setAttribute("value", "100%");
 		statusMsg.value ="Done. You can close this window now!";
+		gWnd.document.getElementById('cancel-button').label = "Close"; //Added by Copart, a little bit more clear that it is now safe to close the window
 		// delete the temp file
 		var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
 		sfile.initWithPath(gTmpFile);

@@ -36,7 +36,7 @@
 
 	<spacer style="height: 10px"/>
 	
-	<listbox id="itemList" rows="6" suppressonselect="true">
+	<listbox id="itemList" suppressonselect="true" flex="1">
 		<listhead>
 			<listheader label="id"/>
 			<listheader label="status"/>

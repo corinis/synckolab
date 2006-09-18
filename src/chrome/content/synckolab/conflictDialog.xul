@@ -1,55 +1,250 @@
 <?xml version="1.0"?> 
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
-<?xul-overlay href="chrome://messenger/content/msgFolderPickerOverlay.xul"?>
-<!DOCTYPE window SYSTEM "chrome://buttons/content/buttons.dtd" >
+
+<!DOCTYPE dialog [
+<!ENTITY % abncdDTD SYSTEM "chrome://messenger/locale/addressbook/abNewCardDialog.dtd" >
+%abncdDTD;
+<!ENTITY % synckolabDTD SYSTEM "chrome://synckolab/content/synckolab.dtd" >
+%synckolabDTD;
+]>
 
 <dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-        buttons="accept"
+        buttons="accept,cancel"
         ondialogaccept="return doOK();"
+        ondialogcancel="return doCancel();"
+        buttonlabelcancel="Skip"
+        onload="init();"
         persist="screenX screenY"
-        title="Sync Kolab">
+        title="&synckolab.contactConflict.dialogTitle;">
 
-<script>
-var ret = true;
-function doOK()
-{
-  return ret;
-}
-
-function selOld()
-{
-	ret = true;
-	document.getElementById("oldBtn").value	 ="selected";
-	document.getElementById("newBtn").value	 ="        ";
-}
-
-function selNew()
-{
-	ret = false;
-	document.getElementById("newBtn").value	 ="selected";
-	document.getElementById("oldBtn").value	 ="        ";
-}
-
-function init()
-{
-	document.getElementById("old").value = window.arguments[0];
-	document.getElementById("new").value = window.arguments[1];
-	solOld();
-}
-</script>
+<script type="application/x-javascript" src="chrome://synckolab/content/contactConflictDialogCode.js"/>
 
 <vbox>
-	<label value="Conflict detected. Please select which version to use."/>
-	<hbox>
-		<vbox>
-			<button id="oldBtn" label="selected" oncommand="selOld();" tooltiptext="Click here to use the original value."/>
-			<label id="old"/>
-		</vbox>
-		<vbox>
-			<button id="newBtn" label="        " oncommand="selNew();" tooltiptext="Click here to use the new value."/>
-			<label id="new"/>
-		</vbox>
-	</hbox>
+	<label value="&synckolab.contactConflict.dialogMessage;"/>
 </vbox>
+
+<scrollbox orient="vertical" flex="1" style="overflow: auto;">
+	<groupbox id="nameBox">
+		<caption label="&Name.box;"/>
+		<grid>
+			<columns>
+				<column/>
+				<column/>
+				<column flex="1"/>
+			</columns>
+			<rows>
+				<row>
+					<label value="&NameField1.label;"/>
+					<label id="firstNameStatic"/>
+					<radiogroup id="firstName" orient="horizontal" hidden="true"/>
+				</row>
+				<row>
+					<label value="&NameField2.label;"/>
+					<label id="lastNameStatic"/>
+					<radiogroup id="lastName" orient="horizontal" hidden="true"/>
+				</row>
+				<row>
+					<label value="&DisplayName.label;"/>
+					<label id="displayNameStatic"/>
+					<radiogroup id="displayName" orient="horizontal" hidden="true"/>
+				</row>
+				<row>
+					<label value="&NickName.label;"/>
+					<label id="nickNameStatic"/>
+					<radiogroup id="nickName" orient="horizontal" hidden="true"/>
+				</row>
+			</rows>
+		</grid>
+	</groupbox>
+	
+	<groupbox id="internetBox" hidden="true">
+		<caption label="&Internet.box;"/>
+		<grid>
+			<columns>
+				<column/>
+				<column flex="1"/>
+			</columns>
+			<rows>
+				<row id="primaryEmailBox" hidden="true">
+					<label value="&PrimaryEmail.label;"/>
+					<radiogroup id="primaryEmail" orient="horizontal"/>
+				</row>
+				<row id="secondEmailBox" hidden="true">
+					<label value="&SecondEmail.label;"/>
+					<radiogroup id="secondEmail" orient="horizontal"/>
+				</row>
+				<row id="preferMailFormatBox" hidden="true">
+					<label value="&PreferMailFormat.label;"/>
+					<radiogroup id="preferMailFormat" orient="horizontal"/>
+				</row>
+				<row id="aimScreenNameBox" hidden="true">
+					<label value="&ScreenName.label;"/>
+					<radiogroup id="aimScreenName" orient="horizontal"/>
+				</row>
+			</rows>
+		</grid>
+	</groupbox>
+	
+	<groupbox id="phonesBox" hidden="true">
+		<caption label="&Phones.box;"/>
+		<grid>
+			<columns>
+				<column/>
+				<column/>
+				<column flex="1"/>
+			</columns>
+			<rows>
+				<row id="workPhoneBox" hidden="true">
+					<label value="&WorkPhone.label;"/>
+					<radiogroup id="workPhone" orient="horizontal"/>
+				</row>
+				<row id="homePhoneBox" hidden="true">
+					<label value="&HomePhone.label;"/>
+					<radiogroup id="homePhone" orient="horizontal"/>
+				</row>
+				<row id="faxNumberBox" hidden="true">
+					<label value="&FaxNumber.label;"/>
+					<radiogroup id="faxNumber" orient="horizontal"/>
+				</row>
+				<row id="pagerNumberBox" hidden="true">
+					<label value="&PagerNumber.label;"/>
+					<radiogroup id="pagerNumber" orient="horizontal"/>
+				</row>
+				<row id="cellularNumberBox" hidden="true">
+					<label value="&CellularNumber.label;"/>
+					<radiogroup id="cellularNumber" orient="horizontal"/>
+				</row>
+			</rows>
+		</grid>
+	</groupbox>
+	
+	<groupbox id="homeAddressMainBox" hidden="true">
+		<caption label="&Home.box;"/>
+		<grid>
+			<columns>
+				<column/>
+				<column/>
+				<column flex="1"/>
+			</columns>
+			<rows>
+				<row id="homeAddressBox" hidden="true">
+					<label value="&HomeAddress.label;"/>
+					<radiogroup id="homeAddress" orient="horizontal"/>
+				</row>
+				<row id="homeAddress2Box" hidden="true">
+					<label value="&HomeAddress2.label;"/>
+					<radiogroup id="homeAddress2" orient="horizontal"/>
+				</row>
+				<row id="homeCityBox" hidden="true">
+					<label value="&HomeCity.label;"/>
+					<radiogroup id="homeCity" orient="horizontal"/>
+				</row>
+				<row id="homeStateBox" hidden="true">
+					<label value="&HomeState.label;"/>
+					<radiogroup id="homeState" orient="horizontal"/>
+				</row>
+				<row id="homeZipCodeBox" hidden="true">
+					<label value="&HomeZipCode.label;"/>
+					<radiogroup id="homeZipCode" orient="horizontal"/>
+				</row>
+				<row id="homeCountryBox" hidden="true">
+					<label value="&HomeCountry.label;"/>
+					<radiogroup id="homeCountry" orient="horizontal"/>
+				</row>
+				<row id="webPage2Box" hidden="true">
+					<label value="&HomeWebPage.label;"/>
+					<radiogroup id="webPage2" orient="horizontal"/>
+				</row>
+			</rows>
+		</grid>
+	</groupbox>
+	
+	<groupbox id="workAddressMainBox" hidden="true">
+		<caption label="&Work.box;"/>
+		<grid>
+			<columns>
+				<column/>
+				<column/>
+				<column flex="1"/>
+			</columns>
+			<rows>
+				<row id="jobTitleBox" hidden="true">
+					<label value="&JobTitle.label;"/>
+					<radiogroup id="jobTitle" orient="horizontal"/>
+				</row>
+				<row id="departmentBox" hidden="true">
+					<label value="&Department.label;"/>
+					<radiogroup id="department" orient="horizontal"/>
+				</row>
+				<row id="companyBox" hidden="true">
+					<label value="&Company.label;"/>
+					<radiogroup id="company" orient="horizontal"/>
+				</row>
+				<row id="workAddressBox" hidden="true">
+					<label value="&WorkAddress.label;"/>
+					<radiogroup id="workAddress" orient="horizontal"/>
+				</row>
+				<row id="workAddress2Box" hidden="true">
+					<label value="&WorkAddress2.label;"/>
+					<radiogroup id="workAddress2" orient="horizontal"/>
+				</row>
+				<row id="workCityBox" hidden="true">
+					<label value="&WorkCity.label;"/>
+					<radiogroup id="workCity" orient="horizontal"/>
+				</row>
+				<row id="workStateBox" hidden="true">
+					<label value="&WorkState.label;"/>
+					<radiogroup id="workState" orient="horizontal"/>
+				</row>
+				<row id="workZipCodeBox" hidden="true">
+					<label value="&WorkZipCode.label;"/>
+					<radiogroup id="workZipCode" orient="horizontal"/>
+				</row>
+				<row id="workCountryBox" hidden="true">
+					<label value="&WorkCountry.label;"/>
+					<radiogroup id="workCountry" orient="horizontal"/>
+				</row>
+				<row id="webPage1Box" hidden="true">
+					<label value="&WorkWebPage.label;"/>
+					<radiogroup id="webPage1" orient="horizontal"/>
+				</row>
+			</rows>
+		</grid>
+	</groupbox>
+	
+	<groupbox id="otherBox" hidden="true">
+		<caption label="&Other.tab;"/>
+		<grid>
+			<columns>
+				<column/>
+				<column/>
+				<column flex="1"/>
+			</columns>
+			<rows>
+				<row id="custom1Box" hidden="true">
+					<label value="&Custom1.label;"/>
+					<radiogroup id="custom1" orient="horizontal"/>
+				</row>
+				<row id="custom2Box" hidden="true">
+					<label value="&Custom2.label;"/>
+					<radiogroup id="custom2" orient="horizontal"/>
+				</row>
+				<row id="custom3Box" hidden="true">
+					<label value="&Custom3.label;"/>
+					<radiogroup id="custom3" orient="horizontal"/>
+				</row>
+				<row id="notesBox" hidden="true">
+					<label value="&Notes.box;"/>
+					<radiogroup id="notes" orient="horizontal"/>
+				</row>
+			</rows>
+		</grid>
+	</groupbox>
+</scrollbox>
+
+<box align="left">
+	<button label="Keep Server" oncommand="keepServer(); return false;"/>
+	<button label="Keep Local" oncommand="keepLocal(); return false;"/>
+</box>
 
 </dialog>
