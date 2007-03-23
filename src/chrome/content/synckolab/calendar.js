@@ -30,6 +30,8 @@
  *
  ***** END LICENSE BLOCK ***** */
 
+var debugCalendarSync = false;
+
 /*
  * A kinda "provider" class for syncing the calendar. 
  * The functions are called by the main synckolab loop to 
@@ -84,18 +86,18 @@ var syncCalendar = {
 		}
 
 		// get the correct calendar instance
-		var calendars = getCalendars();
+		var calendars = getSynckolabCalendars();
 		for( var i = 0; i < calendars.length; i++ )
-	    {
-	    	if (calendars[i].name == this.gCalendarName)
-	    	{
-	    		this.gCalendar = calendars[i];
-	    		break;
-	    	}
+		{
+			if (calendars[i].name == this.gCalendarName)
+			{
+				this.gCalendar = calendars[i];
+				break;
+			}
 		}		
 		
 		
-    	this.folderMessageUids = new Array(); // the checked uids - for better sync
+		this.folderMessageUids = new Array(); // the checked uids - for better sync
     	
     	// get the sync db
 		this.dbFile = getHashDataBaseFile (config + ".cal");
@@ -106,11 +108,12 @@ var syncCalendar = {
 		// get ALL the items from calendar - when done call nextfunc
 		this.gEvents.nextFunc = nextFunc;
 		this.gEvents.sync = sync;
+		this.gEvents.events = new Array();
 		// gCalendar might be invalid if no calendar is selected in the settings
 		if (this.gCalendar) {
 		  this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_EVENT, 0, null, null, this.gEvents);
-          // if no item has been read, onGetResult has never been called 
-          // leaving us stuck in the events chain
+			// if no item has been read, onGetResult has never been called 
+			// leaving us stuck in the events chain
 		  if (this.gEvents.events.length > 0)
 		      return true;
 		  else
@@ -127,7 +130,7 @@ var syncCalendar = {
 		events: new Array(),
 		sync: '',
 		onOperationComplete: function(aCalendar, aStatus, aOperator, aId, aDetail) {		
-// FIXME			    consoleService.logStringMessage("operation: status="+aStatus + " Op=" + aOperator + " Detail=" + aDetail);
+// 			    consoleService.logStringMessage("operation: status="+aStatus + " Op=" + aOperator + " Detail=" + aDetail);
 			},
 		onGetResult: function(aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {
                 consoleService.logStringMessage("got results: " + aCount + " items");
@@ -192,8 +195,9 @@ var syncCalendar = {
 	
 		if (foundEvent == null)
 		{
-		    // a new event
-		    consoleService.logStringMessage("a new event:" + newEvent.id);
+			// a new event
+			if (debugCalendarSync)
+				consoleService.logStringMessage("a new event, locally unknown:" + newEvent.id);
 			var cEntry = getDbEntry (newEvent.id, this.db);
 			if (cEntry == -1)
 			{
@@ -202,15 +206,16 @@ var syncCalendar = {
 				curEntry.push(genCalSha1(newEvent));
 				this.db.push(curEntry);
 				this.curItemInListStatus.setAttribute("label", "add local");
-				
+
+				if (debugCalendarSync)
+				    consoleService.logStringMessage("added locally:" + newEvent.id);				
 			}
 			else
 			{
-				// normally now this should be deleted, since it was in the db already
-				// but since calendar isnt finished yet we will comment this out
 				this.curItemInListStatus.setAttribute("label", "server delete");
+				if (debugCalendarSync)
+				    consoleService.logStringMessage("server delete - DELETEME returned:" + newEvent.id);
 				return "DELETEME";
-				// return null;
 			}
 
 			// add the new event
@@ -218,25 +223,33 @@ var syncCalendar = {
 		}
 		else
 		{
-		    // event exists in local calendar
+			// event exists in local calendar
+			if (debugCalendarSync)
+				consoleService.logStringMessage("event exists locally:" + newEvent.id);
+
 			var cdb = getDbEntry (newEvent.id, this.db);
 			var lastSyncEntry = cdb!=-1?this.db[cdb][1]:null;
 			var newSyncEntry = genCalSha1 (newEvent);
 			var curSyncEntry = genCalSha1 (foundEvent);
 
+			// where did changes happen?
 			if (lastSyncEntry != null && lastSyncEntry != curSyncEntry && lastSyncEntry != newSyncEntry)
 			{
-			    // changed locally and on server side
+				// changed locally and on server side
+				if (debugCalendarSync)
+					consoleService.logStringMessage("changed both on server and client:" + newEvent.id);
 				if (window.confirm("Changes were made on the server and local. Click ok to use the server version.\nClient Event: " + 
 					foundEvent.title + "<"+ foundEvent.id + ">\nServer Event: " + newEvent.title + "<"+ newEvent.id + ">"))
 				{
+					// take event from server
+					if (debugCalendarSync)
+						consoleService.logStringMessage("take event from server:" + newEvent.id);
+
 					var newdb = new Array();
 					newdb.push(newEvent.id);
 					newdb.push(newSyncEntry);
-					if (lastSyncEntry != null)
-					{
-						this.db[cdb][0] = ""; // mark for delete
-					}
+					if (lastSyncEntry != null) this.db[cdb][0] = ""; // mark for delete
+					
 					this.db.push(newdb);
 	
 					for (var i = 0; i < this.gEvents.events.length; i++)
@@ -245,7 +258,7 @@ var syncCalendar = {
 						{
 							// modify the item
 							this.gCalendar.modifyItem(newEvent, foundEvent, this.gEvents);
-							this.gEvents.events[i] = newEvent;
+							//this.gEvents.events[i] = newEvent;
 							
 							//update list item
 							this.curItemInListStatus.setAttribute("label", "update local");
@@ -256,25 +269,27 @@ var syncCalendar = {
 				}
 				else
 				{
+					// put local change to server
+					if (debugCalendarSync)
+					   consoleService.logStringMessage("put event on server:" + newEvent.id);
+
 					var newdb = new Array();
 					newdb.push(foundEvent.id);
 					newdb.push(curSyncEntry);
-					if (lastSyncEntry != null)
-					{
-						this.db[cdb][0] = ""; // mark for delete
-					}
+					if (lastSyncEntry != null) this.db[cdb][0] = ""; // mark for delete
+
 					this.db.push(newdb);
 	
-                    var msg = null;
-                    if (this.format == "Xml")
-                    {
-                        msg = event2kolabXmlMsg(foundEvent);
-                    } 
-                    else
-                    {
+					var msg = null;
+					if (this.format == "Xml")
+					{
+					msg = event2kolabXmlMsg(foundEvent);
+					} 
+					else
+					{
     					msg = genMailHeader(foundEvent.id, "iCal", "text/calendar", false);
-                        msg += encodeQuoted(encode_utf8(foundEvent.getIcalString()));
-                        msg += "\n\n";
+		                        msg += encodeQuoted(encode_utf8(foundEvent.getIcalString()));
+		                        msg += "\n\n";
 					}
 
 						// update list item
@@ -285,76 +300,85 @@ var syncCalendar = {
 				}
 			}
 			else
-
-			// we got that already, see which is newer and update the message or the event
-			if (lastSyncEntry == null || (lastSyncEntry == curSyncEntry && lastSyncEntry != newSyncEntry))
 			{
-			    consoleService.logStringMessage("server changed: " + foundEvent.id);
+				if (debugCalendarSync)
+					consoleService.logStringMessage("changed only on one side (if at all):" + newEvent.id);
+	 			// we got that already, see which is newer and update the message or the event
+				// the sync database might be out-of-date, so we handle a non-existent entry as well
+	 			if (lastSyncEntry == null || (lastSyncEntry == curSyncEntry && lastSyncEntry != newSyncEntry))
+				{
+					// event has been changed on the server
+					if (debugCalendarSync)
+					   consoleService.logStringMessage("event changed on server:" + newEvent.id);
 			    
-				var newdb = new Array();
-				newdb.push(newEvent.id);
-				newdb.push(newSyncEntry);
-				if (lastSyncEntry != null)
-				{
-					this.db[cdb][0] = ""; // mark for delete
-				}
-				this.db.push(newdb);
+					var newdb = new Array();
+					newdb.push(newEvent.id);
+					newdb.push(newSyncEntry);
+					if (lastSyncEntry != null) this.db[cdb][0] = ""; // mark for delete
+					this.db.push(newdb);
 
-				for (var i = 0; i < this.gEvents.events.length; i++)
-				{
-					if (this.gEvents.events[i].id == newEvent.id)
+					for (var i = 0; i < this.gEvents.events.length; i++)
 					{
-						// modify the item
-						this.gCalendar.modifyItem(newEvent, foundEvent, this.gEvents);
-						this.gEvents.events[i] = newEvent;
+						if (this.gEvents.events[i].id == newEvent.id)
+						{
+							// modify the item
+							this.gCalendar.modifyItem(newEvent, foundEvent, this.gEvents);
+							//this.gEvents.events[i] = newEvent;
 
-						// update list item
-						this.curItemInListStatus.setAttribute("label", "update local");
-						 
-						return null;
+							// update list item
+							this.curItemInListStatus.setAttribute("label", "update local");
+							 
+							return null;
+						}
 					}
 				}
-			}
-			else
-			if (lastSyncEntry != curSyncEntry && lastSyncEntry == newSyncEntry)
-			{
-			    consoleService.logStringMessage("client changed: " + foundEvent.id);
-				var newdb = new Array();
-				newdb.push(foundEvent.id);
-				newdb.push(curSyncEntry);
-				if (lastSyncEntry != null)
+				else
 				{
-					this.db[cdb][0] = ""; // mark for delete
+					if (lastSyncEntry != curSyncEntry && lastSyncEntry == newSyncEntry)
+					{
+						// event has been changed on the client
+						if (debugCalendarSync)
+							consoleService.logStringMessage("event changed on client:" + newEvent.id);
+						var newdb = new Array();
+						newdb.push(foundEvent.id);
+						newdb.push(curSyncEntry);
+						if (lastSyncEntry != null)
+						{
+							this.db[cdb][0] = ""; // mark for delete
+						}
+						this.db.push(newdb);
+
+				                var msg = null;
+				                if (this.format == "Xml")
+				                {
+				                    msg = event2kolabXmlMsg(foundEvent);
+				                } 
+				                else
+				                {
+				    				msg = genMailHeader(foundEvent.id, "iCal", "text/calendar", false);
+				    				icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
+				    					.getService(Components.interfaces.calIICSService);
+				    				var calComp = icssrv.createIcalComponent("VCALENDAR");
+				    				calComp.version = "2.0";
+				    				calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
+				    				calComp.addSubcomponent(foundEvent.icalComponent);
+				    				
+				    				msg += encodeQuoted(encode_utf8(calComp.serializeToICS()));
+				    				msg += "\n\n";
+				                }
+				
+						// update list item
+						this.curItemInListStatus.setAttribute("label", "update server");
+						
+						// remember this message for update
+						return msg;
+					}
 				}
-				this.db.push(newdb);
-
-                var msg = null;
-                if (this.format == "Xml")
-                {
-                    msg = event2kolabXmlMsg(foundEvent);
-                } 
-                else
-                {
-    				msg = genMailHeader(foundEvent.id, "iCal", "text/calendar", false);
-    				icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
-    					.getService(Components.interfaces.calIICSService);
-    				var calComp = icssrv.createIcalComponent("VCALENDAR");
-    				calComp.version = "2.0";
-    				calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
-    				calComp.addSubcomponent(foundEvent.icalComponent);
-    				
-    				msg += encodeQuoted(encode_utf8(calComp.serializeToICS()));
-    				msg += "\n\n";
-                }
-				
-				// update list item
-				this.curItemInListStatus.setAttribute("label", "update server");
-				
-				// remember this message for update
-				return msg;
+				if (debugCalendarSync)
+					consoleService.logStringMessage("no change for event:" + newEvent.id);
+ 	
+				this.curItemInListStatus.setAttribute("label", "no change");
 			}
-
-			this.curItemInListStatus.setAttribute("label", "no change");
 		}
 		return null;
 	},
@@ -384,16 +408,18 @@ var syncCalendar = {
 		{
 			var cur = this.gEvents.events[this.gCurEvent++];
 			var msg = null;
-			var writeCur = false;
+			var writeCur = true;
 		    
-			writeCur = true;
+			if (debugCalendarSync)
+				consoleService.logStringMessage("nextUpdate for event:" + cur.id);
 			// check if we have this uid in the messages
 			var i;
 			for (i = 0; i < this.folderMessageUids.length; i++)
 			{
 				if (cur.id == this.folderMessageUids[i])
 				{
-					consoleService.logStringMessage("we got this event: " + cur.id);
+					if (debugCalendarSync)
+						consoleService.logStringMessage("event is know from IMAP lookup:" + cur.id);
 					writeCur = false;
 					break;
 				}
@@ -404,10 +430,16 @@ var syncCalendar = {
 			// it has been deleted on the server and we dont know about it yet
 			if (writeCur)
 			{
+				if (debugCalendarSync)
+					consoleService.logStringMessage("nextUpdate decided to write event:" + cur.id);
+
 				var curSyncEntry = genCalSha1 (cur);
 				var cdb = getDbEntry (cur.id, this.db);
 				if (cdb != -1)
 				{
+					// we have it in our database
+					if (debugCalendarSync)
+						consoleService.logStringMessage("nextUpdate found -1, better don't write event:" + cur.id);
 					writeCur = false;
 					this.db[cdb][0] = ""; // mark for delete
 					this.gCalendar.deleteItem(cur, this.gEvents);
@@ -458,26 +490,31 @@ var syncCalendar = {
 		
 			if (writeCur)
 			{
+				if (debugCalendarSync)
+					consoleService.logStringMessage("nextUpdate really writes event:" + cur.id);
+
 				// and write the message
-                var msg = null;
-                if (this.format == "Xml")
-                {
-				    msg = event2kolabXmlMsg(cur);
-                } 
-                else
-                {
-				    msg = genMailHeader(cur.id, "iCal", "text/calendar", false);
-    				icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
-    					.getService(Components.interfaces.calIICSService);
-    				var calComp = icssrv.createIcalComponent("VCALENDAR");
-    				calComp.version = "2.0";
-    				calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
-    				calComp.addSubcomponent(cur.icalComponent);
-    				
-    				msg += encodeQuoted(encode_utf8(calComp.serializeToICS()));
-    				msg += "\n\n";
+		                var msg = null;
+		                if (this.format == "Xml")
+		                {
+					msg = event2kolabXmlMsg(cur);
+		                } 
+		                else
+		                {
+					msg = genMailHeader(cur.id, "iCal", "text/calendar", false);
+					icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
+						.getService(Components.interfaces.calIICSService);
+					var calComp = icssrv.createIcalComponent("VCALENDAR");
+					calComp.version = "2.0";
+					calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
+					calComp.addSubcomponent(cur.icalComponent);
+
+					msg += encodeQuoted(encode_utf8(calComp.serializeToICS()));
+					msg += "\n\n";
 				}
-		    	consoleService.logStringMessage("New event:\n" + msg);
+				consoleService.logStringMessage("New event:\n" + msg);
+				if (debugCalendarSync)
+					consoleService.logStringMessage("nextUpdate puts event into db (2):" + cur.id);
 				// add the new event into the db
 				var curSyncEntry = genCalSha1 (cur);
 				var newdb = new Array();
@@ -492,7 +529,7 @@ var syncCalendar = {
 		{
 			var cur = this.gTodo[this.gCurTodo++];
 			var msg = null;
-	    	var writeCur = false;
+			var writeCur = false;
 		    
 			writeCur = true;
 			// check if we have this uid in the messages

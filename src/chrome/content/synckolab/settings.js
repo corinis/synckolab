@@ -249,7 +249,7 @@ function init() {
 			consoleService.logStringMessage("Calendar not available - disabling");
 	else
 	{
-		var calendars = getCalendars();
+		var calendars = getSynckolabCalendars();
 
 		var abList = document.getElementById("calURL");
 		var abpopup = document.createElement("menupopup");

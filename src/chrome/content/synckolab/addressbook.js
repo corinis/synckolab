@@ -296,7 +296,7 @@ var syncAddressBook = {
 			}
 		}
 		else
-				    consoleService.logStringMessage("unable to parse message, skipping");
+			consoleService.logStringMessage("unable to parse message, skipping:\n\n" + fileContent);
 		return null;
 	},
 	
