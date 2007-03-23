@@ -67,6 +67,10 @@ var gCloseWnd; // true if we want to close the window when sync is done
 // progress variables 
 var curStep;
 
+
+// Global debug setting (on)
+var DEBUG_SYNCKOLAB = true;
+
 function syncKolab(event) {
 	// copy a file to a folder
 	// call external func
@@ -102,12 +106,12 @@ function goWindow (wnd)
 				itemList = wnd.document.getElementById('itemList');
 				if (isCalendarAvailable ())
 				{
-					consoleService.logStringMessage("Calendar available");
+					logMessage("Calendar available");
 					include("chrome://calendar/content/importExport.js");
 					include("chrome://calendar/content/calendar.js");
 				}
 				else
-					consoleService.logStringMessage("Calendar not available - disabling");
+					logMessage("Calendar not available - disabling");
 				
 				window.setTimeout(startSync, 100);		 
 		}
@@ -181,7 +185,7 @@ function nextSync()
 		// display stuff
 		syncAddressBook.itemList = itemList;
 		
-		consoleService.logStringMessage("Contacts: got folder: " + syncAddressBook.folder.URI + 
+		logMessage("Contacts: got folder: " + syncAddressBook.folder.URI + 
 			"\nMessage Folder: " + syncAddressBook.folderMsgURI);
 			
 		curConConfig++;
@@ -208,7 +212,7 @@ function nextSync()
 		// display stuff
 		syncCalendar.itemList = itemList;
 
-		consoleService.logStringMessage("Calendar: got calendar: " + syncCalendar.gCalendar.name + 
+		logMessage("Calendar: got calendar: " + syncCalendar.gCalendar.name + 
 			"\nMessage Folder: " + syncCalendar.folderMsgURI);
 		curCalConfig++;
 
@@ -298,7 +302,7 @@ function getMessage ()
 	}
 	catch (ex)
 	{
-    	consoleService.logStringMessage("skipping read of messages - since there are none :)");
+    	logMessage("skipping read of messages - since there are none :)");
 		updateContentAfterSave ();
     	return;
 	}
@@ -338,7 +342,7 @@ var myStreamListener = {
  onStartRequest: function(request, context) {
  },
  onStopRequest: function(aRequest, aContext, aStatusCode) {
-    //consoleService.logStringMessage("got Message [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]:\n" + fileContent);
+    //logMessage("got Message [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]:\n" + fileContent);
     // stop here for testing
     parseMessageRunner ();
  }
@@ -349,7 +353,7 @@ var myStreamListener = {
  */
 function parseMessageRunner ()
 {
-   	consoleService.logStringMessage("parsing message...");
+   	logMessage("parsing message...");
 	
 	// fix the message for line truncs (last char in line is =)
 	fileContent = fileContent.replace(/=\n/g, "");
@@ -360,12 +364,12 @@ function parseMessageRunner ()
 	if (content != null)
 	{
 		if (content == "DELETEME")
-			consoleService.logStringMessage("updating and deleting [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]");
+			logMessage("updating and deleting [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]");
 		else
-			consoleService.logStringMessage("updating [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]");
+			logMessage("updating [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]");
 		updateMessages.push(gSync.folderMsgURI +"#"+gCurMessageKey); 
 		updateMessagesContent.push(content); 
-		consoleService.logStringMessage("changed msg #" + updateMessages.length);
+		logMessage("changed msg #" + updateMessages.length);
 	}
 	
 	
@@ -393,7 +397,7 @@ function parseFolderToAddressFinish ()
 	// do step 5
 	curStep = 5;
 	writeDone = false;
-    consoleService.logStringMessage("parseFolderToAddressFinish");
+    logMessage("parseFolderToAddressFinish");
 
 	meter.setAttribute("value", "60%");
 	statusMsg.value = "Writing changed cards...";
@@ -403,27 +407,27 @@ function parseFolderToAddressFinish ()
 
 function updateContent()
 {
-    consoleService.logStringMessage("updating content:");
+    logMessage("updating content:");
 	// first lets delete the old messages
 	if (gSync.gSaveImap && updateMessages.length > 0) 
 	{
 		try
 		{
-			consoleService.logStringMessage("deleting changed messages..");
+			logMessage("deleting changed messages..");
 			var list = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);
 			for (var i = 0; i < updateMessages.length; i++)
 			{
-				consoleService.logStringMessage("deleting [" + updateMessages[i] + "]");
+				logMessage("deleting [" + updateMessages[i] + "]");
 				var hdr = gMessageService.messageURIToMsgHdr(updateMessages[i]);
 				list.AppendElement(hdr);		
 		    
 			}
 			gSync.folder.deleteMessages (list, msgWindow, true, false, null, true);		
-			consoleService.logStringMessage("done..");
+			logMessage("done..");
 		}
 		catch (ex)
 		{
-		    consoleService.logStringMessage("Exception while deleting - skipping");
+		    logMessage("Exception while deleting - skipping");
 		}
 	}
 	curMessage = -1;
@@ -445,7 +449,7 @@ function updateContentWrite ()
 		{
 			// write the message in the temp file
 			var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
-			consoleService.logStringMessage("adding [" + content + "] to messages");
+			logMessage("adding [" + content + "] to messages");
 			// temp path
 			sfile.initWithPath(gTmpFile);
 			if (sfile.exists()) 
@@ -475,13 +479,13 @@ function updateContentWrite ()
 
 function updateContentAfterSave ()
 {
-	consoleService.logStringMessage("starting update content...");
+	logMessage("starting update content...");
 	curStep = 6;
 	writeDone = false;
 	
 	if (!gSync.initUpdate())
 	{
-		consoleService.logStringMessage("Nothing there to update...");
+		logMessage("Nothing there to update...");
 		writeContentAfterSave ();
 	}
 
@@ -529,7 +533,7 @@ function writeContent ()
 		stream.close();
 		
 		// write the temp file back to the original directory
-		consoleService.logStringMessage("WriteContent Writing...");
+		logMessage("WriteContent Writing...");
 		copyToFolder (gTmpFile, gSync.folder.folderURL);
 	}
 	else

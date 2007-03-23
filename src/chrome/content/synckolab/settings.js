@@ -249,7 +249,7 @@ function init() {
 			consoleService.logStringMessage("Calendar not available - disabling");
 	else
 	{
-		var calendars = getSynckolabCalendars();
+		var calendars = getCalendars();
 
 		var abList = document.getElementById("calURL");
 		var abpopup = document.createElement("menupopup");
@@ -470,7 +470,7 @@ function updateCal(value)
 			cur = cur.nextSibling;
 		}
 						
-		// the address book
+		// the calendar
 		var ab = pref.getCharPref("SyncKolab."+selectedCalConfig+".Calendar");
 		actList = document.getElementById("calURL");
 		// go through the items
@@ -487,7 +487,7 @@ function updateCal(value)
 			cur = cur.nextSibling;
 		}
 
-		var calFormat = pref.getCharPref("SyncKolab."+selectedConConfig+".CalendarFormat");
+		var calFormat = pref.getCharPref("SyncKolab."+selectedCalConfig+".CalendarFormat");
 		actList = document.getElementById("calFormat");
 		// go through the items
 		var cur = actList.firstChild.firstChild;
@@ -509,7 +509,7 @@ function updateCal(value)
 		updateCalFolder (act);
 		updateCalFolder (act);
 		var tree= document.getElementById ("calImapFolder");
-		var treei = tree.view.getIndexOfItem(document.getElementById(sCurFolder));
+		var treei = tree.view.getIndexOfItem(document.getElementById(sCurFolder+"c"));
 		tree.view.selection.select(treei); 
 		tree.boxObject.scrollToRow(treei);
 
@@ -656,30 +656,34 @@ function updateCalFolder (act)
 	var gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
 	for (var i = 0; i < gAccountManager.allServers.Count(); i++)
 	{
-		var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-		if (account.rootMsgFolder.baseMessageURI == act)
+		try
 		{
-			var cfold = document.getElementById ("calImapFolder");
-			// delete the treechildren if exist
-			var cnode = cfold.firstChild;
-			while (cnode != null)
+			var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
+			if (account.rootMsgFolder.baseMessageURI == act)
 			{
-				if (cnode.nodeName == "treechildren")
+				var cfold = document.getElementById ("calImapFolder");
+				// delete the treechildren if exist
+				var cnode = cfold.firstChild;
+				while (cnode != null)
 				{
-					cfold.removeChild(cnode);
-					break;
+					if (cnode.nodeName == "treechildren")
+					{
+						cfold.removeChild(cnode);
+						break;
+					}
+					cnode = cnode.nextSibling;
 				}
-				cnode = cnode.nextSibling;
+	
+				// ok show some folders:
+				var tChildren = document.createElement("treechildren");
+				cfold.appendChild(tChildren);
+	
+				updateFolderElements (account.rootFolder, tChildren, "c");
+				return;			
+				
 			}
-
-			// ok show some folders:
-			var tChildren = document.createElement("treechildren");
-			cfold.appendChild(tChildren);
-
-			updateFolderElements (account.rootFolder, tChildren, "c");
-			return;			
-			
 		}
+		catch (ex) {}
 	}
 }
 

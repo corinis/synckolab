@@ -136,7 +136,7 @@ var syncAddressBook = {
 		{
 			// remember that we did this uid already
 			this.folderMessageUids.push(newCard.custom4);
-			consoleService.logStringMessage("got card from message: " + newCard.custom4);	
+			logMessage("got card from message: " + newCard.custom4);	
 
 			// update list item
 			this.curItemInListId.setAttribute("label", newCard.custom4);
@@ -149,7 +149,7 @@ var syncAddressBook = {
 			// a new card or locally deleted 
 			if (acard == null)
 			{
-				var cEntry = getDbEntry (newCard.custom4, this.db);
+				var cEntry = getDbEntryIdx (newCard.custom4, this.db);
 				if (cEntry == -1)
 				{
 					var curEntry = new Array();
@@ -158,14 +158,14 @@ var syncAddressBook = {
 					this.db.push(curEntry);
 	
 					this.gAddressBook.addCard (newCard);
-					consoleService.logStringMessage("card is new, add to address book: " + newCard.custom4);	
+					logMessage("card is new, add to address book: " + newCard.custom4);	
 					
 					//update list item
 					this.curItemInListStatus.setAttribute("label", "add local");
 				}
 				else
 				{
-					consoleService.logStringMessage("card deleted locally: " + newCard.custom4);	
+					logMessage("card deleted locally: " + newCard.custom4);	
 
 					//update list item
 					this.curItemInListStatus.setAttribute("label", "delete on server");
@@ -174,7 +174,7 @@ var syncAddressBook = {
 			}
 			else
 			{
-				var cdb = getDbEntry (newCard.custom4, this.db);
+				var cdb = getDbEntryIdx (newCard.custom4, this.db);
 				var lastSyncEntry = cdb!=-1?this.db[cdb][1]:null;
 				var newSyncEntry = genConSha1 (newCard);
 				var curSyncEntry = genConSha1 (acard);
@@ -182,7 +182,7 @@ var syncAddressBook = {
 				if (lastSyncEntry != null && lastSyncEntry != curSyncEntry && lastSyncEntry != newSyncEntry)
 				{
 					//local and server were both updated, ut oh, what do we want to do?
-					consoleService.logStringMessage("Conflicts detected, opening resolution dialog.");
+					logMessage("Conflicts detected, opening resolution dialog.");
 					
 					//This function returns an array on conflicting fields
 					var conflicts = contactConflictTest(newCard,acard);
@@ -227,7 +227,7 @@ var syncAddressBook = {
 					} else {
 						//SHA values are different, however, no apparent differences
 						//Changes to the way the SHA (code revisions) are calculated could cause this
-						consoleService.logStringMessage("Sha values different, however, assumed no change, update local" + newCard.custom4);
+						logMessage("Sha values different, however, assumed no change, update local" + newCard.custom4);
 						bUpdateLocal = true;
 						this.curItemInListStatus.setAttribute("label", "Auto Conflict Resolved : update local");						
 					}
@@ -262,7 +262,7 @@ var syncAddressBook = {
 				// we got that already, see which to update
 				if (lastSyncEntry == null || (lastSyncEntry == curSyncEntry && lastSyncEntry != newSyncEntry))
 				{
-				    consoleService.logStringMessage("server changed: " + acard.custom4);
+				    logMessage("server changed: " + acard.custom4);
 					// server changed - update local
 					var list = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);
 					list.AppendElement(acard);
@@ -282,7 +282,7 @@ var syncAddressBook = {
 				else
 				if (lastSyncEntry != curSyncEntry && lastSyncEntry == newSyncEntry)
 				{
-				    consoleService.logStringMessage("client changed: " + acard.custom4);
+				    logMessage("client changed: " + acard.custom4);
 
 					// update list item
 					this.curItemInListStatus.setAttribute("label", "update server");
@@ -296,7 +296,7 @@ var syncAddressBook = {
 			}
 		}
 		else
-			consoleService.logStringMessage("unable to parse message, skipping:\n\n" + fileContent);
+				    logMessage("unable to parse message, skipping");
 		return null;
 	},
 	
@@ -342,7 +342,7 @@ var syncAddressBook = {
 			// look at new card
 			// generate a unique id (will random be enough for the future?)
 			cur.custom4 = "pas-id-" + get_randomVcardId();
-	    	consoleService.logStringMessage("adding unsaved card: " + cur.custom4);
+	    	logMessage("adding unsaved card: " + cur.custom4);
 			writeCur = true;
 			cur.editCardToDatabase ("moz-abmdbdirectory://"+this.gAddressBook);
 			// add the new card into the db
@@ -377,7 +377,7 @@ var syncAddressBook = {
 			{
 				if (cur.custom4 == this.folderMessageUids[i])
 				{
-					consoleService.logStringMessage("we got this card: " + cur.custom4);
+					logMessage("we got this card: " + cur.custom4);
 					writeCur = false;
 					break;
 				}
@@ -389,7 +389,7 @@ var syncAddressBook = {
 			if (writeCur)
 			{
 				var curSyncEntry = genConSha1 (cur);
-				var cdb = getDbEntry (cur.custom4, this.db);
+				var cdb = getDbEntryIdx (cur.custom4, this.db);
 				if (cdb != -1)
 				{
 					writeCur = false;
@@ -445,7 +445,7 @@ var syncAddressBook = {
 		{
 			// and write the message
 			content = card2Message(cur, this.format);
-	        consoleService.logStringMessage("New Card " + cur.custom4);
+	        logMessage("New Card " + cur.custom4);
 		}
 	
 		try

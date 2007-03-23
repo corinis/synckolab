@@ -32,12 +32,11 @@
 /* ----- general functions to access calendar and events ----- */
 
 var activeCalendarManager;
-var debugKolabXML = false;
 
 /**
  * New and updated calendar functions (lightning 0.1)
  */
-function getSynckolabCalendarManager()
+function getCalendarManager()
 {
     // TODO somehow a Lightning calendar looses its event color after it's accessed in synckolab
     if (!activeCalendarManager) {
@@ -67,10 +66,10 @@ function getSynckolabCalendarManager()
 /**
  * Returns a list of calendars (calICalendar)
  */
-function getSynckolabCalendars()
+function getCalendars()
 {
      try {
-         return getSynckolabCalendarManager().getCalendars({});
+         return getCalendarManager().getCalendars({});
      } catch (e) {
          dump("Error getting calendars: " + e + "\n");
          return [];
@@ -83,7 +82,7 @@ function getSynckolabCalendars()
  */
 function isCalendarAvailable ()
 {
-	return getSynckolabCalendars() != [];
+	return getCalendars() != [];
 }
 
 
@@ -109,9 +108,6 @@ function genCalSha1 (event)
     // to switch back to something faster if needed.
     var aString = cnv_event2xml( event, true);
     hashValue = hex_sha1(aString);
-    if (debugKolabXML)
-        consoleService.logStringMessage("Parsed event in XML:\n" + aString + "\nHash Value: " + hashValue);
-
     return hashValue;
 }
 
@@ -205,8 +201,7 @@ function getDayIndex (name)
  */
 function xml2Event (xml, event)
 {
-    if (debugKolabXML)
-        consoleService.logStringMessage("Parsing an XML event:\n====================\n" + xml);
+	logMessage("Parsing an XML event:\n" + xml);
 	// TODO improve recurrence settings
 	//      not working ATM:
 	//          - yearly recurrence
@@ -222,11 +217,51 @@ function xml2Event (xml, event)
 	var boundary = xml.substring(xml.indexOf('boundary="')+10, xml.indexOf('"', xml.indexOf('boundary="')+12));
 
 	// get the start of the xml
-	xml = xml.substring(xml.indexOf("<?xml"));
+	var contTypeIdx = xml.indexOf('Content-Type: application/x-vnd.kolab.event');
+
+	if (contTypeIdx == -1)
+	{
+		// so this message has no part of content type application/x-vnd.kolab.event
+		logMessage("Error parsing this message: no application/x-vnd.kolab.event");
+		return false;
+	}
 	
-	// until the boundary = end of xml
-	if (xml.indexOf(boundary) != -1)
-		xml = xml.substring(0, xml.indexOf("--"+boundary));
+	xml = xml.substring(contTypeIdx); // cut everything before this part
+	var xmlIdx = xml.indexOf("<?xml")
+	
+	if (xmlIdx == -1)
+	{
+		// FIXME try to decode if transfer-encoding is set to base64
+		if (xml.indexOf("Content-Transfer-Encoding: base64") != -1)
+		{
+			var startPos = xml.indexOf("\r\n\r\n");
+			var endPos = xml.indexOf("--"+boundary)
+			xml = xml.substring(startPos, endPos).replace(/\r\n/g, "")
+			try {
+				xml = atob(xml)
+			} catch (e) {
+				dump("Error decoding base64: " + e + "\n");
+				logMessage("Error decoding base64: " + xml);
+				return false;
+			}
+		}
+		else
+		{
+			// so this message has no <xml>something</xml> area
+			logMessage("Error parsing this message: no xml segment found");
+			return false;
+		}
+	}
+	else
+	{
+		xml = xml.substring(xmlIdx);
+		// until the boundary = end of xml
+		if (xml.indexOf(boundary) != -1)
+			xml = xml.substring(0, xml.indexOf("--"+boundary));
+	}
+	
+	// decode utf chars
+	xml = decode_utf8(DecodeQuoted(xml))
 
 	// convert the string to xml
 	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser); 
@@ -239,13 +274,13 @@ function xml2Event (xml, event)
 	if (topNode.nodeName == "parsererror")
 	{
 		// so this message has no valid XML part :-(
-		consoleService.logStringMessage("Error parsing the XML content of this message.");
+		logMessage("Error parsing the XML content of this message.");
 		return false;
 	}
 	if ((topNode.nodeType != Node.ELEMENT_NODE) || (topNode.nodeName.toUpperCase() != "EVENT"))
 	{
 		// this can't be an event in Kolab XML format
-		consoleService.logStringMessage("This message doesn't contain an event in Kolab XML format.");
+		logMessage("This message doesn't contain an event in Kolab XML format.");
 		return false;
 	}
 
@@ -330,15 +365,19 @@ function xml2Event (xml, event)
 					break;
 					
 				case "LOCATION":
-			  		event.setProperty("LOCATION", cur.firstChild.data);
+				    // sometimes we have <location></location> in the XML
+				    if (cur.firstChild)
+						event.setProperty("LOCATION", cur.firstChild.data);
 					break;
 
 				case "CATEGORIES":
-			  		event.setProperty("CATEGORIES", cur.firstChild.data);
+				    if (cur.firstChild)
+						event.setProperty("CATEGORIES", cur.firstChild.data);
 					break;
 
 				case "ALARM":
-					event.alarmOffset = createDuration(cur.firstChild.data);
+				    if (cur.firstChild)
+						event.alarmOffset = createDuration(cur.firstChild.data);
 					break;
 					
 				case "SENSITIVITY":
@@ -355,7 +394,7 @@ function xml2Event (xml, event)
 					break;
 
 				case "RECURRENCE":
-					consoleService.logStringMessage("Parsing this event: " + event.id);
+					logMessage("Parsing recurring event: " + event.id);
                     recInfo = Components.classes["@mozilla.org/calendar/recurrence-info;1"] 
                                       .createInstance(Components.interfaces.calIRecurrenceInfo);
                     recInfo.item = event;
@@ -620,8 +659,8 @@ function xml2Event (xml, event)
 		} // end if
 		cur = cur.nextSibling;
 	} // end while
-	if (debugKolabXML)
-	   consoleService.logStringMessage("Parsed event in ICAL:\n=====================\n" + event.icalString);
+	
+	logMessage("Parsed event in ICAL:\n" + event.icalString);
 	return true;
 }
 
@@ -649,13 +688,15 @@ function cnv_event2xml (event, skipVolatiles)
 	// TODO improve recurrence settings
 	//      not working ATM:
 	//          - yearly recurrence
+	//          - exclusions for recurrence
     var hasOrganizer = false;
     var isAllDay = event.startDate.isDate;
     var endDate = event.endDate;
-
+//    if (isAllDay)
+//        endDate.day -= 1;
     var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     xml += "<event version=\"1.0\" >\n"
-    xml += " <product-id>Synckolab 0.4.27-ag, Calendar Sync</product-id>\n";
+    xml += " <product-id>Synckolab 0.4.24-ag, Calendar Sync</product-id>\n";
     xml += " <uid>" + event.id + "</uid>\n"
     xml += " <start-date>" + calDateTime2String(event.startDate, isAllDay) + "</start-date>\n";
     xml += " <end-date>" + calDateTime2String(endDate, isAllDay) + "</end-date>\n";
@@ -675,11 +716,8 @@ function cnv_event2xml (event, skipVolatiles)
         xml += " <sensitivity>public</sensitivity>\n";
     if (event.getProperty("LOCATION"))
         xml += " <location>" + event.getProperty("LOCATION") +"</location>\n";
-    if (event.alarmOffset && event.alarmOffset.inSeconds != 0)
-    {
-        minutes = Math.floor(Math.abs(event.alarmOffset.inSeconds)/60);
-        xml += " <alarm>" + minutes + "</alarm>\n";
-    }
+    if (event.alarmOffset && event.alarmOffset != 0)
+        xml += " <alarm>" + event.alarmOffset + "</alarm>\n";
     if (event.getProperty("CATEGORIES"))
         xml += " <categories>" + event.getProperty("CATEGORIES") + "</categories>\n";
 
@@ -694,7 +732,7 @@ function cnv_event2xml (event, skipVolatiles)
                 xml += " <recurrence cycle=\"daily\">\n";
 				break;
 			case "WEEKLY":
-                xml += " <recurrence cycle=\"weekly\">\n";
+                xml += " <recurrence cycle=\"weekly\" type=\"weekday\">\n";
 			    // need to process the <day> value here
                 for each (var i in recRule.getComponent("BYDAY", {})) {
                     xml += "  <day>" + getKolabXmlDayName(i) + "</day>\n";
@@ -786,9 +824,7 @@ function cnv_event2xml (event, skipVolatiles)
         {
             mail = attendee.id.replace(/MAILTO:/, '');
             // FIXME the check for the array size == 1 is a hack to work around a Lightning bug
-            // where isOrganizer() doesn't get true
-            if (attendee.isOrganizer || (attendee.role == "CHAIR") || (attendees.length == 1))
-
+            if (attendee.isOrganizer || (attendees.length == 1))
             {
                 xml += " <organizer>\n";
                 xml += "  <display-name>" + attendee.commonName + "</display-name>\n";
@@ -796,7 +832,7 @@ function cnv_event2xml (event, skipVolatiles)
                 xml += " </organizer>\n";
                 hasOrganizer = true;
                 // FIXME indicator for workaround
-                if (!attendee.isOrganizer) consoleService.logStringMessage("Synckolab: Organizer status expected!!!"); 
+                if (!attendee.isOrganizer) logMessage("Organizer status expected!!!"); 
             }
             else
             {
@@ -818,7 +854,7 @@ function cnv_event2xml (event, skipVolatiles)
                 }
                 xml += " <attendee>\n";
                 xml += "  <display-name>" + attendee.commonName + "</display-name>\n";
-                xml += "  <smtp-address>" + mail + "</smtp-address>\n";
+                xml += "  <smtp-address>" + attendee.id + "</smtp-address>\n";
                 xml += "  <status>" + status + "</status>\n";
                 xml += "  <request-response>" + (attendee.rsvp ? "true" : "false") + "</request-response>\n";
                 switch (attendee.role)
@@ -845,8 +881,8 @@ function cnv_event2xml (event, skipVolatiles)
         // FIXME Try to read the sender data from the settings of the 
         // account specified in the synckolab settings
         xml += " <organizer>\n";
-        xml += "  <display-name>" + "Synckolab" + "</display-name>\n";
-        xml += "  <smtp-address>" + "Synckolab@Post" + "</smtp-address>\n";
+        xml += "  <display-name>" + "Organizer" + "</display-name>\n";
+        xml += "  <smtp-address>" + "organizer@no.tld" + "</smtp-address>\n";
         xml += " </organizer>\n";
     }
 
@@ -865,30 +901,36 @@ function cnv_event2xml (event, skipVolatiles)
     xml += " <revision>0</revision>\n";
     xml += "</event>\n"
 
-	if (debugKolabXML)
-		consoleService.logStringMessage("Event in ICAL:\n=============\n" + event.icalString + "\n" 
-			+ "Created XML event structure:\n=============================\n" + xml);
+	logMessage("Event in ICAL:\n=============\n" + event.icalString + "\n" 
+		+ "Created XML event structure:\n=============================\n" + xml);
 	return xml;
 }
 
 
 /**
  * convert an ICAL event into a Kolab 2 XML format message
- * @param event an event instance
+ *
  * @return a message in Kolab 2 format
  */
 function event2kolabXmlMsg (event)
 {
-	var xml = event2xml(event);
-	var my_msg = generateMail(event.id, "", "application/x-vnd.kolab.event", 
-			true, encode_utf8(xml));
+    var xml = "";
+    xml = event2xml(event);
+    var my_msg = genMailHeader(event.id, "", "application/x-vnd.kolab.event", true)
+	           + encodeQuoted(encode_utf8(xml))
 	return my_msg;
 }
 
 
+
 /**
- * functions to handle the iCal event format
+ * OLD stuff
  */
+
+
+
+/* ----- functions to handle the iCal event format ----- */
+
 function ical2event (content)
 {
     var event;
@@ -905,7 +947,7 @@ function ical2event (content)
 	event = Components.classes["@mozilla.org/calendar/event;1"]
                       .createInstance(Components.interfaces.calIEvent);
     event.icalComponent = subComp;
-    consoleService.logStringMessage("parsed event: " + event + ":" + event.id);
+    logMessage("parsed event: " + event + ":" + event.id);
     return event;
 }
 

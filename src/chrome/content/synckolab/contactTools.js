@@ -42,9 +42,8 @@ function xml2Card (xml, card)
 	// get the start of the xml
 	xml = xml.substring(xml.indexOf("<?xml"));
 	
-	// remove the boundary if there is one at the end
 	if (xml.indexOf(boundary) != -1)
-		xml = xml.substring(0, xml.indexOf(boundary)-2);
+		xml = xml.substring(0, xml.indexOf(boundary));
 		
 	// until the boundary = end of xml
 	xml = decode_utf8(DecodeQuoted(xml));
@@ -540,10 +539,7 @@ function message2Card (message, card, format)
 	//card.secondEmail = "";
 	//card.aimScreenName = "";
 */
-
-	// find out wheter the card is xml or vcard format
-	if (message.indexOf("<?xml") != -1)
-	//if (format == "Xml")
+	if (format == "Xml")
 		return xml2Card(message, card);
 	
 	// decode utf8
@@ -753,7 +749,7 @@ function card2Message (card, format)
 	
 	if(format == "Xml")
 	{
-		return generateMail(card.custom4, "", "application/x-vnd.kolab.contact", true, encode_utf8(card2Xml(card)));
+		return genMailHeader(card.custom4, "", "application/x-vnd.kolab.contact", true) + encodeQuoted(encode_utf8(card2Xml(card)));
 	}
 	
 
@@ -882,7 +878,7 @@ function card2Message (card, format)
  	msg += "VERSION:3.0\n";
  	msg += "END:VCARD\n\n";
 
-	return generateMail(card.custom4, "vCard", "text/x-vcard", false, encode_utf8(msg));
+	return genMailHeader(card.custom4, "vCard", "text/x-vcard", false) + encodeQuoted(encode_utf8(msg));
 }
 
 

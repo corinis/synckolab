@@ -88,6 +88,10 @@ function readHashDataBase (dbf)
 	return db;
 }
 
+
+/**
+ * Gets rid of whitespace at the beginning and the end of a string
+ */
 function trim(s) {
   while (s.substring(0,1) == ' ' || s.substring(0,1) == '\n' || s.substring(0,1) == '\r' || s.substring(0,1) == '\t') {
     s = s.substring(1,s.length);
@@ -98,10 +102,12 @@ function trim(s) {
   }
   return s;
 }
+
+
 /**
  * returns the position of this entry in the db
  */
-function getDbEntry (key, db)
+function getDbEntryIdx (key, db)
 {
  	for (var i = 0; i < db.length; i++)
 		if (db[i][0] == key)
@@ -855,10 +861,6 @@ function encodeQuoted(s)
 }
 
 /**
- * DEPRECATED: use generateMail() below, as this method is broken.
- * Multi-part messages need the boundary also at its end, which 
- * is impossible with this method!
- *
  * cid: the id of the card/event
  * adsubject: optional additional subject (iCal or vCard)
  * mime: the mime type (application/x-vnd.kolab.contact, application/x-vnd.kolab.event, application/x-vnd.kolab.task, application/x-vnd.kolab.journal, text/x-vcard, text/calendar)
@@ -877,6 +879,9 @@ function genMailHeader (cid, adsubject, mime, part)
           (Math.abs(cdate.getTimezoneOffset()/60)<10?"0":"") + Math.abs(cdate.getTimezoneOffset()/60) +"00\n"; 
 
 	msg += "From: synckolab@no.tld\n";
+	msg += "Reply-To: \n";
+	msg += "Bcc: \n";
+	msg += "To: synckolab@no.tld\n";
 	
 	msg += "Subject: "; 
 	if (!part)
@@ -885,89 +890,40 @@ function genMailHeader (cid, adsubject, mime, part)
 	
 	msg += sdate;
 	if (!part)
-		msg += 'Content-Type: '+mime+';\ncharset="utf-8"\n';
+		msg += 'Content-Type: '+mime+';charset="utf-8"\n';
 	else
 		msg += 'Content-Type: Multipart/Mixed;boundary="Boundary-00='+bound+'"\n';
 	msg += 'Content-Transfer-Encoding: quoted-printable\n';
-	msg += "User-Agent: SyncKolab 0.4.28\n";
+	msg += "User-Agent: SyncKolab\n";
 	if (part)
 		msg += "X-Kolab-Type: "+mime+"\n";
 	msg += "\n"
 	if (part)
 	{
+
 		msg += '--Boundary-00='+bound+'\n';
-		msg += 'Content-Type: Text/Plain;\n  charset="us-ascii"\n';
+		msg += 'Content-Type: Text/Plain;charset="us-ascii"\n';
 		msg += 'Content-Transfer-Encoding: 7bit\n\n';
 		msg += 'This is a Kolab Groupware object.\n';
 		msg += 'To view this object you will need an email client that can understand the Kolab Groupware format.\n';
 		msg += 'For a list of such email clients please visit\n';
 		msg += 'http://www.kolab.org/kolab2-clients.html\n';
 		msg += '--Boundary-00='+bound+'\n'
-		msg += 'Content-Type: '+mime+';\n  name="kolab.xml"\n';
+		msg += 'Content-Type: '+mime+';name="kolab.xml"\n';
 		msg += 'Content-Transfer-Encoding: quoted-printable\n'
-		msg += 'Content-Disposition: attachment;\n  filename="kolab.xml"\n\n';
+		msg += 'Content-Disposition: attachment;filename="kolab.xml"\n\n';
 	}
 	
 	return msg;
 }
 
+
+
 /**
- * Create a message to be stored on the Kolab server
- *
- * cid: the id of the card/event
- * adsubject: optional additional subject (iCal or vCard)
- * mime: the mime type (application/x-vnd.kolab.contact, application/x-vnd.kolab.event, application/x-vnd.kolab.task, application/x-vnd.kolab.journal, text/x-vcard, text/calendar)
- * part: true if this is a multipart message
- * content: the content for the message
+ * Prints out debug messages to the cosole if the global variable DEBUG_SYNCKOLAB is set to true
  */
-function generateMail (cid, adsubject, mime, part, content)
+function logMessage (msg)
 {
-	var msg = "";
-	var bound = get_randomVcardId();
-	var cdate = new Date();
-	var sTime = (cdate.getHours()<10?"0":"") + cdate.getHours() + ":" + (cdate.getMinutes()<10?"0":"") + cdate.getMinutes() + ":" +
-		(cdate.getSeconds()<10?"0":"") + cdate.getSeconds();		
-	var sdate = "Date: " + getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " +
-           getMonthString (cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime
-          + " " + ((cdate.getTimezoneOffset() < 0)?"+":"-") +
-          (Math.abs(cdate.getTimezoneOffset()/60)<10?"0":"") + Math.abs(cdate.getTimezoneOffset()/60) +"00\n"; 
- 
-// TODO here we should read the mail address from the proper acount
-// and use it in the From: header
-	msg += "From: synckolab@no.tld\n";
-	
-	msg += "Subject: "; 
-	if (!part)
-		msg += adsubject+" ";
-	msg += cid + "\n";
-	
-	msg += sdate;
-	if (!part)
-		msg += 'Content-Type: '+mime+';\n  charset="utf-8"\n';
-	else
-		msg += 'Content-Type: Multipart/Mixed;boundary="Boundary-00='+bound+'"\n';
-	msg += 'Content-Transfer-Encoding: quoted-printable\n';
-	msg += "User-Agent: SyncKolab 0.4.28\n";
-	if (part)
-		msg += "X-Kolab-Type: "+mime+"\n";
-	msg += "\n"
-	if (part)
-	{
-		msg += '--Boundary-00='+bound+'\n';
-		msg += 'Content-Type: Text/Plain;\ncharset="us-ascii"\n';
-		msg += 'Content-Transfer-Encoding: 7bit\n\n';
-		msg += 'This is a Kolab Groupware object.\n';
-		msg += 'To view this object you will need an email client that can understand the Kolab Groupware format.\n';
-		msg += 'For a list of such email clients please visit\n';
-		msg += 'http://www.kolab.org/kolab2-clients.html\n';
-		msg += '--Boundary-00='+bound+'\n'
-		msg += 'Content-Type: '+mime+';\n name="kolab.xml"\n';
-		msg += 'Content-Transfer-Encoding: quoted-printable\n'
-		msg += 'Content-Disposition: attachment;\n filename="kolab.xml"\n\n';
-	}
-	msg += content + '\n';
-	if (part)
-		msg += '--Boundary-00='+bound+'\n';
-	
-	return msg;
+	if (DEBUG_SYNCKOLAB)
+		consoleService.logStringMessage(msg);
 }
