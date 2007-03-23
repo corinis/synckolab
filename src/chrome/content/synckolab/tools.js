@@ -877,9 +877,6 @@ function genMailHeader (cid, adsubject, mime, part)
           (Math.abs(cdate.getTimezoneOffset()/60)<10?"0":"") + Math.abs(cdate.getTimezoneOffset()/60) +"00\n"; 
 
 	msg += "From: synckolab@no.tld\n";
-	msg += "Reply-To: \n";
-	msg += "Bcc: \n";
-	msg += "To: synckolab@no.tld\n";
 	
 	msg += "Subject: "; 
 	if (!part)
@@ -892,7 +889,7 @@ function genMailHeader (cid, adsubject, mime, part)
 	else
 		msg += 'Content-Type: Multipart/Mixed;boundary="Boundary-00='+bound+'"\n';
 	msg += 'Content-Transfer-Encoding: quoted-printable\n';
-	msg += "User-Agent: SyncKolab\n";
+	msg += "User-Agent: SyncKolab 0.4.28\n";
 	if (part)
 		msg += "X-Kolab-Type: "+mime+"\n";
 	msg += "\n"
@@ -938,10 +935,6 @@ function generateMail (cid, adsubject, mime, part, content)
 // TODO here we should read the mail address from the proper acount
 // and use it in the From: header
 	msg += "From: synckolab@no.tld\n";
-// FIXME we really don't need these headers
-//	msg += "Reply-To: \n";
-//	msg += "Bcc: \n";
-//	msg += "To: synckolab@no.tld\n";
 	
 	msg += "Subject: "; 
 	if (!part)
@@ -954,7 +947,7 @@ function generateMail (cid, adsubject, mime, part, content)
 	else
 		msg += 'Content-Type: Multipart/Mixed;boundary="Boundary-00='+bound+'"\n';
 	msg += 'Content-Transfer-Encoding: quoted-printable\n';
-	msg += "User-Agent: SyncKolab\n";
+	msg += "User-Agent: SyncKolab 0.4.28\n";
 	if (part)
 		msg += "X-Kolab-Type: "+mime+"\n";
 	msg += "\n"

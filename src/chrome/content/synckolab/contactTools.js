@@ -540,7 +540,10 @@ function message2Card (message, card, format)
 	//card.secondEmail = "";
 	//card.aimScreenName = "";
 */
-	if (format == "Xml")
+
+	// find out wheter the card is xml or vcard format
+	if (message.indexOf("<?xml") != -1)
+	//if (format == "Xml")
 		return xml2Card(message, card);
 	
 	// decode utf8
@@ -879,7 +882,7 @@ function card2Message (card, format)
  	msg += "VERSION:3.0\n";
  	msg += "END:VCARD\n\n";
 
-	return generateMail(card.custom4, "vCard", "text/x-vcard", encode_utf8(msg));
+	return generateMail(card.custom4, "vCard", "text/x-vcard", false, encode_utf8(msg));
 }
 
 
