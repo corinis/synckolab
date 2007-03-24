@@ -36,7 +36,7 @@ var activeCalendarManager;
 /**
  * New and updated calendar functions (lightning 0.1)
  */
-function getCalendarManager()
+function getSynckolabCalendarManager()
 {
     // TODO somehow a Lightning calendar looses its event color after it's accessed in synckolab
     if (!activeCalendarManager) {
@@ -66,10 +66,10 @@ function getCalendarManager()
 /**
  * Returns a list of calendars (calICalendar)
  */
-function getCalendars()
+function getSynckolabCalendars()
 {
      try {
-         return getCalendarManager().getCalendars({});
+         return getSynckolabCalendarManager().getCalendars({});
      } catch (e) {
          dump("Error getting calendars: " + e + "\n");
          return [];
@@ -82,7 +82,7 @@ function getCalendars()
  */
 function isCalendarAvailable ()
 {
-	return getCalendars() != [];
+	return getSynckolabCalendars() != [];
 }
 
 
@@ -344,7 +344,9 @@ function xml2Event (xml, event)
 					break;
 
 				case "BODY":
-			  		event.setProperty("DESCRIPTION", cur.firstChild.data);
+				    // sometimes we have <body></body> in the XML
+				    if (cur.firstChild)
+						event.setProperty("DESCRIPTION", cur.firstChild.data);
 					break;
 					
 				case "CREATOR":
@@ -688,15 +690,14 @@ function cnv_event2xml (event, skipVolatiles)
 	// TODO improve recurrence settings
 	//      not working ATM:
 	//          - yearly recurrence
-	//          - exclusions for recurrence
+
     var hasOrganizer = false;
     var isAllDay = event.startDate.isDate;
     var endDate = event.endDate;
-//    if (isAllDay)
-//        endDate.day -= 1;
+
     var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     xml += "<event version=\"1.0\" >\n"
-    xml += " <product-id>Synckolab 0.4.24-ag, Calendar Sync</product-id>\n";
+    xml += " <product-id>Synckolab 0.4.31-ag, Calendar Sync</product-id>\n";
     xml += " <uid>" + event.id + "</uid>\n"
     xml += " <start-date>" + calDateTime2String(event.startDate, isAllDay) + "</start-date>\n";
     xml += " <end-date>" + calDateTime2String(endDate, isAllDay) + "</end-date>\n";
@@ -716,8 +717,11 @@ function cnv_event2xml (event, skipVolatiles)
         xml += " <sensitivity>public</sensitivity>\n";
     if (event.getProperty("LOCATION"))
         xml += " <location>" + event.getProperty("LOCATION") +"</location>\n";
-    if (event.alarmOffset && event.alarmOffset != 0)
-        xml += " <alarm>" + event.alarmOffset + "</alarm>\n";
+    if (event.alarmOffset && event.alarmOffset.inSeconds != 0)
+    {
+        minutes = Math.floor(Math.abs(event.alarmOffset.inSeconds)/60);
+        xml += " <alarm>" + minutes + "</alarm>\n";
+    }
     if (event.getProperty("CATEGORIES"))
         xml += " <categories>" + event.getProperty("CATEGORIES") + "</categories>\n";
 
@@ -732,7 +736,7 @@ function cnv_event2xml (event, skipVolatiles)
                 xml += " <recurrence cycle=\"daily\">\n";
 				break;
 			case "WEEKLY":
-                xml += " <recurrence cycle=\"weekly\" type=\"weekday\">\n";
+                xml += " <recurrence cycle=\"weekly\">\n";
 			    // need to process the <day> value here
                 for each (var i in recRule.getComponent("BYDAY", {})) {
                     xml += "  <day>" + getKolabXmlDayName(i) + "</day>\n";
@@ -824,7 +828,8 @@ function cnv_event2xml (event, skipVolatiles)
         {
             mail = attendee.id.replace(/MAILTO:/, '');
             // FIXME the check for the array size == 1 is a hack to work around a Lightning bug
-            if (attendee.isOrganizer || (attendees.length == 1))
+            // where isOrganizer() doesn't get true
+            if (attendee.isOrganizer || (attendee.role == "CHAIR") || (attendees.length == 1))
             {
                 xml += " <organizer>\n";
                 xml += "  <display-name>" + attendee.commonName + "</display-name>\n";
@@ -854,7 +859,7 @@ function cnv_event2xml (event, skipVolatiles)
                 }
                 xml += " <attendee>\n";
                 xml += "  <display-name>" + attendee.commonName + "</display-name>\n";
-                xml += "  <smtp-address>" + attendee.id + "</smtp-address>\n";
+                xml += "  <smtp-address>" + mail + "</smtp-address>\n";
                 xml += "  <status>" + status + "</status>\n";
                 xml += "  <request-response>" + (attendee.rsvp ? "true" : "false") + "</request-response>\n";
                 switch (attendee.role)
@@ -881,8 +886,8 @@ function cnv_event2xml (event, skipVolatiles)
         // FIXME Try to read the sender data from the settings of the 
         // account specified in the synckolab settings
         xml += " <organizer>\n";
-        xml += "  <display-name>" + "Organizer" + "</display-name>\n";
-        xml += "  <smtp-address>" + "organizer@no.tld" + "</smtp-address>\n";
+        xml += "  <display-name>" + "Synckolab" + "</display-name>\n";
+        xml += "  <smtp-address>" + "synckolab@no.tld" + "</smtp-address>\n";
         xml += " </organizer>\n";
     }
 
@@ -912,24 +917,22 @@ function cnv_event2xml (event, skipVolatiles)
  *
  * @return a message in Kolab 2 format
  */
-function event2kolabXmlMsg (event)
+function event2kolabXmlMsg (event, email)
 {
     var xml = "";
     xml = event2xml(event);
-    var my_msg = genMailHeader(event.id, "", "application/x-vnd.kolab.event", true)
-	           + encodeQuoted(encode_utf8(xml))
+	var xml = event2xml(event);
+	var my_msg = generateMail(event.id, email, "", "application/x-vnd.kolab.event", 
+			true, encode_utf8(xml));
 	return my_msg;
 }
 
 
 
 /**
- * OLD stuff
+ * functions to handle the iCal event format
  */
 
-
-
-/* ----- functions to handle the iCal event format ----- */
 
 function ical2event (content)
 {

@@ -742,14 +742,15 @@ function message2Card (message, card, format)
  * Creates a vcard message out of a card.
  * This creates the WHOLE message including header
  */
-function card2Message (card, format)
+function card2Message (card, email, format)
 {
 	if (card.custom4 == null || card.custom4.length < 2)
 		return null;
 	
 	if(format == "Xml")
 	{
-		return genMailHeader(card.custom4, "", "application/x-vnd.kolab.contact", true) + encodeQuoted(encode_utf8(card2Xml(card)));
+		return generateMail(card.custom4, email, "", "application/x-vnd.kolab.contact", 
+			true, encodeQuoted(encode_utf8(card2Xml(card))));
 	}
 	
 
@@ -878,7 +879,8 @@ function card2Message (card, format)
  	msg += "VERSION:3.0\n";
  	msg += "END:VCARD\n\n";
 
-	return genMailHeader(card.custom4, "vCard", "text/x-vcard", false) + encodeQuoted(encode_utf8(msg));
+	return generateMail(card.custom4, email, "vCard", "application//x-vcard", 
+			false, encodeQuoted(encode_utf8(msg)));
 }
 
 

@@ -50,6 +50,9 @@ var syncAddressBook = {
 	format: 'VCard', // the format VCard/Xml
 	folderMessageUids: '',
 	
+	email: '', // holds the account email
+	name: '', // holds the account name
+	
 	dbFile: '', // the current sync database file
 	db: '', // the current sync database 
 	
@@ -254,7 +257,7 @@ var syncAddressBook = {
 
 					if ( bUpdateServer ) {
 						// update on server - leave local alone
-						return card2Message(acard, this.format);
+						return card2Message(acard, this.email, this.format);
 					}
 					return null; // Return null, we either updated nothing or updated only local
 				}
@@ -288,7 +291,7 @@ var syncAddressBook = {
 					this.curItemInListStatus.setAttribute("label", "update server");
 					
 					// remember this message for update
-					return card2Message(acard, this.format);
+					return card2Message(acard, this.email, this.format);
 				}
 				
 				this.curItemInListStatus.setAttribute("label", "no change");
@@ -444,7 +447,7 @@ var syncAddressBook = {
 		if (writeCur)
 		{
 			// and write the message
-			content = card2Message(cur, this.format);
+			content = card2Message(cur, this.email, this.format);
 	        logMessage("New Card " + cur.custom4);
 		}
 	

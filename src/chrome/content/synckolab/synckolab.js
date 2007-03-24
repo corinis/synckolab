@@ -181,6 +181,8 @@ function nextSync()
 		// get and set the message folder
 		syncAddressBook.folder = getMsgFolder(syncAddressBook.serverKey, syncAddressBook.folderPath);
 		syncAddressBook.folderMsgURI = syncAddressBook.folder.baseMessageURI;
+		syncAddressBook.email = getAccountEMail(syncAddressBook.serverKey);
+		syncAddressBook.name = getAccountName(syncAddressBook.serverKey);
 		
 		// display stuff
 		syncAddressBook.itemList = itemList;
@@ -205,9 +207,11 @@ function nextSync()
 
 		processMsg.value ="Calendar Configuration " + calConfigs[curCalConfig];
 		syncCalendar.init(calConfigs[curCalConfig]);
-		syncCalendar.folder = getMsgFolder(syncCalendar.serverKey, syncCalendar.folderPath);
-		
+		syncCalendar.folder = getMsgFolder(syncCalendar.serverKey, syncCalendar.folderPath);		
 		syncCalendar.folderMsgURI = syncCalendar.folder.baseMessageURI;
+		syncCalendar.email = getAccountEMail(syncCalendar.serverKey);
+		syncCalendar.name = getAccountName(syncCalendar.serverKey);
+		
 
 		// display stuff
 		syncCalendar.itemList = itemList;

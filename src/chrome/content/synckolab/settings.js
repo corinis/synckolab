@@ -249,7 +249,7 @@ function init() {
 			consoleService.logStringMessage("Calendar not available - disabling");
 	else
 	{
-		var calendars = getCalendars();
+		var calendars = getSynckolabCalendars();
 
 		var abList = document.getElementById("calURL");
 		var abpopup = document.createElement("menupopup");
@@ -529,6 +529,7 @@ function updateFolder (act)
 			var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
 			if (account.rootMsgFolder.baseMessageURI == act)
 			{
+							
 				var cfold = document.getElementById ("conImapFolder");
 				// delete the treechildren if exist
 				var cnode = cfold.firstChild;
@@ -729,6 +730,12 @@ function addConConfig()
 	var newconfig = prompt("Insert the name of the new Configuration");
 	if (newconfig != null && newconfig != "")
 	{
+		if (newconfig.indexOf(" ") != -1)
+		{
+			alert("You can not have a space in the configuration name!");
+			return;
+		}
+		
 		var conConfigList = document.getElementById("conConfig");
 		var conConfigPopup = conConfigList.firstChild;
 
@@ -791,6 +798,12 @@ function addCalConfig()
 	var newconfig = prompt("Insert the name of the new Configuration");
 	if (newconfig != null && newconfig != "")
 	{
+		if (newconfig.indexOf(" ") != -1)
+		{
+			alert("You can not have a space in the configuration name!");
+			return;
+		}
+	
 		var conConfigList = document.getElementById("calConfig");
 		var conConfigPopup = conConfigList.firstChild;
 

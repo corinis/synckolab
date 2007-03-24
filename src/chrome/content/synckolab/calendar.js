@@ -56,6 +56,9 @@ var syncCalendar = {
 	format: 'iCal', // the format iCal/Xml	
 	folderMessageUids: '',
 	
+	email: '', // holds the account email
+	name: '', // holds the account name
+
 	dbFile: '', // the current sync database file
 	db: '', // the current sync database
 
@@ -71,7 +74,7 @@ var syncCalendar = {
 			
 		// initialize the configuration
 		try {
-	    var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+			var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 			this.folderPath = pref.getCharPref("SyncKolab."+config+".CalendarFolderPath");
 			this.serverKey = pref.getCharPref("SyncKolab."+config+".CalendarIncomingServer");
 			this.gCalendarName = pref.getCharPref("SyncKolab."+config+".Calendar");
@@ -85,9 +88,9 @@ var syncCalendar = {
 		var calendars = getCalendars();
 		for( var i = 0; i < calendars.length; i++ )
 	    {
-	    	if (calendars[i].name == this.gCalendarName)
+	    	if (calendars[i] == this.gCalendarName)
 	    	{
-	    		this.gCalendar = calendars[i];
+	    		this.gCalendar = getCalendarByName(this.gCalendarName);
 	    		break;
 	    	}
 		}		
@@ -103,7 +106,9 @@ var syncCalendar = {
 	init2: function (nextFunc, sync)	{
 		// get ALL the items from calendar - when done call nextfunc
 		this.gEvents.nextFunc = nextFunc;
+		this.gEvents.events = new Array();
 		this.gEvents.sync = sync;
+		
 		// gCalendar might be invalid if no calendar is selected in the settings
 		if (this.gCalendar) {
 		  this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_EVENT, 0, null, null, this.gEvents);
@@ -187,7 +192,7 @@ var syncCalendar = {
 		this.folderMessageUids.push(parsedEvent.id);
 		// ok lets see if we have this one already 
 		var foundEvent = findEvent (this.gEvents, parsedEvent.id);
-		var idxEntry = getDbEntryIdxIdx (parsedEvent.id, this.db);
+		var idxEntry = getDbEntryIdx (parsedEvent.id, this.db);
 	
 		if (foundEvent == null)
 		{
@@ -220,7 +225,6 @@ var syncCalendar = {
 		    // event exists in local calendar
 			logMessage("Event exists local: " + parsedEvent.id);
 			
-			var cdb = getDbEntryIdx (parsedEvent.id, this.db);
 			var lastSyncEntry = idxEntry!=-1?this.db[idxEntry][1]:null;
 			var parsedSyncEntry = genCalSha1 (parsedEvent);
 			var foundSyncEntry = genCalSha1 (foundEvent);
@@ -233,7 +237,7 @@ var syncCalendar = {
 				if (window.confirm("Changes were made on the server and local. Click ok to use the server version.\nClient Event: " + 
 					foundEvent.title + "<"+ foundEvent.id + ">\nServer Event: " + parsedEvent.title + "<"+ parsedEvent.id + ">"))
 				{
-					// take from server
+					// take event from server
 					logMessage("Take event from server: " + parsedEvent.id);
 					
 					var newdb = new Array();
@@ -249,7 +253,6 @@ var syncCalendar = {
 						{
 							// modify the item
 							this.gCalendar.modifyItem(parsedEvent, foundEvent, this.gEvents);
-							this.gEvents.events[i] = parsedEvent;
 							
 							//update list item
 							this.curItemInListStatus.setAttribute("label", "update local");
@@ -275,13 +278,19 @@ var syncCalendar = {
                     var msg = null;
                     if (this.format == "Xml")
                     {
-                        msg = event2kolabXmlMsg(foundEvent);
+                        msg = event2kolabXmlMsg(foundEvent, this.email);
                     } 
                     else
                     {
-    					msg = genMailHeader(foundEvent.id, "iCal", "text/calendar", false);
-                        msg += encodeQuoted(encode_utf8(foundEvent.getIcalString()));
-                        msg += "\n\n";
+						icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
+							.getService(Components.interfaces.calIICSService);
+						var calComp = icssrv.createIcalComponent("VCALENDAR");
+						calComp.version = "2.0";
+						calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
+						calComp.addSubcomponent(foundEvent.icalComponent);
+						
+						msg = generateMail(cur.id, this.email, "iCal", "text/calendar", 
+							false, encodeQuoted(encode_utf8(calComp.serializeToICS())));
 					}
 
 					// update list item
@@ -334,11 +343,10 @@ var syncCalendar = {
 					var msg = null;
 					if (this.format == "Xml")
 					{
-						msg = event2kolabXmlMsg(foundEvent);
+						msg = event2kolabXmlMsg(foundEvent, this.email);
 					} 
 					else
 					{
-						msg = genMailHeader(foundEvent.id, "iCal", "text/calendar", false);
 						icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
 							.getService(Components.interfaces.calIICSService);
 						var calComp = icssrv.createIcalComponent("VCALENDAR");
@@ -346,8 +354,8 @@ var syncCalendar = {
 						calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
 						calComp.addSubcomponent(foundEvent.icalComponent);
 						
-						msg += encodeQuoted(encode_utf8(calComp.serializeToICS()));
-						msg += "\n\n";
+						msg = generateMail(cur.id, this.email, "iCal", "text/calendar", 
+							false, encodeQuoted(encode_utf8(calComp.serializeToICS())));
 					}
 					
 					// update list item
@@ -474,11 +482,10 @@ var syncCalendar = {
                 var msg = null;
                 if (this.format == "Xml")
                 {
-				    msg = event2kolabXmlMsg(cur);
+				    msg = event2kolabXmlMsg(cur, this.email);
                 } 
                 else
                 {
-				    msg = genMailHeader(cur.id, "iCal", "text/calendar", false);
     				icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
     					.getService(Components.interfaces.calIICSService);
     				var calComp = icssrv.createIcalComponent("VCALENDAR");
@@ -486,8 +493,9 @@ var syncCalendar = {
     				calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
     				calComp.addSubcomponent(cur.icalComponent);
     				
-    				msg += encodeQuoted(encode_utf8(calComp.serializeToICS()));
-    				msg += "\n\n";
+					msg = generateMail(cur.id, this.email, "iCal", "text/calendar", 
+						false, encodeQuoted(encode_utf8(calComp.serializeToICS())));
+					
 				}
 				
 		    	logMessage("New event:\n" + msg);
