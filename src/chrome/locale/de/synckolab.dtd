@@ -1,0 +1,27 @@
+﻿<!-- buttons -->
+
+<!ENTITY synckolab.sync.label					"Sync Kolab">
+<!ENTITY synckolab.sync.tip						"Vergleiche Kolab Verzeichnisse">
+
+<!ENTITY synckolab.contactConflict.dialogTitle		"Kontakt Konflikt">
+<!ENTITY synckolab.contactConflict.dialogMessage	"Konflikt gefunden.">
+
+<!ENTITY synckolab.settings.abook	"Adressbuch">
+<!ENTITY synckolab.settings.Contact	"Kontakte">
+<!ENTITY synckolab.settings.Calendar	"Kalender">
+<!ENTITY synckolab.settings.Account	"Konto">
+<!ENTITY synckolab.settings.ContactFolder	"Verzeichnis">
+<!ENTITY synckolab.settings.ContactFormat	"Format">
+<!ENTITY synckolab.settings.SaveToImap	"Auf das IMAP Konto schreiben">
+<!ENTITY synckolab.settings.Configuration	"Einstellung">
+<!ENTITY synckolab.settings.CalendarFormat	"Format">
+<!ENTITY synckolab.settings.CalendarFolder	"Verzeichnis">
+<!ENTITY synckolab.settings.SyncContacts	"Kontakte abgleichen">
+<!ENTITY synckolab.settings.SyncCalendar	"Kalender abgleichen">
+<!ENTITY synckolab.settings.CloseWindow	"Statusfenster nach Beendigung schliessen">
+<!ENTITY synckolab.settings.add	"Neu">
+<!ENTITY synckolab.settings.del	"Entfernen">
+
+
+
+

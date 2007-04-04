@@ -1,0 +1,24 @@
+<!-- buttons -->
+
+<!ENTITY synckolab.sync.label					"Sync Kolab">
+<!ENTITY synckolab.sync.tip						"Synchronize Kolab Folders">
+
+<!ENTITY synckolab.contactConflict.dialogTitle		"Contact Conflict">
+<!ENTITY synckolab.contactConflict.dialogMessage		"Conflicts detected. Please select which version to use for each field.">
+
+<!ENTITY synckolab.settings.abook	"Address Book">
+<!ENTITY synckolab.settings.Contact	"Contact">
+<!ENTITY synckolab.settings.Calendar	"Calendar">
+<!ENTITY synckolab.settings.Account	"Account">
+<!ENTITY synckolab.settings.ContactFolder	"Contact Folder">
+<!ENTITY synckolab.settings.ContactFormat	"Contact Format">
+<!ENTITY synckolab.settings.SaveToImap	"Save to Imap Folder">
+<!ENTITY synckolab.settings.Configuration	"Configuration">
+<!ENTITY synckolab.settings.CalendarFormat	"Calendar Format">
+<!ENTITY synckolab.settings.CalendarFolder	"Calendar Folder">
+<!ENTITY synckolab.settings.SyncContacts	"Sync Contacts">
+<!ENTITY synckolab.settings.SyncCalendar	"Sync Calendar">
+<!ENTITY synckolab.settings.CloseWindow	"Close Sync Window when done">
+<!ENTITY synckolab.settings.add	"Add">
+<!ENTITY synckolab.settings.del	"Delete">
+

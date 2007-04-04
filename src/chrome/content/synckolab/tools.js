@@ -36,6 +36,147 @@ function checkExist (value)
 	return (value != null && value != "");
 }
 
+
+/**
+ * Returns a file class for the given sync db file
+ * this also creates the required subdirectories if not yet existant
+ * you can use the .exists() function to check if we go this one already
+ */
+function getSyncDbFile (config, cal, id)
+{
+	id = id.replace(/[ :.;$\\\/]/g, "_");
+	var file = Components.classes["@mozilla.org/file/directory_service;1"].
+	   getService(Components.interfaces.nsIProperties).
+	   get("ProfD", Components.interfaces.nsIFile);
+	file.append("synckolab");
+	if (!file.exists())
+		file.create(1, 775);
+	if (cal)
+		file.append("calendar");
+	else
+		file.append("contact");
+	if (!file.exists())
+		file.create(1, 775);
+
+	file.append(config);
+	if (!file.exists())
+		file.create(1, 775);
+	file.append(id);
+	return file;
+}
+
+
+/**
+ * writes a sync file
+ */
+function writeSyncDBFile(file, content)
+{
+	if (file.exists()) 
+		file.remove(true);
+	file.create(file.NORMAL_FILE_TYPE, 0666);
+ 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
+ 	stream.init(file, 2, 0x200, false); // open as "write only"
+	stream.write(content, content.length);
+	stream.close();
+}
+
+
+/**
+ * reads a given sync file
+ */
+function readSyncDBFile (file)
+{	
+	if ((!file.exists()) || (!file.isReadable()))
+		return null;
+	
+	 // setup the input stream on the file
+	var istream = Components.classes["@mozilla.org/network/file-input-stream;1"]
+		.createInstance(Components.interfaces.nsIFileInputStream);
+	istream.init(file, 0x01, 4, null);
+	var fileScriptableIO = Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance(Components.interfaces.nsIScriptableInputStream); 
+	fileScriptableIO.init(istream);
+	// parse the xml into our internal document
+	istream.QueryInterface(Components.interfaces.nsILineInputStream); 
+	var fileContent = "";
+	var csize = 0; 
+	while ((csize = fileScriptableIO.available()) != 0)
+	{
+		fileContent += fileScriptableIO.read( csize );
+	}
+	fileScriptableIO.close(); 	
+	istream.close();
+
+	return trim(fileContent);
+}
+
+
+
+/**
+ * Removes a possible mail header and extracts only the "real" content.
+ * This also trims the message
+ */
+function stripMailHeader (content)
+{
+	var isMultiPart = content.indexOf('boundary="') != -1;
+	var boundary = null;
+	if (isMultiPart)
+		boundary = content.substring(content.indexOf('boundary="')+10, 
+			content.indexOf('"', content.indexOf('boundary="')+12));
+	
+	// seems we go us a vcard/ical when no xml is found
+	if (content.indexOf("<?xml") == -1)
+	{
+		var startPos = content.indexOf("\r\n\r\n");
+		return trim(content.substring(startPos, content.length));
+	}
+	else
+	{
+		// get the start of the content
+		var contTypeIdx = content.indexOf('Content-Type: ');
+	
+		if (contTypeIdx == -1)
+		{
+			// so this message has no part of content type application/x-vnd.kolab.event
+			logMessage("Error parsing this message: no application/x-vnd.kolab.event", 1);
+			return null;
+		}
+		
+		content = content.substring(contTypeIdx); // cut everything before this part
+		var contentIdx = content.indexOf("<?xml")
+		
+		if (contentIdx == -1)
+		{
+			if (content.indexOf("Content-Transfer-Encoding: base64") != -1)
+			{
+				var startPos = content.indexOf("\r\n\r\n");
+				var endPos = content.indexOf("--"+boundary)
+				content = content.substring(startPos, endPos).replace(/\r\n/g, "")
+				try {
+					content = atob(content)
+				} catch (e) {
+					logMessage("Error decoding base64: " + content, 1);
+					return null;
+				}
+			}
+			else
+			{
+				// so this message has no <xml>something</xml> area
+				logMessage("Error parsing this message: no xml segment found\n" + content, 1);
+				return null;
+			}
+		}
+		else
+		{
+			content = content.substring(contentIdx);
+			// until the boundary = end of xml
+			if (content.indexOf(boundary) != -1)
+				content = content.substring(0, content.indexOf("--"+boundary));
+		}		
+	}
+	return trim(content);
+}
+
+
 /**
  * Retrieves a file in the user profile dir which includes the config database
  * make sure to add .cal or .con at the config so there are no duplicate names
@@ -922,6 +1063,9 @@ function genMailHeader (cid, adsubject, mime, part)
           (Math.abs(cdate.getTimezoneOffset()/60)<10?"0":"") + Math.abs(cdate.getTimezoneOffset()/60) +"00\n"; 
 
 	msg += "From: synckolab@no.tld\n";
+	msg += "Reply-To: \n";
+	msg += "Bcc: \n";
+	msg += "To: synckolab@no.tld\n";
 	
 	msg += "Subject: "; 
 	if (!part)
@@ -982,6 +1126,9 @@ function generateMail (cid, mail, adsubject, mime, part, content)
 // TODO here we should read the mail address from the proper acount
 // and use it in the From: header
 	msg += "From: " + mail + "\n";
+	msg += "Reply-To: \n";
+	msg += "Bcc: \n";
+	msg += "To: synckolab@no.tld\n";
 	
 	msg += "Subject: "; 
 	if (!part)
@@ -994,7 +1141,7 @@ function generateMail (cid, mail, adsubject, mime, part, content)
 	else
 		msg += 'Content-Type: Multipart/Mixed;boundary="Boundary-00='+bound+'"\n';
 	msg += 'Content-Transfer-Encoding: quoted-printable\n';
-	msg += "User-Agent: SyncKolab 0.4.31s\n";
+	msg += "User-Agent: SyncKolab 0.4.31\n";
 	if (part)
 		msg += "X-Kolab-Type: "+mime+"\n";
 	msg += "\n"
@@ -1025,8 +1172,10 @@ function generateMail (cid, mail, adsubject, mime, part, content)
 /**
  * Prints out debug messages to the cosole if the global variable DEBUG_SYNCKOLAB is set to true
  */
-function logMessage (msg)
+function logMessage (msg, level)
 {
-	if (DEBUG_SYNCKOLAB)
+    if (!level)
+        level = 1;
+	if (DEBUG_SYNCKOLAB && (level <= DEBUG_SYNCKOLAB_LEVEL))
 		consoleService.logStringMessage(msg);
 }

@@ -1,14 +1,14 @@
 <?xml version="1.0"?> 
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 <?xul-overlay href="chrome://messenger/content/msgFolderPickerOverlay.xul"?>
-<!DOCTYPE window SYSTEM "chrome://buttons/content/buttons.dtd" >
+<!DOCTYPE loc SYSTEM "chrome://synckolab/locale/synckolab.dtd">
 
 <dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         onload="init();"
         buttons="accept,cancel"
         ondialogaccept="savePrefs();"
         persist="screenX screenY"
-        title="Sync Kolab V0.4.30">
+        title="Sync Kolab V0.4.32">
 
   <script type="application/x-javascript" src="chrome://synckolab/content/settings.js"/>
   <script type="application/x-javascript" src="chrome://synckolab/content/calTools.js"/>
@@ -26,8 +26,8 @@
 
 <tabbox>
   <tabs>
-    <tab label="Contact"/>
-    <tab label="Calendar"/>
+    <tab label="&synckolab.settings.Contact;"/>
+    <tab label="&synckolab.settings.Calendar;"/>
   </tabs>
   <tabpanels>
     <tabpanel id="contactTab">
@@ -35,21 +35,21 @@
   <vbox>
 
       <groupbox>
-		    <caption label="Configuration"/>
+		    <caption label="&synckolab.settings.Configuration;"/>
 				<menulist id="conConfig" oncommand="updateCon(this.value);">
 				</menulist> 
 				<hbox>
-					<button label="Add" oncommand="addConConfig();" tooltiptext="After adding a new configuration, make sure to select it."/>
-					<button label="Del" oncommand="delConConfig();"/>
+					<button label="&synckolab.settings.add;" oncommand="addConConfig();" tooltiptext="After adding a new configuration, make sure to select it."/>
+					<button label="&synckolab.settings.del;" oncommand="delConConfig();"/>
 				</hbox>
 			</groupbox>
       
-      <label value="Address Book"/>
+      <label value="&synckolab.settings.abook;"/>
 			<menulist id="conURL">
 			</menulist> 
     	<separator class="thin"/>
 
-      <label value="Account"/>
+      <label value="&synckolab.settings.Account;"/>
 			<menulist id="conImapAcct" oncommand="updateFolder(this.value);" tooltiptext="Only imap accounts are supported, other account types will not sync.">
 			</menulist> 
 
@@ -57,17 +57,17 @@
       
       <tree flex="7" id="conImapFolder" rows="7" height="150" width="250" hidecolumnpicker="true" seltype="single" onselect="setFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
       	<treecols>
-		      <treecol id="conFolder" label="Contact Folder" primary="true" flex="1"/>
+		      <treecol id="conFolder" label="&synckolab.settings.ContactFolder;" primary="true" flex="1"/>
   			</treecols>
   			
       </tree>
 
-      <label value="Contact Format"/>
+      <label value="&synckolab.settings.ContactFormat;"/>
 			<menulist id="conFormat">
 			</menulist> 
     	<separator class="thin"/>
       
-      <checkbox id="saveToConImap" label="Save to Imap Folder"/>
+      <checkbox id="saveToConImap" label="&synckolab.settings.SaveToImap;"/>
     <separator class="thin"/>
   </vbox>
   
@@ -78,21 +78,21 @@
   <vbox>
       
       <groupbox>
-		    <caption label="Configuration"/>
+		    <caption label="&synckolab.settings.Configuration;"/>
 				<menulist id="calConfig" oncommand="updateCal(this.value);">
 				</menulist> 
 	      <hbox>
-					<button label="Add" oncommand="addCalConfig();" tooltiptext="After adding a new configuration, make sure to select it."/>
-					<button label="Del" oncommand="delCalConfig();"/>
+					<button label="&synckolab.settings.add;" oncommand="addCalConfig();" tooltiptext="After adding a new configuration, make sure to select it."/>
+					<button label="&synckolab.settings.del;" oncommand="delCalConfig();"/>
 				</hbox>
 			</groupbox>
       
-      <label value="Calendar"/>
+      <label value="&synckolab.settings.Calendar;"/>
 			<menulist id="calURL">
 			</menulist> 
     	<separator class="thin"/>
 
-      <label value="Account"/>
+      <label value="&synckolab.settings.Account;"/>
 			<menulist id="calImapAcct" oncommand="updateCalFolder(this.value);" tooltiptext="Only imap accounts are supported, other account types will not sync.">
 			</menulist> 
 
@@ -100,16 +100,16 @@
       
       <tree flex="7" id="calImapFolder" rows="7" height="150" width="250" hidecolumnpicker="true" seltype="single" onselect="setCalFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
       	<treecols>
-		      <treecol id="calFolder" label="Calendar Folder" primary="true" flex="1"/>
+		      <treecol id="calFolder" label="&synckolab.settings.CalendarFolder;" primary="true" flex="1"/>
   			</treecols>
   			
       </tree>
 
-      <label value="Calendar Format"/>
+      <label value="&synckolab.settings.CalendarFormat;"/>
 			<menulist id="calFormat">
 			</menulist> 
       
-      <checkbox id="saveToCalImap" label="Save to Imap Folder"/>
+      <checkbox id="saveToCalImap" label="&synckolab.settings.SaveToImap;"/>
     <separator class="thin"/>
   </vbox>
 
@@ -118,9 +118,17 @@
   
 </tabbox>
     <separator class="thin"/>
-    <checkbox id="syncCon" label="Sync Contacts"/>
-    <checkbox id="syncCal" label="Sync Calendar"/>
-    <checkbox id="closeWnd" label="Close Sync Window when done"/>
+    <checkbox id="syncCon" label="&synckolab.settings.SyncContacts;"/>
+    <checkbox id="syncCal" label="&synckolab.settings.SyncCalendar;"/>
+    <checkbox id="closeWnd" label="&synckolab.settings.CloseWindow;"/>
 
   </groupbox>
 </dialog>
+<!--
+<!DOCTYPE overlay [
+<!ENTITY % transl  SYSTEM "chrome://synckolab/locale/synckolab.dtd" >
+%transl;
+<!ENTITY % window SYSTEM "chrome://buttons/content/buttons.dtd" >
+%window;
+]>
+-->

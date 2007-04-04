@@ -70,7 +70,9 @@ var curStep;
 
 // Global debug setting (on)
 var DEBUG_SYNCKOLAB = true;
-
+var DEBUG_SYNCKOLAB_LEVEL = 3;
+var SWITCH_TIME = 50;
+ 
 function syncKolab(event) {
 	// copy a file to a folder
 	// call external func
@@ -85,7 +87,7 @@ function syncKolab(event) {
 	} catch(e) {
 	}
 	// wait until loaded
-	window.setTimeout(goWindow, 100, gWnd);		 
+	window.setTimeout(goWindow, SWITCH_TIME, gWnd);		 
 }
 
 function goWindow (wnd)
@@ -93,7 +95,7 @@ function goWindow (wnd)
 		var statusMsg1 = wnd.document.getElementById('current-action');
 		if (statusMsg1 == null || !statusMsg1)
 		{
-			window.setTimeout(goWindow, 100, wnd);		 
+			window.setTimeout(goWindow, SWITCH_TIME, wnd);		 
 		}
 		else
 		{
@@ -106,14 +108,14 @@ function goWindow (wnd)
 				itemList = wnd.document.getElementById('itemList');
 				if (isCalendarAvailable ())
 				{
-					logMessage("Calendar available");
+					logMessage("Calendar available", 1);
 					include("chrome://calendar/content/importExport.js");
 					include("chrome://calendar/content/calendar.js");
 				}
 				else
-					logMessage("Calendar not available - disabling");
+					logMessage("Calendar not available - disabling", 1);
 				
-				window.setTimeout(startSync, 100);		 
+				window.setTimeout(startSync, SWITCH_TIME);		 
 		}
 }
 
@@ -157,7 +159,7 @@ function startSync(event) {
 	}
 
 	// all initialized, lets run
-	window.setTimeout(nextSync, 100);	
+	window.setTimeout(nextSync, SWITCH_TIME);	
 }
 
 // this function is called after everything is done
@@ -171,7 +173,7 @@ function nextSync()
 		if (conConfigs[curConConfig].length <= 0)
 		{
 			curConConfig++;
-			window.setTimeout(nextSync, 100);	
+			window.setTimeout(nextSync, SWITCH_TIME);	
 			return;
 		}
 		
@@ -188,10 +190,10 @@ function nextSync()
 		syncAddressBook.itemList = itemList;
 		
 		logMessage("Contacts: got folder: " + syncAddressBook.folder.URI + 
-			"\nMessage Folder: " + syncAddressBook.folderMsgURI);
+			"\nMessage Folder: " + syncAddressBook.folderMsgURI, 1);
 			
 		curConConfig++;
-		window.setTimeout(getContent, 100, syncAddressBook);	
+		window.setTimeout(getContent, SWITCH_TIME, syncAddressBook);	
 	}
 	else
 	if (isCalendarAvailable () && gSyncCalendar && curCalConfig < calConfigs.length)
@@ -201,7 +203,7 @@ function nextSync()
 		if (calConfigs[curCalConfig].length <= 0)
 		{
 			curCalConfig++;
-			window.setTimeout(nextSync, 100);	
+			window.setTimeout(nextSync, SWITCH_TIME);	
 			return;
 		}
 
@@ -217,15 +219,15 @@ function nextSync()
 		syncCalendar.itemList = itemList;
 
 		logMessage("Calendar: got calendar: " + syncCalendar.gCalendar.name + 
-			"\nMessage Folder: " + syncCalendar.folderMsgURI);
+			"\nMessage Folder: " + syncCalendar.folderMsgURI, 1);
 		curCalConfig++;
 
-		// only use setTimeout if init2 fails cause init2 in calendar does that for us as soon as all data is loaded
-		if (!syncCalendar.init2(getContent, syncCalendar))
-            window.setTimeout(getContent, 100, syncCalendar);		
+		syncCalendar.init2(getContent, syncCalendar);
+        window.setTimeout(getContent, SWITCH_TIME, syncCalendar);		
 	}
 	else //done
 	{
+		totalMeter.setAttribute("value", "100%");
 		meter.setAttribute("value", "100%");
 		statusMsg.value ="Done. You can close this window now!";
 		gWnd.document.getElementById('cancel-button').label = "Close"; //Added by Copart, a little bit more clear that it is now safe to close the window
@@ -272,6 +274,7 @@ function getContent (sync)
 
 	// get the number of messages to go through
 	totalMessages = sync.folder.getTotalMessages(false);
+	logMessage("Have to sync " + totalMessages + " messages for the folder.", 1);
 		
 	// get the message keys
 	gMessages = sync.folder.getMessages(msgWindow);	
@@ -283,7 +286,7 @@ function getContent (sync)
 	
 	statusMsg.value = "Synchronizing entries...";
 	meter.setAttribute("value", "5%");
-	window.setTimeout(getMessage, 100);	
+	window.setTimeout(getMessage, SWITCH_TIME);	
 	// the unique id is in second token in the mail subject (f.e. pas-id-3EF6F3700000002E) and
 	// saved in the custom4 field of the card (is there an id field??)
 }
@@ -306,7 +309,7 @@ function getMessage ()
 	}
 	catch (ex)
 	{
-    	logMessage("skipping read of messages - since there are none :)");
+    	logMessage("skipping read of messages - since there are none :)", 1);
 		updateContentAfterSave ();
     	return;
 	}
@@ -346,7 +349,7 @@ var myStreamListener = {
  onStartRequest: function(request, context) {
  },
  onStopRequest: function(aRequest, aContext, aStatusCode) {
-    //logMessage("got Message [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]:\n" + fileContent);
+    //logMessage("got Message [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]:\n" + fileContent, 3);
     // stop here for testing
     parseMessageRunner ();
  }
@@ -368,12 +371,12 @@ function parseMessageRunner ()
 	if (content != null)
 	{
 		if (content == "DELETEME")
-			logMessage("updating and deleting [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]");
+			logMessage("updating and deleting [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]", 1);
 		else
-			logMessage("updating [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]");
+			logMessage("updating [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]", 1);
 		updateMessages.push(gSync.folderMsgURI +"#"+gCurMessageKey); 
 		updateMessagesContent.push(content); 
-		logMessage("changed msg #" + updateMessages.length);
+		logMessage("changed msg #" + updateMessages.length, 1);
 	}
 	
 	
@@ -384,11 +387,11 @@ function parseMessageRunner ()
 		meter.setAttribute("value", curpointer + "%");
 		curCounter.setAttribute("value", curMessage + "/" + totalMessages);
 		// next message
-		window.setTimeout(getMessage, 20);	
+		window.setTimeout(getMessage, SWITCH_TIME);	
 	}
 	else
 	{
-		window.setTimeout(parseFolderToAddressFinish, 100);	
+		window.setTimeout(parseFolderToAddressFinish, SWITCH_TIME);	
 	}
 }
 
@@ -401,23 +404,27 @@ function parseFolderToAddressFinish ()
 	// do step 5
 	curStep = 5;
 	writeDone = false;
-    logMessage("parseFolderToAddressFinish");
+    logMessage("parseFolderToAddressFinish", 1);
 
 	meter.setAttribute("value", "60%");
-	statusMsg.value = "Writing changed cards...";
+	statusMsg.value = "Writing changed entries...";
 	curCounter.setAttribute("value", "0/0");
-	window.setTimeout(updateContent, 100);	
+	window.setTimeout(updateContent, SWITCH_TIME);	
 }
 
+
+/* Remove all messages which needs to be updated or deleted.
+ * The replacement messages are created in updateContentWrite().
+ */
 function updateContent()
 {
-    logMessage("updating content:");
+    logMessage("updating content:", 1);
 	// first lets delete the old messages
 	if (gSync.gSaveImap && updateMessages.length > 0) 
 	{
 		try
 		{
-			logMessage("deleting changed messages..");
+			logMessage("deleting changed messages..", 1);
 			var list = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);
 			for (var i = 0; i < updateMessages.length; i++)
 			{
@@ -431,15 +438,17 @@ function updateContent()
 		}
 		catch (ex)
 		{
-		    logMessage("Exception while deleting - skipping");
+		    logMessage("Exception while deleting - skipping", 1);
 		}
 	}
 	curMessage = -1;
 	// now write the new ones
-	window.setTimeout(updateContentWrite, 100);	
+	window.setTimeout(updateContentWrite, SWITCH_TIME);	
 }
 
-// write all changed contacts
+/* Write all changed messages back to the folder. Skip
+ * the messages which were to be deleted from the server.
+ */
 function updateContentWrite ()
 {
 	curCounter.setAttribute("value", curMessage + "/" + updateMessagesContent.length);
@@ -453,7 +462,7 @@ function updateContentWrite ()
 		{
 			// write the message in the temp file
 			var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
-			logMessage("adding [" + content + "] to messages");
+			logMessage("adding [" + content + "] to messages", 1);
 			// temp path
 			sfile.initWithPath(gTmpFile);
 			if (sfile.exists()) 
@@ -474,7 +483,7 @@ function updateContentWrite ()
 			//copyToFolder (gTmpFile, tempFolderUri); // to the temp folder for testing!!!
 		}
 		else
-				updateContentAfterSave ();
+				updateContentWrite ();
 	}
 	else
 			updateContentAfterSave ();
@@ -483,20 +492,20 @@ function updateContentWrite ()
 
 function updateContentAfterSave ()
 {
-	logMessage("starting update content...");
+	logMessage("starting update content...", 1);
 	curStep = 6;
 	writeDone = false;
 	
 	if (!gSync.initUpdate())
 	{
-		logMessage("Nothing there to update...");
+		logMessage("Nothing there to update...", 1);
 		writeContentAfterSave ();
 	}
 
 	meter.setAttribute("value", "80%");
-	statusMsg.value = "Writing new cards...";
+	statusMsg.value = "Writing new entries...";
 	curCounter.setAttribute("value", "...");
-	window.setTimeout(writeContent, 100);	
+	window.setTimeout(writeContent, SWITCH_TIME);	
 }
 
 // Step 6  10%
@@ -513,7 +522,7 @@ function writeContent ()
 	
 	if (content == null)
 	{
-		window.setTimeout(writeContent, 50);	
+		window.setTimeout(writeContent, SWITCH_TIME);	
 		return;
 	}
 	
@@ -537,7 +546,7 @@ function writeContent ()
 		stream.close();
 		
 		// write the temp file back to the original directory
-		logMessage("WriteContent Writing...");
+		logMessage("WriteContent Writing...", 1);
 		copyToFolder (gTmpFile, gSync.folder.folderURL);
 	}
 	else
@@ -550,7 +559,7 @@ function writeContent ()
 function writeContentAfterSave ()
 {
 	gSync.doneParsing();
-	window.setTimeout(nextSync, 100, syncCalendar);	
+	window.setTimeout(nextSync, SWITCH_TIME, syncCalendar);	
 }
 
 
@@ -583,9 +592,9 @@ var kolabCopyServiceListener = {
 	},
 	OnStopCopy: function(status) {
 		if (curStep == 5)
-			window.setTimeout(updateContentWrite, 100);	
+			window.setTimeout(updateContentWrite, SWITCH_TIME);	
 		if (curStep == 6)
-			window.setTimeout(writeContent, 100);	
+			window.setTimeout(writeContent, SWITCH_TIME);	
 	}  
 };
 

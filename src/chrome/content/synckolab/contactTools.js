@@ -35,23 +35,9 @@
  */
 function xml2Card (xml, card)
 {
-
-	// find the boundary
-	var boundary = xml.substring(xml.indexOf('boundary="')+10, xml.indexOf('"', xml.indexOf('boundary="')+12));
-
-	// get the start of the xml
-	xml = xml.substring(xml.indexOf("<?xml"));
-	
-	if (xml.indexOf(boundary) != -1)
-		xml = xml.substring(0, xml.indexOf(boundary));
-		
 	// until the boundary = end of xml
 	xml = decode_utf8(DecodeQuoted(xml));
 	
-	var email = 0;
-
-	// we want to convert to unicode
-	xml = DecodeQuoted(xml);
 
 	// convert the string to xml
 	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser); 
@@ -60,6 +46,8 @@ function xml2Card (xml, card)
 	
 	var cur = doc.firstChild.firstChild;
 	var found = false;
+	
+	var email = 0;
 	
 	while(cur != null)
 	{
@@ -459,15 +447,44 @@ function genConSha1 (card)
 
 
 /**
+ * This function compares two vcards.
+ * It takes note of most fields (except custom4)
+ *
+ */
+function equalsContact (a, b)
+{
+	//Fields to look for
+	var fieldsArray = new Array(
+		"firstName","lastName","displayName","nickName",
+		"primaryEmail","secondEmail","preferMailFormat","aimScreenName",
+		"workPhone","homePhone","faxNumber","pagerNumber","cellularNumber",
+		"homeAddress","homeAddress2","homeCity","homeState","homeZipCode","homeCountry","webPage2",
+		"jobTitle","department","company","workAddress","workAddress2","workCity","workState","workZipCode","workCountry","webPage1",
+		"custom1","custom2","custom3","notes");
+
+	for(var i=0 ; i < fieldsArray.length ; i++ ) {
+		if ( eval("a."+fieldsArray[i]) != eval("b."+fieldsArray[i]) )
+		{
+			logMessage ("not equals " + fieldsArray[i], 3);
+			return false;
+		}
+	}
+	
+	return true;	
+}
+
+
+/**
  * Parses a vcard message to a addressbook card.
  * This function ignores unused headers.
+ * It also finds out if we are working with a vcard or a xml format
  * You can create a new card using:
  * newcard = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);	
- * @param message string - a string with the vcard
+ * @param message string - a string with the vcard (make sure its trimmed from whitespace)
  * @param card nsIAbCard - the card to update
  *
  */
-function message2Card (message, card, format)
+function message2Card (message, card)
 {
 	
 	// reset the card
@@ -539,7 +556,8 @@ function message2Card (message, card, format)
 	//card.secondEmail = "";
 	//card.aimScreenName = "";
 */
-	if (format == "Xml")
+	// check for xml style
+	if (message.indexOf("<?xml") != -1 || message.indexOf("<?XML") != -1)
 		return xml2Card(message, card);
 	
 	// decode utf8

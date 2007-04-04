@@ -4,7 +4,7 @@
 <!DOCTYPE dialog [
 <!ENTITY % abncdDTD SYSTEM "chrome://messenger/locale/addressbook/abNewCardDialog.dtd" >
 %abncdDTD;
-<!ENTITY % synckolabDTD SYSTEM "chrome://synckolab/content/synckolab.dtd" >
+<!ENTITY % synckolabDTD SYSTEM "chrome://synckolab/locale/synckolab.dtd" >
 %synckolabDTD;
 ]>
 
