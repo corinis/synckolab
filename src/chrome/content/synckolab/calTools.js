@@ -196,7 +196,6 @@ function equalsEvent (a, b)
 {
 	//Fields to look for
 	var fieldsArray = new Array(
-		"alarmOffset",
 		"title",
 		"description");
 
@@ -209,6 +208,9 @@ function equalsEvent (a, b)
 		}
 	}
 
+	if (a.getProperty("LOCATION") != b.getProperty("LOCATION"))
+		return false;
+		
 	// check date
 	var isAllDay = a.startDate.isDate;
 	var bisAllDay = b.startDate.isDate;
@@ -306,9 +308,9 @@ function xml2Event (xml, event)
     //var iCalToDo = Components.classes["@mozilla.org/icaltodo;1"].createInstance().QueryInterface(Components.interfaces.oeIICalTodo);
 
 	
-	// decode utf chars
-	xml = decode_utf8(DecodeQuoted(xml))
-
+	// decode utf chars and make sure an & is an &amp;
+	xml = decode_utf8(DecodeQuoted(xml)).replace(/&/g, "&amp;").replace(/amp;amp;/g, "amp;");
+	
 	// convert the string to xml
 	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser); 
 	var doc = parser.parseFromString(xml, "text/xml");
@@ -743,11 +745,11 @@ function cnv_event2xml (event, skipVolatiles)
 
     var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     xml += "<event version=\"1.0\" >\n"
-    xml += " <product-id>Synckolab 0.4.31-ag, Calendar Sync</product-id>\n";
+    xml += " <product-id>Synckolab " + gVersion + ", Calendar Sync</product-id>\n";
     xml += " <uid>" + event.id + "</uid>\n"
     xml += " <start-date>" + calDateTime2String(event.startDate, isAllDay) + "</start-date>\n";
     xml += " <end-date>" + calDateTime2String(endDate, isAllDay) + "</end-date>\n";
-    xml += " <summary>" + event.title +"</summary>\n";
+    xml += " <summary>" + encode4XML(event.title) +"</summary>\n";
 
     if (!skipVolatiles)
     {
@@ -756,7 +758,7 @@ function cnv_event2xml (event, skipVolatiles)
     }
 
     if (event.getProperty("DESCRIPTION"))
-        xml += " <body>" + event.getProperty("DESCRIPTION") + "</body>\n";
+        xml += " <body>" + encode4XML(event.getProperty("DESCRIPTION")) + "</body>\n";
     if (event.getProperty("CLASS"))
         xml += " <sensitivity>" + event.getProperty("CLASS").toLowerCase() + "</sensitivity>\n";
     else
@@ -957,6 +959,19 @@ function cnv_event2xml (event, skipVolatiles)
 	return xml;
 }
 
+/**
+ * Write an event into human readable form
+ */
+function event2Human (event)
+{
+    xml = "Title: " + event.title +"\n";
+    xml += "From: " + calDateTime2String(event.startDate, isAllDay) + "\n";
+    xml += "To: " + calDateTime2String(endDate, isAllDay) + "\n\n";
+    if (event.getProperty("DESCRIPTION"))
+        xml += event.getProperty("DESCRIPTION") + "\n\n";
+    if (event.getProperty("LOCATION"))
+        xml += event.getProperty("LOCATION") +"\n";
+}
 
 /**
  * convert an ICAL event into a Kolab 2 XML format message
@@ -967,7 +982,7 @@ function event2kolabXmlMsg (event, email)
 {
     var xml = event2xml(event);
 	var my_msg = generateMail(event.id, email, "", "application/x-vnd.kolab.event", 
-			true, encode_utf8(xml));
+			true, encode_utf8(xml), event2Human(event));
 	return my_msg;
 }
 

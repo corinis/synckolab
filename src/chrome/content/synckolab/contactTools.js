@@ -32,8 +32,12 @@
  * Tools to work with the address book. Parsing functions for vcard, Kolab xml
  * to and from contact plus some utility functions. 
  *
+ * @param xml string - a string with the vcard (make sure its trimmed from whitespace)
+ * @param card nsIAbCard - the card to update
+ * @param extraFields Array - extra fields to save with the card (may be null)
+ *
  */
-function xml2Card (xml, card)
+function xml2Card (xml, card, extraFields)
 {
 	// until the boundary = end of xml
 	xml = decode_utf8(DecodeQuoted(xml));
@@ -57,11 +61,12 @@ function xml2Card (xml, card)
 			switch (cur.nodeName.toUpperCase())
 			{
 				case "LAST-MODIFICATION-DATE":
+						/*
+						ignore this since thunderbird implmentation just does not work
 						var s = cur.firstChild.data;
 						// now we gotta check times... convert the message first
 						// save the date in microseconds
 						// 2005-03-30T15:28:52Z
-						/*
 						try
 						{
 							// we dont need the date anyways.. so lets skip that part
@@ -105,6 +110,11 @@ function xml2Card (xml, card)
 						case 1:
 							card.secondEmail = getXmlResult(cur, "SMTP-ADDRESS", "");
 							break;
+						default:
+							// remember other emails
+					  		addField(extraFields, "EMAIL", getXmlResult(cur, "SMTP-ADDRESS", ""));
+			  				break;
+							
 					}
 					email++;
 					found = true;
@@ -144,6 +154,10 @@ function xml2Card (xml, card)
 			  		case "PAGE":
 			  			card.pagerNumber = num;
 			  			break;
+					default:
+						// remember other emails
+				  		addField(extraFields, "PHONE:" + getXmlResult(cur, "TYPE", "CELLULAR"), num);
+		  				break;
 			  	}
 				found = true;
 			  	break;
@@ -151,7 +165,7 @@ function xml2Card (xml, card)
 			  case "BIRTHDAY":
 			  		if (cur.firstChild == null)
 			  			break;
-					var tok = cur.firstChild.data.split("-");
+					var tok = cur.firstChild.data.split("-");					
 					card.birthYear = tok[0];
 					card.birthMonth = tok[1];
 					// BDAY: 1987-09-27
@@ -175,6 +189,7 @@ function xml2Card (xml, card)
 		  		if (cur.firstChild != null)
 				  	card.defaultAddress = cur.firstChild.data;
 			  	break;
+			  	
 			  case "ADDRESS":
 			  	switch (getXmlResult(cur, "TYPE", "HOME").toUpperCase())
 			  	{
@@ -228,6 +243,14 @@ function xml2Card (xml, card)
 		  			break;
 			  	card.aimScreenName = cur.firstChild.data;
 			  	break;
+			  	
+			default:
+		  		if (cur.firstChild == null)
+		  			break;
+				// remember other fields
+		  		addField(extraFields, cur.nodeName, cur.firstChild.data);
+  				break;
+			  	
 			} // end switch
 		}
 		
@@ -242,8 +265,10 @@ function xml2Card (xml, card)
 /**
  * Creates xml (kolab2) out of a given card. 
  * The return is the xml as string.
+ * @param card nsIAbCard: the adress book card
+ * @param fields Array: all the fields not being held in the default card
  */
-function card2Xml (card)
+function card2Xml (card, fields)
 {
 	var displayName = "";
 	var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
@@ -290,6 +315,8 @@ function card2Xml (card)
 //" <profession>programmierer</profession>\n";
 	xml += nodeWithContent("job-title", card.jobTitle, false);
 	xml += nodeWithContent("nick-name", card.nickName, false);
+	
+	
 	var adate = card.birthYear + "-" + card.birthMonth + "-" + card.birthDay;
 	if (adate != "--")
 		xml += nodeWithContent("birthday", adate, false);
@@ -310,6 +337,13 @@ function card2Xml (card)
 		xml += "  <number>"+card.workPhone+"</number>\n";
 		xml += " </phone>\n";
 	}
+	if (checkExist(card.workPhone))
+	{	
+		xml += " <phone>\n";
+		xml += "  <type>fax</type>\n";
+		xml += "  <number>"+card.faxNumber+"</number>\n";
+		xml += " </phone>\n";
+	}
 	if (checkExist(card.cellularNumber))
 	{	
 		xml += " <phone>\n";
@@ -327,7 +361,7 @@ function card2Xml (card)
 	
 	if (checkExist(card.primaryEmail))
 	{
-		xml += " <email>\n";
+		xml += " <email type=\"primary\">\n";
 		xml += "  <display-name>"+displayName+"</display-name>\n";
 		xml += "  <smtp-address>"+card.primaryEmail+"</smtp-address>\n";
 		xml += " </email>\n";
@@ -341,13 +375,6 @@ function card2Xml (card)
 		xml += " </email>\n";
 	}
 
-	if (checkExist(card.defaultEmail))
-	{
-		xml += " <email>\n";
-		xml += "  <display-name>"+displayName+"</display-name>\n";
-		xml += "  <smtp-address>"+card.defaultEmail+"</smtp-address>\n";
-		xml += " </email>\n";
-	}
 	if (checkExist(card.homeAddress) || checkExist(card.homeAddress2) ||
 		checkExist(card.homeCity) || checkExist(card.homeState) ||
 		checkExist(card.homeZipCode) || checkExist(card.homeCountry))
@@ -379,6 +406,16 @@ function card2Xml (card)
 	}
 		
 	xml += nodeWithContent("preferred-address", card.defaultAddress, false);
+	
+	// add extra/missing fields
+	if (fields != null)
+	{
+		for (var i = 0; i < fields.length; i++)
+		{
+			xml += nodeWithContent(fields[i][0], fields[i][1], false);
+		}
+	}
+	
 	xml += "</contact>\n";
 	
 	return xml;	
@@ -456,7 +493,7 @@ function equalsContact (a, b)
 	//Fields to look for
 	var fieldsArray = new Array(
 		"firstName","lastName","displayName","nickName",
-		"primaryEmail","secondEmail","preferMailFormat","aimScreenName",
+		"primaryEmail","secondEmail","aimScreenName",
 		"workPhone","homePhone","faxNumber","pagerNumber","cellularNumber",
 		"homeAddress","homeAddress2","homeCity","homeState","homeZipCode","homeCountry","webPage2",
 		"jobTitle","department","company","workAddress","workAddress2","workCity","workState","workZipCode","workCountry","webPage1",
@@ -482,9 +519,10 @@ function equalsContact (a, b)
  * newcard = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);	
  * @param message string - a string with the vcard (make sure its trimmed from whitespace)
  * @param card nsIAbCard - the card to update
+ * @param fields Array - extra fields to save with the card (may be null)
  *
  */
-function message2Card (message, card)
+function message2Card (message, card, extraFields)
 {
 	
 	// reset the card
@@ -556,6 +594,10 @@ function message2Card (message, card)
 	//card.secondEmail = "";
 	//card.aimScreenName = "";
 */
+	// fix for bug #16766: message has no properties
+	if (message == null)
+		return false;
+		
 	// check for xml style
 	if (message.indexOf("<?xml") != -1 || message.indexOf("<?XML") != -1)
 		return xml2Card(message, card);
@@ -569,6 +611,9 @@ function message2Card (message, card)
 	// now update it
 	var found = false;
 	
+	// remember which email we already have and set the other one accordingly
+	var gotEmailPrimary = false, gotEmailSecondary = false;
+	
 	for (var i = 0; i < lines.length; i++)
 	{
 		// decode utf8
@@ -579,6 +624,11 @@ function message2Card (message, card)
 			vline = vline.substring(0, vline.length-1);
 		
 		var tok = vline.split(":");
+		
+		// fix for bug #16839: Colon in address book field
+		for (var j = 2; j < tok.length; j++)
+			tok[1] += ":" + tok[j];
+		
 		switch (tok[0].toUpperCase())
 		{
 			case "DATE":
@@ -621,16 +671,48 @@ function message2Card (message, card)
 				break;
 			case "EMAIL;TYPE=PREF":
 			case "EMAIL;TYPE=INTERNET,PREF":
-			case "EMAIL": //This is here to limit compact to existing vcards
-				//card.defaultEmail = tok[1]; I stopped setting this since I could not find where Thunderbird uses this, my NEW cards dont have it
-				card.primaryEmail = tok[1];
+				// the "preferred" email is the primary
+				if (!gotEmailPrimary)
+				{
+					card.primaryEmail = tok[1];
+					gotEmailPrimary = true;
+				}
+				else
+				if (!gotEmailSecondary)
+				{
+					card.secondEmail = tok[1];
+					gotEmailSecondary = true;
+				}
+				else
+				{
+					addField(extraFields, tok[0], tok[1]);
+				}
+				
 				found = true;
 				break;
 			case "EMAIL;INTERNET":
-				card.secondEmail = tok[1];
+			case "EMAIL": //This is here to limit compact to existing vcards
+				// make sure to fill all email fields
+				if (!gotEmailSecondary)
+				{
+					card.secondEmail = tok[1];
+					gotEmailSecondary = true;
+				}
+				else
+				if (!gotEmailPrimary)
+				{
+					card.primaryEmail = tok[1];
+					gotEmailPrimary = true;
+				}
+				else
+				{
+					addField(extraFields, tok[0], tok[1]);
+				}
+
 				found = true;
 		    break;
-			case "X-EMAILFORMAT": //Added By Copart, this will set the Email format to vCard, not part of vCard 3.0 spec, so the X- is there, I assume a Kolab server would just ignore this field
+			case "X-EMAILFORMAT": 
+			// This will set the Email format to vCard, not part of vCard 3.0 spec, so the X- is there, I assume a Kolab server would just ignore this field
 				switch(tok[1]) {
 					case "Unknown":
 						card.preferMailFormat = 0;
@@ -641,7 +723,7 @@ function message2Card (message, card)
 				}
 	    	found = true;
     		break;
-			case "X-AIM": //Added by Copart, not standard vcard spec, therefore, prepended with an X
+			case "X-AIM": // not standard vcard spec, therefore, prepended with an X
 				card.aimScreenName = tok[1];
 				found = true;
 			break;
@@ -669,6 +751,7 @@ function message2Card (message, card)
  				found = true;
 				break;
 			case "TEL;TYPE=PAGER":
+			case "TEL;TYPE=PAGE":
 				card.pagerNumber = tok[1];
 				found = true;
 				break;
@@ -715,7 +798,7 @@ function message2Card (message, card)
 				found = true;
 		  	break;
 		  case "NOTE":
-				card.notes = tok[1].replace (/\\n/g, "\n"); //Copart fix, carriage returns were stripped, add em back
+				card.notes = tok[1].replace (/\\n/g, "\n"); // carriage returns were stripped, add em back
 				found = true;
 		  	break;
 		  case "DEPT":
@@ -723,52 +806,157 @@ function message2Card (message, card)
 				found = true;
 		  	break;
 		  case "CUSTOM1":
-				card.custom1 = tok[1].replace (/\\n/g, "\n"); //Copart fix, carriage returns were stripped, add em back
+				card.custom1 = tok[1].replace (/\\n/g, "\n"); // carriage returns were stripped, add em back
 				found = true;
 		  	break;
 		  case "CUSTOM2":
-				card.custom2 = tok[1].replace (/\\n/g, "\n"); //Copart fix, carriage returns were stripped, add em back
+				card.custom2 = tok[1].replace (/\\n/g, "\n"); // carriage returns were stripped, add em back
 				found = true;
 		  	break;
 		  case "CUSTOM3":
-				card.custom3 = tok[1].replace (/\\n/g, "\n"); //Copart fix, carriage returns were stripped, add em back
+				card.custom3 = tok[1].replace (/\\n/g, "\n"); // carriage returns were stripped, add em back
 				found = true;
 		  	break;
 
 		  case "URL;TYPE=WORK":
 		  case "URL":
 				// WebPage1 is work web page
-				card.webPage1 = decodeCardField(tok[1]); //Copart change, decode to convert the : char hex codes back to ascii
+				card.webPage1 = decodeCardField(tok[1]); // decode to convert the : char hex codes back to ascii
 				found = true;
 				break;
 		  case "URL;TYPE=PRIVATE":
 		  case "URL;TYPE=PERSONAL":
 				// WebPage2 is home web page
-				card.webPage2 = decodeCardField(tok[1]); //Copart change, decode to convert the : char hex codes back to ascii
+				card.webPage2 = decodeCardField(tok[1]); // decode to convert the : char hex codes back to ascii
 				found = true;
 				break;
 		  case "UID":
 		  	card.custom4 = tok[1];
 		  	break;
+		  default:
+		  	addField(extraFields, tok[0], tok[1]);
+		  	break;
 		} // end switch
 	}
-	
+		
 	return found;
+}
+
+function card2Human (card)
+{
+	var msg = "";
+
+ 	if (checkExist (card.firstName) || checkExist (card.lastName))
+		msg += "Name: " + card.lastName + ";" + card.firstName + ";;;\n"
+ 	if (checkExist (card.jobTitle))
+		msg += "Title: " + card.jobTitle + "\n";
+	if (checkExist (card.company))
+		msg += "Company: " + card.company + "\n\n";
+ 	if (checkExist (card.webPage1))
+		msg += "Web: " + card.webPage1 + "\n"; // encode the : chars to HEX, vcard values cannot contain colons
+ 	if (checkExist (card.webPage2))
+		msg += "Web: " + card.webPage2 + "\n\n";
+
+  	if (checkExist (card.cellularNumber))
+		msg += "Cell #: " + card.cellularNumber + "\n";
+ 	if (checkExist (card.homePhone))
+		msg += "Home #: " + card.homePhone + "\n";
+ 	if (checkExist (card.faxNumber))
+		msg += "Fax #: " + card.faxNumber + "\n";
+ 	if (checkExist (card.workPhone))
+		msg += "Work #: " + card.workPhone + "\n";
+ 	if (checkExist (card.pagerNumber))
+		msg += "Pager #: " + card.pagerNumber + "\n";
+ 	if (checkExist (card.department))
+		msg += "Department: " + card.department + "\n";
+	
+ 	if (checkExist (card.primaryEmail)) 
+		msg += "E-Mail:" + card.primaryEmail  + "\n";
+ 	if (checkExist (card.secondEmail)) 
+		msg += "E-Mail:" + card.secondEmail + "\n";
+
+	if (checkExist(card.birthYear) 
+		||checkExist(card.birthDay) 
+		|| checkExist(card.birthMonth))
+	{
+		msg += "Birthday: ";
+		msg += card.birthYear + "-";
+		if (card.birthMonth < 10)
+			msg += "0";
+		msg += card.birthMonth + "-";
+		if (card.birthDay < 10)
+			msg += "0";
+		msg += card.birthDay + "\n";
+	}
+	if (checkExist(card.anniversaryYear) 
+		||checkExist(card.anniversaryDay) 
+		||checkExist(card.anniversaryMonth))
+	{
+		msg += "Anniversary: " 
+		msg += card.anniversaryYear + "-";
+		if (card.anniversaryMonth < 10)
+			msg += "0";
+		msg += card.anniversaryMonth + "-";
+		if (card.anniversaryDay < 10)
+			msg += "0";
+		msg += card.anniversaryDay + "\n";
+	}
+
+
+	if (checkExist (card.workAddress2) 
+		|| checkExist (card.workAddress) 
+		|| checkExist (card.workCountry) 
+		|| checkExist (card.workCity) 
+		|| checkExist (card.workState))
+	{
+		msg += "Work: ";
+		msg += card.workAddress2 + "\n";
+		msg += card.workAddress + "\n";
+		msg += card.workZipCode + " ";
+		msg += card.workState + " ";
+		msg += card.workCity + "\n";
+		msg += card.workCountry + "\n";
+	}
+	// ADR:POBox;Ext. Address;Address;City;State;Zip Code;Country
+	if (checkExist (card.homeAddress2) 
+		|| checkExist (card.homeAddress) 
+		|| checkExist (card.homeCountry) 
+		|| checkExist (card.homeCity) 
+		|| checkExist (card.homeState))
+	{
+		msg += "Home: ";
+		msg += card.homeAddress2 + "\n";
+		msg += card.homeAddress + "\n";
+		msg += card.homeZipCode + " ";
+		msg += card.homeState + " ";
+		msg += card.homeCity + "\n";
+		msg += card.homeCountry + "\n";
+ 	}
+	return msg;
 }
 
 /**
  * Creates a vcard message out of a card.
  * This creates the WHOLE message including header
+ * @param card nsIAbCard - the adress book card 
+ * @param email String - the email of the current account
+ * @param format String - the format to use (Xml|VCard)
+ * @param fFile nsIFile - an array holding all the extra fields not in the card structure
  */
-function card2Message (card, email, format)
+function card2Message (card, email, format, fFile)
 {
+	// it may be we do not have a uid - skip it then
 	if (card.custom4 == null || card.custom4.length < 2)
 		return null;
 	
+	// read the database file
+	var fields = readDataBase (fFile);
+	
+	// for the kolab xml format
 	if(format == "Xml")
 	{
 		return generateMail(card.custom4, email, "", "application/x-vnd.kolab.contact", 
-			true, encodeQuoted(encode_utf8(card2Xml(card))));
+			true, encodeQuoted(encode_utf8(card2Xml(card, fields))), card2Human(card));
 	}
 	
 
@@ -777,7 +965,7 @@ function card2Message (card, email, format)
 	var cdate = new Date (card.lastModifiedDate*1000);
 	var sTime = (cdate.getHours()<10?"0":"") + cdate.getHours() + ":" + (cdate.getMinutes()<10?"0":"") + cdate.getMinutes() + ":" +
 		(cdate.getSeconds()<10?"0":"") + cdate.getSeconds();
-	var sdate = "Date: " + getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " +
+	var sdate = "DATE: " + getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " +
 		getMonthString (cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime
 		 + " " + (((cdate.getTimezoneOffset()/60) < 0)?"-":"+") +
 		(((cdate.getTimezoneOffset()/60) < 10)?"0":"") + cdate.getTimezoneOffset() + "\n";
@@ -851,7 +1039,7 @@ function card2Message (card, email, format)
 		msg += card.anniversaryDay + "\n";
 	}
  	if (checkExist (card.webPage1))
-		msg += "URL:" + encodeCardField(card.webPage1) + "\n"; //Copart change, encode the : chars to HEX, vcard values cannot contain colons
+		msg += "URL:" + encodeCardField(card.webPage1) + "\n"; // encode the : chars to HEX, vcard values cannot contain colons
  	if (checkExist (card.webPage2))
 		msg += "URL;TYPE=PERSONAL:" + encodeCardField(card.webPage2) + "\n";
 	// ADR:POBox;Ext. Address;Address;City;State;Zip Code;Country
@@ -894,11 +1082,19 @@ function card2Message (card, email, format)
  	if (checkExist (card.notes))
 		msg += "NOTE:" + card.notes.replace (/\n/g, "\\n") + "\n";
 	msg += "UID:" + card.custom4 + "\n";	
+	// add extra/missing fields
+	if (fields != null)
+	{
+		for (var i = 0; i < fields.length; i++)
+		{
+			msg += fields[i][0] + ":" + fields[i][1] + "\n";
+		}
+	}
  	msg += "VERSION:3.0\n";
  	msg += "END:VCARD\n\n";
 
 	return generateMail(card.custom4, email, "vCard", "application//x-vcard", 
-			false, encodeQuoted(encode_utf8(msg)));
+			false, encodeQuoted(encode_utf8(msg)), null);
 }
 
 

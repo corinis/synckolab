@@ -45,6 +45,9 @@ var gFolderDatasource = Components.classes["@mozilla.org/rdf/datasource;1?name=m
 // imap message service
 var gMessageService=Components.classes["@mozilla.org/messenger/messageservice;1?type=imap"].getService(Components.interfaces.nsIMsgMessageService); 
 
+// save the Version of synckolab
+var gVersion = "0.4.33";
+
 // holds required content
 var gSyncContact; // sync the contacts
 var gSyncCalendar; // sync the calendar
@@ -275,6 +278,20 @@ function getContent (sync)
 	// get the number of messages to go through
 	totalMessages = sync.folder.getTotalMessages(false);
 	logMessage("Have to sync " + totalMessages + " messages for the folder.", 1);
+	
+	// fix bug #16848 and ask before deleting everything :P
+	if (totalMessages == 0 && sync.itemCount() > 0)
+	{
+		if (window.confirm("No items have been found on the server, but there are local items.\nDo you want to copy all items to the server?"))
+			sync.forceServerCopy = true;
+	}
+	else
+	if (totalMessages > 0 && sync.itemCount() == 0)
+	{
+		if (window.confirm("No items have been found locally, but there are items on the server.\nDo you want to copy all items from the server?"))
+			sync.forceLocalCopy = true;
+	}
+	
 		
 	// get the message keys
 	gMessages = sync.folder.getMessages(msgWindow);	

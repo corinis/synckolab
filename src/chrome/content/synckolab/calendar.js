@@ -69,9 +69,15 @@ var syncCalendar = {
 	curItemInListStatus: '',
 	curItemInListContent: '',
 
+	forceServerCopy: false,
+	forceLocalCopy: false,
+
 	init: function(config) {
 		if (!isCalendarAvailable ())
 			return;
+			
+		this.forceServerCopy = false;
+		this.forceLocalCopy = false;
 			
 		// initialize the configuration
 		try {
@@ -101,7 +107,7 @@ var syncCalendar = {
     	
     	// get the sync db
 		this.dbFile = getHashDataBaseFile (config + ".cal");
-		this.db = readHashDataBase (this.dbFile);
+		this.db = readDataBase (this.dbFile);
 		this.gConfig = config;
 	},
 	
@@ -143,7 +149,13 @@ var syncCalendar = {
             }
 	},
 
-
+	/**
+	 * Returns the number of cards in the adress book
+	 */
+	itemCount: function() {
+		return this.gEvents.events.length;
+	},
+	
 	/**
 	 * parses the given content, if an update is required the 
 	 * new message content is returned otherwise null
@@ -193,7 +205,8 @@ var syncCalendar = {
 		// get the dbfile from the local disk
 		var idxEntry = getSyncDbFile(this.gConfig, true, parsedEvent.id);
 		
-		if (foundEvent == null)
+		// always add if the forceLocalCopy flag is set (happens when you change the configuration)
+		if (foundEvent == null || this.forceLocalCopy)
 		{
 		    // a new event
 		    logMessage("a new event, locally unknown:" + parsedEvent.id, 2);
@@ -283,7 +296,7 @@ var syncCalendar = {
 						calComp.addSubcomponent(foundEvent.icalComponent);
 						
 						msg = generateMail(cur.id, this.email, "iCal", "text/calendar", 
-							false, encodeQuoted(encode_utf8(calComp.serializeToICS())));
+							false, encodeQuoted(encode_utf8(calComp.serializeToICS())), null);
 					}
 
 					writeSyncDBFile (idxEntry, stripMailHeader(msg));
@@ -340,8 +353,8 @@ var syncCalendar = {
 						calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
 						calComp.addSubcomponent(foundEvent.icalComponent);
 						
-						msg = generateMail(cur.id, this.email, "iCal", "text/calendar", 
-							false, encodeQuoted(encode_utf8(calComp.serializeToICS())));
+						msg = generateMail(parsedEvent.id, this.email, "iCal", "text/calendar", 
+							false, encodeQuoted(encode_utf8(calComp.serializeToICS())), null);
 					}
 					
 					// update list item
@@ -413,7 +426,7 @@ var syncCalendar = {
 				
 				var curSyncEntry = genCalSha1 (cur);
 				var cdb = getDbEntryIdx (cur.id, this.db);
-				if (cEntry.exists())
+				if (cEntry.exists() && !this.forceServerCopy)
 				{
 					// we have it in our database - don't write back to server but delete locally
 					logMessage("nextUpdate assumes 'delete on server', better don't write event:" + cur.id, 2);
@@ -481,7 +494,7 @@ var syncCalendar = {
     				calComp.addSubcomponent(cur.icalComponent);
     				
 					msg = generateMail(cur.id, this.email, "iCal", "text/calendar", 
-						false, encodeQuoted(encode_utf8(calComp.serializeToICS())));
+						false, encodeQuoted(encode_utf8(calComp.serializeToICS())), null);
 					
 				}
 				
@@ -532,6 +545,6 @@ var syncCalendar = {
 	
 	doneParsing: function ()
 	{
-		writeHashDataBase (this.dbFile, this.db);
+		writeDataBase (this.dbFile, this.db);
 	}
 }

@@ -59,9 +59,15 @@ var syncAddressBook = {
 	curItemInListId: '',
 	curItemInListStatus: '',
 	curItemInListContent: '',
-
+	
+	forceServerCopy: false,
+	forceLocalCopy: false,
+	
 	init: function(config) {
 		var addressBookName;
+		
+		this.forceServerCopy = false;
+		this.forceLocalCopy = false;
 		
 		this.folderMessageUids = new Array(); // the checked uids - for better sync
 		// initialize the configuration
@@ -106,6 +112,38 @@ var syncAddressBook = {
 		this.gConfig = config;
 	},
 
+	/**
+	 * Returns the number of cards in the adress book
+	 */
+	itemCount: function() {
+		var cards = this.gAddressBook.childCards;
+		var i = 0;
+		
+		try
+		{
+			cards.first();
+		}
+		catch (ex)
+		{
+			return 0;
+		}
+		
+		while (cards.currentItem () != null)
+		{
+			i++;
+				
+			// cycle
+			try
+			{
+				cards.next();
+			}
+			catch (ex)
+			{
+				return i;
+			}
+		}
+		return i;
+	},
 	
 	/**
 	 * parses the given content, if an update is required the 
@@ -135,7 +173,10 @@ var syncAddressBook = {
 		// get the content in a nice format
 		fileContent = stripMailHeader(fileContent);
 		
-		if (message2Card (fileContent, newCard))
+		// this is an array of arrays that hold fieldname+fielddata of until-now-unknown fields
+		var messageFields = new Array();		
+		
+		if (message2Card (fileContent, newCard, messageFields))
 		{
 		
 			// remember that we did this uid already
@@ -152,18 +193,25 @@ var syncAddressBook = {
 
 			// get the dbfile from the local disk
 			var cEntry = getSyncDbFile	(this.gConfig, false, newCard.custom4);
+			// ... and the field file
+			var fEntry = getSyncFieldFile(this.gConfig, false, newCard.custom4);
 
 			// a new card or locally deleted 
 			if (aCard == null)
 			{				
 				// if the file does not exist and it is not found in the adress book -
-				// we deifnitely have a new player here - add it 
-				if (!cEntry.exists())
+				// we definitely have a new player here - add it 
+				// also do so if the forceLocalCopy flag is set (happens when you change the configuration)
+				if (!cEntry.exists() || this.forceLocalCopy)
 				{
 					// use the original content to write the snyc file 
 					// this makes it easier to compare later on and makes sure no info is 
 					// lost/changed
 					writeSyncDBFile (cEntry, fileContent);
+					
+					// also write the extra fields in a file
+					if (messageFields.length > 0)
+						writeDataBase(fEntry, messageFields);
 					
 					this.gAddressBook.addCard (newCard);
 					logMessage("card is new, add to address book: " + newCard.custom4, 1);	
@@ -181,6 +229,9 @@ var syncAddressBook = {
 					
 					// also remove the local db file since we deleted the contact
 					cEntry.remove(false);
+										
+					// delete extra file if we dont need it
+					fEntry.remove(false);
 					
 					return "DELETEME";
 				}				
@@ -189,7 +240,8 @@ var syncAddressBook = {
 			// this card is already in the adress book
 			{
 				var cCard = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
-				message2Card(readSyncDBFile(cEntry), cCard);
+				// make sure to ONLY read the info.. do not get the extra fields from there
+				message2Card(readSyncDBFile(cEntry), cCard, null);
 				
 				// compare each card with each other
 				if (cEntry.exists() && !equalsContact(cCard, aCard) && !equalsContact(cCard, newCard) )
@@ -258,7 +310,11 @@ var syncAddressBook = {
 						
 						// write the current content in the sync-db file
 						writeSyncDBFile (cEntry, fileContent);
-						
+						// also write the extra fields in a file (or remove if nothing there)
+						if (messageFields.length > 0)
+							writeDataBase(fEntry, messageFields);						
+						else
+							fEntry.remove(false);
 					}
 
 					if ( bUpdateServer ) {
@@ -280,13 +336,19 @@ var syncAddressBook = {
 					
 					// write the current content in the sync-db file
 					writeSyncDBFile (cEntry, stripMailHeader(card2Message(newCard, this.email, this.format)));
+
+					// also write the extra fields in a file (or remove if nothing there)
+					if (messageFields.length > 0)
+						writeDataBase(fEntry, messageFields);						
+					else
+						fEntry.remove(false);
 					
 					// update list item
 					this.curItemInListStatus.setAttribute("label", "update local");
 					return null;
 				}
 				else
-				// are db file equals server, but not local.. we got a local change
+				// is the db file equals server, but not local.. we got a local change
 				if (cEntry.exists() && !equalsContact(cCard, aCard) && equalsContact(cCard, newCard))
 				{
 				    logMessage("client changed: " + aCard.custom4, 1);
@@ -295,7 +357,7 @@ var syncAddressBook = {
 					this.curItemInListStatus.setAttribute("label", "update server");
 					
 					// remember this message for update - generate mail message
-					var cContent = card2Message(aCard, this.email, this.format);
+					var cContent = card2Message(aCard, this.email, this.format, fEntry);
 
 					// write the current content in the sync-db file
 					writeSyncDBFile (cEntry, stripMailHeader(cContent));
@@ -308,7 +370,10 @@ var syncAddressBook = {
 			}
 		}
 		else
+		{
+			this.curItemInListId.setAttribute("label", "unparseable");
 			logMessage("unable to parse message, skipping", 1);
+		}
 			
 		return null;
 	},
@@ -348,7 +413,7 @@ var syncAddressBook = {
 		
 		var content = null;
 		
-		if (cur.custom4.length < 2)
+		if (!cur.isMailList && cur.custom4.length < 2)
 		{
 			// look at new card
 			// generate a unique id (will random be enough for the future?)
@@ -364,7 +429,7 @@ var syncAddressBook = {
 			this.curItemInListStatus = document.createElement("listcell");
 			this.curItemInListContent = document.createElement("listcell");
 			this.curItemInListId.setAttribute("label", cur.custom4);
-			this.curItemInListStatus.setAttribute("label", "new add to server");
+			this.curItemInListStatus.setAttribute("label", "add to server");
 			this.curItemInListContent.setAttribute("label", cur.firstName + " " + cur.lastName + " <" + cur.primaryEmail + ">");
 			
 	
@@ -383,8 +448,9 @@ var syncAddressBook = {
 			// write the current content in the sync-db file
 			writeSyncDBFile (cEntry, stripMailHeader(content));			
 			
-		}
+		}		
 		else
+		if (!cur.isMailList)
 		{
 			var alreadyProcessed = false;
 			// check if we have this uid in the messages
@@ -406,7 +472,7 @@ var syncAddressBook = {
 				// get the dbfile from the local disk
 				var cEntry = getSyncDbFile	(this.gConfig, false, cur.custom4);
 
-				if (cEntry.exists())
+				if (cEntry.exists() && !this.forceServerCopy)
 				{
 					this.deleteList.AppendElement(cur);
 					

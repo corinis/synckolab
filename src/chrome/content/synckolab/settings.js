@@ -71,6 +71,11 @@ function init() {
 	conConfigList.appendChild(conConfigPopup);
 
 	var i;
+	if (conConfigs.length == 0)
+	{
+			conConfigList.setAttribute("label", "click 'add' for a new configuration");
+	}
+	else
 	for (i=0; i < conConfigs.length; i++)
 		if (conConfigs[i].length > 0)
 		{
@@ -92,6 +97,11 @@ function init() {
 	var calConfigPopup = document.createElement("menupopup");
 
 	calConfigList.appendChild(calConfigPopup);
+	if (calConfigs.length == 0)
+	{
+			calConfigList.setAttribute("label", "click 'add' for a new configuration");
+	}
+	else
 	for (i=0; i < calConfigs.length; i++)
 		if (calConfigs[i].length > 0)
 		{
@@ -106,7 +116,6 @@ function init() {
 				calConfigList.setAttribute("label", calConfigs[i]);
 				calConfigList.setAttribute("value", calConfigs[i]);
 			}
-			
 		}
 	
 	// do we even sync cal or contacts at all?
@@ -129,13 +138,14 @@ function init() {
 
 	abList.appendChild(abpopup);
 	// default selected
-	var ab = "";
+	var ab = null;
 	try {
 		if (selectedConConfig != null)
 			ab = pref.getCharPref("SyncKolab."+selectedConConfig+".AddressBook");
 	}
 	catch (ex) {}
 	
+	var isFirst = true;
 	while (ABook != null)
 	{
 		var cur = ABook.QueryInterface(Components.interfaces.nsIAbDirectory);
@@ -143,12 +153,14 @@ function init() {
 		abpopup.appendChild(abchild);
 		abchild.setAttribute("label", cur.directoryProperties.description);
 		abchild.setAttribute("value", cur.directoryProperties.fileName);
-		if (cur.directoryProperties.fileName == ab)
+		// default select the first item
+		if (cur.directoryProperties.fileName == ab || (ab == null && isFirst))
 		{
 			abchild.setAttribute("selected", "true");
 			abList.setAttribute("label", cur.directoryProperties.description);
 			abList.setAttribute("value", cur.directoryProperties.fileName);
 		}
+		
 		try
 		{	
 			ABook = cn.getNext();
@@ -157,7 +169,10 @@ function init() {
 		{
 			break;
 		}
+		isFirst = false;
 	}
+	// reset variable fur further use
+	isfirst = true;
 
 	// fill the format
 	var selConFormat = null;
@@ -176,7 +191,7 @@ function init() {
 	abpopup.appendChild(abchild);
 	abchild.setAttribute("label", "VCard/Kolab1");
 	abchild.setAttribute("value", "VCard");
-	if (selConFormat == "VCard")
+	if (selConFormat == "VCard" || selConFormat == null)
 	{
 		abchild.setAttribute("selected", "true");
 		abList.setAttribute("label", "VCard/Kolab1");
@@ -198,7 +213,7 @@ function init() {
 	var actList = document.getElementById("conImapAcct");
 	var actpopup = document.createElement("menupopup");
 	actList.appendChild(actpopup);
-	var act = "";
+	var act = null;
 	try {
 		if (selectedConConfig != null)
 			act = pref.getCharPref("SyncKolab."+selectedConConfig+".ContactIncomingServer");
@@ -224,7 +239,7 @@ function init() {
 		actpopup.appendChild(actchild);
 		actchild.setAttribute("label", account.prettyName);
 		actchild.setAttribute("value", account.rootMsgFolder.baseMessageURI);
-		if (account.rootMsgFolder.baseMessageURI == act)
+		if (account.rootMsgFolder.baseMessageURI == act || (act == null && i == 0) )
 		{
 			actchild.setAttribute("selected", "true");
 			actList.setAttribute("label", account.prettyName);
@@ -255,7 +270,7 @@ function init() {
 		var abpopup = document.createElement("menupopup");
 	
 		abList.appendChild(abpopup);
-		var ab = "";
+		var ab = null;
 		try {
 			if (selectedCalConfig != null)
 				ab = pref.getCharPref("SyncKolab."+selectedCalConfig+".Calendar");
@@ -270,7 +285,7 @@ function init() {
 			abpopup.appendChild(abchild);
 			abchild.setAttribute("label", calendars[i].name);
 			abchild.setAttribute("value", calendars[i].name);
-			if (calendars[i].name == ab)
+			if (calendars[i].name == ab || (ab == null && i == 0))
 			{
 				abchild.setAttribute("selected", "true");
 				abList.setAttribute("label", calendars[i].name);
@@ -297,7 +312,7 @@ function init() {
 		abpopup.appendChild(abchild);
 		abchild.setAttribute("label", "iCal/Kolab1");
 		abchild.setAttribute("value", "iCal");
-		if (selCalFormat == "iCal")
+		if (selCalFormat == "iCal" || selCalFormat == null)
 		{
 			abchild.setAttribute("selected", "true");
 			abList.setAttribute("label", "iCal/Kolab1");
@@ -318,7 +333,7 @@ function init() {
 		var calActList = document.getElementById("calImapAcct");
 		var actpopup = document.createElement("menupopup");
 		calActList.appendChild(actpopup);
-		var act = "";
+		var act = null;
 		try {
 			if (selectedCalConfig != null)
 				act = pref.getCharPref("SyncKolab."+selectedCalConfig+".CalendarIncomingServer");
@@ -344,7 +359,7 @@ function init() {
 			actpopup.appendChild(actchild);
 			actchild.setAttribute("label", account.prettyName);
 			actchild.setAttribute("value", account.rootMsgFolder.baseMessageURI);
-			if (account.rootMsgFolder.baseMessageURI == act)
+			if (account.rootMsgFolder.baseMessageURI == act || (act == null && i == 0))
 			{
 				actchild.setAttribute("selected", "true");
 				calActList.setAttribute("label", account.prettyName);

@@ -126,7 +126,14 @@ function stripMailHeader (content)
 	// seems we go us a vcard/ical when no xml is found
 	if (content.indexOf("<?xml") == -1)
 	{
+	
 		var startPos = content.indexOf("\r\n\r\n");
+		if (startPos == -1 || startPos > content.length - 10)
+			startPos = content.indexOf("\n\n");
+
+		if (startPos == -1 || startPos > content.length - 10)
+			startPos = 0;			
+
 		return trim(content.substring(startPos, content.length));
 	}
 	else
@@ -193,11 +200,11 @@ function getHashDataBaseFile (config)
 /**
  * reads a database in a twodim array
  */
-function readHashDataBase (dbf)
+function readDataBase (dbf)
 {
 	var db = new Array();
 	
-	if ((!dbf.exists()) || (!dbf.isReadable()))
+	if (dbf == null || !dbf.exists() || !dbf.isReadable())
 		return db;
 	
 	 // setup the input stream on the file
@@ -229,7 +236,6 @@ function readHashDataBase (dbf)
 	return db;
 }
 
-
 /**
  * Gets rid of whitespace at the beginning and the end of a string
  */
@@ -259,8 +265,9 @@ function getDbEntryIdx (key, db)
 /**
  * writes a database file (key:hashvalue)
  */
-function writeHashDataBase(dbf, db)
+function writeDataBase(dbf, db)
 {
+	logMessage("Writing database file: " + dbf.path);
 	if (dbf.exists()) 
 		dbf.remove(true);
 	dbf.create(dbf.NORMAL_FILE_TYPE, 0666);
@@ -337,7 +344,7 @@ function copyToLocalFolder (fileName, folderUri)
 /**
  * Looks for a card in the card list
  * @param cards childCards - the list of cards
- * @param vId	string - the custom4 field (card id)
+ * @param vId string - the custom4 field (card id)
  */
 function findCard (cards, vId)
 {
@@ -653,7 +660,7 @@ function nodeWithContent (nodeName, nodeValue, createNonExist)
 {
 	if (!createNonExist && !checkExist (nodeValue))
 		return "";
-	return "<"+nodeName+">" + (checkExist (nodeValue)?nodeValue:"") + "</"+nodeName+">\n";
+	return "<"+nodeName+">" + (checkExist (nodeValue)?encode4XML(nodeValue):"") + "</"+nodeName+">\n";
 }
 
 
@@ -905,9 +912,9 @@ function DecodeQuoted(s)
 
 function decode_utf8(utftext) {
    var plaintext = ""; var i=0; var c=c1=c2=0;
-   // while-Schleife, weil einige Zeichen uebersprungen werden
+
    while(i<utftext.length)
-       {
+   {
        c = utftext.charCodeAt(i);
        if (c<128) {
            plaintext += String.fromCharCode(c);
@@ -920,26 +927,32 @@ function decode_utf8(utftext) {
            c2 = utftext.charCodeAt(i+1); c3 = utftext.charCodeAt(i+2);
            plaintext += String.fromCharCode(((c&15)<<12) | ((c2&63)<<6) | (c3&63));
            i+=3;}
-       }
+   }
    return plaintext;
 }
 
+function encode4XML(s)
+{
+	return s.replace(/&/g, "&amp;").replace(/</g,
+        "&lt;").replace(/>/g, "&gt;").replace(/amp;amp;/g, "amp;");
+}
+
 function encode_utf8(rohtext) {
-   // dient der Normalisierung des Zeilenumbruchs
+   // check for newline
    rohtext = rohtext.replace(/\r\n/g,"\n");
    var utftext = "";
    for(var n=0; n<rohtext.length; n++)
        {
-       // ermitteln des Unicodes des  aktuellen Zeichens
+       // get the unicode
        var c=rohtext.charCodeAt(n);
-       // alle Zeichen von 0-127 => 1byte
+       // all chars from 0-127 => 1byte
        if (c<128)
            utftext += String.fromCharCode(c);
-       // alle Zeichen von 127 bis 2047 => 2byte
+       // all chars from 127 bis 2047 => 2byte
        else if((c>127) && (c<2048)) {
            utftext += String.fromCharCode((c>>6)|192);
            utftext += String.fromCharCode((c&63)|128);}
-       // alle Zeichen von 2048 bis 66536 => 3byte
+       // all chars from 2048 bis 66536 => 3byte
        else {
            utftext += String.fromCharCode((c>>12)|224);
            utftext += String.fromCharCode(((c>>6)&63)|128);
@@ -1041,10 +1054,10 @@ function encodeQuoted(s)
 }
 
 /**
- * cid: the id of the card/event
- * adsubject: optional additional subject (iCal or vCard)
- * mime: the mime type (application/x-vnd.kolab.contact, application/x-vnd.kolab.event, application/x-vnd.kolab.task, application/x-vnd.kolab.journal, text/x-vcard, text/calendar)
- * part: true if this is a multipart message
+ * @param cid string: the id of the card/event
+ * @param adsubject string: optional additional subject (iCal or vCard)
+ * @param mime string: the mime type (application/x-vnd.kolab.contact, application/x-vnd.kolab.event, application/x-vnd.kolab.task, application/x-vnd.kolab.journal, text/x-vcard, text/calendar)
+ * @param part string: true if this is a multipart message
  * DEPRECATED: use generateMail() below, as this method is broken.
  * Multi-part messages need the boundary also at its end, which 
  * is impossible with this method!
@@ -1110,8 +1123,9 @@ function genMailHeader (cid, adsubject, mime, part)
  * mime: the mime type (application/x-vnd.kolab.contact, application/x-vnd.kolab.event, application/x-vnd.kolab.task, application/x-vnd.kolab.journal, text/x-vcard, text/calendar)
  * part: true if this is a multipart message
  * content: the content for the message
+ * hr: human Readable Part (optional)
  */
-function generateMail (cid, mail, adsubject, mime, part, content)
+function generateMail (cid, mail, adsubject, mime, part, content, hr)
 {
 	var msg = "";
 	var bound = get_randomVcardId();
@@ -1123,8 +1137,6 @@ function generateMail (cid, mail, adsubject, mime, part, content)
           + " " + ((cdate.getTimezoneOffset() < 0)?"+":"-") +
           (Math.abs(cdate.getTimezoneOffset()/60)<10?"0":"") + Math.abs(cdate.getTimezoneOffset()/60) +"00\n"; 
  
-// TODO here we should read the mail address from the proper acount
-// and use it in the From: header
 	msg += "From: " + mail + "\n";
 	msg += "Reply-To: \n";
 	msg += "Bcc: \n";
@@ -1141,7 +1153,7 @@ function generateMail (cid, mail, adsubject, mime, part, content)
 	else
 		msg += 'Content-Type: Multipart/Mixed;boundary="Boundary-00='+bound+'"\n';
 	msg += 'Content-Transfer-Encoding: quoted-printable\n';
-	msg += "User-Agent: SyncKolab 0.4.31\n";
+	msg += "User-Agent: SyncKolab " + gVersion + "\n";
 	if (part)
 		msg += "X-Kolab-Type: "+mime+"\n";
 	msg += "\n"
@@ -1150,10 +1162,17 @@ function generateMail (cid, mail, adsubject, mime, part, content)
 		msg += '--Boundary-00='+bound+'\n';
 		msg += 'Content-Type: Text/Plain;\ncharset="us-ascii"\n';
 		msg += 'Content-Transfer-Encoding: 7bit\n\n';
-		msg += 'This is a Kolab Groupware object.\n';
-		msg += 'To view this object you will need an email client that can understand the Kolab Groupware format.\n';
-		msg += 'For a list of such email clients please visit\n';
-		msg += 'http://www.kolab.org/kolab2-clients.html\n';
+		if (hr != null)
+		{
+			msg += hr;
+		}
+		else
+		{
+			msg += 'This is a Kolab Groupware object.\n';
+			msg += 'To view this object you will need an email client that can understand the Kolab Groupware format.\n';
+			msg += 'For a list of such email clients please visit\n';
+			msg += 'http://www.kolab.org/kolab2-clients.html\n';
+		}
 		msg += '--Boundary-00='+bound+'\n'
 		msg += 'Content-Type: '+mime+';\n name="kolab.xml"\n';
 		msg += 'Content-Transfer-Encoding: quoted-printable\n'
@@ -1178,4 +1197,42 @@ function logMessage (msg, level)
         level = 1;
 	if (DEBUG_SYNCKOLAB && (level <= DEBUG_SYNCKOLAB_LEVEL))
 		consoleService.logStringMessage(msg);
+}
+
+/**
+ * Adds a new name/value to a given array
+ */
+function addField (a, name, value)
+{
+	if (a != null)
+		a.push(new Array(name, value));
+}
+
+
+/**
+ * Returns a file class for the given sync field file
+ * this also creates the required subdirectories if not yet existant
+ * you can use the .exists() function to check if we go this one already
+ */
+function getSyncFieldFile (config, cal, id)
+{
+	id = id.replace(/[ :.;$\\\/]/g, "_");
+	var file = Components.classes["@mozilla.org/file/directory_service;1"].
+	   getService(Components.interfaces.nsIProperties).
+	   get("ProfD", Components.interfaces.nsIFile);
+	file.append("synckolab");
+	if (!file.exists())
+		file.create(1, 775);
+	if (cal)
+		file.append("calendar");
+	else
+		file.append("contact");
+	if (!file.exists())
+		file.create(1, 775);
+
+	file.append(config);
+	if (!file.exists())
+		file.create(1, 775);
+	file.append(id + ".field");
+	return file;
 }
