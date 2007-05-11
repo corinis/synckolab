@@ -377,7 +377,7 @@ var myStreamListener = {
  */
 function parseMessageRunner ()
 {
-   	logMessage("parsing message...");
+   	logMessage("parsing message...", 2);
 	
 	// fix the message for line truncs (last char in line is =)
 	fileContent = fileContent.replace(/=\n/g, "");

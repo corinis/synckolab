@@ -138,14 +138,13 @@ var syncCalendar = {
 		events: new Array(),
 		sync: '',
 		onOperationComplete: function(aCalendar, aStatus, aOperator, aId, aDetail) {		
-			    ("operation: status="+aStatus + " Op=" + aOperator + " Detail=" + aDetail, 2);
+			    logMessage("operation: status="+aStatus + " Op=" + aOperator + " Detail=" + aDetail, 2);
 			},
 		onGetResult: function(aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {
                 logMessage("got results: " + aCount + " items", 2);
                 for (var i = 0; i < aCount; i++) {
                     this.events.push(aItems[i]);
                 }
-                // this.nextFunc(this.sync);
             }
 	},
 
@@ -194,7 +193,9 @@ var syncCalendar = {
 		// update list item
 		this.curItemInListId.setAttribute("label", parsedEvent.id);
 		this.curItemInListStatus.setAttribute("label", "checking");
-		this.curItemInListContent.setAttribute("label", parsedEvent.title);
+		var info = parsedEvent.title + " (" +
+		           date2String(parsedEvent.startDate.jsDate) + ")";
+		this.curItemInListContent.setAttribute("label", info);
 		
 		// remember that we did this uid already
 		this.folderMessageUids.push(parsedEvent.id);
@@ -242,9 +243,14 @@ var syncCalendar = {
 			logMessage("Event exists local: " + parsedEvent.id, 2);
 			
 			var cEvent = message2Event(readSyncDBFile(idxEntry));
+			
+			var hasEntry = idxEntry.exists() && (cEvent != null);
+			// make sure cEvent is not null, else the comparision will fail
+			var equal2parsed = hasEntry && equalsEvent(cEvent, parsedEvent);
+			var equal2found = hasEntry && equalsEvent(cEvent, foundEvent);
 
-			if (idxEntry.exists() && !equalsEvent(cEvent, parsedEvent) && !equalsEvent(cEvent, foundEvent))
-			{
+			if (hasEntry && !equal2parsed && !equal2found)
+ 			{
 			    // changed locally and on server side
 				logMessage("Changed on server and local: " + parsedEvent.id, 2);
 				
@@ -314,7 +320,7 @@ var syncCalendar = {
 				
 				// we got that already, see which is newer and update the message or the event
 				// the sync database might be out-of-date, so we handle a non-existent entry as well
-				if (!idxEntry.exists() || (!equalsEvent(cEvent, parsedEvent) && equalsEvent(cEvent, foundEvent)))
+				if (!hasEntry || (!equal2parsed && equal2found))
 				{
 					logMessage("event on server changed: " + parsedEvent.id, 2);
 					
@@ -324,8 +330,11 @@ var syncCalendar = {
 					{
 						if (this.gEvents.events[i].id == parsedEvent.id)
 						{
-							// modify the item
-							this.gCalendar.modifyItem(parsedEvent, foundEvent, this.gEvents);
+							try {
+							    // modify the item - catch exceptions due to triggered alarms
+							    // because they will break the sync process
+ 								this.gCalendar.modifyItem(parsedEvent, foundEvent, this.gEvents);
+							} catch (e) {}
 	
 							// update list item
 							this.curItemInListStatus.setAttribute("label", "update local");
@@ -335,7 +344,7 @@ var syncCalendar = {
 					}
 				}
 				else
-				if (equalsEvent(cEvent, parsedEvent) && !equalsEvent(cEvent, foundEvent))
+				if (equal2parsed && !equal2found)
 				{
 					logMessage("event on client changed: " + parsedEvent.id, 2);
 	
@@ -384,11 +393,11 @@ var syncCalendar = {
 	 * read the next todo/event and return the content if update needed
 	 */
 	nextUpdate: function () {
-		logMessage("next update...", 1);
+		logMessage("next update...", 2);
 		// if there happens an exception, we are done
 		if ((this.gEvents == null || this.gCurEvent >= this.gEvents.events.length) && (this.gTodo == null || this.gCurTodo >= this.gTodo.length))
 		{
-			logMessage("done update...", 1);
+			logMessage("done update...", 2);
 			// we are done
 			return "done";
 		}
@@ -424,8 +433,6 @@ var syncCalendar = {
 
 				var cEntry = getSyncDbFile	(this.gConfig, true, cur.id);
 				
-				var curSyncEntry = genCalSha1 (cur);
-				var cdb = getDbEntryIdx (cur.id, this.db);
 				if (cEntry.exists() && !this.forceServerCopy)
 				{
 					// we have it in our database - don't write back to server but delete locally

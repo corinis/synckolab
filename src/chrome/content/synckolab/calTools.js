@@ -96,20 +96,6 @@ function findEvent(events, uid)
 }
 
 
-/**
- * generate a sha1 over the most important fields
- */
-function genCalSha1 (event)
-{
-    // Use the Kolab 2 XML representation as base for the hash.
-    // This may slow down the process, but it should be possible
-    // to switch back to something faster if needed.
-    var aString = cnv_event2xml( event, true);
-    hashValue = hex_sha1(aString);
-    return hashValue;
-}
-
-
 /* ----- functions to handle the Kolab 2 XML event format ----- */
 
 /**
@@ -190,10 +176,13 @@ function getDayIndex (name)
 
 /**
  * This functions checks if two events are equals
- * TODO: but all available fields in here especially attendies
+ * TODO: make sure that event2xml does not create undesired ebhaviour when
+ *   comparing iCal vs. XML
  */
 function equalsEvent (a, b)
 {
+	return cnv_event2xml(a, true) == cnv_event2xml(b, true);
+/*
 	//Fields to look for
 	var fieldsArray = new Array(
 		"title",
@@ -256,6 +245,7 @@ function equalsEvent (a, b)
         }
     }	
 	return true;	
+*/	
 }
 
 
@@ -308,7 +298,7 @@ function xml2Event (xml, event)
     //var iCalToDo = Components.classes["@mozilla.org/icaltodo;1"].createInstance().QueryInterface(Components.interfaces.oeIICalTodo);
 
 	
-	// decode utf chars and make sure an & is an &amp;
+	// decode utf chars and make sure an & is an &amp; (otherwise this is unparseable)
 	xml = decode_utf8(DecodeQuoted(xml)).replace(/&/g, "&amp;").replace(/amp;amp;/g, "amp;");
 	
 	// convert the string to xml
@@ -328,7 +318,7 @@ function xml2Event (xml, event)
 	if ((topNode.nodeType != Node.ELEMENT_NODE) || (topNode.nodeName.toUpperCase() != "EVENT"))
 	{
 		// this can't be an event in Kolab XML format
-		logMessage("This message doesn't contain an event in Kolab XML format.", 3);
+		logMessage("This message doesn't contain an event in Kolab XML format.\n" + xml, 1);
 		return false;
 	}
 
@@ -735,9 +725,8 @@ function event2xml (event)
  */
 function cnv_event2xml (event, skipVolatiles)
 {
-	// TODO improve recurrence settings
-	//      not working ATM:
-	//          - yearly recurrence
+	// TODO  not working ATM:
+	//    - yearly recurrence
 
     var hasOrganizer = false;
     var isAllDay = event.startDate.isDate;
@@ -964,13 +953,16 @@ function cnv_event2xml (event, skipVolatiles)
  */
 function event2Human (event)
 {
-    xml = "Title: " + event.title +"\n";
-    xml += "From: " + calDateTime2String(event.startDate, isAllDay) + "\n";
-    xml += "To: " + calDateTime2String(endDate, isAllDay) + "\n\n";
-    if (event.getProperty("DESCRIPTION"))
-        xml += event.getProperty("DESCRIPTION") + "\n\n";
-    if (event.getProperty("LOCATION"))
-        xml += event.getProperty("LOCATION") +"\n";
+    var isAllDay = event.startDate.isDate;
+    var endDate = event.endDate;
+    var txt = "Summary: " + event.title +"\n";
+    txt += "Start date: " + calDateTime2String(event.startDate, isAllDay) + "\n";
+    txt += "End date: " + calDateTime2String(endDate, isAllDay) + "\n\n";
+     if (event.getProperty("DESCRIPTION"))
+        txt += event.getProperty("DESCRIPTION") + "\n\n";
+     if (event.getProperty("LOCATION"))
+        txt += event.getProperty("LOCATION") +"\n";
+    return txt;
 }
 
 /**
