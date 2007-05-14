@@ -1093,7 +1093,7 @@ function card2Message (card, email, format, fFile)
  	msg += "VERSION:3.0\n";
  	msg += "END:VCARD\n\n";
 
-	return generateMail(card.custom4, email, "vCard", "application//x-vcard", 
+	return generateMail(card.custom4, email, "vCard", "application/x-vcard", 
 			false, encodeQuoted(encode_utf8(msg)), null);
 }
 
