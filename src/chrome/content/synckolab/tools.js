@@ -50,17 +50,17 @@ function getSyncDbFile (config, cal, id)
 	   get("ProfD", Components.interfaces.nsIFile);
 	file.append("synckolab");
 	if (!file.exists())
-		file.create(1, 775);
+		file.create(1, 0775);
 	if (cal)
 		file.append("calendar");
 	else
 		file.append("contact");
 	if (!file.exists())
-		file.create(1, 775);
+		file.create(1, 0775);
 
 	file.append(config);
 	if (!file.exists())
-		file.create(1, 775);
+		file.create(1, 0775);
 	file.append(id);
 	return file;
 }
@@ -1154,17 +1154,17 @@ function getSyncFieldFile (config, cal, id)
 	   get("ProfD", Components.interfaces.nsIFile);
 	file.append("synckolab");
 	if (!file.exists())
-		file.create(1, 775);
+		file.create(1, 0775);
 	if (cal)
 		file.append("calendar");
 	else
 		file.append("contact");
 	if (!file.exists())
-		file.create(1, 775);
+		file.create(1, 0775);
 
 	file.append(config);
 	if (!file.exists())
-		file.create(1, 775);
+		file.create(1, 0775);
 	file.append(id + ".field");
 	return file;
 }
