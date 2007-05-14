@@ -4,4 +4,7 @@
 
 <overlay id="synckolabToolbarTbOverlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
+	<menupopup id="menu_ToolsPopup">
+	  <menuitem id="example-item" oncommand="alert('Hello!');" label="Hi" accesskey="i"/>
+	</menupopup>
 </overlay>

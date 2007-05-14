@@ -42,7 +42,8 @@ var syncAddressBook = {
 	folderPath: '', // String - the path for the contacts
 	serverKey: '', // the incoming server
 	gSaveImap: true, // write back to folder
-	gConfig: '',
+	gConfig: '', // remember the configuration name
+	gCurUID: '', // save the last checked uid - for external use
 
 	gAddressBook: '', // the addressbook type nsIAbDirectory
 	gCards: '', // remember the current card list
@@ -62,6 +63,9 @@ var syncAddressBook = {
 	
 	forceServerCopy: false,
 	forceLocalCopy: false,
+	isCal: function() {
+		return false
+	},
 	
 	init: function(config) {
 		var addressBookName;
@@ -178,23 +182,25 @@ var syncAddressBook = {
 		
 		if (message2Card (fileContent, newCard, messageFields))
 		{
-		
+			// remember current uid
+			this.gCurUID = getUID(newCard);
+			
 			// remember that we did this uid already
-			this.folderMessageUids.push(newCard.custom4);
-			logMessage("got card from message: " + newCard.custom4, 1);	
+			this.folderMessageUids.push(getUID(newCard));
+			logMessage("got card from message: " + getUID(newCard), 2);	
 
 			// update list item
-			this.curItemInListId.setAttribute("label", newCard.custom4);
+			this.curItemInListId.setAttribute("label", getUID(newCard));
 			this.curItemInListStatus.setAttribute("label", "checking");
 			this.curItemInListContent.setAttribute("label", newCard.firstName + " " + newCard.lastName + " <" + newCard.primaryEmail + ">");
 
 			// ok lets see if we have this one already (remember custom4=UID)
-			var aCard = findCard (cards, newCard.custom4);
+			var aCard = findCard (cards, getUID(newCard));
 
 			// get the dbfile from the local disk
-			var cEntry = getSyncDbFile	(this.gConfig, false, newCard.custom4);
+			var cEntry = getSyncDbFile	(this.gConfig, false, getUID(newCard));
 			// ... and the field file
-			var fEntry = getSyncFieldFile(this.gConfig, false, newCard.custom4);
+			var fEntry = getSyncFieldFile(this.gConfig, false, getUID(newCard));
 
 			// a new card or locally deleted 
 			if (aCard == null)
@@ -214,7 +220,7 @@ var syncAddressBook = {
 						writeDataBase(fEntry, messageFields);
 					
 					this.gAddressBook.addCard (newCard);
-					logMessage("card is new, add to address book: " + newCard.custom4, 1);	
+					logMessage("card is new, add to address book: " + getUID(newCard), 1);	
 					
 					//update list item
 					this.curItemInListStatus.setAttribute("label", "add local");
@@ -222,16 +228,28 @@ var syncAddressBook = {
 				}
 				else
 				{
-					logMessage("card deleted locally: " + newCard.custom4, 1);	
+					logMessage("card deleted locally: " + getUID(newCard), 1);	
 					
 					//update list item
 					this.curItemInListStatus.setAttribute("label", "delete on server");
-					
-					// also remove the local db file since we deleted the contact
-					cEntry.remove(false);
+	
+					try
+					{				
+						// also remove the local db file since we deleted the contact
+						cEntry.remove(false);
+					}
+					catch (dele)
+					{ // ignore this - if the file does not exist
+					}
 										
-					// delete extra file if we dont need it
-					fEntry.remove(false);
+					try
+					{				
+						// delete extra file if we dont need it
+							fEntry.remove(false);
+					}
+					catch (dele)
+					{ // ignore this - if the file does not exist
+					}
 					
 					return "DELETEME";
 				}				
@@ -292,7 +310,7 @@ var syncAddressBook = {
 					} else {
 						//cards values are different, however, no apparent differences
 						//Changes to the way the SHA (code revisions) are calculated could cause this
-						logMessage("Contacts differ, however, assumed no change, update local" + newCard.custom4, 1);
+						logMessage("Contacts differ, however, assumed no change, update local" + getUID(newCard), 1);
 						bUpdateLocal = true;
 						this.curItemInListStatus.setAttribute("label", "Auto Conflict Resolved : update local");						
 					}
@@ -327,7 +345,7 @@ var syncAddressBook = {
 				// we got that already, see which to update (server change if db == local != server)
 				if (!cEntry.exists() || (equalsContact(cCard, aCard) && !equalsContact(cCard, newCard)))
 				{
-				    logMessage("server changed: " + aCard.custom4, 1);
+				    logMessage("server changed: " + getUID(aCard), 2);
 					// server changed - update local
 					var list = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);
 					list.AppendElement(aCard);
@@ -351,7 +369,7 @@ var syncAddressBook = {
 				// is the db file equals server, but not local.. we got a local change
 				if (cEntry.exists() && !equalsContact(cCard, aCard) && equalsContact(cCard, newCard))
 				{
-				    logMessage("client changed: " + aCard.custom4, 1);
+				    logMessage("client changed: " + getUID(aCard), 2);
 					
 					// update list item
 					this.curItemInListStatus.setAttribute("label", "update server");
@@ -413,12 +431,49 @@ var syncAddressBook = {
 		
 		var content = null;
 		
-		if (!cur.isMailList && cur.custom4.length < 2)
+		// get some info
+		if (cur.isMailList )
+		{
+			alert("CUR INFO: \n" + 
+				"custom4? " + cur.custom4 + "\n" +
+				"content? " + cur.displayName + "\n" +
+				"content? " + cur.lastName + "\n" +
+				"content? " + cur.nickName + "\n" +
+				"notes? " + cur.notes + "\n" +
+				"mailListURI? " + cur.mailListURI +
+				""
+				);
+				
+			logMessage ("Getting list information", 1);
+			var cList = rdf.GetResource(cur.mailListURI).QueryInterface(Components.interfaces.nsIAbDirectory);
+			if (cList.addressLists)
+		 	{
+				var total = cList.addressLists.Count();
+				if (total)
+				{
+					for ( var i = 0;  i < total; i++ )
+					{
+						var card = cList.addressLists.GetElementAt(i);
+						card = card.QueryInterface(Components.interfaces.nsIAbCard);
+						logMessage("CARD is in mailing list: " + card.displayName , 1 );
+					}
+				}
+			}
+			
+		}
+		
+		if (cur.mailListURI != null && cur.mailListURI != "")
+		{
+			logMessage("CARD has mailing list uri: " + cur.mailListURI + " nc: " + cur.isANormalCard , 1 );
+		}
+		
+		// check for this entry
+		if (!cur.isMailList && getUID (cur) == null)
 		{
 			// look at new card
 			// generate a unique id (will random be enough for the future?)
-			cur.custom4 = "pas-id-" + get_randomVcardId();
-	    	logMessage("adding unsaved card: " + cur.custom4, 1);
+			setUID(cur, "pas-id-" + get_randomVcardId());
+	    	logMessage("adding unsaved card: " + getUID (cur), 2);
 			
 			writeCur = true;
 			cur.editCardToDatabase ("moz-abmdbdirectory://"+this.gAddressBook);
@@ -428,7 +483,7 @@ var syncAddressBook = {
 			this.curItemInListId = document.createElement("listcell");
 			this.curItemInListStatus = document.createElement("listcell");
 			this.curItemInListContent = document.createElement("listcell");
-			this.curItemInListId.setAttribute("label", cur.custom4);
+			this.curItemInListId.setAttribute("label", getUID(cur));
 			this.curItemInListStatus.setAttribute("label", "add to server");
 			this.curItemInListContent.setAttribute("label", cur.firstName + " " + cur.lastName + " <" + cur.primaryEmail + ">");
 			
@@ -441,10 +496,10 @@ var syncAddressBook = {
 			
 			// and write the message
 			content = card2Message(cur, this.email, this.format);
-	        logMessage("New Card " + cur.custom4, 1);
+	        logMessage("New Card " + getUID(cur), 2);
 
 			// get the dbfile from the local disk
-			var cEntry = getSyncDbFile	(this.gConfig, false, cur.custom4);
+			var cEntry = getSyncDbFile	(this.gConfig, false, getUID(cur));
 			// write the current content in the sync-db file
 			writeSyncDBFile (cEntry, stripMailHeader(content));			
 			
@@ -456,9 +511,9 @@ var syncAddressBook = {
 			// check if we have this uid in the messages
 			for (var i = 0; i < this.folderMessageUids.length; i++)
 			{
-				if (cur.custom4 == this.folderMessageUids[i])
+				if (getUID(cur) == this.folderMessageUids[i] && getUID(cur) != null)
 				{
-					logMessage("we got this contact already: " + cur.custom4, 1);
+					logMessage("we got this contact already: " + getUID(cur), 1);
 					alreadyProcessed = true;
 					break;
 				}
@@ -470,8 +525,12 @@ var syncAddressBook = {
 			if (!alreadyProcessed)
 			{
 				// get the dbfile from the local disk
-				var cEntry = getSyncDbFile	(this.gConfig, false, cur.custom4);
-
+				var cEntry = getSyncDbFile	(this.gConfig, false, getUID(cur));
+				if (getUID(cur) == null)
+				{
+					alert("UID is NULL???" + cur.custom4);
+				}
+				
 				if (cEntry.exists() && !this.forceServerCopy)
 				{
 					this.deleteList.AppendElement(cur);
@@ -481,7 +540,7 @@ var syncAddressBook = {
 					this.curItemInListId = document.createElement("listcell");
 					this.curItemInListStatus = document.createElement("listcell");
 					this.curItemInListContent = document.createElement("listcell");
-					this.curItemInListId.setAttribute("label", cur.custom4);
+					this.curItemInListId.setAttribute("label", getUID(cur));
 					this.curItemInListStatus.setAttribute("label", "local delete");
 					this.curItemInListContent.setAttribute("label", cur.firstName + " " + cur.lastName + " <" + cur.primaryEmail + ">");
 					
@@ -505,7 +564,7 @@ var syncAddressBook = {
 					this.curItemInListId = document.createElement("listcell");
 					this.curItemInListStatus = document.createElement("listcell");
 					this.curItemInListContent = document.createElement("listcell");
-					this.curItemInListId.setAttribute("label", cur.custom4);
+					this.curItemInListId.setAttribute("label", getUID(cur));
 					this.curItemInListStatus.setAttribute("label", "add to server");
 					this.curItemInListContent.setAttribute("label", cur.firstName + " " + cur.lastName + " <" + cur.primaryEmail + ">");
 					
@@ -517,14 +576,12 @@ var syncAddressBook = {
 					
 					// and write the message
 					content = card2Message(cur, this.email, this.format);
-					logMessage("New Card " + cur.custom4, 1);
+					logMessage("New Card " + getUID(cur), 1);
 					
 					// get the dbfile from the local disk
-					var cEntry = getSyncDbFile	(this.gConfig, false, cur.custom4);
+					var cEntry = getSyncDbFile	(this.gConfig, false, getUID(cur));
 					// write the current content in the sync-db file
 					writeSyncDBFile (cEntry, stripMailHeader(content));			
-					
-					
 				}				
 			}
 		}

@@ -44,6 +44,9 @@ function checkExist (value)
  */
 function getSyncDbFile (config, cal, id)
 {
+	if (id == null)
+		return null;
+		
 	id = id.replace(/[ :.;$\\\/]/g, "_");
 	var file = Components.classes["@mozilla.org/file/directory_service;1"].
 	   getService(Components.interfaces.nsIProperties).
@@ -219,11 +222,9 @@ function readDataBase (dbf)
 	for (var i = 0; i < lines.length; i++)
 		if (lines[i].indexOf(":") != -1)
 		{
-			lines[i] = trim(lines[i]);
-			var content = lines[i].split(":");
-			db.push(content);
+			db[i] = trim(lines[i]).split(":");
 	    }
-
+	alert("Got " + db.length + " lines");
 	return db;
 }
 
@@ -247,14 +248,16 @@ function trim(s) {
  */
 function getDbEntryIdx (key, db)
 {
- 	for (var i = 0; i < db.length; i++)
-		if (db[i][0] == key)
+ 	for (var i = 0; db[i]; i++)
+ 	{
+		if (db[i] && key == db[i][0])
 			return i;
+	}
 	return -1;	
 }
 
 /**
- * writes a database file (key:hashvalue)
+ * writes a database file (key:hashvalue:h2)
  */
 function writeDataBase(dbf, db)
 {
@@ -268,7 +271,10 @@ function writeDataBase(dbf, db)
  	{
  		if (db[i][0] != "" && db[i][0] != null)
  		{
- 			var s = db[i][0] + ":" + db[i][1] + "\n";
+ 			var s = db[i][0];
+ 			for (var j = 1; db[i][j]; j++)
+ 				s += ":" + db[i][j];
+ 			s += "\n";
 			stream.write(s, s.length);
 		}
 	}

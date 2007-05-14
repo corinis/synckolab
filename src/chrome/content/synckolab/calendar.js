@@ -44,7 +44,8 @@ var syncCalendar = {
 	folderPath: '', // String - the path for the entries
 	serverKey: '', // the incoming server
 	gSaveImap: true, // write back to folder
-	gConfig: '',
+	gConfig: '', // remember the configuration name
+	gCurUID: '', // save the last checked uid - for external use
 
 	gToDo: '',
 	gCurTodo: 0,
@@ -71,6 +72,9 @@ var syncCalendar = {
 
 	forceServerCopy: false,
 	forceLocalCopy: false,
+	isCal: function() {
+		return true
+	},
 
 	init: function(config) {
 		if (!isCalendarAvailable ())
@@ -189,6 +193,9 @@ var syncCalendar = {
 			this.curItemInListId.setAttribute("label", "unparseable");
 			return null;
 		}
+
+		// remember current uid
+		this.gCurUID = getUID(parsedEvent.id);
 
 		// update list item
 		this.curItemInListId.setAttribute("label", parsedEvent.id);

@@ -46,7 +46,7 @@ var gFolderDatasource = Components.classes["@mozilla.org/rdf/datasource;1?name=m
 var gMessageService=Components.classes["@mozilla.org/messenger/messageservice;1?type=imap"].getService(Components.interfaces.nsIMsgMessageService); 
 
 // save the Version of synckolab
-var gVersion = "0.4.33";
+var gVersion = "0.4.34";
 
 // holds required content
 var gSyncContact; // sync the contacts
@@ -67,13 +67,18 @@ var curCounter;
 var itemList; // display all processed items
 var gCloseWnd; // true if we want to close the window when sync is done
 
+// sync message db
+var syncMessageDb;
+var gSyncFileKey;
+var gSyncKeyInfo;
+
 // progress variables 
 var curStep;
 
 
 // Global debug setting (on)
 var DEBUG_SYNCKOLAB = true;
-var DEBUG_SYNCKOLAB_LEVEL = 3;
+var DEBUG_SYNCKOLAB_LEVEL = 1;
 var SWITCH_TIME = 50;
  
 function syncKolab(event) {
@@ -295,6 +300,9 @@ function getContent (sync)
 		
 	// get the message keys
 	gMessages = sync.folder.getMessages(msgWindow);	
+	
+	// get the message database (a file with uid:size:date:localfile)
+	syncMessageDb = readDataBase(getHashDataBaseFile(sync.gConfig + gSync.isCal()?".cal":".con"));
 		
 	curMessage = 0;
 	updateMessages = new Array(); // saves the the message url to delete
@@ -304,8 +312,6 @@ function getContent (sync)
 	statusMsg.value = "Synchronizing entries...";
 	meter.setAttribute("value", "5%");
 	window.setTimeout(getMessage, SWITCH_TIME);	
-	// the unique id is in second token in the mail subject (f.e. pas-id-3EF6F3700000002E) and
-	// saved in the custom4 field of the card (is there an id field??)
 }
 
 
@@ -330,6 +336,57 @@ function getMessage ()
 		updateContentAfterSave ();
     	return;
 	}
+	// check if we actually have to process this message, or if this is already known
+	
+	/*
+	 check based on:
+	 key:
+	 cur.messageKey ?
+	 cur.messageId  ?
+	 mime2DecodedSubject ?
+
+	 check if equals:
+	 cur.messageSize 
+	 cur.date (PRTime) ?
+	*/
+	gSyncFileKey = getDbEntryIdx(cur.mime2DecodedSubject, syncMessageDb);
+	gSyncKeyInfo = cur.mime2DecodedSubject;
+	if (gSyncFileKey > 0)
+	{
+		logMessage("we have " + cur.mime2DecodedSubject + " already locally...");
+		// check if the message has changed
+		if (cur.messageSize == syncMessageDb[gSyncFileKey][1] && cur.date == syncMessageDb[gSyncFileKey][2])
+		{
+			// get the content from the cached file and ignore the imap
+			logMessage("taking content from: " + syncMessageDb[gSyncFileKey][3] + syncMessageDb[gSyncFileKey][4]);
+			fileContent = readSyncDBFile(getSyncDbFile(syncMessageDb[gSyncFileKey][3], gSync.isCal(), syncMessageDb[gSyncFileKey][4]));
+
+			// make sure we dont read an empty file
+			if (fileContent != null && fileContent != "")
+			{
+				parseMessageRunner ();
+				return;
+			}
+		}
+		else
+		{
+			// some change happened... remove this entry (+ some update :P )
+			syncMessageDb[gSyncFileKey][0] = '';
+			syncMessageDb[gSyncFileKey][1] = cur.messageSize;
+			syncMessageDb[gSyncFileKey][2] = cur.date;			
+		}
+	}
+	else
+	{
+		// remember the info
+		gSyncFileKey = syncMessageDb.length; 
+		syncMessageDb[gSyncFileKey] = {};
+		syncMessageDb[gSyncFileKey][0] = '';
+		syncMessageDb[gSyncFileKey][1] = cur.messageSize;
+		syncMessageDb[gSyncFileKey][2] = cur.date;			
+	}
+	
+	
 	// get the message content into fileContent
 	// parseMessageRunner is called when we got the message
 	fileContent = "";
@@ -383,17 +440,26 @@ function parseMessageRunner ()
 	fileContent = fileContent.replace(/=\n/g, "");
 	
 	var content = gSync.parseMessage(fileContent, updateMessagesContent);
+	
 	// just to make sure there REALLY isnt any content left :)
 	fileContent = "";
 	if (content != null)
 	{
 		if (content == "DELETEME")
-			logMessage("updating and deleting [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]", 1);
+			logMessage("updating and deleting [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]", 2);
 		else
-			logMessage("updating [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]", 1);
+			logMessage("updating [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]", 2);
 		updateMessages.push(gSync.folderMsgURI +"#"+gCurMessageKey); 
 		updateMessagesContent.push(content); 
-		logMessage("changed msg #" + updateMessages.length, 1);
+		logMessage("changed msg #" + updateMessages.length, 2);
+	}
+	// no change... remember that :)
+	else
+	{
+		// get the sync db file
+		syncMessageDb[gSyncFileKey][0] = gSyncKeyInfo;
+		syncMessageDb[gSyncFileKey][3] = gSync.gConfig;
+		syncMessageDb[gSyncFileKey][4] = gSync.gCurUID;
 	}
 	
 	
@@ -422,6 +488,9 @@ function parseFolderToAddressFinish ()
 	curStep = 5;
 	writeDone = false;
     logMessage("parseFolderToAddressFinish", 1);
+    
+    // write the db file back
+    writeDataBase(getHashDataBaseFile(gSync.gConfig), syncMessageDb);
 
 	meter.setAttribute("value", "60%");
 	statusMsg.value = "Writing changed entries...";
@@ -563,7 +632,7 @@ function writeContent ()
 		stream.close();
 		
 		// write the temp file back to the original directory
-		logMessage("WriteContent Writing...", 1);
+		logMessage("WriteContent Writing...", 3);
 		copyToFolder (gTmpFile, gSync.folder.folderURL);
 	}
 	else
@@ -575,6 +644,18 @@ function writeContent ()
 // done this time
 function writeContentAfterSave ()
 {
+	// before done, set all unread messages to read in the sync folder
+	gMessages = gSync.folder.getMessages(msgWindow);	
+	while (gMessages.hasMoreElements ())
+	{
+		cur = gMessages.getNext().QueryInterface(Components.interfaces.nsIMsgDBHdr);
+		if (!cur.isRead)
+		{
+			cur.markRead(true);
+		}
+	}	
+	gMessages = null;
+	
 	gSync.doneParsing();
 	window.setTimeout(nextSync, SWITCH_TIME, syncCalendar);	
 }

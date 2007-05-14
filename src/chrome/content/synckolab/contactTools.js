@@ -1119,3 +1119,28 @@ function decodeCardField(fieldValue)
 	unsafeStr = fieldValue.replace(/=3A/g, ":");
 	return unsafeStr.replace(/=3B/g, ";");
 }
+
+
+/**
+ * get the uid of a card
+ * This has to externalized because uids in lists are != uids in contacts
+ */
+function getUID (card)
+{
+	if (card == null)
+		return null;
+	if (card.isMailList)
+		return null;
+	if (card.custom4 == "")
+		return null;
+	return card.custom4;
+}
+
+
+function setUID (card, uid)
+{
+	if (card == null)
+		return;
+		
+	card.custom4 = uid;
+}
