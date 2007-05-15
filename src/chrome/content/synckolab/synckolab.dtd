@@ -1,7 +1,8 @@
 <!-- buttons -->
-
+<!--
 <!ENTITY synckolab.sync.label					"Sync Kolab">
 <!ENTITY synckolab.sync.tip						"Synchronize Kolab Folders">
 
 <!ENTITY synckolab.contactConflict.dialogTitle		"Contact Conflict">
 <!ENTITY synckolab.contactConflict.dialogMessage		"Conflicts detected. Please select which version to use for each field.">
+-->

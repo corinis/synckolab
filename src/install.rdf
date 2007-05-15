@@ -1,7 +1,4 @@
-<?xml version="1.0"?>
-
-<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-     xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+<?xml version="1.0" encoding="UTF-8"?><RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
 
   <Description about="urn:mozilla:install-manifest">
     <!-- Target Application this extension can install into, 
@@ -9,7 +6,7 @@
     <em:targetApplication>
       <Description>
         <em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id>
-        <em:minVersion>1.0</em:minVersion>
+        <em:minVersion>1.5</em:minVersion>
         <em:maxVersion>2.0.0.*</em:maxVersion>
       </Description>
     </em:targetApplication>
@@ -17,7 +14,8 @@
     <!-- Front End MetaData -->
     <em:id>{571CFACF-0F7D-49b4-BD77-E6FC7B209ADC}</em:id>
     <em:name>Sync Kolab</em:name>
-    <em:version>0.4.33</em:version>
+    <em:version>0.4.34</em:version>
+    <em:type>2</em:type>
     <em:description>Synchronize the address book and calendar with IMAP folder or Kolab1/2 server</em:description>
     <em:creator>Niko Berger</em:creator>
     <em:homepageURL>http://www.gargan.org/extensions/synckolab.html</em:homepageURL>
@@ -45,6 +43,6 @@
 			</Description>
 		</em:requires>
 		-->
-  </Description>      
+  <em:targetPlatform/><em:aboutURL/><em:iconURL/></Description>      
   
 </RDF>

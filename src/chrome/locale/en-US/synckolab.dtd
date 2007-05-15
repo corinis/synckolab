@@ -1,4 +1,6 @@
 <!-- buttons -->
+<!ENTITY synckolab.syncMenu.label					"Start SyncKolab">
+<!ENTITY synckolab.optionMenu.label					"SyncKolab Options">
 
 <!ENTITY synckolab.sync.label					"Sync Kolab">
 <!ENTITY synckolab.sync.tip						"Synchronize Kolab Folders">

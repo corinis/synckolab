@@ -1,5 +1,9 @@
 ﻿<!-- buttons -->
 
+<!-- menu -->
+<!ENTITY synckolab.syncMenu.label					"Starte SyncKolab">
+<!ENTITY synckolab.optionMenu.label					"SyncKolab Einstellungen">
+
 <!ENTITY synckolab.sync.label					"Sync Kolab">
 <!ENTITY synckolab.sync.tip						"Vergleiche Kolab Verzeichnisse">
 

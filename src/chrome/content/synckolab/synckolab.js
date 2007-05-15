@@ -81,13 +81,11 @@ var DEBUG_SYNCKOLAB = true;
 var DEBUG_SYNCKOLAB_LEVEL = 1;
 var SWITCH_TIME = 50;
  
- 
- // from mailnews\base\public\nsMsgMessageFlags.h messenger/mailWindowOverlay.js
-//#define MSG_FLAG_READ     0x0001    /* has been read */
-const abs_MSG_FLAG_READ              = 0x000001;
-const abs_MSG_FLAG_IMAP_DELETED      = 0x200000;
- 
+  
 function syncKolab(event) {
+
+	var strBundle = document.getElementById("synckolabBundle");
+	alert(strBundle.getString("checking"));
 	// copy a file to a folder
 	// call external func
 	//Copart, added resizeable property to allow user to enlarge window when needed
@@ -305,7 +303,7 @@ function getContent (sync)
 	
 		
 	// get the message keys
-	gMessages = sync.folder.getMessages(msgWindow);	
+	gMessages = sync.folder.getMessages(null);	 // dont need the msgWindow use null
 	
 	// get the message database (a file with uid:size:date:localfile)
 	syncMessageDb = readDataBase(getHashDataBaseFile(sync.gConfig + gSync.isCal()?".cal":".con"));
@@ -342,6 +340,9 @@ function getMessage ()
 		updateContentAfterSave ();
     	return;
 	}
+	// check message isnt deleted
+	logMessage("Message has flags: " + cur.flags);
+	
 	// check if we actually have to process this message, or if this is already known
 	
 	/*
@@ -359,12 +360,12 @@ function getMessage ()
 	gSyncKeyInfo = cur.mime2DecodedSubject;
 	if (gSyncFileKey > 0)
 	{
-		logMessage("we have " + cur.mime2DecodedSubject + " already locally...");
+		logMessage("we have " + cur.mime2DecodedSubject + " already locally...", 2);
 		// check if the message has changed
 		if (cur.messageSize == syncMessageDb[gSyncFileKey][1] && cur.date == syncMessageDb[gSyncFileKey][2])
 		{
 			// get the content from the cached file and ignore the imap
-			logMessage("taking content from: " + syncMessageDb[gSyncFileKey][3] + syncMessageDb[gSyncFileKey][4]);
+			logMessage("taking content from: " + syncMessageDb[gSyncFileKey][3] + syncMessageDb[gSyncFileKey][4], 2);
 			fileContent = readSyncDBFile(getSyncDbFile(syncMessageDb[gSyncFileKey][3], gSync.isCal(), syncMessageDb[gSyncFileKey][4]));
 
 			// make sure we dont read an empty file
@@ -694,7 +695,8 @@ function copyToFolder (fileName, folderUri)
 	
 	copyservice = Components.classes["@mozilla.org/messenger/messagecopyservice;1"].getService(Components.interfaces.nsIMsgCopyService);
 	// in order to be able to REALLY copy the message setup a listener
-	copyservice.CopyFileMessage(fileSpec, mailFolder, null, false, 0, kolabCopyServiceListener, msgWindow);
+	// and mark as read
+	copyservice.CopyFileMessage(fileSpec, mailFolder, null, false, 0x000001, kolabCopyServiceListener, null); // dont need a msg window
 }
 
 var kolabCopyServiceListener = {

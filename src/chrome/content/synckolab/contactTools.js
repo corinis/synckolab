@@ -40,12 +40,11 @@
 function xml2Card (xml, card, extraFields)
 {
 	// until the boundary = end of xml
-	xml = decode_utf8(DecodeQuoted(xml));
-	
+	xml = decode_utf8(DecodeQuoted(xml)).replace(/&/g, "&amp;").replace(/amp;amp;/g, "amp;");
 
 	// convert the string to xml
 	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser); 	
-	var doc = parser.parseFromString(xml.replace(/&/g, "&amp;").replace(/amp;amp;/g, "amp;"), "text/xml");
+	var doc = parser.parseFromString(xml, "text/xml");
 	
 	var topNode = doc.firstChild;
 	if (topNode.nodeName == "parsererror")
@@ -54,10 +53,10 @@ function xml2Card (xml, card, extraFields)
 		logMessage("Error parsing the XML content of this message.\n" + xml, 1);
 		return false;
 	}
-	if ((topNode.nodeType != Node.ELEMENT_NODE) || (topNode.nodeName.toUpperCase() != "EVENT"))
+	if ((topNode.nodeType != Node.ELEMENT_NODE) || (topNode.nodeName.toUpperCase() != "CONTACT"))
 	{
 		// this can't be an event in Kolab XML format
-		logMessage("This message doesn't contain an event in Kolab XML format.\n" + xml, 1);
+		logMessage("This message doesn't contain a contact in Kolab XML format.\n" + xml, 1);
 		return false;
 	}
 	
