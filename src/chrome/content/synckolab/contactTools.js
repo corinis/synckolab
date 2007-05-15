@@ -44,9 +44,22 @@ function xml2Card (xml, card, extraFields)
 	
 
 	// convert the string to xml
-	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser); 
-	var doc = parser.parseFromString(xml, "text/xml");
+	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser); 	
+	var doc = parser.parseFromString(xml.replace(/&/g, "&amp;").replace(/amp;amp;/g, "amp;"), "text/xml");
 	
+	var topNode = doc.firstChild;
+	if (topNode.nodeName == "parsererror")
+	{
+		// so this message has no valid XML part :-(
+		logMessage("Error parsing the XML content of this message.\n" + xml, 1);
+		return false;
+	}
+	if ((topNode.nodeType != Node.ELEMENT_NODE) || (topNode.nodeName.toUpperCase() != "EVENT"))
+	{
+		// this can't be an event in Kolab XML format
+		logMessage("This message doesn't contain an event in Kolab XML format.\n" + xml, 1);
+		return false;
+	}
 	
 	var cur = doc.firstChild.firstChild;
 	var found = false;
