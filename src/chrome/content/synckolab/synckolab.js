@@ -74,7 +74,8 @@ var gSyncKeyInfo;
 
 // progress variables 
 var curStep;
-
+// string bundle use: strBundle.getString("KEYNAME")
+var strBundle;
 
 // Global debug setting (on)
 var DEBUG_SYNCKOLAB = true;
@@ -84,8 +85,8 @@ var SWITCH_TIME = 50;
   
 function syncKolab(event) {
 
-	var strBundle = document.getElementById("synckolabBundle");
-	alert(strBundle.getString("checking"));
+	strBundle = document.getElementById("synckolabBundle");
+
 	// copy a file to a folder
 	// call external func
 	//Copart, added resizeable property to allow user to enlarge window when needed
@@ -241,8 +242,8 @@ function nextSync()
 	{
 		totalMeter.setAttribute("value", "100%");
 		meter.setAttribute("value", "100%");
-		statusMsg.value ="Done. You can close this window now!";
-		gWnd.document.getElementById('cancel-button').label = "Close"; //Added by Copart, a little bit more clear that it is now safe to close the window
+		statusMsg.value = strBundle.getString("syncfinished");
+		gWnd.document.getElementById('cancel-button').label = strBundle.getString("close"); // a little bit more clear that it is now safe to close the window
 		// delete the temp file
 		var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
 		sfile.initWithPath(gTmpFile);
