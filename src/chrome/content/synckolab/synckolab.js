@@ -81,6 +81,12 @@ var DEBUG_SYNCKOLAB = true;
 var DEBUG_SYNCKOLAB_LEVEL = 1;
 var SWITCH_TIME = 50;
  
+ 
+ // from mailnews\base\public\nsMsgMessageFlags.h messenger/mailWindowOverlay.js
+//#define MSG_FLAG_READ     0x0001    /* has been read */
+const abs_MSG_FLAG_READ              = 0x000001;
+const abs_MSG_FLAG_IMAP_DELETED      = 0x200000;
+ 
 function syncKolab(event) {
 	// copy a file to a folder
 	// call external func
@@ -655,6 +661,16 @@ function writeContentAfterSave ()
 		}
 	}	
 	gMessages = null;
+	
+
+	setTimeout(compact, 1000);  // wait for a second
+}
+
+function compact() {
+	// compact golder
+	try { 
+		gSync.folder.compact(null, null);  
+	} catch(e) { }
 	
 	gSync.doneParsing();
 	window.setTimeout(nextSync, SWITCH_TIME, syncCalendar);	
