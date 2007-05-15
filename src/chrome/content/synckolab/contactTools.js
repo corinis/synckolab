@@ -288,33 +288,33 @@ function card2Xml (card, fields)
 	{
 		xml += " <name>\n";
 		if (checkExist (card.firstName))
-			xml += "  <given-name>"+card.firstName+"</given-name>\n";
+			xml += "  <given-name>"+encode4XML(card.firstName)+"</given-name>\n";
 //			xml += "  <middle-names>"+card.nickName+"</middle-names>\n"; // not really correct...
 		if (checkExist (card.lastName))
-			xml += "  <last-name>"+card.lastName+"</last-name>\n";
+			xml += "  <last-name>"+encode4XML(card.lastName)+"</last-name>\n";
 		if (checkExist (card.displayName))		
 		{
-			xml += "  <full-name>"+card.displayName+"</full-name>\n";
+			xml += "  <full-name>"+encode4XML(card.displayName)+"</full-name>\n";
 			displayName = card.displayName;
 		}
 		else
 		if (checkExist (card.firstName) || checkExist (card.lastName))
 		{
 			displayName = card.firstName + " " + card.lastName;
-			xml += "  <full-name>" + displayName + "</full-name>\n";
+			xml += "  <full-name>" + encode4XML(displayName) + "</full-name>\n";
 		}
 			
 		
 		xml += " </name>\n";
 	}
-	xml += nodeWithContent("organization", card.company, false);
-	xml += nodeWithContent("web-page", card.webPage1, false);
-	xml += nodeWithContent("im-address", card.aimScreenName, false);
-	xml += nodeWithContent("department", card.department, false);
+	xml += nodeWithContent("organization", encode4XML(card.company), false);
+	xml += nodeWithContent("web-page", encode4XML(card.webPage1), false);
+	xml += nodeWithContent("im-address", encode4XML(card.aimScreenName), false);
+	xml += nodeWithContent("department", encode4XML(card.department), false);
 //" <office-location>zuhaus</office-location>\n";
 //" <profession>programmierer</profession>\n";
-	xml += nodeWithContent("job-title", card.jobTitle, false);
-	xml += nodeWithContent("nick-name", card.nickName, false);
+	xml += nodeWithContent("job-title", encode4XML(card.jobTitle), false);
+	xml += nodeWithContent("nick-name", encode4XML(card.nickName), false);
 	
 	
 	var adate = card.birthYear + "-" + card.birthMonth + "-" + card.birthDay;
@@ -362,16 +362,16 @@ function card2Xml (card, fields)
 	if (checkExist(card.primaryEmail))
 	{
 		xml += " <email type=\"primary\">\n";
-		xml += "  <display-name>"+displayName+"</display-name>\n";
-		xml += "  <smtp-address>"+card.primaryEmail+"</smtp-address>\n";
+		xml += "  <display-name>"+encode4XML(displayName)+"</display-name>\n";
+		xml += "  <smtp-address>"+encode4XML(card.primaryEmail)+"</smtp-address>\n";
 		xml += " </email>\n";
 	}
 	
 	if (checkExist(card.secondEmail))
 	{
 		xml += " <email>\n";
-		xml += "  <display-name>"+displayName+"</display-name>\n";
-		xml += "  <smtp-address>"+card.secondEmail+"</smtp-address>\n";
+		xml += "  <display-name>"+encode4XML(displayName)+"</display-name>\n";
+		xml += "  <smtp-address>"+encode4XML(card.secondEmail)+"</smtp-address>\n";
 		xml += " </email>\n";
 	}
 
@@ -381,12 +381,12 @@ function card2Xml (card, fields)
 	{
 		xml += " <address>\n";
 		xml += "  <type>home</type>\n";
-		xml += nodeWithContent("street", card.homeAddress, false);
-		xml += nodeWithContent("street2", card.homeAddress2, false);
-		xml += nodeWithContent("locality", card.homeCity, false);
-		xml += nodeWithContent("region", card.homeState, false);
-		xml += nodeWithContent("postal-code", card.homeZipCode, false);
-		xml += nodeWithContent("country", card.homeCountry, false);
+		xml += nodeWithContent("street", encode4XML(card.homeAddress), false);
+		xml += nodeWithContent("street2", encode4XML(card.homeAddress2), false);
+		xml += nodeWithContent("locality", encode4XML(card.homeCity), false);
+		xml += nodeWithContent("region", encode4XML(card.homeState), false);
+		xml += nodeWithContent("postal-code", encode4XML(card.homeZipCode), false);
+		xml += nodeWithContent("country", encode4XML(card.homeCountry), false);
 		xml += " </address>\n";
 	}
 
@@ -396,12 +396,12 @@ function card2Xml (card, fields)
 	{
 		xml += " <address>\n";
 		xml += "  <type>business</type>\n";
-		xml += nodeWithContent("street", card.workAddress, false);
-		xml += nodeWithContent("street2", card.workAddress2, false);
-		xml += nodeWithContent("locality", card.workCity, false);
-		xml += nodeWithContent("region", card.workState, false);
-		xml += nodeWithContent("postal-code", card.workZipCode, false);
-		xml += nodeWithContent("country", card.workCountry, false);
+		xml += nodeWithContent("street", encode4XML(card.workAddress), false);
+		xml += nodeWithContent("street2", encode4XML(card.workAddress2), false);
+		xml += nodeWithContent("locality", encode4XML(card.workCity), false);
+		xml += nodeWithContent("region", encode4XML(card.workState), false);
+		xml += nodeWithContent("postal-code", encode4XML(card.workZipCode), false);
+		xml += nodeWithContent("country", encode4XML(card.workCountry), false);
 		xml += " </address>\n";
 	}
 		
@@ -412,7 +412,7 @@ function card2Xml (card, fields)
 	{
 		for (var i = 0; i < fields.length; i++)
 		{
-			xml += nodeWithContent(fields[i][0], fields[i][1], false);
+			xml += nodeWithContent(fields[i][0], encode4XML(fields[i][1]), false);
 		}
 	}
 	

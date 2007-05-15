@@ -931,7 +931,7 @@ function decode_utf8(utftext) {
 function encode4XML(s)
 {
 	if (s == null)
-		return null;
+		return "";
 		
 	return s.replace(/&/g, "&amp;").replace(/</g,
         "&lt;").replace(/>/g, "&gt;").replace(/amp;amp;/g, "amp;");
