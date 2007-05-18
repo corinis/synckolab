@@ -47,7 +47,7 @@ var strBundle;
 function generateConfigTree (configuration)
 {
 	// skip bad config names
-	if (configuration == null || configuration == "" || configuration.indexOf(" ") != null)
+	if (configuration == null || configuration == "" || configuration.indexOf(" ") != -1)
 		return;
 	
 	// get the root tree element
