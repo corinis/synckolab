@@ -4,28 +4,37 @@
 <!ENTITY synckolab.syncMenu.label					"Starte SyncKolab">
 <!ENTITY synckolab.optionMenu.label					"SyncKolab Einstellungen">
 
-<!ENTITY synckolab.sync.label					"Sync Kolab">
-<!ENTITY synckolab.sync.tip						"Vergleiche Kolab Verzeichnisse">
+<!ENTITY synckolab.sync.label						"Sync Kolab">
+<!ENTITY synckolab.sync.tip							"Vergleiche Kolab Verzeichnisse">
 
 <!ENTITY synckolab.contactConflict.dialogTitle		"Kontakt Konflikt">
 <!ENTITY synckolab.contactConflict.dialogMessage	"Konflikt gefunden.">
 
-<!ENTITY synckolab.settings.abook	"Adressbuch">
-<!ENTITY synckolab.settings.Contact	"Kontakte">
+<!ENTITY synckolab.settings.Account		"Konto">
+<!ENTITY synckolab.settings.abook		"Adressbuch">
+<!ENTITY synckolab.settings.Contact		"Kontakte">
 <!ENTITY synckolab.settings.Calendar	"Kalender">
-<!ENTITY synckolab.settings.Account	"Konto">
+<!ENTITY synckolab.settings.Tasks		"Aufgaben">
+
 <!ENTITY synckolab.settings.ContactFolder	"Verzeichnis">
 <!ENTITY synckolab.settings.ContactFormat	"Format">
-<!ENTITY synckolab.settings.SaveToImap	"Auf das IMAP Konto schreiben">
+<!ENTITY synckolab.settings.SaveToImap		"Auf das IMAP Konto schreiben">
 <!ENTITY synckolab.settings.Configuration	"Einstellung">
 <!ENTITY synckolab.settings.CalendarFormat	"Format">
 <!ENTITY synckolab.settings.CalendarFolder	"Verzeichnis">
 <!ENTITY synckolab.settings.SyncContacts	"Kontakte abgleichen">
 <!ENTITY synckolab.settings.SyncCalendar	"Kalender abgleichen">
-<!ENTITY synckolab.settings.CloseWindow	"Statusfenster nach Beendigung schliessen">
-<!ENTITY synckolab.settings.add	"Neu">
-<!ENTITY synckolab.settings.del	"Entfernen">
+<!ENTITY synckolab.settings.CloseWindow		"Statusfenster nach Beendigung schliessen">
+<!ENTITY synckolab.settings.add				"Neu">
+<!ENTITY synckolab.settings.del				"Entfernen">
 
 
+<!ENTITY synckolab.settings.imapAcctTip 		"Es werden nur IMAP Konten unterstützt!">
+<!ENTITY synckolab.settings.SyncKolabHeader		"SyncKolab">
+<!ENTITY synckolab.settings.SyncKolabDescription "Mit SyncKolab können Sie Ihre Kontakte und Termine über einen IMAP oder KOLAB Server synchronisieren.">
 
-
+<!-- Account Tab -->
+<!ENTITY synckolab.settings.AccountDescription	"Bitte wählen Sie ein IMAP Konto für diese Konfiguration aus">
+<!ENTITY synckolab.settings.SyncInterval 		"Abgleichintervall: ">
+<!ENTITY synckolab.settings.SyncIntervalMinutes "Minuten">
+<!ENTITY synckolab.settings.SaveToImapTip		"Diese option abwählen, wenn nichts auf den server geschriben werden soll">

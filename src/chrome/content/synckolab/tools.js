@@ -36,6 +36,13 @@ function checkExist (value)
 	return (value != null && value != "");
 }
 
+/**
+ * Some accounts have special characters in their name which do not mix well with configs
+ */
+function accountNameFix (name)
+{
+	return name.replace(/[ :@\%\'\"-\?\#+\*\.;$\\\/]/g, "");
+}
 
 /**
  * Returns a file class for the given sync db file
@@ -481,7 +488,7 @@ function getAccountName (accountKey)
 	for (var i = 0; i < accountManager.allServers.Count(); i++)
 	{
 		var account = accountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-		if (account.rootMsgFolder.baseMessageURI == accountKey)
+		if (account.rootMsgFolder.baseMessageURI == accountKey || accountNameFix(account.rootMsgFolder.baseMessageURI) == accountKey)
 		{
 			return accountManager.getFirstIdentityForServer (account).fullName;
 		}
@@ -500,7 +507,7 @@ function getAccountEMail (accountKey)
 	for (var i = 0; i < accountManager.allServers.Count(); i++)
 	{
 		var account = accountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-		if (account.rootMsgFolder.baseMessageURI == accountKey)
+		if (account.rootMsgFolder.baseMessageURI == accountKey || accountNameFix(account.rootMsgFolder.baseMessageURI) == accountKey)
 		{
 			return accountManager.getFirstIdentityForServer (account).email;
 		}
@@ -520,7 +527,7 @@ function getMsgFolder (accountKey, path)
 	for (var i = 0; i < accountManager.allServers.Count(); i++)
 	{
 		var account = accountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-		if (account.rootMsgFolder.baseMessageURI == accountKey)
+		if (account.rootMsgFolder.baseMessageURI == accountKey || accountNameFix(account.rootMsgFolder.baseMessageURI) == accountKey)
 		{
 			gInc = account;
 		}

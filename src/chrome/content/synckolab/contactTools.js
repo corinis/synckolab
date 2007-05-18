@@ -978,14 +978,16 @@ function card2Message (card, email, format, fFile)
 {
 	// it may be we do not have a uid - skip it then
 	if (card.custom4 == null || card.custom4.length < 2)
-		return null;
+		return null;			
 	
 	// read the database file
 	var fields = readDataBase (fFile);
 	
+	
 	// for the kolab xml format
 	if(format == "Xml")
 	{
+
 		return generateMail(card.custom4, email, "", "application/x-vnd.kolab.contact", 
 			true, encodeQuoted(encode_utf8(card2Xml(card, fields))), card2Human(card));
 	}

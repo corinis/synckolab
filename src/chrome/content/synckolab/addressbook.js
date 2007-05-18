@@ -431,44 +431,9 @@ var syncAddressBook = {
 		
 		var content = null;
 		
-		// get some info
-		if (cur.isMailList )
-		{
-			alert("CUR INFO: \n" + 
-				"custom4? " + cur.custom4 + "\n" +
-				"content? " + cur.displayName + "\n" +
-				"content? " + cur.lastName + "\n" +
-				"content? " + cur.nickName + "\n" +
-				"notes? " + cur.notes + "\n" +
-				"mailListURI? " + cur.mailListURI +
-				""
-				);
-				
-			logMessage ("Getting list information", 1);
-			var cList = rdf.GetResource(cur.mailListURI).QueryInterface(Components.interfaces.nsIAbDirectory);
-			if (cList.addressLists)
-		 	{
-				var total = cList.addressLists.Count();
-				if (total)
-				{
-					for ( var i = 0;  i < total; i++ )
-					{
-						var card = cList.addressLists.GetElementAt(i);
-						card = card.QueryInterface(Components.interfaces.nsIAbCard);
-						logMessage("CARD is in mailing list: " + card.displayName , 1 );
-					}
-				}
-			}
-			
-		}
-		
-		if (cur.mailListURI != null && cur.mailListURI != "")
-		{
-			logMessage("CARD has mailing list uri: " + cur.mailListURI + " nc: " + cur.isANormalCard , 1 );
-		}
 		
 		// check for this entry
-		if (!cur.isMailList && getUID (cur) == null)
+		if (getUID (cur) == null)
 		{
 			// look at new card
 			// generate a unique id (will random be enough for the future?)
