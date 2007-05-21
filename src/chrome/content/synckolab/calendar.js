@@ -170,9 +170,9 @@ var syncCalendar = {
 		this.curItemInListId = document.createElement("listcell");
 		this.curItemInListStatus = document.createElement("listcell");
 		this.curItemInListContent = document.createElement("listcell");
-		this.curItemInListId.setAttribute("label", "unknown");
-		this.curItemInListStatus.setAttribute("label", "parsing");
-		this.curItemInListContent.setAttribute("label", "unknown");
+		this.curItemInListId.setAttribute("label", strBundle.getString("unknown"));
+		this.curItemInListStatus.setAttribute("label", strBundle.getString("parsing"));
+		this.curItemInListContent.setAttribute("label", strBundle.getString("unknown"));
 		
 
 		this.curItemInList.appendChild(this.curItemInListId);
@@ -190,7 +190,7 @@ var syncCalendar = {
 		
 		if (parsedEvent == null)
 		{
-			this.curItemInListId.setAttribute("label", "unparseable");
+			this.curItemInListId.setAttribute("label", strBundle.getString("unparseable"));
 			return null;
 		}
 
@@ -199,7 +199,7 @@ var syncCalendar = {
 
 		// update list item
 		this.curItemInListId.setAttribute("label", parsedEvent.id);
-		this.curItemInListStatus.setAttribute("label", "checking");
+		this.curItemInListStatus.setAttribute("label", strBundle.getString("checking"));
 		var info = parsedEvent.title + " (" +
 		           date2String(parsedEvent.startDate.jsDate) + ")";
 		this.curItemInListContent.setAttribute("label", info);
@@ -225,7 +225,7 @@ var syncCalendar = {
 				// lost/changed
 				writeSyncDBFile (idxEntry, fileContent);
 				
-				this.curItemInListStatus.setAttribute("label", "add local");
+				this.curItemInListStatus.setAttribute("label", strBundle.getString("localAdd"));
 				
     			// add the new event
     			this.gCalendar.addItem(parsedEvent, this.gEvents);
@@ -236,7 +236,7 @@ var syncCalendar = {
 			{
 				// now this should be deleted, since it was in the db already
 				logMessage("Delete event on server and in db: " + parsedEvent.id, 2);
-				this.curItemInListStatus.setAttribute("label", "server delete");
+				this.curItemInListStatus.setAttribute("label", strBundle.getString("deleteOnServer"));
 
 				// also remove the local db file since we deleted the contact
 				idxEntry.remove(false);
@@ -283,7 +283,7 @@ var syncCalendar = {
 							} catch (e) {}
 							
 							//update list item
-							this.curItemInListStatus.setAttribute("label", "update local");
+							this.curItemInListStatus.setAttribute("label", strBundle.getString("localUpdate"));
 							
 							return null;
 						}
@@ -315,7 +315,7 @@ var syncCalendar = {
 					writeSyncDBFile (idxEntry, stripMailHeader(msg));
 
 					// update list item
-					this.curItemInListStatus.setAttribute("label", "update server");
+					this.curItemInListStatus.setAttribute("label", strBundle.getString("updateOnServer"));
 					
 					// remember this message for update
 					return msg;
@@ -344,7 +344,7 @@ var syncCalendar = {
 							} catch (e) {}
 	
 							// update list item
-							this.curItemInListStatus.setAttribute("label", "update local");
+							this.curItemInListStatus.setAttribute("label", strBundle.getString("localUpdate"));
 							 
 							return null;
 						}
@@ -374,7 +374,7 @@ var syncCalendar = {
 					}
 					
 					// update list item
-					this.curItemInListStatus.setAttribute("label", "update on server");
+					this.curItemInListStatus.setAttribute("label", strBundle.getString("updateOnServer"));
 
 					writeSyncDBFile (idxEntry, stripMailHeader(msg));
 					
@@ -383,7 +383,7 @@ var syncCalendar = {
 				}
 				
 				logMessage("no change for event:" + parsedEvent.id, 2);
-				this.curItemInListStatus.setAttribute("label", "no change");
+				this.curItemInListStatus.setAttribute("label", strBundle.getString("noChange"));
 			}
 		}
 		return null;
@@ -457,7 +457,7 @@ var syncCalendar = {
 					this.curItemInListStatus = document.createElement("listcell");
 					this.curItemInListContent = document.createElement("listcell");
 					this.curItemInListId.setAttribute("label", cur.id);
-					this.curItemInListStatus.setAttribute("label", "local delete");
+					this.curItemInListStatus.setAttribute("label", strBundle.getString("localDelete"));
 					this.curItemInListContent.setAttribute("label", cur.title);
 					
 			
@@ -476,7 +476,7 @@ var syncCalendar = {
 					this.curItemInListStatus = document.createElement("listcell");
 					this.curItemInListContent = document.createElement("listcell");
 					this.curItemInListId.setAttribute("label", cur.id);
-					this.curItemInListStatus.setAttribute("label", "add to server");
+					this.curItemInListStatus.setAttribute("label", strBundle.getString("addToServer"));
 					this.curItemInListContent.setAttribute("label", cur.title);
 					
 					this.curItemInList.appendChild(this.curItemInListId);

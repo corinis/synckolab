@@ -156,16 +156,17 @@ var syncAddressBook = {
 	parseMessage: function(fileContent) {
 		var cards = this.gAddressBook.childCards;
 		
-		var newCard = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
+		// the new card might be a card OR a directory
+		var newItem = null; 
 		
 		// create a new item in the itemList for display
 		this.curItemInList = document.createElement("listitem");
 		this.curItemInListId = document.createElement("listcell");
 		this.curItemInListStatus = document.createElement("listcell");
 		this.curItemInListContent = document.createElement("listcell");
-		this.curItemInListId.setAttribute("label", "unknown");
-		this.curItemInListStatus.setAttribute("label", "parsing");
-		this.curItemInListContent.setAttribute("label", "unknown");
+		this.curItemInListId.setAttribute("label", strBundle.getString("unknown"));
+		this.curItemInListStatus.setAttribute("label", strBundle.getString("parsing"));
+		this.curItemInListContent.setAttribute("label", strBundle.getString("unknown"));
 		
 
 		this.curItemInList.appendChild(this.curItemInListId);
@@ -180,7 +181,26 @@ var syncAddressBook = {
 		// this is an array of arrays that hold fieldname+fielddata of until-now-unknown fields
 		var messageFields = new Array();		
 		
-		if (message2Card (fileContent, newCard, messageFields))
+		// parse the new item
+		newItem = parseMessage(fileContent, messageFields, cards);
+		
+		newCard = newItem;
+		if (newCard.isMailList)
+		{
+			var cur = newCard;
+			alert("CUR INFO: \n" + 
+				"custom4? " + cur.custom4 + "\n" +
+				"content? " + cur.displayName + "\n" +
+				"content? " + cur.lastName + "\n" +
+				"content? " + cur.nickName + "\n" +
+				"notes? " + cur.description + "\n" +
+				"mailListURI? " + cur.mailListURI +
+				""
+				);
+		
+			return;
+		}
+		if (newCard) //message2Card (fileContent, newCard, messageFields)
 		{
 			// remember current uid
 			this.gCurUID = getUID(newCard);
@@ -191,7 +211,7 @@ var syncAddressBook = {
 
 			// update list item
 			this.curItemInListId.setAttribute("label", getUID(newCard));
-			this.curItemInListStatus.setAttribute("label", "checking");
+			this.curItemInListStatus.setAttribute("label", strBundle.getString("checking"));
 			this.curItemInListContent.setAttribute("label", newCard.firstName + " " + newCard.lastName + " <" + newCard.primaryEmail + ">");
 
 			// ok lets see if we have this one already (remember custom4=UID)
@@ -223,7 +243,7 @@ var syncAddressBook = {
 					logMessage("card is new, add to address book: " + getUID(newCard), 1);	
 					
 					//update list item
-					this.curItemInListStatus.setAttribute("label", "add local");
+					this.curItemInListStatus.setAttribute("label", strBundle.getString("localAdd"));
 					
 				}
 				else
@@ -231,7 +251,7 @@ var syncAddressBook = {
 					logMessage("card deleted locally: " + getUID(newCard), 1);	
 					
 					//update list item
-					this.curItemInListStatus.setAttribute("label", "delete on server");
+					this.curItemInListStatus.setAttribute("label", strBundle.getString("deleteOnServer"));
 	
 					try
 					{				
@@ -257,9 +277,8 @@ var syncAddressBook = {
 			else
 			// this card is already in the adress book
 			{
-				var cCard = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
 				// make sure to ONLY read the info.. do not get the extra fields from there
-				message2Card(readSyncDBFile(cEntry), cCard, null);
+				var cCard = parseMessage(readSyncDBFile(cEntry), null, cards);
 				
 				// compare each card with each other
 				if (cEntry.exists() && !equalsContact(cCard, aCard) && !equalsContact(cCard, newCard) )
@@ -285,17 +304,17 @@ var syncAddressBook = {
 						switch ( conflictResolution.result ) {
 							case 0 :
 								//User clicked Cancel or X, we move to next record and user can deal with this issue on next sync
-								this.curItemInListStatus.setAttribute("label", "Conflict : skipped");
+								this.curItemInListStatus.setAttribute("label", strBundle.getString("conflict") + ": skipped");
 								break;
 							case 1 :
 								//User chose to keep all server values
 								bUpdateLocal = true;
-								this.curItemInListStatus.setAttribute("label", "Conflict : local updated");
+								this.curItemInListStatus.setAttribute("label", strBundle.getString("conflict") + ": " + strBundle.getString("localUpdate"));
 								break;
 							case 2 :
 								//User chose to keep all local values
 								bUpdateServer = true;
-								this.curItemInListStatus.setAttribute("label", "Conflict : server updated");
+								this.curItemInListStatus.setAttribute("label", strBundle.getString("conflict") + ": " + strBundle.getString("updateOnServer"));
 								break;
 							case 3 :
 								//User chose a mix of values, therefore, both local and server need updating
@@ -303,7 +322,7 @@ var syncAddressBook = {
 								//newCard and aCard both already contain the new values
 								bUpdateLocal = true;
 								bUpdateServer = true;
-								this.curItemInListStatus.setAttribute("label", "Conflict : both updated");
+								this.curItemInListStatus.setAttribute("label", strBundle.getString("conflict") + ": both updated");
 								break;
 						}
 					
@@ -312,7 +331,7 @@ var syncAddressBook = {
 						//Changes to the way the SHA (code revisions) are calculated could cause this
 						logMessage("Contacts differ, however, assumed no change, update local" + getUID(newCard), 1);
 						bUpdateLocal = true;
-						this.curItemInListStatus.setAttribute("label", "Auto Conflict Resolved : update local");						
+						this.curItemInListStatus.setAttribute("label", "Auto Conflict Resolved : " + strBundle.getString("localUpdate"));
 					}
 					
 					if ( bUpdateLocal ) {
@@ -332,7 +351,13 @@ var syncAddressBook = {
 						if (messageFields.length > 0)
 							writeDataBase(fEntry, messageFields);						
 						else
-							fEntry.remove(false);
+						{
+							try
+							{
+								fEntry.remove(false);
+							}
+							catch (e) {}
+						}
 					}
 
 					if ( bUpdateServer ) {
@@ -362,7 +387,7 @@ var syncAddressBook = {
 						fEntry.remove(false);
 					
 					// update list item
-					this.curItemInListStatus.setAttribute("label", "update local");
+					this.curItemInListStatus.setAttribute("label", strBundle.getString("localUpdate"));
 					return null;
 				}
 				else
@@ -372,7 +397,7 @@ var syncAddressBook = {
 				    logMessage("client changed: " + getUID(aCard), 2);
 					
 					// update list item
-					this.curItemInListStatus.setAttribute("label", "update server");
+					this.curItemInListStatus.setAttribute("label", strBundle.getString("updateOnServer"));
 					
 					// remember this message for update - generate mail message
 					var cContent = card2Message(aCard, this.email, this.format, fEntry);
@@ -383,13 +408,13 @@ var syncAddressBook = {
 					return cContent;
 				}
 				
-				this.curItemInListStatus.setAttribute("label", "no change");
+				this.curItemInListStatus.setAttribute("label", strBundle.getString("noChange"));
 				
 			}
 		}
 		else
 		{
-			this.curItemInListId.setAttribute("label", "unparseable");
+			this.curItemInListId.setAttribute("label", strBundle.getString("unparseable"));
 			logMessage("unable to parse message, skipping", 1);
 		}
 			
@@ -438,7 +463,10 @@ var syncAddressBook = {
 			// look at new card
 			// generate a unique id (will random be enough for the future?)
 			setUID(cur, "pas-id-" + get_randomVcardId());
-	    	logMessage("adding unsaved card: " + getUID (cur), 2);
+			if (cur.isMailList)
+		    	logMessage("adding unsaved list: " + getUID (cur), 1);
+			else
+		    	logMessage("adding unsaved card: " + getUID (cur), 2);
 			
 			writeCur = true;
 			cur.editCardToDatabase ("moz-abmdbdirectory://"+this.gAddressBook);
@@ -449,8 +477,11 @@ var syncAddressBook = {
 			this.curItemInListStatus = document.createElement("listcell");
 			this.curItemInListContent = document.createElement("listcell");
 			this.curItemInListId.setAttribute("label", getUID(cur));
-			this.curItemInListStatus.setAttribute("label", "add to server");
-			this.curItemInListContent.setAttribute("label", cur.firstName + " " + cur.lastName + " <" + cur.primaryEmail + ">");
+			this.curItemInListStatus.setAttribute("label", strBundle.getString("addToServer"));
+			if (cur.isMailList)
+				this.curItemInListContent.setAttribute("label", strBundle.getString("mailingList") + " " + cur.displayName);
+			else
+				this.curItemInListContent.setAttribute("label", cur.firstName + " " + cur.lastName + " <" + cur.primaryEmail + ">");
 			
 	
 			this.curItemInList.appendChild(this.curItemInListId);
@@ -506,7 +537,7 @@ var syncAddressBook = {
 					this.curItemInListStatus = document.createElement("listcell");
 					this.curItemInListContent = document.createElement("listcell");
 					this.curItemInListId.setAttribute("label", getUID(cur));
-					this.curItemInListStatus.setAttribute("label", "local delete");
+					this.curItemInListStatus.setAttribute("label", strBundle.getString("localDelete"));
 					this.curItemInListContent.setAttribute("label", cur.firstName + " " + cur.lastName + " <" + cur.primaryEmail + ">");
 					
 			
@@ -530,7 +561,7 @@ var syncAddressBook = {
 					this.curItemInListStatus = document.createElement("listcell");
 					this.curItemInListContent = document.createElement("listcell");
 					this.curItemInListId.setAttribute("label", getUID(cur));
-					this.curItemInListStatus.setAttribute("label", "add to server");
+					this.curItemInListStatus.setAttribute("label", strBundle.getString("addToServer"));
 					this.curItemInListContent.setAttribute("label", cur.firstName + " " + cur.lastName + " <" + cur.primaryEmail + ">");
 					
 					this.curItemInList.appendChild(this.curItemInListId);

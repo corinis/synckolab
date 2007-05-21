@@ -342,7 +342,7 @@ function getMessage ()
     	return;
 	}
 	// check message isnt deleted
-	logMessage("Message has flags: " + cur.flags);
+	logMessage("Message " + cur.mime2DecodedSubject + " has flags: " + cur.flags);
 	
 	// check if we actually have to process this message, or if this is already known
 	

@@ -52,7 +52,10 @@ function accountNameFix (name)
 function getSyncDbFile (config, cal, id)
 {
 	if (id == null)
+	{
+    	logMessage("Error: entry has no id (" +config + ": " + cal + ")", 0);	
 		return null;
+	}
 		
 	id = id.replace(/[ :.;$\\\/]/g, "_");
 	var file = Components.classes["@mozilla.org/file/directory_service;1"].

@@ -37,7 +37,7 @@
  * @param extraFields Array - extra fields to save with the card (may be null)
  *
  */
-function xml2Card (xml, card, extraFields)
+function xml2Card (xml, extraFields, cards)
 {
 	// until the boundary = end of xml
 	xml = decode_utf8(DecodeQuoted(xml)).replace(/&/g, "&amp;").replace(/amp;amp;/g, "amp;");
@@ -59,6 +59,8 @@ function xml2Card (xml, card, extraFields)
 		logMessage("This message doesn't contain a contact in Kolab XML format.\n" + xml, 1);
 		return false;
 	}
+
+	var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
 	
 	var cur = doc.firstChild.firstChild;
 	var found = false;
@@ -74,7 +76,7 @@ function xml2Card (xml, card, extraFields)
 			{
 				case "LAST-MODIFICATION-DATE":
 						/*
-						ignore this since thunderbird implmentation just does not work
+						ignore this since thunderbird implementation just does not work
 						var s = cur.firstChild.data;
 						// now we gotta check times... convert the message first
 						// save the date in microseconds
@@ -284,11 +286,232 @@ function xml2Card (xml, card, extraFields)
 		
 		cur = cur.nextSibling;
 	}
-	
-	return found;
 
+	if (found)
+		return card;
+		
+	return null;
 }
 
+/**
+ * Creates xml (kolab2) out of a given card. 
+ * The return is the xml as string.
+ * @param card nsIAbCard: the adress book list card
+ * @param fields Array: all the fields not being held in the default card
+ */
+function list2Xml (card, fields)
+{
+	var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+	xml += "<distribution-list version=\"1.0\" >\n";
+	xml += " <product-id>SyncKolab, Kolab resource</product-id>\n";
+	xml += " <uid>"+card.custom4+"</uid>\n";
+	xml += nodeWithContent("categories", card.category, false);
+	xml += " <creation-date>"+date2String(new Date(card.lastModifiedDate*1000))+"T"+time2String(new Date(card.lastModifiedDate*1000))+"Z</creation-date>\n";
+	xml += " <last-modification-date>"+date2String(new Date(card.lastModifiedDate*1000))+"T"+time2String(new Date(card.lastModifiedDate*1000))+"Z</last-modification-date>\n";
+	// ??
+	xml += " <sensitivity>public</sensitivity>\n";
+	if (checkExist(card.notes))
+			xml +=" <body>"+encode4XML(card.notes)+"</body>\n";
+	xml += nodeWithContent("display-name", card.displayName, false);
+
+	var cList = rdf.GetResource(card.mailListURI).QueryInterface(Components.interfaces.nsIAbDirectory);
+	if (cList.addressLists)
+ 	{
+		var total = cList.addressLists.Count();
+		if (total)
+		{
+			for ( var i = 0;  i < total; i++ )
+			{
+				var cur = cList.addressLists.GetElementAt(i);
+				cur = cur.QueryInterface(Components.interfaces.nsIAbCard);
+				xml += "  <member>";
+				xml += nodeWithContent("display-name", cur.displayName, false);		
+				if (checkExist(card.primaryEmail))						
+					xml += nodeWithContent("smtp-address", cur.primaryEmail, false);
+				else
+				if (checkExist(card.secondEmail))
+					xml += nodeWithContent("smtp-address", cur.secondEmail, false);
+				else
+					logMessage("ERROR: List entry without an email?!?" + getUID(cur), 0);
+									
+				// custom4 is not necessary since there will be a smart-check
+				if (checkExist (cur.custom4))
+					xml += nodeWithContent("uid", cur.custom4, false);				
+				xml += "  </member>\n";
+			}
+		}
+	}
+
+	xml += "</distribution-list>\n";
+}
+
+/**
+ * Creates vcard (kolab1) out of a given list. 
+ * The return is the vcard as string.
+ * @param card nsIAbCard: the adress book list card
+ * @param fields Array: all the fields not being held in the default card
+ */
+function list2Vcard (card, fields)
+{
+	// save the date in microseconds
+	// Date: Fri, 17 Dec 2004 15:06:42 +0100
+	var cdate = new Date (card.lastModifiedDate*1000);
+	var sTime = (cdate.getHours()<10?"0":"") + cdate.getHours() + ":" + (cdate.getMinutes()<10?"0":"") + cdate.getMinutes() + ":" +
+		(cdate.getSeconds()<10?"0":"") + cdate.getSeconds();
+	var sdate = "DATE: " + getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " +
+		getMonthString (cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime
+		 + " " + (((cdate.getTimezoneOffset()/60) < 0)?"-":"+") +
+		(((cdate.getTimezoneOffset()/60) < 10)?"0":"") + cdate.getTimezoneOffset() + "\n";
+
+	
+	var msg = "BEGIN:VCARD\n";	
+	// N:Lastname;Firstname;Other;Prefix;Suffix
+ 	if (checkExist (card.firstName) || checkExist (card.lastName))
+		msg += "N:" + card.lastName + ";" + card.firstName + ";;;\n"
+ 	if (checkExist (card.displayName))
+		msg += "FN:" + card.displayName + "\n";
+ 	if (checkExist (card.nickName))
+		msg += "NICKNAME:" + card.nickName + "\n";
+ 	if (checkExist (card.jobTitle))
+		msg += "TITLE:" + card.jobTitle + "\n";
+	if (checkExist (card.company))
+		msg += "ORG:" + card.company + "\n";
+ 	if (checkExist (card.primaryEmail)) 
+		msg += "EMAIL;TYPE=INTERNET,PREF:" + card.primaryEmail  + "\n";
+ 	if (checkExist (card.secondEmail)) 
+		msg += "EMAIL;TYPE=INTERNET:" + card.secondEmail + "\n";
+ 	if (checkExist (card.preferMailFormat)) { 
+		switch(card.preferMailFormat) {
+			case 0:
+				msg += "X-EMAILFORMAT:Unknown\n";break;
+			case 1:
+				msg += "X-EMAILFORMAT:Plain Text\n";break;
+			case 2:
+				msg += "X-EMAILFORMAT:HTML\n";break;
+		}
+	}
+ 	if (checkExist (card.aimScreenName)) 
+		msg += "X-AIM:" + card.aimScreenName + "\n"; 
+  	if (checkExist (card.cellularNumber))
+		msg += "TEL;TYPE=CELL:" + card.cellularNumber + "\n";
+ 	if (checkExist (card.homePhone))
+		msg += "TEL;TYPE=HOME:" + card.homePhone + "\n";
+ 	if (checkExist (card.faxNumber))
+		msg += "TEL;TYPE=FAX:" + card.faxNumber + "\n";
+ 	if (checkExist (card.workPhone))
+		msg += "TEL;TYPE=WORK:" + card.workPhone + "\n";
+ 	if (checkExist (card.pagerNumber))
+		msg += "TEL;TYPE=PAGER:" + card.pagerNumber + "\n";
+ 	if (checkExist (card.department))
+		msg += "DEPT:" + card.department + "\n";
+	// BDAY:1987-09-27T08:30:00-06:00
+	if (checkExist(card.birthYear) 
+		||checkExist(card.birthDay) 
+		|| checkExist(card.birthMonth))
+	{
+		msg += "BDAY:";
+		msg += card.birthYear + "-";
+		if (card.birthMonth < 10)
+			msg += "0";
+		msg += card.birthMonth + "-";
+		if (card.birthDay < 10)
+			msg += "0";
+		msg += card.birthDay + "\n";
+	}
+	if (checkExist(card.anniversaryYear) 
+		||checkExist(card.anniversaryDay) 
+		||checkExist(card.anniversaryMonth))
+	{
+		msg += "ANNIVERSARY:" 
+		msg += card.anniversaryYear + "-";
+		if (card.anniversaryMonth < 10)
+			msg += "0";
+		msg += card.anniversaryMonth + "-";
+		if (card.anniversaryDay < 10)
+			msg += "0";
+		msg += card.anniversaryDay + "\n";
+	}
+ 	if (checkExist (card.webPage1))
+		msg += "URL:" + encodeCardField(card.webPage1) + "\n"; // encode the : chars to HEX, vcard values cannot contain colons
+ 	if (checkExist (card.webPage2))
+		msg += "URL;TYPE=PERSONAL:" + encodeCardField(card.webPage2) + "\n";
+	// ADR:POBox;Ext. Address;Address;City;State;Zip Code;Country
+	if (checkExist (card.workAddress2) 
+		|| checkExist (card.workAddress) 
+		|| checkExist (card.workCountry) 
+		|| checkExist (card.workCity) 
+		|| checkExist (card.workState))
+	{
+		msg += "ADR;TYPE=WORK:;";
+		msg += card.workAddress2 + ";";
+		msg += card.workAddress + ";";
+		msg += card.workCity + ";";
+		msg += card.workState + ";";
+		msg += card.workZipCode + ";";
+		msg += card.workCountry + "\n";
+	}
+	// ADR:POBox;Ext. Address;Address;City;State;Zip Code;Country
+	if (checkExist (card.homeAddress2) 
+		|| checkExist (card.homeAddress) 
+		|| checkExist (card.homeCountry) 
+		|| checkExist (card.homeCity) 
+		|| checkExist (card.homeState))
+	{
+		msg += "ADR;TYPE=HOME:;";
+		msg += card.homeAddress2 + ";";
+		msg += card.homeAddress + ";";
+		msg += card.homeCity + ";";
+		msg += card.homeState + ";";
+		msg += card.homeZipCode + ";";
+		msg += card.homeCountry + "\n";
+ 	}
+ 	if (checkExist (card.custom1))
+		msg += "CUSTOM1:" + card.custom1.replace (/\n/g, "\\n") + "\n";
+ 	if (checkExist (card.custom2))
+		msg += "CUSTOM2:" + card.custom2.replace (/\n/g, "\\n") + "\n";
+ 	if (checkExist (card.custom3))
+		msg += "CUSTOM3:" + card.custom3.replace (/\n/g, "\\n") + "\n";
+ 	// yeap one than more line (or something like that :P)
+ 	if (checkExist (card.notes))
+		msg += "NOTE:" + card.notes.replace (/\n/g, "\\n") + "\n";
+	msg += "UID:" + card.custom4 + "\n";	
+	// add extra/missing fields
+	if (fields != null)
+	{
+		for (var i = 0; i < fields.length; i++)
+		{
+			msg += fields[i][0] + ":" + fields[i][1] + "\n";
+		}
+	}
+
+	var uidList = "";
+	
+	var cList = rdf.GetResource(card.mailListURI).QueryInterface(Components.interfaces.nsIAbDirectory);
+	if (cList.addressLists)
+ 	{
+		var total = cList.addressLists.Count();
+		if (total)
+		{
+			for ( var i = 0;  i < total; i++ )
+			{
+				var cur = cList.addressLists.GetElementAt(i);
+				cur = cur.QueryInterface(Components.interfaces.nsIAbCard);
+				// generate the sub-vcard
+				msg += card2Vcard(cur, null);
+									
+				// custom4 is not really necessary since there will be a smart-check
+				if (checkExist (cur.custom4))
+				{
+					uidList += cur.custom4 + ";";
+				}
+			}
+		}
+	}
+	msg += "X-LIST:" + uidList + "\n";
+ 	msg += "VERSION:3.0\n";
+ 	msg += "END:VCARD\n\n";
+ 	return msg;
+}
 
 /**
  * Creates xml (kolab2) out of a given card. 
@@ -309,7 +532,7 @@ function card2Xml (card, fields)
 	// ??
 	xml += " <sensitivity>public</sensitivity>\n";
 	if (checkExist(card.notes))
-			xml +=" <body>"+card.notes+"</body>\n";
+			xml +=" <body>"+encode4XML(card.notes)+"</body>\n";
 
 	if (checkExist (card.firstName) || checkExist (card.lastName) ||checkExist (card.displayName) ||
 		checkExist (card.nickName))
@@ -533,7 +756,7 @@ function equalsContact (a, b)
 	for(var i=0 ; i < fieldsArray.length ; i++ ) {
 		if ( eval("a."+fieldsArray[i]) != eval("b."+fieldsArray[i]) )
 		{
-			logMessage ("not equals " + fieldsArray[i], 3);
+			logMessage ("not equals " + fieldsArray[i] + " " + eval("a."+fieldsArray[i]) + " vs. " + eval("b."+fieldsArray[i]), 0);
 			return false;
 		}
 	}
@@ -541,6 +764,155 @@ function equalsContact (a, b)
 	return true;	
 }
 
+function vList2Card (uids, lines, card, cards)
+{
+	var beginVCard = false;
+    
+    card.isMailList = true;
+	//	parse the card
+	for (var i = 0; i < lines.length; i++)
+	{
+		// decode utf8
+		var vline = lines[i];
+		
+		// strip the \n at the end
+		if (vline.charAt(vline.length-1) == '\r')
+			vline = vline.substring(0, vline.length-1);
+		
+		var tok = vline.split(":");
+		
+		// fix for bug #16839: Colon in address book field
+		for (var j = 2; j < tok.length; j++)
+			tok[1] += ":" + tok[j];
+	  	consoleService.logStringMessage("parsing: " + lines[i]);
+		
+		switch (tok[0].toUpperCase())
+		{
+			case "DATE":
+				// now we gotta check times... convert the message first
+				// save the date in microseconds
+				// Date: Fri, 17 Dec 2004 15:06:42 +0100
+				try
+				{
+					card.lastModifiedDate = (new Date(Date.parse(lines[i].substring(lines[i].indexOf(":")+1, lines[i].length)))).getTime() / 1000;
+				}
+				catch (ex)
+				{
+					consoleService.logStringMessage("unable to convert to date: " + lines[i]);
+					alert(("unable to convert to date: " + lines[i] + "\nPlease copy the date string in a bug report an submit!\n(Also available in the information)"));
+				}
+				break;						
+		  // the all important unique list name! 				
+		  case "FN":
+		  	card.listNickName = tok[1];
+		  	break;
+		  case "NOTE":
+			card.description = tok[1].replace (/\\n/g, "\n"); // carriage returns were stripped, add em back
+			found = true;
+		  	break;
+		  
+		  case "UID":
+		  	// we cannot set the custom4 for a mailing list... but since tbird defined
+		  	// the name to be unique... lets keep it that way
+		  	//card.custom4 = tok[1];
+		  	break;
+		  case "BEGIN":
+		  	if (!beginVCard)
+		  	{
+		  		beginVCard = true;
+		  		break;
+		  	}
+		  	
+		  	// sub-vcard... parse...
+		  	var cStart = i;
+			for (; i < lines.length; i++)
+				if (lines[i].toUpperCase() == "END:VCARD")
+					break;
+			var newCard = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
+			message2Card(lines, newCard, null, cStart, i);
+			// check if we know this card already :)
+			var gotCard = findCard (cards, getUID(newCard));
+			if (gotCard != null)
+			{
+				card.addressLists.AppendElement(gotCard);
+			}
+			else
+				card.addressLists.AppendElement(newCard);
+		  	break;
+		  	
+	  	  // stuff we just do not parse :)
+		  case "END":
+		  case "VERSION":
+		  case "":
+		  	break;
+		  	
+		  default:
+			consoleService.logStringMessage("FIELD not found: " + tok[0] + ":" + tok[1]);
+		  	//addField(extraFields, tok[0], tok[1]);
+		  	break;
+		} // end switch
+	}
+	return true;
+}
+
+
+/**
+ * Parses a vcard/xml/list into its card/list object.
+ * this function finds out if the message is either:
+ *  - a vcard with a contact
+ *  - a vcard with a list
+ *  - a xml kolab2 contact
+ *  - a xml kolab2 distribution list
+ * on its own and returns the correct object.
+ * @param message string - a string with the vcard (make sure its trimmed from whitespace)
+ * @param fields Array - extra fields to save with the card (may be null)
+ * @param cards Array - only required if this is a list
+ * @return the filled object or null if not parseable
+ *		can be: Components.interfaces.nsIAbDirectory
+ *		or:	Components.interfaces.nsIAbCard
+ */
+function parseMessage (message, extraFields, cards)
+{
+	// fix for bug #16766: message has no properties
+	if (message == null)
+		return false;
+		
+	// check for xml style
+	if (message.indexOf("<?xml") != -1 || message.indexOf("<?XML") != -1)
+	{
+		logMessage("parsing XML!", 0);	
+		return xml2Card(message, extraFields, cards);
+	}
+
+
+	// decode utf8
+	message = decode_utf8(DecodeQuoted(message));
+	
+	// make an array of all lines for easier parsing
+	var lines = message.split("\n");
+
+	// check if we got a list
+	for (var i = 0; i < lines.length; i++)
+	{
+		if (lines[i].toUpperCase().indexOf("X-LIST") != -1)
+		{
+			logMessage("parsing: " + message, 0);	
+			logMessage("GOT A LIST!!! ", 0);	
+		    var mailList = Components.classes["@mozilla.org/addressbook/directoryproperty;1"].createInstance(Components.interfaces.nsIAbDirectory);
+			if (!vList2Card(lines[i], lines, mailList, cards))
+				return null;
+			return mailList;
+		}
+	}	
+
+	var newCard = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
+	if (!message2Card(lines, newCard, extraFields, 0, lines.length))
+	{
+		logMessage("unparseable: " + message, 0);	
+		return null;
+	}
+	return newCard;
+}
 
 /**
  * Parses a vcard message to a addressbook card.
@@ -553,9 +925,8 @@ function equalsContact (a, b)
  * @param fields Array - extra fields to save with the card (may be null)
  *
  */
-function message2Card (message, card, extraFields)
-{
-	
+function message2Card (lines, card, extraFields, startI, endI)
+{	
 	// reset the card
 	card.aimScreenName = "";
 	card.anniversaryDay = "";
@@ -625,19 +996,6 @@ function message2Card (message, card, extraFields)
 	//card.secondEmail = "";
 	//card.aimScreenName = "";
 */
-	// fix for bug #16766: message has no properties
-	if (message == null)
-		return false;
-		
-	// check for xml style
-	if (message.indexOf("<?xml") != -1 || message.indexOf("<?XML") != -1)
-		return xml2Card(message, card);
-	
-	// decode utf8
-	message = decode_utf8(DecodeQuoted(message));
-	
-	// make an array of all lines for easier parsing
-	var lines = message.split("\n");
 
 	// now update it
 	var found = false;
@@ -645,7 +1003,7 @@ function message2Card (message, card, extraFields)
 	// remember which email we already have and set the other one accordingly
 	var gotEmailPrimary = false, gotEmailSecondary = false;
 	
-	for (var i = 0; i < lines.length; i++)
+	for (var i = startI; i < lines.length && i < endI; i++)
 	{
 		// decode utf8
 		var vline = lines[i];
@@ -716,11 +1074,13 @@ function message2Card (message, card, extraFields)
 				}
 				else
 				{
-					addField(extraFields, tok[0], tok[1]);
+					if (extraFields != null)
+						addField(extraFields, tok[0], tok[1]);
 				}
 				
 				found = true;
 				break;
+			case "EMAIL;TYPE=INTERNET":
 			case "EMAIL;INTERNET":
 			case "EMAIL": //This is here to limit compact to existing vcards
 				// make sure to fill all email fields
@@ -737,7 +1097,8 @@ function message2Card (message, card, extraFields)
 				}
 				else
 				{
-					addField(extraFields, tok[0], tok[1]);
+					logMessage("parsing: " + message, 0);	
+						addField(extraFields, tok[0], tok[1]);
 				}
 
 				found = true;
@@ -864,7 +1225,16 @@ function message2Card (message, card, extraFields)
 		  case "UID":
 		  	card.custom4 = tok[1];
 		  	break;
+		  	
+	  	  // stuff we just do not parse :)
+	  	  case "":
+		  case "BEGIN":
+		  case "END":
+		  case "VERSION":
+		  	break;
+		  	
 		  default:
+			consoleService.logStringMessage("FIELD not found: " + tok[0] + ":" + tok[1]);
 		  	addField(extraFields, tok[0], tok[1]);
 		  	break;
 		} // end switch
@@ -872,19 +1242,41 @@ function message2Card (message, card, extraFields)
 		
 	return found;
 }
+function list2Human (card)
+{
+	var msg = "";
+	msg += "Name: " + card.displayName + "\n";
+ 	if (checkExist (card.notes))
+		msg += "Notes: " + card.notes + "\n";
+	var cList = rdf.GetResource(cur.mailListURI).QueryInterface(Components.interfaces.nsIAbDirectory);
+	if (cList.addressLists)
+ 	{
+		msg += "Members: \n";
+		var total = cList.addressLists.Count();
+		if (total)
+		{
+			for ( var i = 0;  i < total; i++ )
+			{
+				var card = cList.addressLists.GetElementAt(i);
+				card = card.QueryInterface(Components.interfaces.nsIAbCard);
+				msg += card.displayName + "<" + card.primaryEmail + ">\n";
+			}
+		}
+	}	
+}
 
 function card2Human (card)
 {
 	var msg = "";
 
  	if (checkExist (card.firstName) || checkExist (card.lastName))
-		msg += "Name: " + card.lastName + ";" + card.firstName + ";;;\n"
+		msg += "Name: " + card.lastName + " " + card.firstName + "\n"
  	if (checkExist (card.jobTitle))
 		msg += "Title: " + card.jobTitle + "\n";
 	if (checkExist (card.company))
 		msg += "Company: " + card.company + "\n\n";
  	if (checkExist (card.webPage1))
-		msg += "Web: " + card.webPage1 + "\n"; // encode the : chars to HEX, vcard values cannot contain colons
+		msg += "Web: " + card.webPage1 + "\n"; 
  	if (checkExist (card.webPage2))
 		msg += "Web: " + card.webPage2 + "\n\n";
 
@@ -963,36 +1355,13 @@ function card2Human (card)
 		msg += card.homeCity + "\n";
 		msg += card.homeCountry + "\n";
  	}
+ 	if (checkExist (card.notes))
+		msg += "Notes: " + card.notes + "\n";
 	return msg;
 }
 
-/**
- * Creates a vcard message out of a card.
- * This creates the WHOLE message including header
- * @param card nsIAbCard - the adress book card 
- * @param email String - the email of the current account
- * @param format String - the format to use (Xml|VCard)
- * @param fFile nsIFile - an array holding all the extra fields not in the card structure
- */
-function card2Message (card, email, format, fFile)
+function card2Vcard (card, fields)
 {
-	// it may be we do not have a uid - skip it then
-	if (card.custom4 == null || card.custom4.length < 2)
-		return null;			
-	
-	// read the database file
-	var fields = readDataBase (fFile);
-	
-	
-	// for the kolab xml format
-	if(format == "Xml")
-	{
-
-		return generateMail(card.custom4, email, "", "application/x-vnd.kolab.contact", 
-			true, encodeQuoted(encode_utf8(card2Xml(card, fields))), card2Human(card));
-	}
-	
-
 	// save the date in microseconds
 	// Date: Fri, 17 Dec 2004 15:06:42 +0100
 	var cdate = new Date (card.lastModifiedDate*1000);
@@ -1126,8 +1495,46 @@ function card2Message (card, email, format, fFile)
  	msg += "VERSION:3.0\n";
  	msg += "END:VCARD\n\n";
 
-	return generateMail(card.custom4, email, "vCard", "application/x-vcard", 
-			false, encodeQuoted(encode_utf8(msg)), null);
+	return msg;
+}
+
+/**
+ * Creates a vcard message out of a card.
+ * This creates the WHOLE message including header
+ * @param card nsIAbCard - the adress book card 
+ * @param email String - the email of the current account
+ * @param format String - the format to use (Xml|VCard)
+ * @param fFile nsIFile - an array holding all the extra fields not in the card structure
+ */
+function card2Message (card, email, format, fFile)
+{
+	// it may be we do not have a uid - skip it then
+	if (card.custom4 == null || card.custom4.length < 2)
+		return null;			
+	
+	// read the database file
+	var fields = readDataBase (fFile);
+		
+	// for the kolab xml format
+	if(format == "Xml")
+	{
+		// mailing list
+		if (card.isMailList)
+			return generateMail(card.custom4, email, "", "application/x-vnd.kolab.contact.distlist", 
+				true, encodeQuoted(encode_utf8(list2Xml(card, fields))), list2Human(card));
+		else
+			return generateMail(card.custom4, email, "", "application/x-vnd.kolab.contact", 
+				true, encodeQuoted(encode_utf8(card2Xml(card, fields))), card2Human(card));
+	}
+	
+	if (card.isMailList)
+		return generateMail(card.custom4, email, "vCard", "application/x-vcard.list", 
+			false, encodeQuoted(encode_utf8(list2Vcard(card,fields))), null);
+
+	return generateMail(card.custom4, email, "vCard", "text/vcard", 
+			false, encodeQuoted(encode_utf8(card2Vcard(card, fields))), null);
+			
+		
 }
 
 
@@ -1162,8 +1569,6 @@ function getUID (card)
 {
 	if (card == null)
 		return null;
-	if (card.isMailList)
-		return null;
 	if (card.custom4 == "")
 		return null;
 	return card.custom4;
@@ -1174,6 +1579,5 @@ function setUID (card, uid)
 {
 	if (card == null)
 		return;
-		
 	card.custom4 = uid;
 }
