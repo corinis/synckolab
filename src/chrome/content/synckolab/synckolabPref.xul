@@ -55,6 +55,22 @@
 		<description style="width: 300px">
 			&synckolab.settings.SyncKolabDescription;
 		</description>
+		<description style="width: 300px">
+			&synckolab.settings.DescKolabServer; 
+		</description>
+		
+		<label class="text-link" onclick="LaunchUrl('http://www.kolab.org')">www.kolab.org</label>
+
+		<description style="width: 300px">
+			&synckolab.settings.DescOtherClients;
+		</description>
+		
+		<label class="text-link" onclick="LaunchUrl('http://www.kontact.org')">KDE Client (Kontact) (GPL)</label>
+		<label class="text-link" onclick="LaunchUrl('http://www.horde.org')">Horde Webmail (GPL)</label>
+		<label class="text-link" onclick="LaunchUrl('http://www.thekompany.com/projects/aethera')">Athera (GPL)</label>
+		<label class="text-link" onclick="LaunchUrl('http://www.toltec.co.za')">MS Outlook &synckolab.with; Toltec Connector (&synckolab.proprietary;)</label>
+		<label class="text-link" onclick="LaunchUrl('http://www.konsec.com')">MS Outlook &synckolab.with; KONSEC Konnektor (&synckolab.proprietary;)</label>
+		<label class="text-link" onclick="LaunchUrl('http://www.bynari.net')">MS Outlook &synckolab.with; Bynari (&synckolab.proprietary;)</label>		
 	</vbox>
   	</tabpanel>
     <tabpanel id="accountTab" style="border:0px solid #000">

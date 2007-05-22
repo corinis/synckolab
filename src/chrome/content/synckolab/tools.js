@@ -234,7 +234,6 @@ function readDataBase (dbf)
 		{
 			db[i] = trim(lines[i]).split(":");
 	    }
-	alert("Got " + db.length + " lines");
 	return db;
 }
 
@@ -353,7 +352,7 @@ function copyToLocalFolder (fileName, folderUri)
  * @param cards childCards - the list of cards
  * @param vId string - the custom4 field (card id)
  */
-function findCard (cards, vId)
+function findCard (cards, vId, directory)
 {
 	// start from beginning
 	try
@@ -386,7 +385,23 @@ function findCard (cards, vId)
 			return null;
 		}
 	}
-	// nothing found
+	// nothing found - try mailing lists
+	
+	if (directory != null)
+	{
+		var cn = directory.childNodes;
+		var ABook = cn.getNext();
+		while (ABook != null)
+		{
+			var cur = ABook.QueryInterface(Components.interfaces.nsIAbDirectory);
+			if (cur.listNickName == vId)
+			{
+				return cur;
+			}
+			ABook = cn.getNext();
+		}
+	}
+
 	return null;
 }
 
@@ -1183,4 +1198,17 @@ function getSyncFieldFile (config, cal, id)
 		file.create(1, 0775);
 	file.append(id + ".field");
 	return file;
+}
+
+/**
+ * Launch a url
+ */
+function LaunchUrl(url)
+{
+  var uri = Components.classes["@mozilla.org/network/io-service;1"]
+                      .getService(Components.interfaces.nsIIOService).newURI(url, null, null);
+
+  var protocolSvc = Components.classes["@mozilla.org/uriloader/external-protocol-service;1"]
+                              .getService(Components.interfaces.nsIExternalProtocolService);
+  protocolSvc.loadUrl(uri);
 }

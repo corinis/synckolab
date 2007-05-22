@@ -29,12 +29,24 @@
 <!ENTITY synckolab.settings.del				"Entfernen">
 
 
-<!ENTITY synckolab.settings.imapAcctTip 		"Es werden nur IMAP Konten unterstützt!">
-<!ENTITY synckolab.settings.SyncKolabHeader		"SyncKolab">
-<!ENTITY synckolab.settings.SyncKolabDescription "Mit SyncKolab können Sie Ihre Kontakte und Termine über einen IMAP oder KOLAB Server synchronisieren.">
+<!ENTITY synckolab.settings.imapAcctTip 			"Es werden nur IMAP Konten unterstützt!">
+<!ENTITY synckolab.settings.SyncKolabHeader			"SyncKolab">
+<!ENTITY synckolab.settings.SyncKolabDescription 	"Mit SyncKolab können Sie Ihre Kontakte und Termine über einen IMAP oder KOLAB Server synchronisieren.">
+<!ENTITY synckolab.settings.DescKolabServer 		"Für Groupware Funktionalität können Sie den Kolab Server benutzen: ">
+<!ENTITY synckolab.settings.DescOtherClients 		"Es gibt verschiedene Lösungen die mit Synckolab Kompatibel sind: ">
 
 <!-- Account Tab -->
 <!ENTITY synckolab.settings.AccountDescription	"Bitte wählen Sie ein IMAP Konto für diese Konfiguration aus">
 <!ENTITY synckolab.settings.SyncInterval 		"Abgleichintervall: ">
 <!ENTITY synckolab.settings.SyncIntervalMinutes "Minuten">
 <!ENTITY synckolab.settings.SaveToImapTip		"Diese option abwählen, wenn nichts auf den server geschriben werden soll">
+
+<!-- New Config Wizard -->
+<!ENTITY synckolab.newwizard.title "SynKolab einrichten">
+<!ENTITY synckolab.newwizard.intro 		"Mithilfe von SyncKolab können Sie Ihre Kontakt- und Kalenderdaten zwischen mehreren Rechnern abgleichen. Die einzige Vorraussetzung ist ein IMAP Server">
+<!ENTITY synckolab.newwizard.selectAccount	"bitte wählen Sie ein IMAP Konto zur Synchronisierung aus">
+
+
+<!-- other -->
+<!ENTITY synckolab.with			"mit">
+<!ENTITY synckolab.proprietary 	"proprietär">

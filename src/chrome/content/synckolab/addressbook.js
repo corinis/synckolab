@@ -188,17 +188,15 @@ var syncAddressBook = {
 		if (newCard.isMailList)
 		{
 			var cur = newCard;
-			alert("CUR INFO: \n" + 
+			alert("CUR INFO for " + getUID(newCard) +  "\n" + 
 				"custom4? " + cur.custom4 + "\n" +
-				"content? " + cur.displayName + "\n" +
+				"listNickName? " + cur.listNickName + "\n" +
 				"content? " + cur.lastName + "\n" +
 				"content? " + cur.nickName + "\n" +
-				"notes? " + cur.description + "\n" +
+				"description? " + cur.description + "\n" +
 				"mailListURI? " + cur.mailListURI +
 				""
 				);
-		
-			return;
 		}
 		if (newCard) //message2Card (fileContent, newCard, messageFields)
 		{
@@ -212,10 +210,13 @@ var syncAddressBook = {
 			// update list item
 			this.curItemInListId.setAttribute("label", getUID(newCard));
 			this.curItemInListStatus.setAttribute("label", strBundle.getString("checking"));
-			this.curItemInListContent.setAttribute("label", newCard.firstName + " " + newCard.lastName + " <" + newCard.primaryEmail + ">");
+			if (newCard.isMailList)
+				this.curItemInListContent.setAttribute("label", strBundle.getString("mailingList") + " " + cur.listNickName);
+			else
+				this.curItemInListContent.setAttribute("label", newCard.firstName + " " + newCard.lastName + " <" + newCard.primaryEmail + ">");
 
-			// ok lets see if we have this one already (remember custom4=UID)
-			var aCard = findCard (cards, getUID(newCard));
+			// ok lets see if we have this one already (remember custom4=UID except for mailing list)
+			var aCard = findCard (cards, getUID(newCard), this.gAddressBook);
 
 			// get the dbfile from the local disk
 			var cEntry = getSyncDbFile	(this.gConfig, false, getUID(newCard));
@@ -238,8 +239,12 @@ var syncAddressBook = {
 					// also write the extra fields in a file
 					if (messageFields.length > 0)
 						writeDataBase(fEntry, messageFields);
-					
-					this.gAddressBook.addCard (newCard);
+
+					if (newCard.isMailList)
+						this.gAddressBook.addMailList(newCard);
+					else					
+						this.gAddressBook.addCard (newCard);
+						
 					logMessage("card is new, add to address book: " + getUID(newCard), 1);	
 					
 					//update list item
@@ -265,7 +270,7 @@ var syncAddressBook = {
 					try
 					{				
 						// delete extra file if we dont need it
-							fEntry.remove(false);
+						fEntry.remove(false);
 					}
 					catch (dele)
 					{ // ignore this - if the file does not exist
@@ -286,7 +291,7 @@ var syncAddressBook = {
 					//local and server were both updated, ut oh, what do we want to do?
 					logMessage("Conflicts detected, testing for autoresolve.", 1);
 					
-					//This function returns an array on conflicting fields
+					//	This function returns an array on conflicting fields
 					var conflicts = contactConflictTest(newCard,aCard);
 										
 					//If there were no conflicts found, skip dialog and update the local copy (Changes to the way the SHA are calculated could cause this)
@@ -371,12 +376,21 @@ var syncAddressBook = {
 				if (!cEntry.exists() || (equalsContact(cCard, aCard) && !equalsContact(cCard, newCard)))
 				{
 				    logMessage("server changed: " + getUID(aCard), 2);
+				    
 					// server changed - update local
-					var list = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);
-					list.AppendElement(aCard);
-					this.gAddressBook.deleteCards(list);
-					this.gAddressBook.addCard (newCard);
-					
+					if (aCard.isMailList)
+					{
+						this.gAddressBook.deleteDirectory(aCard);
+						this.gAddressBook.addMailList(newCard);
+					}
+					else
+					{
+						var list = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);
+						list.AppendElement(aCard);
+						this.gAddressBook.deleteCards(list);
+						this.gAddressBook.addCard (newCard);
+					}
+										
 					// write the current content in the sync-db file
 					writeSyncDBFile (cEntry, stripMailHeader(card2Message(newCard, this.email, this.format)));
 
@@ -456,17 +470,60 @@ var syncAddressBook = {
 		
 		var content = null;
 		
+		curItem = cur;
+		
+		// mailing lists are nsIABDirectory 
+		if (cur.isMailList)
+		{
+			var cn = this.gAddressBook.childNodes;
+			var ABook = cn.getNext();
+			while (ABook != null)
+			{
+				var ccur = ABook.QueryInterface(Components.interfaces.nsIAbDirectory);
+				if (ccur.listNickName == cur.displayName)
+				{
+					curItem = ccur;
+					break;
+				}
+				try
+				{
+					ABook = cn.getNext();
+				}
+				catch (ex)
+				{
+					// break out if we have a problem here
+					break;
+				}
+			}
+			
+		}
+		
 		
 		// check for this entry
-		if (getUID (cur) == null)
+		if (getUID (curItem) == null)
 		{
+			if (cur.isMailList)
+			{
+				try
+				{
+					// select the next card
+					this.gCards.next();
+				}
+				catch (ext)
+				{
+					// no next.. but we find that out early enough
+				}
+				// skip this one.. there simply ARE no valid mailng list without UID
+				return null;
+			}
+			
 			// look at new card
 			// generate a unique id (will random be enough for the future?)
-			setUID(cur, "pas-id-" + get_randomVcardId());
+			setUID(curItem, "pas-id-" + get_randomVcardId());
 			if (cur.isMailList)
-		    	logMessage("adding unsaved list: " + getUID (cur), 1);
+		    	logMessage("adding unsaved list: " + getUID (curItem), 1);
 			else
-		    	logMessage("adding unsaved card: " + getUID (cur), 2);
+		    	logMessage("adding unsaved card: " + getUID (curItem), 2);
 			
 			writeCur = true;
 			cur.editCardToDatabase ("moz-abmdbdirectory://"+this.gAddressBook);
@@ -476,12 +533,12 @@ var syncAddressBook = {
 			this.curItemInListId = document.createElement("listcell");
 			this.curItemInListStatus = document.createElement("listcell");
 			this.curItemInListContent = document.createElement("listcell");
-			this.curItemInListId.setAttribute("label", getUID(cur));
+			this.curItemInListId.setAttribute("label", getUID(curItem));
 			this.curItemInListStatus.setAttribute("label", strBundle.getString("addToServer"));
-			if (cur.isMailList)
-				this.curItemInListContent.setAttribute("label", strBundle.getString("mailingList") + " " + cur.displayName);
+			if (curItem.isMailList)
+				this.curItemInListContent.setAttribute("label", strBundle.getString("mailingList") + " " + getUID(curItem));
 			else
-				this.curItemInListContent.setAttribute("label", cur.firstName + " " + cur.lastName + " <" + cur.primaryEmail + ">");
+				this.curItemInListContent.setAttribute("label", cur.firstName + " " + curItem.lastName + " <" + curItem.primaryEmail + ">");
 			
 	
 			this.curItemInList.appendChild(this.curItemInListId);
@@ -491,25 +548,24 @@ var syncAddressBook = {
 			this.itemList.appendChild(this.curItemInList);
 			
 			// and write the message
-			content = card2Message(cur, this.email, this.format);
-	        logMessage("New Card " + getUID(cur), 2);
+			content = card2Message(curItem, this.email, this.format);
+	        logMessage("New Card " + getUID(curItem), 2);
 
 			// get the dbfile from the local disk
-			var cEntry = getSyncDbFile	(this.gConfig, false, getUID(cur));
+			var cEntry = getSyncDbFile	(this.gConfig, false, getUID(curItem));
 			// write the current content in the sync-db file
 			writeSyncDBFile (cEntry, stripMailHeader(content));			
 			
 		}		
 		else
-		if (!cur.isMailList)
 		{
 			var alreadyProcessed = false;
 			// check if we have this uid in the messages
 			for (var i = 0; i < this.folderMessageUids.length; i++)
 			{
-				if (getUID(cur) == this.folderMessageUids[i] && getUID(cur) != null)
+				if (getUID(curItem) == this.folderMessageUids[i] && getUID(curItem) != null)
 				{
-					logMessage("we got this contact already: " + getUID(cur), 1);
+					logMessage("we got this contact already: " + getUID(curItem), 1);
 					alreadyProcessed = true;
 					break;
 				}
@@ -521,24 +577,27 @@ var syncAddressBook = {
 			if (!alreadyProcessed)
 			{
 				// get the dbfile from the local disk
-				var cEntry = getSyncDbFile	(this.gConfig, false, getUID(cur));
-				if (getUID(cur) == null)
+				var cEntry = getSyncDbFile	(this.gConfig, false, getUID(curItem));
+				if (getUID(curItem) == null)
 				{
-					alert("UID is NULL???" + cur.custom4);
+					alert("UID is NULL???" + curItem.custom4);
 				}
 				
 				if (cEntry.exists() && !this.forceServerCopy)
 				{
-					this.deleteList.AppendElement(cur);
+					this.deleteList.AppendElement(curItem);
 					
 					// create a new item in the itemList for display
 					this.curItemInList = document.createElement("listitem");
 					this.curItemInListId = document.createElement("listcell");
 					this.curItemInListStatus = document.createElement("listcell");
 					this.curItemInListContent = document.createElement("listcell");
-					this.curItemInListId.setAttribute("label", getUID(cur));
+					this.curItemInListId.setAttribute("label", getUID(curItem));
 					this.curItemInListStatus.setAttribute("label", strBundle.getString("localDelete"));
-					this.curItemInListContent.setAttribute("label", cur.firstName + " " + cur.lastName + " <" + cur.primaryEmail + ">");
+					if (curItem.isMailList)
+						this.curItemInListContent.setAttribute("label", strBundle.getString("mailingList") + " " + getUID(curItem));
+					else
+						this.curItemInListContent.setAttribute("label", curItem.firstName + " " + curItem.lastName + " <" + curItem.primaryEmail + ">");
 					
 			
 					this.curItemInList.appendChild(this.curItemInListId);
@@ -560,9 +619,12 @@ var syncAddressBook = {
 					this.curItemInListId = document.createElement("listcell");
 					this.curItemInListStatus = document.createElement("listcell");
 					this.curItemInListContent = document.createElement("listcell");
-					this.curItemInListId.setAttribute("label", getUID(cur));
+					this.curItemInListId.setAttribute("label", getUID(curItem));
 					this.curItemInListStatus.setAttribute("label", strBundle.getString("addToServer"));
-					this.curItemInListContent.setAttribute("label", cur.firstName + " " + cur.lastName + " <" + cur.primaryEmail + ">");
+					if (curItem.isMailList)
+						this.curItemInListContent.setAttribute("label", strBundle.getString("mailingList") + " " + getUID(curItem));
+					else
+						this.curItemInListContent.setAttribute("label", curItem.firstName + " " + curItem.lastName + " <" + curItem.primaryEmail + ">");
 					
 					this.curItemInList.appendChild(this.curItemInListId);
 					this.curItemInList.appendChild(this.curItemInListStatus);
@@ -571,11 +633,11 @@ var syncAddressBook = {
 					this.itemList.appendChild(this.curItemInList);
 					
 					// and write the message
-					content = card2Message(cur, this.email, this.format);
-					logMessage("New Card " + getUID(cur), 1);
+					content = card2Message(curItem, this.email, this.format);
+					logMessage("New Card " + getUID(curItem), 1);
 					
 					// get the dbfile from the local disk
-					var cEntry = getSyncDbFile	(this.gConfig, false, getUID(cur));
+					var cEntry = getSyncDbFile	(this.gConfig, false, getUID(curItem));
 					// write the current content in the sync-db file
 					writeSyncDBFile (cEntry, stripMailHeader(content));			
 				}				

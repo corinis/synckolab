@@ -79,7 +79,7 @@ var strBundle;
 
 // Global debug setting (on)
 var DEBUG_SYNCKOLAB = true;
-var DEBUG_SYNCKOLAB_LEVEL = 1;
+var DEBUG_SYNCKOLAB_LEVEL = 6;
 var SWITCH_TIME = 50;
  
   
@@ -307,7 +307,7 @@ function getContent (sync)
 	gMessages = sync.folder.getMessages(null);	 // dont need the msgWindow use null
 	
 	// get the message database (a file with uid:size:date:localfile)
-	syncMessageDb = readDataBase(getHashDataBaseFile(sync.gConfig + gSync.isCal()?".cal":".con"));
+	syncMessageDb = readDataBase(getHashDataBaseFile(sync.gConfig));
 		
 	curMessage = 0;
 	updateMessages = new Array(); // saves the the message url to delete
@@ -358,8 +358,9 @@ function getMessage ()
 	 cur.date (PRTime) ?
 	*/
 	gSyncFileKey = getDbEntryIdx(cur.mime2DecodedSubject, syncMessageDb);
+
 	gSyncKeyInfo = cur.mime2DecodedSubject;
-	if (gSyncFileKey > 0)
+	if (gSyncFileKey > -1)
 	{
 		logMessage("we have " + cur.mime2DecodedSubject + " already locally...", 2);
 		// check if the message has changed
@@ -577,10 +578,10 @@ function updateContentWrite ()
 			//copyToFolder (gTmpFile, tempFolderUri); // to the temp folder for testing!!!
 		}
 		else
-				updateContentWrite ();
+			updateContentWrite ();
 	}
 	else
-			updateContentAfterSave ();
+		updateContentAfterSave ();
 	
 }
 

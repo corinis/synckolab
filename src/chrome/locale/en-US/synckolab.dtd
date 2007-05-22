@@ -26,12 +26,23 @@
 <!ENTITY synckolab.settings.add				"Add">
 <!ENTITY synckolab.settings.del				"Delete">
 
-<!ENTITY synckolab.settings.imapAcctTip 	"Only imap accounts are supported, other account types will not sync.">
-<!ENTITY synckolab.settings.SyncKolabHeader		"SyncKolab">
-<!ENTITY synckolab.settings.SyncKolabDescription "Using SyncKolab you can synchronize your contacts and events using an IMAP or KOLAB server.">
+<!ENTITY synckolab.settings.imapAcctTip 			"Only imap accounts are supported, other account types will not sync.">
+<!ENTITY synckolab.settings.SyncKolabHeader			"SyncKolab">
+<!ENTITY synckolab.settings.SyncKolabDescription 	"SyncKolab allows you to synchronize your contacts and your calendar entries over multiple machines using only a standard imap server.">
+<!ENTITY synckolab.settings.DescKolabServer 		"For full groupware support you might want to take a look at the kolab server: ">
+<!ENTITY synckolab.settings.DescOtherClients 		"Other clients SyncKolab is compatible with: ">
 
 <!-- Account Tab -->
 <!ENTITY synckolab.settings.AccountDescription	"Please select an IMAP Account for the synchronization">
 <!ENTITY synckolab.settings.SyncInterval 		"Sync-interval: ">
 <!ENTITY synckolab.settings.SyncIntervalMinutes "minutes">
 <!ENTITY synckolab.settings.SaveToImapTip		"Uncheck this, if you do not want anything written to the imap server">
+
+<!-- New Config Wizard -->
+<!ENTITY synckolab.newwizard.title 		"Setup SynKolab">
+<!ENTITY synckolab.newwizard.intro 		"SyncKolab allows you to synchronize your contacts and your calendar entries over multiple machines using only an imap server.">
+<!ENTITY synckolab.newwizard.selectAccount	"Please select an IMAP Account for the synchronization">
+
+<!-- other -->
+<!ENTITY synckolab.with			"with">
+<!ENTITY synckolab.proprietary 	"proprietary">

@@ -1000,8 +1000,16 @@ function ical2event (content)
 	var subComp = event.getFirstSubcomponent("ANY");
 	event = Components.classes["@mozilla.org/calendar/event;1"]
                       .createInstance(Components.interfaces.calIEvent);
-    event.icalComponent = subComp;
-    logMessage("parsed event: " + event + ":" + event.id, 3);
+    try
+    {
+    	event.icalComponent = subComp;
+	    logMessage("parsed event: " + event + ":" + event.id, 3);
+	}
+	catch (exc)
+	{
+	    logMessage("unable to parse event: \n" + content, 0);
+	    return null;
+	}
     return event;
 }
 

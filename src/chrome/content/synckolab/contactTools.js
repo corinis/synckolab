@@ -310,11 +310,13 @@ function list2Xml (card, fields)
 	xml += " <last-modification-date>"+date2String(new Date(card.lastModifiedDate*1000))+"T"+time2String(new Date(card.lastModifiedDate*1000))+"Z</last-modification-date>\n";
 	// ??
 	xml += " <sensitivity>public</sensitivity>\n";
+	if (checkExist(card.description))
+			xml +=" <body>"+encode4XML(card.description)+"</body>\n";
 	if (checkExist(card.notes))
 			xml +=" <body>"+encode4XML(card.notes)+"</body>\n";
-	xml += nodeWithContent("display-name", card.displayName, false);
+	xml += nodeWithContent("display-name", card.listNickName, false);
 
-	var cList = rdf.GetResource(card.mailListURI).QueryInterface(Components.interfaces.nsIAbDirectory);
+	var cList = card;
 	if (cList.addressLists)
  	{
 		var total = cList.addressLists.Count();
@@ -370,6 +372,8 @@ function list2Vcard (card, fields)
 		msg += "N:" + card.lastName + ";" + card.firstName + ";;;\n"
  	if (checkExist (card.displayName))
 		msg += "FN:" + card.displayName + "\n";
+ 	if (checkExist (card.listNickName))
+		msg += "FN:" + card.listNickName + "\n";
  	if (checkExist (card.nickName))
 		msg += "NICKNAME:" + card.nickName + "\n";
  	if (checkExist (card.jobTitle))
@@ -471,7 +475,9 @@ function list2Vcard (card, fields)
 		msg += "CUSTOM2:" + card.custom2.replace (/\n/g, "\\n") + "\n";
  	if (checkExist (card.custom3))
 		msg += "CUSTOM3:" + card.custom3.replace (/\n/g, "\\n") + "\n";
- 	// yeap one than more line (or something like that :P)
+ 	// yeap one than more line (or something like that :P) 	
+ 	if (checkExist (card.description))
+		msg += "NOTE:" + card.description.replace (/\n/g, "\\n") + "\n";
  	if (checkExist (card.notes))
 		msg += "NOTE:" + card.notes.replace (/\n/g, "\\n") + "\n";
 	msg += "UID:" + card.custom4 + "\n";	
@@ -485,11 +491,13 @@ function list2Vcard (card, fields)
 	}
 
 	var uidList = "";
+	alert("adding lists....");
 	
-	var cList = rdf.GetResource(card.mailListURI).QueryInterface(Components.interfaces.nsIAbDirectory);
+	var cList = card;
 	if (cList.addressLists)
  	{
 		var total = cList.addressLists.Count();
+		alert("adding " + total + " lists....");
 		if (total)
 		{
 			for ( var i = 0;  i < total; i++ )
@@ -752,6 +760,12 @@ function equalsContact (a, b)
 		"homeAddress","homeAddress2","homeCity","homeState","homeZipCode","homeCountry","webPage2",
 		"jobTitle","department","company","workAddress","workAddress2","workCity","workState","workZipCode","workCountry","webPage1",
 		"custom1","custom2","custom3","notes");
+	
+	if (a.isMailList != b.isMailList)
+		return;
+		
+	if (a.isMailList)
+		fieldsArray = new Array("listNickName", "description");
 
 	for(var i=0 ; i < fieldsArray.length ; i++ ) {
 		if ( eval("a."+fieldsArray[i]) != eval("b."+fieldsArray[i]) )
@@ -761,6 +775,11 @@ function equalsContact (a, b)
 		}
 	}
 	
+	// check for same contents
+	if (a.isMailList)
+	{
+		// TODO
+	}
 	return true;	
 }
 
@@ -830,8 +849,8 @@ function vList2Card (uids, lines, card, cards)
 					break;
 			var newCard = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
 			message2Card(lines, newCard, null, cStart, i);
-			// check if we know this card already :)
-			var gotCard = findCard (cards, getUID(newCard));
+			// check if we know this card already :) - ONLY cards
+			var gotCard = findCard (cards, getUID(newCard), null);
 			if (gotCard != null)
 			{
 				card.addressLists.AppendElement(gotCard);
@@ -1245,9 +1264,9 @@ function message2Card (lines, card, extraFields, startI, endI)
 function list2Human (card)
 {
 	var msg = "";
-	msg += "Name: " + card.displayName + "\n";
+	msg += "Name: " + card.listNickName + "\n";
  	if (checkExist (card.notes))
-		msg += "Notes: " + card.notes + "\n";
+		msg += "Notes: " + card.description + "\n";
 	var cList = rdf.GetResource(cur.mailListURI).QueryInterface(Components.interfaces.nsIAbDirectory);
 	if (cList.addressLists)
  	{
@@ -1509,8 +1528,10 @@ function card2Vcard (card, fields)
 function card2Message (card, email, format, fFile)
 {
 	// it may be we do not have a uid - skip it then
-	if (card.custom4 == null || card.custom4.length < 2)
+	if (!card.isMailList && (card.custom4 == null || card.custom4.length < 2) )
 		return null;			
+
+     logMessage("creating message out of card... ", 2);
 	
 	// read the database file
 	var fields = readDataBase (fFile);
@@ -1569,6 +1590,11 @@ function getUID (card)
 {
 	if (card == null)
 		return null;
+		
+	// mailing list UID is the nickname - since it has to be unique
+	if (card.isMailList)
+		return card.listNickName;
+
 	if (card.custom4 == "")
 		return null;
 	return card.custom4;
@@ -1578,6 +1604,11 @@ function getUID (card)
 function setUID (card, uid)
 {
 	if (card == null)
+		return;
+		
+	// we do not have to call this for a mailing list because
+	// listNickName is the UID
+	if (card.isMailList)
 		return;
 	card.custom4 = uid;
 }
