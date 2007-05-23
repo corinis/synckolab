@@ -42,6 +42,7 @@ var syncAddressBook = {
 	folderPath: '', // String - the path for the contacts
 	serverKey: '', // the incoming server
 	gSaveImap: true, // write back to folder
+	gSync: true, // sync this configuration
 	gConfig: '', // remember the configuration name
 	gCurUID: '', // save the last checked uid - for external use
 
@@ -79,10 +80,11 @@ var syncAddressBook = {
 		{
 			var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 			this.folderPath = pref.getCharPref("SyncKolab."+config+".ContactFolderPath");
-			this.serverKey = pref.getCharPref("SyncKolab."+config+".ContactIncomingServer");
+			this.serverKey = pref.getCharPref("SyncKolab."+config+".IncomingServer");
 			addressBookName = pref.getCharPref("SyncKolab."+config+".AddressBook");
 			this.format = pref.getCharPref("SyncKolab."+config+".AddressBookFormat");
 			this.gSaveImap = pref.getBoolPref("SyncKolab."+config+".saveToContactImap");
+			this.gSync = pref.getBoolPref("SyncKolab."+config+".syncContacts");
 			
 			// since Imap savine does not work with xml - disable this
 			//if (this.format == "Xml")

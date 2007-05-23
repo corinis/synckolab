@@ -207,7 +207,6 @@ function init() {
 	if (configs.length == 0)
 	{
 		alert("NO CONFIGS FOUND.. STARTING WIZARD");
-		return;
 	}
 
 	// generate the configuration in the tree control 	
@@ -346,15 +345,23 @@ function init() {
 	}	
 	
 	// now some global settings
+/*
 	try {
 		document.getElementById ("syncCon").checked = pref.getBoolPref("SyncKolab.syncContacts");
 	} catch (ex) {}
 	try {
 		document.getElementById ("syncCal").checked = pref.getBoolPref("SyncKolab.syncCalendar");
 	} catch (ex) {}
+*/	
 	try {
 		document.getElementById ("closeWnd").checked = pref.getBoolPref("SyncKolab.closeWindow");
 	} catch (ex) {}
+	
+	// default is 0
+	document.getElementById ("syncInterval").value = "0";
+	try {		
+		document.getElementById ("syncInterval").value = pref.getCharPref("SyncKolab.autoSync");
+	} catch (ex) {};
 	
 	// preselect the first item
 	// changeConfig(curConfig); DONT DO THAT NOW :P
@@ -374,7 +381,9 @@ function changeConfig (config)
 //	try
 	{
 		var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+		
 		var act = null;
+				
 		try
 		{
 			act = pref.getCharPref("SyncKolab."+config+".IncomingServer");
@@ -400,7 +409,7 @@ function changeConfig (config)
 		if (act == null)
 		{
 		}
-
+	
 		// select the account
 		var actList = document.getElementById("ImapAcct");
 		// go through the items
@@ -465,9 +474,14 @@ function changeConfig (config)
 			cur = cur.nextSibling;
 		}
 
-		document.getElementById ("saveToConImap").checked = true;
+		document.getElementById ("saveToContactImap").checked = true;
 		try {
-			document.getElementById ("saveToConImap").checked = pref.getBoolPref("SyncKolab."+config+".saveToContactImap");
+			document.getElementById ("saveToContactImap").checked = pref.getBoolPref("SyncKolab."+config+".saveToContactImap");
+		} catch (ex) {}
+
+		document.getElementById ("syncContacts").checked = true;
+		try {
+			document.getElementById ("syncContacts").checked = pref.getBoolPref("SyncKolab."+config+".syncContacts");
 		} catch (ex) {}
 		
 		var sCurFolder = null;
@@ -533,12 +547,17 @@ function changeConfig (config)
 				cur = cur.nextSibling;
 			}
 	
-			document.getElementById ("saveToCalImap").checked = true;
+			document.getElementById ("saveToCalendarImap").checked = true;
 			try
 			{
-				document.getElementById ("saveToCalImap").checked = pref.getBoolPref("SyncKolab."+config+".saveToCalendarImap");
+				document.getElementById ("saveToCalendarImap").checked = pref.getBoolPref("SyncKolab."+config+".saveToCalendarImap");
 			}
 			catch (ex) {}
+			
+			document.getElementById ("syncCalendar").checked = true;
+			try {
+				document.getElementById ("syncCalendar").checked = pref.getBoolPref("SyncKolab."+config+".syncCalendar");
+			} catch (ex) {}
 			
 			var sCurFolder = null;
 			try
@@ -728,14 +747,16 @@ function saveAllPrefs () {
 	
 	pref.setCharPref("SyncKolab."+config+".AddressBook", document.getElementById ("conURL").value);
 	pref.setCharPref("SyncKolab."+config+".AddressBookFormat", document.getElementById ("conFormat").value);
-	pref.setBoolPref("SyncKolab."+config+".saveToContactImap", document.getElementById ("saveToConImap").checked);
+	pref.setBoolPref("SyncKolab."+config+".saveToContactImap", document.getElementById ("saveToContactImap").checked);
+	pref.setBoolPref("SyncKolab."+config+".syncContacts", document.getElementById ("syncContacts").checked);
 
 	// if we do not have a calendar, we can easily skip this
 	if (isCalendar)
 	{
 		pref.setCharPref("SyncKolab."+config+".Calendar", document.getElementById ("calURL").value);
 		pref.setCharPref("SyncKolab."+config+".CalendarFormat", document.getElementById ("calFormat").value);
-		pref.setBoolPref("SyncKolab."+config+".saveToCalendarImap", document.getElementById ("saveToCalImap").checked);
+		pref.setBoolPref("SyncKolab."+config+".saveToCalendarImap", document.getElementById ("saveToCalendarImap").checked);
+		pref.setBoolPref("SyncKolab."+config+".syncCalendar", document.getElementById ("syncCalendar").checked);
 	}
 }
 
@@ -744,9 +765,10 @@ function saveAllPrefs () {
 function savePrefs() {
 	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 
-	pref.setBoolPref("SyncKolab.syncContacts", document.getElementById ("syncCon").checked);
-	pref.setBoolPref("SyncKolab.syncCalendar", document.getElementById ("syncCal").checked);
+//	pref.setBoolPref("SyncKolab.syncContacts", document.getElementById ("syncCon").checked);
+//	pref.setBoolPref("SyncKolab.syncCalendar", document.getElementById ("syncCal").checked);
 	pref.setBoolPref("SyncKolab.closeWindow", document.getElementById ("closeWnd").checked);
+	pref.setCharPref("SyncKolab.autoSync", document.getElementById ("syncInterval").value);
 	
 	saveAllPrefs (curConfig);
 }
@@ -837,15 +859,18 @@ function delConfig()
 			}
 			cur = cur.nextSibling;
 		}
-
-		if (delNode != null)
-		{
-			ctree.removeChild(delNode);
-		}
 		
 		var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 		pref.setCharPref("SyncKolab.Configs", configs);
 		curConfig = null;
+
+		if (delNode != null)
+		{
+			try
+			{
+				ctree.removeChild(delNode);
+			} catch (ex) {}
+		}
 	}
 }
 

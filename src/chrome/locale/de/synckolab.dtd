@@ -27,7 +27,12 @@
 <!ENTITY synckolab.settings.CloseWindow		"Statusfenster nach Beendigung schliessen">
 <!ENTITY synckolab.settings.add				"Neu">
 <!ENTITY synckolab.settings.del				"Entfernen">
+<!ENTITY synckolab.settings.SyncCalendar	"Kalender abgleichen">
+<!ENTITY synckolab.settings.SyncCalendarTip	"Aktivieren wenn in dieser Konfiguration der Kalender abgeglichen werden soll">
+<!ENTITY synckolab.settings.SyncContacts	"Kontakte abgleichen">
+<!ENTITY synckolab.settings.SyncContactsTip	"Aktivieren wenn in dieser Konfiguration das Adressbuch abgeglichen werden soll">
 
+<!ENTITY synckolab.settings.Updates			"Für Updates besuchen Sie:">
 
 <!ENTITY synckolab.settings.imapAcctTip 			"Es werden nur IMAP Konten unterstützt!">
 <!ENTITY synckolab.settings.SyncKolabHeader			"SyncKolab">
@@ -39,6 +44,7 @@
 <!ENTITY synckolab.settings.AccountDescription	"Bitte wählen Sie ein IMAP Konto für diese Konfiguration aus">
 <!ENTITY synckolab.settings.SyncInterval 		"Abgleichintervall: ">
 <!ENTITY synckolab.settings.SyncIntervalMinutes "Minuten">
+<!ENTITY synckolab.settings.SyncIntervalDescription "Spezifizieren Sie einen Intervall in dem SyncKolab nach neuen Einträgen suchen soll. 0 bedeuted dass nur manuell synchronisiert wird.">
 <!ENTITY synckolab.settings.SaveToImapTip		"Diese option abwählen, wenn nichts auf den server geschriben werden soll">
 
 <!-- New Config Wizard -->

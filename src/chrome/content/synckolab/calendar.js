@@ -44,6 +44,7 @@ var syncCalendar = {
 	folderPath: '', // String - the path for the entries
 	serverKey: '', // the incoming server
 	gSaveImap: true, // write back to folder
+	gSync: true, // sync this configuration	
 	gConfig: '', // remember the configuration name
 	gCurUID: '', // save the last checked uid - for external use
 
@@ -87,10 +88,12 @@ var syncCalendar = {
 		try {
 			var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 			this.folderPath = pref.getCharPref("SyncKolab."+config+".CalendarFolderPath");
-			this.serverKey = pref.getCharPref("SyncKolab."+config+".CalendarIncomingServer");
+			this.serverKey = pref.getCharPref("SyncKolab."+config+".IncomingServer");
 			this.gCalendarName = pref.getCharPref("SyncKolab."+config+".Calendar");
 			this.format = pref.getCharPref("SyncKolab."+config+".CalendarFormat");			
 			this.gSaveImap = pref.getBoolPref("SyncKolab."+config+".saveToCalendarImap");
+			this.gSync = pref.getBoolPref("SyncKolab."+config+".syncCalendar");
+			
 		} catch(e) {
 			return;
 		}

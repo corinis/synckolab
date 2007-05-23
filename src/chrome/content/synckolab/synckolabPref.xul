@@ -8,7 +8,7 @@
         buttons="accept,cancel"
         ondialogaccept="savePrefs();"
         persist="screenX screenY"
-        title="Sync Kolab V0.4.34">
+        title="Sync Kolab 0.4.34">
 
 	<script type="application/x-javascript" src="chrome://synckolab/content/settings.js"/>
 	<script type="application/x-javascript" src="chrome://synckolab/content/calTools.js"/>
@@ -76,16 +76,23 @@
     <tabpanel id="accountTab" style="border:0px solid #000">
     	<vbox>
     		<hbox>
-				<label value="&synckolab.settings.SyncKolabHeader;"/>
-				<label value="0.4.34"/>
+			<label value="&synckolab.settings.SyncKolabHeader;" style="font-size: 16pt;"/>
 			</hbox>
-			<label value="&synckolab.settings.AccountDescription;"/>
+			<label value="&synckolab.settings.Updates;"/>
+			<label class="text-link" onclick="LaunchUrl('http://www.gargan.org')">www.gargan.org</label>
+	    	<separator class="thin"/>
+			<description style="width: 300px">
+				&synckolab.settings.AccountDescription;
+			</description>
 	    	<hbox>
 				<label value="&synckolab.settings.Account;"/>
 				<menulist id="ImapAcct" oncommand="setFolders(this.value);" tooltiptext="&synckolab.settings.imapAcctTip;">
 				</menulist> 
 			</hbox>			
 	    	<separator class="thin"/>
+			<description style="width: 300px">
+				&synckolab.settings.SyncIntervalDescription;
+			</description>				
 	    	<hbox>
 				<label value="&synckolab.settings.SyncInterval;"/>
 				<textbox id="syncInterval" maxlength="3" style="width: 30px"/>
@@ -115,8 +122,9 @@
 			</menulist> 
     	<separator class="thin"/>
       
-      <checkbox id="saveToConImap" label="&synckolab.settings.SaveToImap;" tooltiptext="&synckolab.settings.SaveToImapTip;"/>
+      <checkbox id="saveToContactImap" label="&synckolab.settings.SaveToImap;" tooltiptext="&synckolab.settings.SaveToImapTip;"/>
     <separator class="thin"/>
+      <checkbox id="syncContacts" label="&synckolab.settings.SyncContacts;" tooltiptext="&synckolab.settings.SyncContactsTip;"/>
   </vbox>
   
  		</tabpanel>
@@ -135,15 +143,15 @@
       	<treecols>
 		      <treecol id="calFolder" label="&synckolab.settings.CalendarFolder;" primary="true" flex="1"/>
   			</treecols>
-  			
       </tree>
 
       <label value="&synckolab.settings.CalendarFormat;"/>
 			<menulist id="calFormat">
 			</menulist> 
       
-      <checkbox id="saveToCalImap" label="&synckolab.settings.SaveToImap;" tooltiptext="&synckolab.settings.SaveToImapTip;"/>
+      <checkbox id="saveToCalendarImap" label="&synckolab.settings.SaveToImap;" tooltiptext="&synckolab.settings.SaveToImapTip;"/>
     <separator class="thin"/>
+      <checkbox id="syncCalendar" label="&synckolab.settings.SyncCalendar;" tooltiptext="&synckolab.settings.SyncCalendarTip;"/>
   </vbox>
 
  		</tabpanel>
@@ -157,9 +165,8 @@
 
 	</hbox>
 	<hbox>
-	    <checkbox id="syncCal" label="&synckolab.settings.SyncCalendar;"/>
-	    <checkbox id="syncCon" label="&synckolab.settings.SyncContacts;"/>
-	    <checkbox id="closeWnd" label="&synckolab.settings.CloseWindow;"/>
+
+	    <checkbox id="closeWnd" label="&synckolab.settings.CloseWindow;"/>	    
     </hbox>
 </vbox>	
 </dialog>

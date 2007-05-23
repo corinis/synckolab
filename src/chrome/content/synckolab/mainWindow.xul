@@ -21,6 +21,10 @@
 		<command id="cmd_synckolab_options"
             oncommand="window.open('chrome://synckolab/content/synckolabPref.xul', 'options', 'chrome,resizable=1');"/>
     </commandset>
+
+<stringbundleset id="stringbundleset">
+  <stringbundle src="chrome://synckolab/locale/synckolab.properties" id="synckolabBundle" /> 
+</stringbundleset>
 	
 	<script type="application/x-javascript" src="chrome://global/content/nsUserSettings.js"/>
     <script type="application/x-javascript" src="chrome://synckolab/content/synckolab.js"/>
@@ -37,9 +41,9 @@
     <script type="application/x-javascript" src="chrome://messenger/content/am-smtp.js"/>
     <script type="application/x-javascript" src="chrome://messenger/content/AccountManager.js"/>
 
-<stringbundleset id="stringbundleset">
-  <stringbundle src="chrome://synckolab/locale/synckolab.properties" id="synckolabBundle" /> 
-</stringbundleset>
+	<script type="application/x-javascript">
+	    window.addEventListener("load", syncKolabTimer, false);
+	</script>
     
     <!-- calendar -->
 <script type="application/x-javascript">

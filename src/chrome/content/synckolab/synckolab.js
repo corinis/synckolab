@@ -49,8 +49,6 @@ var gMessageService=Components.classes["@mozilla.org/messenger/messageservice;1?
 var gVersion = "0.4.34";
 
 // holds required content
-var gSyncContact; // sync the contacts
-var gSyncCalendar; // sync the calendar
 
 var fileContent; // holds the file content
 var lines;	// the file content as lines
@@ -79,21 +77,47 @@ var strBundle;
 
 // Global debug setting (on)
 var DEBUG_SYNCKOLAB = true;
-/*
- * LOG_ERROR = 0;
- * LOG_WARNING = 1;
- * LOG_INFO = 2;
- * LOG_DEBUG = 3;
- *
- * LOG_NORMAL = 0;
- * LOG_CAL = 4;
- * LOG_AB = 8;
- * LOG_ALL = 12;
- */
 
-var DEBUG_SYNCKOLAB_LEVEL = LOG_AB + LOG_DEBUG;
+var LOG_ERROR = 0;
+var LOG_WARNING = 1;
+var LOG_INFO = 2;
+var LOG_DEBUG = 3;
+var LOG_CAL = 4;
+var LOG_AB = 8;
+var LOG_ALL = 12;
+
+var DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + LOG_DEBUG;
 var SWITCH_TIME = 50;
  
+// this is the timer function.. will call itself once a minute and check the configs
+var gSyncTimer = -1;
+var gAutoRun = -1;
+function syncKolabTimer ()
+{
+	logMessage("SyncKolab Sync Event start....", LOG_DEBUG);
+	gSyncTimer++;
+	
+	// no valid configuration or not yet read... lets see
+	if (gAutoRun == null || gAutoRun <= 0)
+	{
+		try {
+		    var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+			gAutoRun = pref.getCharPref("SyncKolab.autoSync");
+			logMessage("Automatically running syncKolab every " + gAutoRun + " minutes....", LOG_INFO);
+		} catch(e) {
+		}
+	}
+	else
+	// lets start
+	if (gSycTimer >= gAutoRun)
+	{
+		logMessage("running syncKolab and resetting timer....", LOG_INFO);
+		gSycTimer = -1;
+		syncKolab();		
+	}
+	// wait a minute
+	window.setTimeout(syncKolabTimer, 60000);		 
+}
   
 function syncKolab(event) {
 
@@ -105,10 +129,8 @@ function syncKolab(event) {
 	gWnd = window.open("chrome://synckolab/content/progressWindow.xul", "bmarks", "chrome,width=350,height=350,resizable=1");
 	
 	try {
-    var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
-		gSyncContact = pref.getBoolPref("SyncKolab.syncContacts");
-		gSyncCalendar = pref.getBoolPref("SyncKolab.syncCalendar");
-		gCloseWnd = pref.getBoolPref("SyncKolab.closeWindow");
+	    var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+			gCloseWnd = pref.getBoolPref("SyncKolab.closeWindow");
 	} catch(e) {
 	}
 	// wait until loaded
@@ -117,31 +139,31 @@ function syncKolab(event) {
 
 function goWindow (wnd)
 {
-		var statusMsg1 = wnd.document.getElementById('current-action');
-		if (statusMsg1 == null || !statusMsg1)
+	var statusMsg1 = wnd.document.getElementById('current-action');
+	if (statusMsg1 == null || !statusMsg1)
+	{
+		window.setTimeout(goWindow, SWITCH_TIME, wnd);		 
+	}
+	else
+	{
+		// some window elements for displaying the status
+		meter = wnd.document.getElementById('progress');
+		totalMeter = wnd.document.getElementById('totalProgress');
+		statusMsg = wnd.document.getElementById('current-action');
+		processMsg = wnd.document.getElementById('current-process');
+		curCounter = wnd.document.getElementById('current-counter');
+		itemList = wnd.document.getElementById('itemList');
+		if (isCalendarAvailable ())
 		{
-			window.setTimeout(goWindow, SWITCH_TIME, wnd);		 
+			logMessage("Calendar available", LOG_INFO);
+			include("chrome://calendar/content/importExport.js");
+			include("chrome://calendar/content/calendar.js");
 		}
 		else
-		{
-				// some window elements for displaying the status
-				meter = wnd.document.getElementById('progress');
-				totalMeter = wnd.document.getElementById('totalProgress');
-				statusMsg = wnd.document.getElementById('current-action');
-				processMsg = wnd.document.getElementById('current-process');
-				curCounter = wnd.document.getElementById('current-counter');
-				itemList = wnd.document.getElementById('itemList');
-				if (isCalendarAvailable ())
-				{
-					logMessage("Calendar available", LOG_INFO);
-					include("chrome://calendar/content/importExport.js");
-					include("chrome://calendar/content/calendar.js");
-				}
-				else
-					logMessage("Calendar not available - disabling", LOG_INFO);
-				
-				window.setTimeout(startSync, SWITCH_TIME);		 
-		}
+			logMessage("Calendar not available - disabling", LOG_INFO);
+		
+		window.setTimeout(startSync, SWITCH_TIME);		 
+	}
 }
 
 var gTmpFile;
@@ -168,7 +190,7 @@ function startSync(event) {
 	curCalConfig = 0;
 	
 	try {
-		var conConfig = pref.getCharPref("SyncKolab.AddressBookConfigs");
+		var conConfig = pref.getCharPref("SyncKolab.Configs");
 		conConfigs = conConfig.split(';');
 	} catch(ex) 
 	{
@@ -176,8 +198,9 @@ function startSync(event) {
 	
 	if (isCalendarAvailable ())
 	{
+		// there is only one way to read the configs :)
 		try {
-			var calConfig = pref.getCharPref("SyncKolab.CalendarConfigs");
+			var calConfig = pref.getCharPref("SyncKolab.Configs");
 			calConfigs = calConfig.split(';');
 		}
 		catch(ex) {}
@@ -192,7 +215,7 @@ function nextSync()
 {
 	totalMeter.setAttribute("value", (((curConConfig+curCalConfig)*100)/(conConfigs.length+calConfigs.length)) +"%");
 
-	if (gSyncContact && curConConfig < conConfigs.length)
+	if (curConConfig < conConfigs.length)
 	{
 		// skip problematic configs :)
 		if (conConfigs[curConConfig].length <= 0)
@@ -205,23 +228,32 @@ function nextSync()
 		processMsg.value ="AddressBook Configuration " + conConfigs[curConConfig];
 		// sync the address book
 		syncAddressBook.init(conConfigs[curConConfig]);	
-		// get and set the message folder
-		syncAddressBook.folder = getMsgFolder(syncAddressBook.serverKey, syncAddressBook.folderPath);
-		syncAddressBook.folderMsgURI = syncAddressBook.folder.baseMessageURI;
-		syncAddressBook.email = getAccountEMail(syncAddressBook.serverKey);
-		syncAddressBook.name = getAccountName(syncAddressBook.serverKey);
+		curConConfig++;		
 		
-		// display stuff
-		syncAddressBook.itemList = itemList;
-		
-		logMessage("Contacts: got folder: " + syncAddressBook.folder.URI + 
-			"\nMessage Folder: " + syncAddressBook.folderMsgURI, LOG_DEBUG);
+		// maybe we do not want to sync contacts in this config
+		if (!syncAddressBook.gSync)
+		{
+			window.setTimeout(nextSync, SWITCH_TIME, syncCalendar);	
+			return;
+		}
+		else
+		{
+			// get and set the message folder
+			syncAddressBook.folder = getMsgFolder(syncAddressBook.serverKey, syncAddressBook.folderPath);
+			syncAddressBook.folderMsgURI = syncAddressBook.folder.baseMessageURI;
+			syncAddressBook.email = getAccountEMail(syncAddressBook.serverKey);
+			syncAddressBook.name = getAccountName(syncAddressBook.serverKey);
 			
-		curConConfig++;
-		window.setTimeout(getContent, SWITCH_TIME, syncAddressBook);	
+			// display stuff
+			syncAddressBook.itemList = itemList;
+			
+			logMessage("Contacts: got folder: " + syncAddressBook.folder.URI + 
+				"\nMessage Folder: " + syncAddressBook.folderMsgURI, LOG_DEBUG);
+			window.setTimeout(getContent, SWITCH_TIME, syncAddressBook);	
+		}	
 	}
 	else
-	if (isCalendarAvailable () && gSyncCalendar && curCalConfig < calConfigs.length)
+	if (isCalendarAvailable () && curCalConfig < calConfigs.length)
 	{
 
 		// skip problematic configs :)
@@ -234,21 +266,31 @@ function nextSync()
 
 		processMsg.value ="Calendar Configuration " + calConfigs[curCalConfig];
 		syncCalendar.init(calConfigs[curCalConfig]);
-		syncCalendar.folder = getMsgFolder(syncCalendar.serverKey, syncCalendar.folderPath);		
-		syncCalendar.folderMsgURI = syncCalendar.folder.baseMessageURI;
-		syncCalendar.email = getAccountEMail(syncCalendar.serverKey);
-		syncCalendar.name = getAccountName(syncCalendar.serverKey);
-		
-
-		// display stuff
-		syncCalendar.itemList = itemList;
-
-		logMessage("Calendar: got calendar: " + syncCalendar.gCalendar.name + 
-			"\nMessage Folder: " + syncCalendar.folderMsgURI, LOG_DEBUG);
 		curCalConfig++;
-
-		syncCalendar.init2(getContent, syncCalendar);
-        window.setTimeout(getContent, SWITCH_TIME, syncCalendar);		
+		
+		// maybe we do not want to sync calendar in this config
+		if (!syncCalendar.gSync)
+		{
+			window.setTimeout(nextSync, SWITCH_TIME, syncCalendar);	
+			return;
+		}
+		else
+		{		
+			syncCalendar.folder = getMsgFolder(syncCalendar.serverKey, syncCalendar.folderPath);		
+			syncCalendar.folderMsgURI = syncCalendar.folder.baseMessageURI;
+			syncCalendar.email = getAccountEMail(syncCalendar.serverKey);
+			syncCalendar.name = getAccountName(syncCalendar.serverKey);
+			
+	
+			// display stuff
+			syncCalendar.itemList = itemList;
+	
+			logMessage("Calendar: got calendar: " + syncCalendar.gCalendar.name + 
+				"\nMessage Folder: " + syncCalendar.folderMsgURI, LOG_DEBUG);
+	
+			syncCalendar.init2(getContent, syncCalendar);
+	        window.setTimeout(getContent, SWITCH_TIME, syncCalendar);		
+        }
 	}
 	else //done
 	{

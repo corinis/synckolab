@@ -25,6 +25,12 @@
 <!ENTITY synckolab.settings.CloseWindow		"Close Sync Window when done">
 <!ENTITY synckolab.settings.add				"Add">
 <!ENTITY synckolab.settings.del				"Delete">
+<!ENTITY synckolab.settings.SyncCalendar	"Sync calendar">
+<!ENTITY synckolab.settings.SyncCalendarTip	"activate if you want to synchronize the calendar with the configuration">
+<!ENTITY synckolab.settings.SyncContacts	"Sync contacts">
+<!ENTITY synckolab.settings.SyncContactsTip	"activate if you want to synchronize the address book with the configuration">
+
+<!ENTITY synckolab.settings.Updates			"For updates please check out:">
 
 <!ENTITY synckolab.settings.imapAcctTip 			"Only imap accounts are supported, other account types will not sync.">
 <!ENTITY synckolab.settings.SyncKolabHeader			"SyncKolab">
@@ -35,8 +41,9 @@
 <!-- Account Tab -->
 <!ENTITY synckolab.settings.AccountDescription	"Please select an IMAP Account for the synchronization">
 <!ENTITY synckolab.settings.SyncInterval 		"Sync-interval: ">
+<!ENTITY synckolab.settings.SyncIntervalDescription "Define the interval in which SyncKolab will check for updates. Use 0 for manual update only.">
 <!ENTITY synckolab.settings.SyncIntervalMinutes "minutes">
-<!ENTITY synckolab.settings.SaveToImapTip		"Uncheck this, if you do not want anything written to the imap server">
+<!ENTITY synckolab.settings.SaveToImapTip		"Uncheck this, if you do not want anything written to the imap server (read only)">
 
 <!-- New Config Wizard -->
 <!ENTITY synckolab.newwizard.title 		"Setup SynKolab">
