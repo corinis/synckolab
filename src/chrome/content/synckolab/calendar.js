@@ -142,10 +142,10 @@ var syncCalendar = {
 		events: new Array(),
 		sync: '',
 		onOperationComplete: function(aCalendar, aStatus, aOperator, aId, aDetail) {		
-			    logMessage("operation: status="+aStatus + " Op=" + aOperator + " Detail=" + aDetail, 2);
+			    logMessage("operation: status="+aStatus + " Op=" + aOperator + " Detail=" + aDetail, LOG_DEBUG + LOG_CAL);
 			},
 		onGetResult: function(aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {
-                logMessage("got results: " + aCount + " items", 2);
+                logMessage("got results: " + aCount + " items", LOG_DEBUG + LOG_CAL);
                 for (var i = 0; i < aCount; i++) {
                     this.events.push(aItems[i]);
                 }
@@ -217,7 +217,7 @@ var syncCalendar = {
 		if (foundEvent == null || this.forceLocalCopy)
 		{
 		    // a new event
-		    logMessage("a new event, locally unknown:" + parsedEvent.id, 2);
+		    logMessage("a new event, locally unknown:" + parsedEvent.id, LOG_CAL + LOG_DEBUG);
 			if (!idxEntry.exists())
 			{
 				// use the original content to write the snyc file 
@@ -230,12 +230,12 @@ var syncCalendar = {
     			// add the new event
     			this.gCalendar.addItem(parsedEvent, this.gEvents);
 
-				logMessage("added locally:" + parsedEvent.id, 2);				
+				logMessage("added locally:" + parsedEvent.id, LOG_CAL + LOG_INFO);
 			}
 			else
 			{
 				// now this should be deleted, since it was in the db already
-				logMessage("Delete event on server and in db: " + parsedEvent.id, 2);
+				logMessage("Delete event on server and in db: " + parsedEvent.id, LOG_CAL + LOG_INFO);
 				this.curItemInListStatus.setAttribute("label", strBundle.getString("deleteOnServer"));
 
 				// also remove the local db file since we deleted the contact
@@ -247,7 +247,7 @@ var syncCalendar = {
 		else
 		{
 		    // event exists in local calendar
-			logMessage("Event exists local: " + parsedEvent.id, 2);
+			logMessage("Event exists local: " + parsedEvent.id, LOG_CAL + LOG_DEBUG);
 			
 			var cEvent = message2Event(readSyncDBFile(idxEntry));
 			
@@ -259,7 +259,7 @@ var syncCalendar = {
 			if (hasEntry && !equal2parsed && !equal2found)
  			{
 			    // changed locally and on server side
-				logMessage("Changed on server and local: " + parsedEvent.id, 2);
+				logMessage("Changed on server and local: " + parsedEvent.id, LOG_CAL + LOG_DEBUG);
 				
                 // FIXME
                 takeAlwaysFromServer = false;				
@@ -268,7 +268,7 @@ var syncCalendar = {
 					foundEvent.title + "<"+ foundEvent.id + ">\nServer Event: " + parsedEvent.title + "<"+ parsedEvent.id + ">")))
  				{
  					// take event from server
-					logMessage("Take event from server: " + parsedEvent.id, 2);
+					logMessage("Take event from server: " + parsedEvent.id, LOG_CAL + LOG_INFO);
 					
 					writeSyncDBFile (idxEntry, fileContent);
 	
@@ -292,7 +292,7 @@ var syncCalendar = {
 				else
 				{
 					// local change to server
-					logMessage ("put event on server: " + parsedEvent.id, 2);
+					logMessage ("put event on server: " + parsedEvent.id, LOG_CAL + LOG_INFO);
 					
                     var msg = null;
                     if (this.format == "Xml")
@@ -323,13 +323,13 @@ var syncCalendar = {
 			}
 			else
 			{
-				logMessage("changed only on one side (if at all):" + parsedEvent.id, 2);
+				logMessage("changed only on one side (if at all):" + parsedEvent.id, LOG_CAL + LOG_DEBUG);
 				
 				// we got that already, see which is newer and update the message or the event
 				// the sync database might be out-of-date, so we handle a non-existent entry as well
 				if (!hasEntry || (!equal2parsed && equal2found))
 				{
-					logMessage("event on server changed: " + parsedEvent.id, 2);
+					logMessage("event on server changed: " + parsedEvent.id, LOG_CAL + LOG_INFO);
 					
 					writeSyncDBFile (idxEntry, fileContent);
 	
@@ -353,7 +353,7 @@ var syncCalendar = {
 				else
 				if (equal2parsed && !equal2found)
 				{
-					logMessage("event on client changed: " + parsedEvent.id, 2);
+					logMessage("event on client changed: " + parsedEvent.id, LOG_CAL + LOG_INFO);
 	
 					var msg = null;
 					if (this.format == "Xml")
@@ -382,7 +382,7 @@ var syncCalendar = {
 					return msg;
 				}
 				
-				logMessage("no change for event:" + parsedEvent.id, 2);
+				logMessage("no change for event:" + parsedEvent.id, LOG_CAL + LOG_INFO);
 				this.curItemInListStatus.setAttribute("label", strBundle.getString("noChange"));
 			}
 		}
@@ -400,15 +400,15 @@ var syncCalendar = {
 	 * read the next todo/event and return the content if update needed
 	 */
 	nextUpdate: function () {
-		logMessage("next update...", 2);
+		logMessage("next update...", LOG_CAL + LOG_DEBUG);
 		// if there happens an exception, we are done
 		if ((this.gEvents == null || this.gCurEvent >= this.gEvents.events.length) && (this.gTodo == null || this.gCurTodo >= this.gTodo.length))
 		{
-			logMessage("done update...", 2);
+			logMessage("done update...", LOG_CAL + LOG_INFO);
 			// we are done
 			return "done";
 		}
-		logMessage("get event", 2);
+		logMessage("get event", LOG_CAL + LOG_DEBUG);
 		
 		if (this.gEvents != null && this.gCurEvent <= this.gEvents.events.length )
 		{
@@ -416,7 +416,7 @@ var syncCalendar = {
 			var msg = null;
 			var writeCur = true;
 		    
-			logMessage ("nextUpdate for event:" + cur.id, 2);
+			logMessage ("nextUpdate for event:" + cur.id, LOG_CAL + LOG_DEBUG);
 
 			// check if we have this uid in the messages, skip it if it
 			// has been processed already when reading the IMAP msgs
@@ -425,7 +425,7 @@ var syncCalendar = {
 			{
 				if (cur.id == this.folderMessageUids[i])
 				{
-					logMessage("event is known from IMAP lookup: " + cur.id, 2);
+					logMessage("event is known from IMAP lookup: " + cur.id, LOG_CAL + LOG_INFO);
 					writeCur = false;
 					break;
 				}
@@ -436,14 +436,14 @@ var syncCalendar = {
 			// it has been deleted on the server and we dont know about it yet
 			if (writeCur)
 			{
-				logMessage("nextUpdate decided to write event:" + cur.id, 2);
+				logMessage("nextUpdate decided to write event:" + cur.id, LOG_CAL + LOG_INFO);
 
 				var cEntry = getSyncDbFile	(this.gConfig, true, cur.id);
 				
 				if (cEntry.exists() && !this.forceServerCopy)
 				{
 					// we have it in our database - don't write back to server but delete locally
-					logMessage("nextUpdate assumes 'delete on server', better don't write event:" + cur.id, 2);
+					logMessage("nextUpdate assumes 'delete on server', better don't write event:" + cur.id, LOG_CAL + LOG_INFO);
 
 					writeCur = false;
 					this.gCalendar.deleteItem(cur, this.gEvents);
@@ -490,7 +490,7 @@ var syncCalendar = {
 		
 			if (writeCur)
 			{
-				logMessage("nextUpdate really writes event:" + cur.id, 2);
+				logMessage("nextUpdate really writes event:" + cur.id, LOG_CAL + LOG_DEBUG);
 				// and now really write the message
 				
                 var msg = null;
@@ -512,8 +512,8 @@ var syncCalendar = {
 					
 				}
 				
-		    	logMessage("New event:\n" + msg, 2);
-				logMessage("nextUpdate puts event into db (2):" + cur.id, 2);
+		    	logMessage("New event:\n" + msg, LOG_CAL + LOG_DEBUG);
+				logMessage("nextUpdate puts event into db (2):" + cur.id, LOG_CAL + LOG_INFO);
 				
 				// add the new event into the db
 				var cEntry = getSyncDbFile	(this.gConfig, true, cur.id);
@@ -535,7 +535,7 @@ var syncCalendar = {
 			{
 				if (cur.id == this.folderMessageUids[i])
 				{
-					logMessage("we got this todo: " + cur.id, 2);
+					logMessage("we got this todo: " + cur.id, LOG_CAL + LOG_INFO);
 					writeCur = false;
 					break;
 				}
@@ -548,7 +548,7 @@ var syncCalendar = {
 				msg += encodeQuoted(encode_utf8(cur.getIcalString()));
 				msg += "\n\n";s
 				
-				logMessage("New event [" + msg + "]", 2);
+				logMessage("New event [" + msg + "]", LOG_CAL + LOG_INFO);
 			}
 		}
 		

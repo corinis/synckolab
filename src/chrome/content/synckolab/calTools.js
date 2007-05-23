@@ -192,7 +192,7 @@ function equalsEvent (a, b)
 	for(var i=0 ; i < fieldsArray.length ; i++ ) {
 		if ( eval("a."+fieldsArray[i]) != eval("b."+fieldsArray[i]) )
 		{
-			logMessage ("not equals " + fieldsArray[i], 3);
+			logMessage ("not equals " + fieldsArray[i], LOG_CAL + LOG_DEBUG);
 			return false;
 		}
 	}
@@ -239,7 +239,7 @@ function equalsEvent (a, b)
 			
 			if (!found)
 			{
-				logMessage("some attendee has not been found.. not eqal", 3);
+				logMessage("some attendee has not been found.. not eqal", LOG_CAL + LOG_DEBUG);
 				return false;
 			}
         }
@@ -285,7 +285,7 @@ function message2Event (fileContent)
  */
 function xml2Event (xml, event)
 {
-	logMessage("Parsing an XML event:\n" + xml, 3);
+	logMessage("Parsing an XML event:\n" + xml, LOG_CAL + LOG_DEBUG);
 	// TODO improve recurrence settings
 	//      not working ATM:
 	//          - yearly recurrence
@@ -312,13 +312,13 @@ function xml2Event (xml, event)
 	if (topNode.nodeName == "parsererror")
 	{
 		// so this message has no valid XML part :-(
-		logMessage("Error parsing the XML content of this message.\n" + xml, 1);
+		logMessage("Error parsing the XML content of this message.\n" + xml, LOG_CAL + LOG_ERROR);
 		return false;
 	}
 	if ((topNode.nodeType != Node.ELEMENT_NODE) || (topNode.nodeName.toUpperCase() != "EVENT"))
 	{
 		// this can't be an event in Kolab XML format
-		logMessage("This message doesn't contain an event in Kolab XML format.\n" + xml, 1);
+		logMessage("This message doesn't contain an event in Kolab XML format.\n" + xml, LOG_CAL + LOG_ERROR);
 		return false;
 	}
 
@@ -434,7 +434,7 @@ function xml2Event (xml, event)
 					break;
 
 				case "RECURRENCE":
-					logMessage("Parsing recurring event: " + event.id, 3);
+					logMessage("Parsing recurring event: " + event.id, LOG_CAL + LOG_INFO);
                     recInfo = Components.classes["@mozilla.org/calendar/recurrence-info;1"] 
                                       .createInstance(Components.interfaces.calIRecurrenceInfo);
                     recInfo.item = event;
@@ -700,7 +700,7 @@ function xml2Event (xml, event)
 		cur = cur.nextSibling;
 	} // end while
 	
-	logMessage("Parsed event in ICAL:\n" + event.icalString, 3);
+	logMessage("Parsed event in ICAL:\n" + event.icalString, LOG_CAL + LOG_DEBUG);
 	return true;
 }
 
@@ -874,7 +874,7 @@ function cnv_event2xml (event, skipVolatiles)
                 xml += " </organizer>\n";
                 hasOrganizer = true;
                 // FIXME indicator for workaround
-                if (!attendee.isOrganizer) logMessage("Organizer status expected!!!", 3); 
+                if (!attendee.isOrganizer) logMessage("Organizer status expected!!!", LOG_CAL + LOG_WARNING); 
             }
             else
             {
@@ -944,7 +944,7 @@ function cnv_event2xml (event, skipVolatiles)
     xml += "</event>\n"
 
 	logMessage("Event in ICAL:\n=============\n" + event.icalString + "\n" 
-		+ "Created XML event structure:\n=============================\n" + xml, 3);
+		+ "Created XML event structure:\n=============================\n" + xml, LOG_CAL + LOG_DEBUG);
 	return xml;
 }
 
@@ -1003,11 +1003,11 @@ function ical2event (content)
     try
     {
     	event.icalComponent = subComp;
-	    logMessage("parsed event: " + event + ":" + event.id, 3);
+	    logMessage("parsed event: " + event + ":" + event.id, LOG_CAL + LOG_INFO);
 	}
 	catch (exc)
 	{
-	    logMessage("unable to parse event: \n" + content, 0);
+	    logMessage("unable to parse event: \n" + content, LOG_CAL + LOG_WARNING);
 	    return null;
 	}
     return event;

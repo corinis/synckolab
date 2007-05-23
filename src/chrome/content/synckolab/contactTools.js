@@ -50,13 +50,13 @@ function xml2Card (xml, extraFields, cards)
 	if (topNode.nodeName == "parsererror")
 	{
 		// so this message has no valid XML part :-(
-		logMessage("Error parsing the XML content of this message.\n" + xml, 1);
+		logMessage("Error parsing the XML content of this message.\n" + xml, LOG_ERROR + LOG_AB);
 		return false;
 	}
 	if ((topNode.nodeType != Node.ELEMENT_NODE) || (topNode.nodeName.toUpperCase() != "CONTACT"))
 	{
 		// this can't be an event in Kolab XML format
-		logMessage("This message doesn't contain a contact in Kolab XML format.\n" + xml, 1);
+		logMessage("This message doesn't contain a contact in Kolab XML format.\n" + xml, LOG_ERROR + LOG_AB);
 		return false;
 	}
 
@@ -334,7 +334,7 @@ function list2Xml (card, fields)
 				if (checkExist(card.secondEmail))
 					xml += nodeWithContent("smtp-address", cur.secondEmail, false);
 				else
-					logMessage("ERROR: List entry without an email?!?" + getUID(cur), 0);
+					logMessage("ERROR: List entry without an email?!?" + getUID(cur), LOG_ERROR + LOG_AB);
 									
 				// custom4 is not necessary since there will be a smart-check
 				if (checkExist (cur.custom4))
@@ -491,13 +491,15 @@ function list2Vcard (card, fields)
 	}
 
 	var uidList = "";
-	alert("adding lists....");
 	
 	var cList = card;
 	if (cList.addressLists)
  	{
 		var total = cList.addressLists.Count();
-		alert("adding " + total + " lists....");
+		logMessage ("List has " + total + " contacts", LOG_INFO + LOG_AB);
+		if (!total || total == 0)
+			return null; // do not add a list without members
+
 		if (total)
 		{
 			for ( var i = 0;  i < total; i++ )
@@ -514,7 +516,10 @@ function list2Vcard (card, fields)
 				}
 			}
 		}
+		
 	}
+	else
+		return null; // do not add a list without members
 	msg += "X-LIST:" + uidList + "\n";
  	msg += "VERSION:3.0\n";
  	msg += "END:VCARD\n\n";
@@ -770,7 +775,7 @@ function equalsContact (a, b)
 	for(var i=0 ; i < fieldsArray.length ; i++ ) {
 		if ( eval("a."+fieldsArray[i]) != eval("b."+fieldsArray[i]) )
 		{
-			logMessage ("not equals " + fieldsArray[i] + " " + eval("a."+fieldsArray[i]) + " vs. " + eval("b."+fieldsArray[i]), 0);
+			logMessage ("not equals " + fieldsArray[i] + " " + eval("a."+fieldsArray[i]) + " vs. " + eval("b."+fieldsArray[i]), LOG_DEBUG + LOG_AB);
 			return false;
 		}
 	}
@@ -899,7 +904,7 @@ function parseMessage (message, extraFields, cards)
 	// check for xml style
 	if (message.indexOf("<?xml") != -1 || message.indexOf("<?XML") != -1)
 	{
-		logMessage("parsing XML!", 0);	
+		logMessage("XML message!", LOG_INFO + LOG_AB);	
 		return xml2Card(message, extraFields, cards);
 	}
 
@@ -915,8 +920,7 @@ function parseMessage (message, extraFields, cards)
 	{
 		if (lines[i].toUpperCase().indexOf("X-LIST") != -1)
 		{
-			logMessage("parsing: " + message, 0);	
-			logMessage("GOT A LIST!!! ", 0);	
+			logMessage("parsing a list: " + message, LOG_DEBUG + LOG_AB);	
 		    var mailList = Components.classes["@mozilla.org/addressbook/directoryproperty;1"].createInstance(Components.interfaces.nsIAbDirectory);
 			if (!vList2Card(lines[i], lines, mailList, cards))
 				return null;
@@ -927,7 +931,7 @@ function parseMessage (message, extraFields, cards)
 	var newCard = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
 	if (!message2Card(lines, newCard, extraFields, 0, lines.length))
 	{
-		logMessage("unparseable: " + message, 0);	
+		logMessage("unparseable: " + message, LOG_ERROR + LOG_AB);	
 		return null;
 	}
 	return newCard;
@@ -1116,8 +1120,8 @@ function message2Card (lines, card, extraFields, startI, endI)
 				}
 				else
 				{
-					logMessage("parsing: " + message, 0);	
-						addField(extraFields, tok[0], tok[1]);
+					logMessage("additional email found: " + tok[1], LOG_WARNING + LOG_AB);	
+					addField(extraFields, tok[0], tok[1]);
 				}
 
 				found = true;
@@ -1531,7 +1535,7 @@ function card2Message (card, email, format, fFile)
 	if (!card.isMailList && (card.custom4 == null || card.custom4.length < 2) )
 		return null;			
 
-     logMessage("creating message out of card... ", 2);
+     logMessage("creating message out of card... ", LOG_INFO + LOG_AB);
 	
 	// read the database file
 	var fields = readDataBase (fFile);

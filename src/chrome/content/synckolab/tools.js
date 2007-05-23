@@ -30,6 +30,13 @@
 
 ////////////////////////////////// HELP FUNCTIONS /////////////////////////////////////////
 
+var LOG_ERROR = 0;
+var LOG_WARNING = 1;
+var LOG_INFO = 2;
+var LOG_DEBUG = 3;
+var LOG_CAL = 4;
+var LOG_AB = 8;
+var LOG_ALL = 12;
 
 function checkExist (value)
 {
@@ -53,7 +60,7 @@ function getSyncDbFile (config, cal, id)
 {
 	if (id == null)
 	{
-    	logMessage("Error: entry has no id (" +config + ": " + cal + ")", 0);	
+    	logMessage("Error: entry has no id (" +config + ": " + cal + ")", LOG_ERROR);	
 		return null;
 	}
 		
@@ -160,19 +167,23 @@ function stripMailHeader (content)
 			if (content.indexOf("Content-Transfer-Encoding: base64") != -1)
 			{
 				var startPos = content.indexOf("\r\n\r\n");
+				var startPos2 = startPos = content.indexOf("\n\n");
+				if (startPos2 < startPos || startPos == -1)
+					startPos = startPos2;
+				
 				var endPos = content.indexOf("--"+boundary)
 				content = content.substring(startPos, endPos).replace(/\r\n/g, "")
 				try {
-					content = atob(content)
+					content = atob(trim(content))
 				} catch (e) {
-					logMessage("Error decoding base64: " + content, 1);
+					logMessage("Error decoding base64: " + content, LOG_ERROR);
 					return null;
 				}
 			}
 			else
 			{
 				// so this message has no <xml>something</xml> area
-				logMessage("Error parsing this message: no xml segment found\n" + content, 1);
+				logMessage("Error parsing this message: no xml segment found\n" + content, LOG_ERROR);
 				return null;
 			}
 		}
@@ -270,7 +281,7 @@ function getDbEntryIdx (key, db)
  */
 function writeDataBase(dbf, db)
 {
-	logMessage("Writing database file: " + dbf.path);
+	logMessage("Writing database file: " + dbf.path, LOG_INFO);
 	if (dbf.exists()) 
 		dbf.remove(true);
 	dbf.create(dbf.NORMAL_FILE_TYPE, 0666);
@@ -1157,9 +1168,26 @@ function generateMail (cid, mail, adsubject, mime, part, content, hr)
 function logMessage (msg, level)
 {
     if (!level)
-        level = 1;
-	if (DEBUG_SYNCKOLAB && (level <= DEBUG_SYNCKOLAB_LEVEL))
+        level = LOG_INFO;
+	if (DEBUG_SYNCKOLAB)
+	{
+		var infolvl = DEBUG_SYNCKOLAB_LEVEL%4;
+		var infostate = DEBUG_SYNCKOLAB_LEVEL - infolvl;
+		var clvl = level%4;
+		var cstate = level - clvl;
+		
+		// check if we are talking about the same loglevle: ERROR|WARN|INFO|DEBUG
+		if (clvl > infolvl)
+			return;
+			
+		// now lets see if we want the same type of error NORMAL|CALENDAR|ADRESSBOOK|ALL		
+		
+		// if the two states are diffeent and infostate != LOG_ALL we want outta here
+		if (infostate != cstate && infostate != LOG_ALL)
+			return;
+						
 		consoleService.logStringMessage(msg);
+	}
 }
 
 /**

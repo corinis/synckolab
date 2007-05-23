@@ -205,7 +205,7 @@ var syncAddressBook = {
 			
 			// remember that we did this uid already
 			this.folderMessageUids.push(getUID(newCard));
-			logMessage("got card from message: " + getUID(newCard), 2);	
+			logMessage("got card from message: " + getUID(newCard), LOG_DEBUG + LOG_AB);	
 
 			// update list item
 			this.curItemInListId.setAttribute("label", getUID(newCard));
@@ -245,7 +245,7 @@ var syncAddressBook = {
 					else					
 						this.gAddressBook.addCard (newCard);
 						
-					logMessage("card is new, add to address book: " + getUID(newCard), 1);	
+					logMessage("card is new, add to address book: " + getUID(newCard), LOG_INFO + LOG_AB);	
 					
 					//update list item
 					this.curItemInListStatus.setAttribute("label", strBundle.getString("localAdd"));
@@ -253,7 +253,7 @@ var syncAddressBook = {
 				}
 				else
 				{
-					logMessage("card deleted locally: " + getUID(newCard), 1);	
+					logMessage("card deleted locally: " + getUID(newCard), LOG_INFO + LOG_AB);	
 					
 					//update list item
 					this.curItemInListStatus.setAttribute("label", strBundle.getString("deleteOnServer"));
@@ -289,7 +289,7 @@ var syncAddressBook = {
 				if (cEntry.exists() && !equalsContact(cCard, aCard) && !equalsContact(cCard, newCard) )
 				{
 					//local and server were both updated, ut oh, what do we want to do?
-					logMessage("Conflicts detected, testing for autoresolve.", 1);
+					logMessage("Conflicts detected, testing for autoresolve.", LOG_WARNING + LOG_AB);
 					
 					//	This function returns an array on conflicting fields
 					var conflicts = contactConflictTest(newCard,aCard);
@@ -334,7 +334,7 @@ var syncAddressBook = {
 					} else {
 						//cards values are different, however, no apparent differences
 						//Changes to the way the SHA (code revisions) are calculated could cause this
-						logMessage("Contacts differ, however, assumed no change, update local" + getUID(newCard), 1);
+						logMessage("Contacts differ, however, assumed no change, update local" + getUID(newCard), LOG_WARNING + LOG_AB);
 						bUpdateLocal = true;
 						this.curItemInListStatus.setAttribute("label", "Auto Conflict Resolved : " + strBundle.getString("localUpdate"));
 					}
@@ -375,7 +375,7 @@ var syncAddressBook = {
 				// we got that already, see which to update (server change if db == local != server)
 				if (!cEntry.exists() || (equalsContact(cCard, aCard) && !equalsContact(cCard, newCard)))
 				{
-				    logMessage("server changed: " + getUID(aCard), 2);
+				    logMessage("server changed: " + getUID(aCard), LOG_INFO + LOG_AB);
 				    
 					// server changed - update local
 					if (aCard.isMailList)
@@ -408,7 +408,7 @@ var syncAddressBook = {
 				// is the db file equals server, but not local.. we got a local change
 				if (cEntry.exists() && !equalsContact(cCard, aCard) && equalsContact(cCard, newCard))
 				{
-				    logMessage("client changed: " + getUID(aCard), 2);
+				    logMessage("client changed: " + getUID(aCard), LOG_INFO + LOG_AB);
 					
 					// update list item
 					this.curItemInListStatus.setAttribute("label", strBundle.getString("updateOnServer"));
@@ -429,7 +429,7 @@ var syncAddressBook = {
 		else
 		{
 			this.curItemInListId.setAttribute("label", strBundle.getString("unparseable"));
-			logMessage("unable to parse message, skipping", 1);
+			logMessage("unable to parse message, skipping", LOG_WARNING + LOG_AB);
 		}
 			
 		return null;
@@ -521,9 +521,9 @@ var syncAddressBook = {
 			// generate a unique id (will random be enough for the future?)
 			setUID(curItem, "pas-id-" + get_randomVcardId());
 			if (cur.isMailList)
-		    	logMessage("adding unsaved list: " + getUID (curItem), 1);
+		    	logMessage("adding unsaved list: " + getUID (curItem), LOG_INFO + LOG_AB);
 			else
-		    	logMessage("adding unsaved card: " + getUID (curItem), 2);
+		    	logMessage("adding unsaved card: " + getUID (curItem), LOG_INFO + LOG_AB);
 			
 			writeCur = true;
 			cur.editCardToDatabase ("moz-abmdbdirectory://"+this.gAddressBook);
@@ -565,7 +565,7 @@ var syncAddressBook = {
 			{
 				if (getUID(curItem) == this.folderMessageUids[i] && getUID(curItem) != null)
 				{
-					logMessage("we got this contact already: " + getUID(curItem), 1);
+					logMessage("we got this contact already: " + getUID(curItem), LOG_DEBUG + LOG_AB);
 					alreadyProcessed = true;
 					break;
 				}
@@ -634,7 +634,7 @@ var syncAddressBook = {
 					
 					// and write the message
 					content = card2Message(curItem, this.email, this.format);
-					logMessage("New Card " + getUID(curItem), 1);
+					logMessage("New Card " + getUID(curItem), LOG_INFO + LOG_AB);
 					
 					// get the dbfile from the local disk
 					var cEntry = getSyncDbFile	(this.gConfig, false, getUID(curItem));
