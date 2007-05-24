@@ -937,8 +937,41 @@ function savePrefs() {
 //	pref.setBoolPref("SyncKolab.syncCalendar", document.getElementById ("syncCal").checked);
 	pref.setBoolPref("SyncKolab.closeWindow", document.getElementById ("closeWnd").checked);
 	pref.setCharPref("SyncKolab.autoSync", document.getElementById ("syncInterval").value);
+
+	var tree = document.getElementById("configTree");
+	// get the treechildren item
+	var ctree;
+	var cnode = tree.firstChild;
+	while (cnode != null)
+	{
+		if (cnode.nodeName == "treechildren")
+		{
+			ctree = cnode;
+			break;
+		}
+		cnode = cnode.nextSibling;
+	}
+	
+	if (ctree == null)
+		return null;
+
+	// first menuitem
+	var cur = ctree.firstChild;
+	var configs = "";
+	while (cur != null)
+	{
+		if (cur.nodeName == "treeitem")
+		{
+			configs += cur.firstChild.firstChild.getAttribute("label") + ";";
+		}
+		cur = cur.nextSibling;
+	}
+	
+	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+	pref.setCharPref("SyncKolab.Configs", configs);
 	
 	saveAllPrefs (curConfig);
+			
 }
 
 function addConfig()
@@ -982,7 +1015,7 @@ function addConfig()
 		}
 		
 		var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
-		pref.setCharPref("SyncKolab.Configs", configs);
+		pref.setCharPref("SyncKolab.Configs", configs  + curConfig + ";");
 		// add the tree element
 		generateConfigTree(newconfig);
 	}
