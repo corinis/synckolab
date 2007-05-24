@@ -205,7 +205,7 @@ function startSync(event) {
 		}
 		catch(ex) {}
 	}
-
+	
 	// all initialized, lets run
 	window.setTimeout(nextSync, SWITCH_TIME);	
 }

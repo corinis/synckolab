@@ -124,7 +124,8 @@
       
       <checkbox id="saveToContactImap" label="&synckolab.settings.SaveToImap;" tooltiptext="&synckolab.settings.SaveToImapTip;"/>
     <separator class="thin"/>
-      <checkbox id="syncContacts" label="&synckolab.settings.SyncContacts;" tooltiptext="&synckolab.settings.SyncContactsTip;"/>
+      <checkbox id="syncContacts" label="&synckolab.settings.SyncContacts;" tooltiptext="&synckolab.settings.SyncContactsTip;" oncommand="setControlStateContacts(this.checked)"/>
+      
   </vbox>
   
  		</tabpanel>
@@ -151,7 +152,7 @@
       
       <checkbox id="saveToCalendarImap" label="&synckolab.settings.SaveToImap;" tooltiptext="&synckolab.settings.SaveToImapTip;"/>
     <separator class="thin"/>
-      <checkbox id="syncCalendar" label="&synckolab.settings.SyncCalendar;" tooltiptext="&synckolab.settings.SyncCalendarTip;"/>
+      <checkbox id="syncCalendar" label="&synckolab.settings.SyncCalendar;" tooltiptext="&synckolab.settings.SyncCalendarTip;" oncommand="setControlStateCalendar(this.checked)"/>
   </vbox>
 
  		</tabpanel>
@@ -177,7 +178,7 @@
       
       <checkbox id="saveToTaskImap" label="&synckolab.settings.SaveToImap;" tooltiptext="&synckolab.settings.SaveToImapTip;"/>
     <separator class="thin"/>
-      <checkbox id="syncTasks" label="&synckolab.settings.SyncTasks;" tooltiptext="&synckolab.settings.SyncTasksTip;"/>
+      <checkbox id="syncTasks" label="&synckolab.settings.SyncTasks;" tooltiptext="&synckolab.settings.SyncTasksTip;" oncommand="setControlStateTasks(this.checked)"/>
   </vbox>
 
     	</tabpanel>

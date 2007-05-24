@@ -516,6 +516,7 @@ function changeConfig (config)
 		try {
 			document.getElementById ("syncContacts").checked = pref.getBoolPref("SyncKolab."+config+".syncContacts");
 		} catch (ex) {}
+		setControlStateContacts(document.getElementById ("syncContacts").checked);
 		
 		var sCurFolder = null;
 		try
@@ -591,6 +592,7 @@ function changeConfig (config)
 			try {
 				document.getElementById ("syncCalendar").checked = pref.getBoolPref("SyncKolab."+config+".syncCalendar");
 			} catch (ex) {}
+			setControlStateCalendar(document.getElementById ("syncCalendar").checked);
 			
 			var sCurFolder = null;
 			try
@@ -663,6 +665,7 @@ function changeConfig (config)
 			try {
 				document.getElementById ("syncTasks").checked = pref.getBoolPref("SyncKolab."+config+".syncTasks");
 			} catch (ex) {}
+			setControlStateTasks(document.getElementById ("syncTasks").checked);
 			
 			var sCurFolder = null;
 			try
@@ -1141,3 +1144,57 @@ function delConfig()
 	}
 }
 
+/**
+ * Enables/disables the controls on the page
+ */
+function setControlStateContacts(active) 
+{
+	var fieldsArray = new Array(
+		"conURL",
+		"conImapFolder",
+		"conFormat",
+		"saveToContactImap"
+	);
+
+	
+	for(var i=0 ; i < fieldsArray.length ; i++ ) {
+		document.getElementById(fieldsArray[i]).disabled = !active;
+	}
+}
+
+
+/**
+ * Enables/disables the controls on the page
+ */
+function setControlStateCalendar(active) 
+{
+	var fieldsArray = new Array(
+		"calURL",
+		"calImapFolder",
+		"calFormat",
+		"saveToCalendarImap"
+	);
+
+	
+	for(var i=0 ; i < fieldsArray.length ; i++ ) {
+		document.getElementById(fieldsArray[i]).disabled = !active;
+	}
+}
+
+/**
+ * Enables/disables the controls on the page
+ */
+function setControlStateTasks(active) 
+{
+	var fieldsArray = new Array(
+		"taskURL",
+		"taskImapFolder",
+		"taskFormat",
+		"saveToTaskImap"
+	);
+
+	
+	for(var i=0 ; i < fieldsArray.length ; i++ ) {
+		document.getElementById(fieldsArray[i]).disabled = !active;
+	}
+}
