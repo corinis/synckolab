@@ -206,7 +206,8 @@ function init() {
 	
 	if (configs.length == 0)
 	{
-		alert("NO CONFIGS FOUND.. STARTING WIZARD");
+		addConfig();
+		return;
 	}
 
 	// generate the configuration in the tree control 	
@@ -217,6 +218,37 @@ function init() {
 		
 	// now prefill all fields we have to prefill
 	
+	prefillFields();
+		
+	// now some global settings
+/*
+	try {
+		document.getElementById ("syncCon").checked = pref.getBoolPref("SyncKolab.syncContacts");
+	} catch (ex) {}
+	try {
+		document.getElementById ("syncCal").checked = pref.getBoolPref("SyncKolab.syncCalendar");
+	} catch (ex) {}
+*/	
+	try {
+		document.getElementById ("closeWnd").checked = pref.getBoolPref("SyncKolab.closeWindow");
+	} catch (ex) {}
+	
+	// default is 0
+	document.getElementById ("syncInterval").value = "0";
+	try {		
+		document.getElementById ("syncInterval").value = pref.getCharPref("SyncKolab.autoSync");
+	} catch (ex) {};
+	
+	// preselect the first item
+	// changeConfig(curConfig); DONT DO THAT NOW :P
+	return;	
+}
+
+function prefillFields() {
+	var rdf = Components.classes["@mozilla.org/rdf/rdf-service;1"].getService(Components.interfaces.nsIRDFService);
+
+	var directory = rdf.GetResource("moz-abdirectory://").QueryInterface(Components.interfaces.nsIAbDirectory);
+
 	// the format selection boxes:
 	var abList = document.getElementById("conFormat");
 	var abpopup = document.createElement("menupopup");
@@ -376,29 +408,6 @@ function init() {
 			}
     	}
 	}	
-	
-	// now some global settings
-/*
-	try {
-		document.getElementById ("syncCon").checked = pref.getBoolPref("SyncKolab.syncContacts");
-	} catch (ex) {}
-	try {
-		document.getElementById ("syncCal").checked = pref.getBoolPref("SyncKolab.syncCalendar");
-	} catch (ex) {}
-*/	
-	try {
-		document.getElementById ("closeWnd").checked = pref.getBoolPref("SyncKolab.closeWindow");
-	} catch (ex) {}
-	
-	// default is 0
-	document.getElementById ("syncInterval").value = "0";
-	try {		
-		document.getElementById ("syncInterval").value = pref.getCharPref("SyncKolab.autoSync");
-	} catch (ex) {};
-	
-	// preselect the first item
-	// changeConfig(curConfig); DONT DO THAT NOW :P
-	return;	
 }
 
 function changeConfig (config)
@@ -542,7 +551,7 @@ function changeConfig (config)
 			var ab = null;
 			try
 			{
-				pref.getCharPref("SyncKolab."+config+".Calendar");
+				ab = pref.getCharPref("SyncKolab."+config+".Calendar");
 			} catch (ex) {}
 			
 			actList = document.getElementById("calURL");
@@ -615,7 +624,7 @@ function changeConfig (config)
 			ab = null;
 			try
 			{
-				pref.getCharPref("SyncKolab."+config+".Tasks");
+				ab = pref.getCharPref("SyncKolab."+config+".Tasks");
 			} catch (ex) {}
 			
 			actList = document.getElementById("taskURL");
@@ -677,7 +686,7 @@ function changeConfig (config)
 			if (sCurFolder != null)
 			{
 				var tree= document.getElementById ("taskImapFolder");
-				var treei = tree.view.getIndexOfItem(document.getElementById(sCurFolder+"c"));
+				var treei = tree.view.getIndexOfItem(document.getElementById(sCurFolder+"t"));
 				tree.view.selection.select(treei); 
 				if (tree.boxObject)
 					tree.boxObject.scrollToRow(treei);
@@ -1045,6 +1054,9 @@ function savePrefs() {
 
 function addConfig()
 {
+	window.open('chrome://synckolab/content/newWizard.xul', 'newWizard', 'chrome,resizable=0');
+	this.close();
+	/*
 	var newconfig = prompt("Insert the name of the new Configuration");
 	if (newconfig != null && newconfig != "")
 	{
@@ -1088,6 +1100,7 @@ function addConfig()
 		// add the tree element
 		generateConfigTree(newconfig);
 	}
+	*/
 }
 
 function delConfig()

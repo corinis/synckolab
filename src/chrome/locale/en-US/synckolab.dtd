@@ -34,6 +34,7 @@
 <!ENTITY synckolab.settings.SyncContactsTip	"activate if you want to synchronize the address book with the configuration">
 <!ENTITY synckolab.settings.SyncTasks		"Sync tasks">
 <!ENTITY synckolab.settings.SyncTasksTip	"activate if you want to synchronize the tasks with the configuration">
+<!ENTITY synckolab.settings.FormatTip		"Choose the XML format if you have a Kolab2 server. Otherwise stay with the vcard/ical standard.">
 
 <!ENTITY synckolab.settings.Updates			"For updates please check out:">
 
@@ -51,10 +52,23 @@
 <!ENTITY synckolab.settings.SaveToImapTip		"Uncheck this, if you do not want anything written to the imap server (read only)">
 
 <!-- New Config Wizard -->
-<!ENTITY synckolab.newwizard.title 		"Setup SynKolab">
+<!ENTITY synckolab.newwizard.title 		"SyncKolab Setup Wizard">
+<!ENTITY synckolab.wizard.LongDescription	"In the following pages you can choose for each type (calendar, adressbook, tasks) the folder on the imap server with which to sync. Yoou can also specify if you want to use the read only mode (nothing is written back to the imap server - for shared folders) and the type (xml for Kolab2 or vcard/ical).">
 <!ENTITY synckolab.newwizard.intro 		"SyncKolab allows you to synchronize your contacts and your calendar entries over multiple machines using only an imap server.">
 <!ENTITY synckolab.newwizard.selectAccount	"Please select an IMAP Account for the synchronization">
+<!ENTITY synckolab.newwizard.configName	"Display-name">
+<!ENTITY synckolab.newwizard.descName "The display-name has no function other than fou you to identify the configuration. It makes sense to have descriptive names if you have multiple configurations/folders to sync (i.e. SharedAddresses, Office Calendar, Home Tasks). Make sure you do not already have a configuration with that name!">
+<!ENTITY synckolab.wizard.AccountIntervalDescription "Select an IMAP account and specify your basic sync settings">
+<!ENTITY synckolab.wizard.typePageDesc	"Specify which information should be synchronized with the selected IMAP account">
+<!ENTITY synckolab.wizard.typePageLongDesc	"For each SyncKolab configuration you can use the folders of one imap account to synchronize each a selectable folder with either an address book, a calendar and/or a task list">
+<!ENTITY synckolab.wizard.typePageContact	"Activate this if you want to sync contacts from an imap folder with a local thunderbird address-book">
+<!ENTITY synckolab.wizard.typePageCalendar	"Activate this if you want to sync events from an imap folder with a local calendar">
+<!ENTITY synckolab.wizard.typePageTasks		"Activate this if you want to sync tasks from an imap folder with a local calendar's task list">
+<!ENTITY synckolab.wizard.conPageInfo	"Select the adress book and the folder which shall be synchronized. ">
+<!ENTITY synckolab.wizard.calPageInfo	"Select the calendar and the folder which shall be synchronized.">
+<!ENTITY synckolab.wizard.taskPageInfo	"Select the calendar for tasks and the folder which shall be synchronized.">
 
+<!-- Also choose the file-format for the snychronized files and specify if you want to do a read only sync (all local data will be overwritten by server data). -->
 <!-- other -->
 <!ENTITY synckolab.with			"with">
 <!ENTITY synckolab.proprietary 	"proprietary">

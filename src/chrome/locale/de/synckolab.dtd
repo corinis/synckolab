@@ -36,6 +36,7 @@
 <!ENTITY synckolab.settings.SyncContactsTip	"Aktivieren wenn in dieser Konfiguration das Adressbuch abgeglichen werden soll">
 <!ENTITY synckolab.settings.SyncTasks		"Aufgaben abgleichen">
 <!ENTITY synckolab.settings.SyncTasksTip	"Aktivieren wenn in dieser Konfiguration die Aufgaben abgeglichen werden sollen">
+<!ENTITY synckolab.settings.FormatTip		"Nehmen Sie das XML Format wenn Sie einen Kolab2 Server haben, ansonsten bleiben Sie bei vCard/iCal.">
 
 <!ENTITY synckolab.settings.Updates			"Für Updates besuchen Sie:">
 
@@ -53,10 +54,21 @@
 <!ENTITY synckolab.settings.SaveToImapTip		"Diese option abwählen, wenn nichts auf den server geschriben werden soll">
 
 <!-- New Config Wizard -->
-<!ENTITY synckolab.newwizard.title "SynKolab einrichten">
+<!ENTITY synckolab.newwizard.title "SyncKolab Einrichtungs-Wizard">
+<!ENTITY synckolab.wizard.LongDescription	"Auf den folgenden Seiten können Sie für jeden Abgleichtyp (Kalender, Adressbuch und Aufgaben) das IMAP-Verzeichnis zum abgleichen auswählen. Zusätzlich können Sie angeben, ob in dieser Konfiguration der nur-lese Modus (lokale änderungen werden nicht auf den Server übertragen) undw elcher Formattyp (XML oder vCard/iCal) verwendet wird.">
 <!ENTITY synckolab.newwizard.intro 		"Mithilfe von SyncKolab können Sie Ihre Kontakt- und Kalenderdaten zwischen mehreren Rechnern abgleichen. Die einzige Vorraussetzung ist ein IMAP Server">
 <!ENTITY synckolab.newwizard.selectAccount	"bitte wählen Sie ein IMAP Konto zur Synchronisierung aus">
-
+<!ENTITY synckolab.newwizard.configName	"Anzeigename">
+<!ENTITY synckolab.newwizard.descName "Mithilfe des Anzeigenamens können Sie, vor allem wenn sie mehrere Konfigurationen haben, die verschiedenen Einstellungen leichter finden. Versuchen Sie einen beschreibenden Namen zu wählen (z.B. gemeinsame Adressen, Firmentermine, private Aufgaben).">
+<!ENTITY synckolab.wizard.AccountIntervalDescription "IMAP Account auswählen und die grundlegenden Synchronisationseinstellungen festlegen">
+<!ENTITY synckolab.wizard.typePageDesc	"Wählen Sie welche Informationen mit dem ausgwählten IMAP Konto synchronisiert werden sollen">
+<!ENTITY synckolab.wizard.typePageLongDesc	"Pro SyncKolab Konfiguration können Sie je ein Verzeichnis mit einem Adressbuch, einem Kalender und/oder einer Aufgabenliste abgleichen.">
+<!ENTITY synckolab.wizard.typePageContact	"Wählen Sie dieses Feld aus, um ein Adressbuch mit einem IMAP Verzeichnis abzugleichen">
+<!ENTITY synckolab.wizard.typePageCalendar	"Wählen Sie dieses Feld aus, um einen Kalender mit einem IMAP Verzeichnis abzugleichen">
+<!ENTITY synckolab.wizard.typePageTasks	"Wählen Sie dieses Feld aus, um eine Aufgabenliste mit einem IMAP Verzeichnis abzugleichen">
+<!ENTITY synckolab.wizard.conPageInfo	"Wählen Sie das Adressbuch und das Verzeichnis aus, welche miteinander Verglichen werden sollen.">
+<!ENTITY synckolab.wizard.calPageInfo	"Wählen Sie den Kalender und das Verzeichnis aus, welche miteinander Verglichen werden sollen.">
+<!ENTITY synckolab.wizard.taskPageInfo	"Wählen Sie den Kalender für die Aufgaben und das Verzeichnis aus, welche miteinander Verglichen werden sollen.">
 
 <!-- other -->
 <!ENTITY synckolab.with			"mit">
