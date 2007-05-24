@@ -734,6 +734,69 @@ function updateFolder (act)
 	}
 }
 
+/**
+ * Delete all temp/cache - files/folders for this configuration
+ */
+function resetConfiguration(config)
+{
+	var file = Components.classes["@mozilla.org/file/directory_service;1"].
+	   getService(Components.interfaces.nsIProperties).
+	   get("ProfD", Components.interfaces.nsIFile);
+	file.append(config+".hdb");
+	if (file.exists())
+		file.remove(true);
+
+	file = Components.classes["@mozilla.org/file/directory_service;1"].
+	   getService(Components.interfaces.nsIProperties).
+	   get("ProfD", Components.interfaces.nsIFile);
+	file.append("synckolab");
+
+	if (!file.exists())
+		return;
+	
+	file.append("calendar");
+	if (file.exists())
+	{
+		file.append(config);
+		if (file.exists())
+			file.remove (true);
+	}
+	
+
+	file = Components.classes["@mozilla.org/file/directory_service;1"].
+	   getService(Components.interfaces.nsIProperties).
+	   get("ProfD", Components.interfaces.nsIFile);
+	file.append("synckolab");
+
+	if (!file.exists())
+		return;
+	
+	file.append("contact");
+	if (file.exists())
+	{
+		file.append(config);
+		if (file.exists())
+			file.remove (true);
+	}
+
+	file = Components.classes["@mozilla.org/file/directory_service;1"].
+	   getService(Components.interfaces.nsIProperties).
+	   get("ProfD", Components.interfaces.nsIFile);
+	file.append("synckolab");
+
+	if (!file.exists())
+		return;
+	
+	file.append("task");
+	if (file.exists())
+	{
+		file.append(config);
+		if (file.exists())
+			file.remove (true);
+	}
+	
+}
+
 function setFolder(uri)
 {
 	if (curConfig == null)
@@ -743,6 +806,7 @@ function setFolder(uri)
 	
 	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 	pref.setCharPref("SyncKolab."+curConfig+".ContactFolderPath", uri);
+	resetConfiguration(curConfig);
 }
 
 
@@ -808,6 +872,7 @@ function setCalFolder(uri)
 
 	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 	pref.setCharPref("SyncKolab."+curConfig+".CalendarFolderPath", uri);
+	resetConfiguration(curConfig);
 }
 
 function setTaskFolder(uri)
@@ -818,7 +883,8 @@ function setTaskFolder(uri)
 	}
 
 	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
-	pref.setCharPref("SyncKolab."+curConfig+".CalendarFolderPath", uri);
+	pref.setCharPref("SyncKolab."+curConfig+".TaskFolderPath", uri);
+	resetConfiguration(curConfig);
 }
 
 function updateCalFolder (act)

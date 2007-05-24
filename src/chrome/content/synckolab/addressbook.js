@@ -187,6 +187,7 @@ var syncAddressBook = {
 		newItem = parseMessage(fileContent, messageFields, cards);
 		
 		newCard = newItem;
+		/*
 		if (newCard.isMailList)
 		{
 			var cur = newCard;
@@ -200,6 +201,7 @@ var syncAddressBook = {
 				""
 				);
 		}
+		*/
 		if (newCard) //message2Card (fileContent, newCard, messageFields)
 		{
 			// remember current uid
@@ -400,6 +402,7 @@ var syncAddressBook = {
 					if (messageFields.length > 0)
 						writeDataBase(fEntry, messageFields);						
 					else
+					if (fEntry.exists())
 						fEntry.remove(false);
 					
 					// update list item

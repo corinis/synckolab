@@ -106,6 +106,12 @@ function writeSyncDBFile(file, content)
  */
 function readSyncDBFile (file)
 {	
+	if (file == null)
+	{
+		logMessage("readSyncDBFile ERROR: file is null");
+		return null;
+	}
+	
 	if ((!file.exists()) || (!file.isReadable()))
 		return null;
 	
@@ -166,6 +172,8 @@ function stripMailHeader (content)
 		{
 			if (content.indexOf("Content-Transfer-Encoding: base64") != -1)
 			{
+				logMessage("Base64 Decoding message.", LOG_INFO);
+				logMessage("Base64 message: " + content, LOG_DEBUG);
 				var startPos = content.indexOf("\r\n\r\n");
 				var startPos2 = startPos = content.indexOf("\n\n");
 				if (startPos2 < startPos || startPos == -1)

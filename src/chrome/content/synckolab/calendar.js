@@ -242,7 +242,8 @@ var syncCalendar = {
 				this.curItemInListStatus.setAttribute("label", strBundle.getString("deleteOnServer"));
 
 				// also remove the local db file since we deleted the contact
-				idxEntry.remove(false);
+				if (idxEntry.exists())
+					idxEntry.remove(false);
 				
 				return "DELETEME";
 			}
@@ -452,7 +453,8 @@ var syncCalendar = {
 					this.gCalendar.deleteItem(cur, this.gEvents);
 					
 					// also remove the local db file since we deleted the contact on the server
-					cEntry.remove(false);
+					if (cEntry.exists)
+						cEntry.remove(false);
 					
 					// create a new item in the itemList for display
 					this.curItemInList = document.createElement("listitem");
