@@ -156,7 +156,30 @@
 
  		</tabpanel>
 	    <tabpanel id="taskTab" style="border:0px solid #000">
-		    <label value="TODO"/>
+
+  <vbox>
+      
+      <label value="&synckolab.settings.Tasks;"/>
+			<menulist id="taskURL">
+			</menulist> 
+
+    	<separator class="thin"/>
+      
+      <tree flex="7" id="taskImapFolder" rows="7" height="150" width="250" hidecolumnpicker="true" seltype="single" onselect="setTaskFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
+      	<treecols>
+		      <treecol id="taskFolder" label="&synckolab.settings.TaskFolder;" primary="true" flex="1"/>
+  			</treecols>
+      </tree>
+
+      <label value="&synckolab.settings.TaskFormat;"/>
+			<menulist id="taskFormat">
+			</menulist> 
+      
+      <checkbox id="saveToTaskImap" label="&synckolab.settings.SaveToImap;" tooltiptext="&synckolab.settings.SaveToImapTip;"/>
+    <separator class="thin"/>
+      <checkbox id="syncTasks" label="&synckolab.settings.SyncTasks;" tooltiptext="&synckolab.settings.SyncTasksTip;"/>
+  </vbox>
+
     	</tabpanel>
 
   </tabpanels>

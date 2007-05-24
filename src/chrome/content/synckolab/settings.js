@@ -82,7 +82,7 @@ function generateConfigTree (configuration)
 	tCell.setAttribute("value", configuration + "-Acct");
 
 	// now for the configurations
-	var tChildren = 	document.createElement("treechildren");
+	var tChildren = document.createElement("treechildren");
 	tItem.appendChild(tChildren);
 
 	tItem = document.createElement("treeitem");
@@ -256,6 +256,25 @@ function init() {
 	abList.setAttribute("label", "Xml/Kolab2");
 	abList.setAttribute("value", "Xml");
 
+	abList = document.getElementById("taskFormat");
+	abpopup = document.createElement("menupopup");
+
+	abList.appendChild(abpopup);
+	abchild = document.createElement("menuitem");
+	abpopup.appendChild(abchild);
+	abchild.setAttribute("label", "iCal/Kolab1");
+	abchild.setAttribute("value", "iCal");
+	abchild.setAttribute("selected", "true");
+	abList.setAttribute("label", "iCal/Kolab1");
+	abList.setAttribute("value", "iCal");
+	abchild = document.createElement("menuitem");
+	abpopup.appendChild(abchild);
+	abchild.setAttribute("label", "Xml/Kolab2");
+	abchild.setAttribute("value", "Xml");
+	abchild.setAttribute("selected", "true");
+	abList.setAttribute("label", "Xml/Kolab2");
+	abList.setAttribute("value", "Xml");
+
 	// the account selection
 	var actList = document.getElementById("ImapAcct");
 	var actpopup = document.createElement("menupopup");
@@ -322,9 +341,13 @@ function init() {
 	{
 		var calendars = getSynckolabCalendars();
 
-		var abList = document.getElementById("calURL");
+		var abList = document.getElementById("calURL");		
 		var abpopup = document.createElement("menupopup");
 		abList.appendChild(abpopup);
+		
+		var taskList = document.getElementById("taskURL");
+		var taskpopup = document.createElement("menupopup");
+		taskList.appendChild(taskpopup);
 		
 		// get the calendar manager to find the right files
 		for( var i = 0; i < calendars.length; i++ )
@@ -339,7 +362,17 @@ function init() {
 				abchild.setAttribute("selected", "true");
 				abList.setAttribute("label", calendars[i].name);
 				abList.setAttribute("value", calendars[i].name);
-				
+			}
+
+			abchild = document.createElement("menuitem");
+			taskpopup.appendChild(abchild);
+			abchild.setAttribute("label", calendars[i].name);
+			abchild.setAttribute("value", calendars[i].name);
+			if (i == 0)
+			{
+				abchild.setAttribute("selected", "true");
+				taskList.setAttribute("label", calendars[i].name);
+				taskList.setAttribute("value", calendars[i].name);				
 			}
     	}
 	}	
@@ -574,12 +607,93 @@ function changeConfig (config)
 				if (tree.boxObject)
 					tree.boxObject.scrollToRow(treei);
 			}
+			
+			// the tasks
+			// the calendar			
+			ab = null;
+			try
+			{
+				pref.getCharPref("SyncKolab."+config+".Tasks");
+			} catch (ex) {}
+			
+			actList = document.getElementById("taskURL");
+			// go through the items
+			var cur = actList.firstChild.firstChild;
+			while (cur != null)
+			{
+				if (cur.getAttribute("value") == ab)
+				{
+					actList.selectedItem = cur;
+					actList.setAttribute("label", cur.getAttribute("label"));
+					actList.setAttribute("value", cur.getAttribute("value"));
+					break;
+				}
+				cur = cur.nextSibling;
+			}
+	
+			calFormat = null;
+			try
+			{
+				calFormat = pref.getCharPref("SyncKolab."+config+".TaskFormat");
+			} catch (ex) {}
+			
+			actList = document.getElementById("taskFormat");
+			// go through the items
+			var cur = actList.firstChild.firstChild;
+			while (cur != null)
+			{
+				if (cur.getAttribute("value") == calFormat)
+				{
+					actList.selectedItem = cur;
+					actList.setAttribute("label", cur.getAttribute("label"));
+					actList.setAttribute("value", cur.getAttribute("value"));
+					break;
+				}
+				cur = cur.nextSibling;
+			}
+	
+			document.getElementById ("saveToTaskImap").checked = true;
+			try
+			{
+				document.getElementById ("saveToTaskImap").checked = pref.getBoolPref("SyncKolab."+config+".saveToTaskImap");
+			}
+			catch (ex) {}
+			
+			document.getElementById ("syncTasks").checked = true;
+			try {
+				document.getElementById ("syncTasks").checked = pref.getBoolPref("SyncKolab."+config+".syncTasks");
+			} catch (ex) {}
+			
+			var sCurFolder = null;
+			try
+			{
+				sCurFolder = pref.getCharPref("SyncKolab."+config+".TaskFolderPath");
+			} catch (ex) {}
+			updateTaskFolder (act);
+			updateTaskFolder (act);
+			if (sCurFolder != null)
+			{
+				var tree= document.getElementById ("taskImapFolder");
+				var treei = tree.view.getIndexOfItem(document.getElementById(sCurFolder+"c"));
+				tree.view.selection.select(treei); 
+				if (tree.boxObject)
+					tree.boxObject.scrollToRow(treei);
+			}
 		}
 	}
 //	catch (ex)
 	{}	
 }
 
+/**
+ * set all folders after an account change
+ */
+function setFolders(act)
+{
+	updateFolder(act);
+	updateCalFolder(act)
+	updateTaskFolder(act);
+}
 
 function updateFolder (act)
 {
@@ -696,6 +810,17 @@ function setCalFolder(uri)
 	pref.setCharPref("SyncKolab."+curConfig+".CalendarFolderPath", uri);
 }
 
+function setTaskFolder(uri)
+{
+	if (curConfig == null)
+	{
+		return;
+	}
+
+	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+	pref.setCharPref("SyncKolab."+curConfig+".CalendarFolderPath", uri);
+}
+
 function updateCalFolder (act)
 {
 	// dynamically read this...
@@ -735,6 +860,44 @@ function updateCalFolder (act)
 }
 
 
+function updateTaskFolder (act)
+{
+	// dynamically read this...
+	
+	var gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
+	for (var i = 0; i < gAccountManager.allServers.Count(); i++)
+	{
+		try
+		{
+			var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
+			if (account.rootMsgFolder.baseMessageURI == act || accountNameFix(account.rootMsgFolder.baseMessageURI) == act)
+			{
+				var cfold = document.getElementById ("taskImapFolder");
+				// delete the treechildren if exist
+				var cnode = cfold.firstChild;
+				while (cnode != null)
+				{
+					if (cnode.nodeName == "treechildren")
+					{
+						cfold.removeChild(cnode);
+						break;
+					}
+					cnode = cnode.nextSibling;
+				}
+	
+				// ok show some folders:
+				var tChildren = document.createElement("treechildren");
+				cfold.appendChild(tChildren);
+	
+				updateFolderElements (account.rootFolder, tChildren, "t");
+				return;			
+				
+			}
+		}
+		catch (ex) {}
+	}
+}
+
 function saveAllPrefs () {
 	if (curConfig == null)
 		return;
@@ -757,6 +920,11 @@ function saveAllPrefs () {
 		pref.setCharPref("SyncKolab."+config+".CalendarFormat", document.getElementById ("calFormat").value);
 		pref.setBoolPref("SyncKolab."+config+".saveToCalendarImap", document.getElementById ("saveToCalendarImap").checked);
 		pref.setBoolPref("SyncKolab."+config+".syncCalendar", document.getElementById ("syncCalendar").checked);
+
+		pref.setCharPref("SyncKolab."+config+".Tasks", document.getElementById ("taskURL").value);
+		pref.setCharPref("SyncKolab."+config+".TaskFormat", document.getElementById ("taskFormat").value);
+		pref.setBoolPref("SyncKolab."+config+".saveToTaskImap", document.getElementById ("saveToTaskImap").checked);
+		pref.setBoolPref("SyncKolab."+config+".syncTasks", document.getElementById ("syncTasks").checked);
 	}
 }
 

@@ -109,10 +109,10 @@ function syncKolabTimer ()
 	}
 	else
 	// lets start
-	if (gSycTimer >= gAutoRun)
+	if (gSyncTimer >= gAutoRun)
 	{
 		logMessage("running syncKolab and resetting timer....", LOG_INFO);
-		gSycTimer = -1;
+		gSyncTimer = -1;
 		syncKolab();		
 	}
 	// wait a minute

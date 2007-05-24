@@ -20,8 +20,11 @@
 <!ENTITY synckolab.settings.Configuration	"Configuration">
 <!ENTITY synckolab.settings.CalendarFormat	"Calendar Format">
 <!ENTITY synckolab.settings.CalendarFolder	"Calendar Folder">
+<!ENTITY synckolab.settings.TaskFormat		"Format">
+<!ENTITY synckolab.settings.TaskFolder		"Folder">
 <!ENTITY synckolab.settings.SyncContacts	"Sync Contacts">
 <!ENTITY synckolab.settings.SyncCalendar	"Sync Calendar">
+<!ENTITY synckolab.settings.SyncTasks		"Sync Tasks">
 <!ENTITY synckolab.settings.CloseWindow		"Close Sync Window when done">
 <!ENTITY synckolab.settings.add				"Add">
 <!ENTITY synckolab.settings.del				"Delete">
@@ -29,6 +32,8 @@
 <!ENTITY synckolab.settings.SyncCalendarTip	"activate if you want to synchronize the calendar with the configuration">
 <!ENTITY synckolab.settings.SyncContacts	"Sync contacts">
 <!ENTITY synckolab.settings.SyncContactsTip	"activate if you want to synchronize the address book with the configuration">
+<!ENTITY synckolab.settings.SyncTasks		"Sync tasks">
+<!ENTITY synckolab.settings.SyncTasksTip	"activate if you want to synchronize the tasks with the configuration">
 
 <!ENTITY synckolab.settings.Updates			"For updates please check out:">
 

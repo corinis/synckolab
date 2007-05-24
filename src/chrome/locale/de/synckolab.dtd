@@ -22,8 +22,11 @@
 <!ENTITY synckolab.settings.Configuration	"Einstellung">
 <!ENTITY synckolab.settings.CalendarFormat	"Format">
 <!ENTITY synckolab.settings.CalendarFolder	"Verzeichnis">
+<!ENTITY synckolab.settings.TaskFormat		"Format">
+<!ENTITY synckolab.settings.TaskFolder		"Verzeichnis">
 <!ENTITY synckolab.settings.SyncContacts	"Kontakte abgleichen">
 <!ENTITY synckolab.settings.SyncCalendar	"Kalender abgleichen">
+<!ENTITY synckolab.settings.SyncTasks		"Aufgaben abgleichen">
 <!ENTITY synckolab.settings.CloseWindow		"Statusfenster nach Beendigung schliessen">
 <!ENTITY synckolab.settings.add				"Neu">
 <!ENTITY synckolab.settings.del				"Entfernen">
@@ -31,6 +34,8 @@
 <!ENTITY synckolab.settings.SyncCalendarTip	"Aktivieren wenn in dieser Konfiguration der Kalender abgeglichen werden soll">
 <!ENTITY synckolab.settings.SyncContacts	"Kontakte abgleichen">
 <!ENTITY synckolab.settings.SyncContactsTip	"Aktivieren wenn in dieser Konfiguration das Adressbuch abgeglichen werden soll">
+<!ENTITY synckolab.settings.SyncTasks		"Aufgaben abgleichen">
+<!ENTITY synckolab.settings.SyncTasksTip	"Aktivieren wenn in dieser Konfiguration die Aufgaben abgeglichen werden sollen">
 
 <!ENTITY synckolab.settings.Updates			"Für Updates besuchen Sie:">
 
