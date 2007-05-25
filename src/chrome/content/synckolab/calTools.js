@@ -990,7 +990,17 @@ function ical2event (content)
     var event;
 	var icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
                            .getService(Components.interfaces.calIICSService);
-	var rootComp = icssrv.parseICS(content);
+              
+	var rootComp = null;
+	try
+	{
+		rootComp = icssrv.parseICS(content);
+	}
+	catch (ex)
+	{
+	    logMessage("unable to parse ical: " + content, LOG_CAL + LOG_ERROR);
+	    return null;
+	}
   
     if (rootComp.componentType == 'VCALENDAR') {
 		event = rootComp;
