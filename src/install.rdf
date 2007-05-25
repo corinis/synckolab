@@ -7,7 +7,7 @@
       <Description>
         <em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id>
         <em:minVersion>1.5</em:minVersion>
-        <em:maxVersion>3.0.0.*</em:maxVersion>
+        <em:maxVersion>3.0a</em:maxVersion>
       </Description>
     </em:targetApplication>
     
@@ -30,6 +30,7 @@
         <em:package>content/synckolab/</em:package>
 		<em:locale>locale/en-US/</em:locale>
 		<em:locale>locale/de/</em:locale>
+		<em:locale>locale/it/</em:locale>
         <em:skin>skin/classic/synckolab/</em:skin>
       </Description>
     </em:file>
