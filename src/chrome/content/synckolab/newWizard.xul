@@ -273,6 +273,12 @@
       <checkbox id="saveToTaskImap" label="&synckolab.settings.SaveToImap;" checked="true" tooltiptext="&synckolab.settings.SaveToImapTip;"/>
 	</wizardpage>
 	<wizardpage id="donePage" pageid="donePageId" description="">
-		<label value="DONE"/>
+		<description>
+			&synckolab.newwizard.DoneText;
+		</description>
+		<description>
+			&synckolab.newwizard.DoneText2;
+		</description>
+		<label class="text-link" onclick="LaunchUrl('http://synckolab.mozdev.org/')">synckolab.mozdev.org</label>
 	</wizardpage>
 </wizard>

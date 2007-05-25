@@ -91,6 +91,9 @@ function getSyncDbFile (config, cal, id)
  */
 function writeSyncDBFile(file, content)
 {
+	if (content == null)
+		return;
+		
 	if (file.exists()) 
 		file.remove(true);
 	file.create(file.NORMAL_FILE_TYPE, 0666);
@@ -143,6 +146,9 @@ function readSyncDBFile (file)
  */
 function stripMailHeader (content)
 {
+	if (content == null)
+		return null;
+		
 	var isMultiPart = content.indexOf('boundary="') != -1;
 	var boundary = null;
 	if (isMultiPart)
@@ -174,9 +180,11 @@ function stripMailHeader (content)
 			{
 				logMessage("Base64 Decoding message.", LOG_INFO);
 				logMessage("Base64 message: " + content, LOG_DEBUG);
+				// get rid of the header
+				content = content.substring(content.indexOf("Content-Transfer-Encoding: base64"), content.length);
 				var startPos = content.indexOf("\r\n\r\n");
-				var startPos2 = startPos = content.indexOf("\n\n");
-				if (startPos2 < startPos || startPos == -1)
+				var startPos2 = content.indexOf("\n\n");
+				if (startPos2 != -1 && (startPos2 < startPos || startPos == -1))
 					startPos = startPos2;
 				
 				var endPos = content.indexOf("--"+boundary)
@@ -982,6 +990,9 @@ function encode4XML(s)
 }
 
 function encode_utf8(rohtext) {
+	if (rohtext == null)
+		return null;
+		
    // check for newline
    rohtext = rohtext.replace(/\r\n/g,"\n");
    var utftext = "";
@@ -1043,7 +1054,11 @@ var QpEncodeMap = new Array(
 
 function encodeQuoted(s)
 {
-  var fresult = "";
+	// sometime we just do not want a new message :)
+	if (s == null)
+		return null;
+		
+	var fresult = "";
 	var cur = 0;
 	var LineLen = 0;
 
@@ -1109,6 +1124,10 @@ function encodeQuoted(s)
  */
 function generateMail (cid, mail, adsubject, mime, part, content, hr)
 {
+	// sometime we just do not want a new message :)
+	if (content == null)
+		return null;
+		
 	var msg = "";
 	var bound = get_randomVcardId();
 	var cdate = new Date();
@@ -1183,6 +1202,10 @@ function logMessage (msg, level)
 		var infostate = DEBUG_SYNCKOLAB_LEVEL - infolvl;
 		var clvl = level%4;
 		var cstate = level - clvl;
+		
+		// pause the sync on error if defined by globals
+		if (PAUSE_ON_ERROR && clvl == LOG_ERROR)
+			pauseSync();		
 		
 		// check if we are talking about the same loglevle: ERROR|WARN|INFO|DEBUG
 		if (clvl > infolvl)

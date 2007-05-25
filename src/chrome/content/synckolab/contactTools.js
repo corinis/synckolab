@@ -1257,7 +1257,7 @@ function message2Card (lines, card, extraFields, startI, endI)
 		  	break;
 		  	
 		  default:
-			consoleService.logStringMessage("FIELD not found: " + tok[0] + ":" + tok[1]);
+			logMessage("FIELD not found: " + tok[0] + ":" + tok[1], LOG_WARNING + LOG_AB);
 		  	addField(extraFields, tok[0], tok[1]);
 		  	break;
 		} // end switch
@@ -1271,7 +1271,8 @@ function list2Human (card)
 	msg += "Name: " + card.listNickName + "\n";
  	if (checkExist (card.notes))
 		msg += "Notes: " + card.description + "\n";
-	var cList = rdf.GetResource(cur.mailListURI).QueryInterface(Components.interfaces.nsIAbDirectory);
+
+	var cList = card.QueryInterface(Components.interfaces.nsIAbDirectory);
 	if (cList.addressLists)
  	{
 		msg += "Members: \n";

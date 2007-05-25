@@ -67,7 +67,20 @@
 <!ENTITY synckolab.wizard.conPageInfo	"Select the adress book and the folder which shall be synchronized. ">
 <!ENTITY synckolab.wizard.calPageInfo	"Select the calendar and the folder which shall be synchronized.">
 <!ENTITY synckolab.wizard.taskPageInfo	"Select the calendar for tasks and the folder which shall be synchronized.">
+<!ENTITY synckolab.newwizard.DoneText	"You successfully setup a new configuration with SyncKolab. You can now start the sync by choosing 'Tools-Start SyncKolab'.">
+<!ENTITY synckolab.newwizard.DoneText2	"In case you encounter an error (i.e. the sync suddenly stopps or some of your entries have been misinterpreted while syncing - please only with error messages from 'Tools-Javascript console') or if you have any suggestions, fell free to contact us on the mailing list or create new bugzilla entry on">
 
 <!-- other -->
 <!ENTITY synckolab.with			"con">
 <!ENTITY synckolab.proprietary 	"proprietario">
+
+<!-- progress window -->
+<!ENTITY synckolab.progress.Pause			"Pause">
+<!ENTITY synckolab.progress.UnPause			"Resume">
+<!ENTITY synckolab.progress.Cancel			"Cancel">
+<!ENTITY synckolab.progress.CurrentProgress	"Current Progress">
+<!ENTITY synckolab.progress.status			"Status">
+<!ENTITY synckolab.progress.content			"Content">
+<!ENTITY synckolab.progress.message			"Message">
+<!ENTITY synckolab.progress.CurrentAction	"Current Action">
+<!ENTITY synckolab.progress.Processing		"Processing">

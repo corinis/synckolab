@@ -215,7 +215,7 @@ var syncAddressBook = {
 			this.curItemInListId.setAttribute("label", getUID(newCard));
 			this.curItemInListStatus.setAttribute("label", strBundle.getString("checking"));
 			if (newCard.isMailList)
-				this.curItemInListContent.setAttribute("label", strBundle.getString("mailingList") + " " + cur.listNickName);
+				this.curItemInListContent.setAttribute("label", strBundle.getString("mailingList") + " " + newCard.listNickName);
 			else
 				this.curItemInListContent.setAttribute("label", newCard.firstName + " " + newCard.lastName + " <" + newCard.primaryEmail + ">");
 

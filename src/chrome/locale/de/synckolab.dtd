@@ -69,7 +69,20 @@
 <!ENTITY synckolab.wizard.conPageInfo	"Wählen Sie das Adressbuch und das Verzeichnis aus, welche miteinander Verglichen werden sollen.">
 <!ENTITY synckolab.wizard.calPageInfo	"Wählen Sie den Kalender und das Verzeichnis aus, welche miteinander Verglichen werden sollen.">
 <!ENTITY synckolab.wizard.taskPageInfo	"Wählen Sie den Kalender für die Aufgaben und das Verzeichnis aus, welche miteinander Verglichen werden sollen.">
+<!ENTITY synckolab.newwizard.DoneText	"Sie haben SyncKolab fertig eingestellt. Benutzen Sie den Menüpunkt 'Extras-Starte SyncKolab' zum starten der Synchronisation.">
+<!ENTITY synckolab.newwizard.DoneText2	"Sollte ein Fehler auftreten (z.b. die Synchronisation plötzlich aufhören oder ihre Einträge falsch synchronisiert werden - bitte nur mit Fehlermeldung von 'Extras-Javascript Konsole') oder wenn Sie Anregungen haben, wenden Sie sich bitte an die Mailingliste bzw. Bugzilla auf">
 
 <!-- other -->
 <!ENTITY synckolab.with			"mit">
 <!ENTITY synckolab.proprietary 	"proprietär">
+
+<!-- progress window -->
+<!ENTITY synckolab.progress.Pause			"Pause">
+<!ENTITY synckolab.progress.UnPause			"Fortsetzen">
+<!ENTITY synckolab.progress.Cancel			"Abbrechen">
+<!ENTITY synckolab.progress.CurrentProgress	"Arbeitsverlauf">
+<!ENTITY synckolab.progress.status			"Status">
+<!ENTITY synckolab.progress.content			"Inhalt">
+<!ENTITY synckolab.progress.message			"Nachricht">
+<!ENTITY synckolab.progress.CurrentAction	"Arbeitsschritt">
+<!ENTITY synckolab.progress.Processing		"in Arbeit">

@@ -22,6 +22,10 @@
     <em:optionsURL>chrome://synckolab/content/synckolabPref.xul</em:optionsURL>
     <em:updateURL>http://www.gargan.org/extensions/update.rdf</em:updateURL>
 
+    <em:contributor>Andreas Gungl;a.gungl@gmx.de</em:contributor>    
+    <em:contributor>Steven D Miller (Copart);stevendm@rellims.com</em:contributor>
+    <em:contributor>Michele Petrazzo; michele.petrazzo@unipex.it; www.unipex.it</em:contributor>
+
     <!-- Front End Integration Hooks (used by Extension Manager)-->
     
     <!-- Packages, Skins and Locales that this extension registers -->

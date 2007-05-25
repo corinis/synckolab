@@ -86,12 +86,15 @@ var LOG_CAL = 4;
 var LOG_AB = 8;
 var LOG_ALL = 12;
 
-var DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + LOG_DEBUG;
+var DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + LOG_WARNING;
 var SWITCH_TIME = 50;
+// set this to true and on every error there will be a pause so you can check the logs
+var PAUSE_ON_ERROR = true;
  
 // this is the timer function.. will call itself once a minute and check the configs
 var gSyncTimer = -1;
 var gAutoRun = -1;
+
 function syncKolabTimer ()
 {
 	logMessage("SyncKolab Sync Event start....", LOG_DEBUG);
@@ -213,6 +216,7 @@ function startSync(event) {
 // this function is called after everything is done
 function nextSync()
 {
+
 	totalMeter.setAttribute("value", (((curConConfig+curCalConfig)*100)/(conConfigs.length+calConfigs.length)) +"%");
 
 	if (curConConfig < conConfigs.length)
@@ -297,7 +301,7 @@ function nextSync()
 		totalMeter.setAttribute("value", "100%");
 		meter.setAttribute("value", "100%");
 		statusMsg.value = strBundle.getString("syncfinished");
-		gWnd.document.getElementById('cancel-button').label = strBundle.getString("close"); // a little bit more clear that it is now safe to close the window
+		gWnd.document.getElementById('cancel-button').label = strBundle.getString("close"); 
 		// delete the temp file
 		var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
 		sfile.initWithPath(gTmpFile);
@@ -377,6 +381,18 @@ function getContent (sync)
 // Get the current message into a string and then go to parseMessageRunner
 function getMessage ()
 {
+	// pause sync...
+	if (gWnd.gPauseSync)
+	{
+		window.setTimeout(getMessage, SWITCH_TIME);
+		return;
+	}
+	if (gWnd.gStopSync)
+	{
+		alert("Stopped SyncKolab...");
+		return;
+	}
+		
  	var cur = null
  	try
  	{
@@ -497,7 +513,19 @@ var myStreamListener = {
  */
 function parseMessageRunner ()
 {
-   	logMessage("parsing message...", LOG_DEBUG);
+	// pause sync...
+	if (gWnd.gPauseSync)
+	{
+		window.setTimeout(parseMessageRunner, SWITCH_TIME);	
+		return;
+	}
+	if (gWnd.gStopSync)
+	{
+		alert("Stopped SyncKolab...");
+		return;
+	}
+
+   	logMessage("parsing message... PAUSE: " + gWnd.gPauseSync, LOG_DEBUG);
 	
 	// fix the message for line truncs (last char in line is =)
 	fileContent = fileContent.replace(/=\n/g, "");
@@ -567,6 +595,19 @@ function parseFolderToAddressFinish ()
  */
 function updateContent()
 {
+	// pause sync...
+	if (gWnd.gPauseSync)
+	{
+		window.setTimeout(updateContent, SWITCH_TIME);	
+		return;
+	}
+		
+	if (gWnd.gStopSync)
+	{
+		alert("Stopped SyncKolab...");
+		return;
+	}
+
     logMessage("updating content:", LOG_DEBUG);
 	// first lets delete the old messages
 	if (gSync.gSaveImap && updateMessages.length > 0) 
@@ -599,6 +640,19 @@ function updateContent()
  */
 function updateContentWrite ()
 {
+	// pause sync...
+	if (gWnd.gPauseSync)
+	{
+		window.setTimeout(updateContentWrite, SWITCH_TIME);	
+		return;
+	}
+		
+	if (gWnd.gStopSync)
+	{
+		alert("Stopped SyncKolab...");
+		return;
+	}
+
 	curCounter.setAttribute("value", curMessage + "/" + updateMessagesContent.length);
 
 	curMessage++;
@@ -606,7 +660,7 @@ function updateContentWrite ()
 	{
 		var content = updateMessagesContent[curMessage];
 		// write the message
-		if (gSync.gSaveImap && content != "DELETEME")
+		if (gSync.gSaveImap && content != "DELETEME" && content != null && content.length > 1)
 		{
 			// write the message in the temp file
 			var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
@@ -660,6 +714,19 @@ function updateContentAfterSave ()
 // write everything thats not yet in the message folder
 function writeContent ()
 {
+	// pause sync...
+	if (gWnd.gPauseSync)
+	{
+		window.setTimeout(writeContent, SWITCH_TIME);	
+		return;
+	}
+		
+	if (gWnd.gStopSync)
+	{
+		alert("Stopped SyncKolab...");
+		return;
+	}
+
 	// if there happens an exception, we are done
 	content = gSync.nextUpdate();
 	if (content == "done")
@@ -706,6 +773,18 @@ function writeContent ()
 // done this time
 function writeContentAfterSave ()
 {
+	// pause sync...
+	if (gWnd.gPauseSync)
+	{
+		window.setTimeout(writeContentAfterSave, SWITCH_TIME);	
+		return;
+	}
+	if (gWnd.gStopSync)
+	{
+		alert("Stopped SyncKolab...");
+		return;
+	}
+
 	// before done, set all unread messages to read in the sync folder
 	gMessages = gSync.folder.getMessages(msgWindow);	
 	while (gMessages.hasMoreElements ())

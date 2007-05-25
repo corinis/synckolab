@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<!DOCTYPE loc SYSTEM "chrome://synckolab/locale/synckolab.dtd">
+
 <window
     id="progress-window"
     title="Synchronizing with Kolab Folders"
@@ -13,22 +15,39 @@
    -moz-binding:url("chrome://global/content/bindings/progressmeter.xml#progressmeter-undetermined");
 	}
 </style>
+<script>
+var gPauseSync = false;
+var gStopSync = false;
 
+function pauseSync ()
+{
+	if (gPauseSync == true)
+	{
+		gPauseSync = false;
+		document.getElementById("pause-button").label = "&synckolab.progress.Pause;";
+	}
+	else
+	{
+		gPauseSync = true;
+		document.getElementById("pause-button").label = "&synckolab.progress.UnPause;";
+	}
+}
+</script>
   <vbox flex="1">
 	<groupbox orient="horizontal">
-	  <caption label="Processing"/>
+	  <caption label="&synckolab.progress.Processing;"/>
   	<description id="current-process">
   		none
   	</description>
 	</groupbox>
 	<groupbox orient="horizontal">
-	  <caption label="Current Action"/>
+	  <caption label="&synckolab.progress.CurrentAction;"/>
   	<description id="current-action">
   		Initialising...
   	</description>
 	</groupbox>
 	<groupbox orient="horizontal">
-	  <caption label="Message"/>
+	  <caption label="&synckolab.progress.message;"/>
   	<description id="current-counter">
   		0/0
   	</description>
@@ -39,8 +58,8 @@
 	<listbox id="itemList" suppressonselect="true" flex="1">
 		<listhead>
 			<listheader label="id"/>
-			<listheader label="status"/>
-			<listheader label="content"/>
+			<listheader label="&synckolab.progress.status;"/>
+			<listheader label="&synckolab.progress.content;"/>
 		</listhead>
 	
 		<listcols>
@@ -51,13 +70,14 @@
 	</listbox>
   <spacer style="height: 10px"/>
 		<hbox>
-			<label value="Current Progress"/>
+			<label value="&synckolab.progress.CurrentProgress;"/>
 		  <progressmeter mode="determined" id="progress" value="0%" flex="1" style="margin: 4px; border: 1px solid; width: 200px"/>
 		</hbox>
 		<hbox>
 		  <progressmeter mode="determined" id="totalProgress" value="0%" flex="1" style="margin: 4px; border: 1px solid;"/>
 		  <spacer flex="1"/>
-		  <button id="cancel-button" default="true" oncommand="window.close();" label="Cancel"/>
+		  <button id="pause-button" default="false" oncommand="pauseSync()" label="&synckolab.progress.Pause;"/>
+		  <button id="cancel-button" default="true" oncommand="gStopSync=true;window.close();" label="&synckolab.progress.Cancel;"/>
 		</hbox>
 	</vbox>
 </window>
