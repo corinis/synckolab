@@ -1,0 +1,89 @@
+<!-- buttons -->
+<!ENTITY synckolab.syncMenu.label				"SyncKolabの同期開始">
+<!ENTITY synckolab.optionMenu.label				"SyncKolabのオプション">
+
+<!ENTITY synckolab.sync.label					"Sync Kolab">
+<!ENTITY synckolab.sync.tip					"Kolabフォルダを同期">
+
+<!ENTITY synckolab.contactConflict.dialogTitle		"コンタクトの競合">
+<!ENTITY synckolab.contactConflict.dialogMessage	"競合が見つかりました．残すものを選んでください．">
+
+<!ENTITY synckolab.settings.Account		"アカウント">
+<!ENTITY synckolab.settings.abook		"アドレス帳">
+<!ENTITY synckolab.settings.Contact		"コンタクト">
+<!ENTITY synckolab.settings.Calendar		"カレンダー">
+<!ENTITY synckolab.settings.Tasks		"タスクリスト">
+
+<!ENTITY synckolab.settings.ContactFolder	"コンタクトを保存するフォルダ">
+<!ENTITY synckolab.settings.ContactFormat	"コンタクトの保存形式">
+<!ENTITY synckolab.settings.SaveToImap		"IMAPフォルダへ保存する">
+<!ENTITY synckolab.settings.Configuration	"設定">
+<!ENTITY synckolab.settings.CalendarFormat	"カレンダーの保存形式">
+<!ENTITY synckolab.settings.CalendarFolder	"カレンダーを保存するフォルダ">
+<!ENTITY synckolab.settings.TaskFormat		"タスクリストの保存形式">
+<!ENTITY synckolab.settings.TaskFolder		"タスクリストを保存するフォルダ">
+<!ENTITY synckolab.settings.SyncContacts	"コンタクトを同期する">
+<!ENTITY synckolab.settings.SyncCalendar	"カレンダーを同期する">
+<!ENTITY synckolab.settings.SyncTasks		"タスクリストを同期する">
+<!ENTITY synckolab.settings.CloseWindow		"同期が完了したら，ウインドウを閉じる">
+<!ENTITY synckolab.settings.add			"追加">
+<!ENTITY synckolab.settings.del			"削除">
+<!ENTITY synckolab.settings.SyncCalendar	"カレンダーを同期する">
+<!ENTITY synckolab.settings.SyncCalendarTip	"カレンダーを同期する場合はチェックしてください．">
+<!ENTITY synckolab.settings.SyncContacts	"コンタクトを同期する">
+<!ENTITY synckolab.settings.SyncContactsTip	"コンタクトを同期する場合はチェックしてください．">
+<!ENTITY synckolab.settings.SyncTasks		"タスクリストを同期する">
+<!ENTITY synckolab.settings.SyncTasksTip	"タスクリストを同期する場合はチェックしてください．">
+<!ENTITY synckolab.settings.FormatTip		"Kolab2サーバの場合は「XML」を，それ以外の場合は「vcard/ical」を選択してください．">
+
+<!ENTITY synckolab.settings.Updates			"SyncKolabの新しいバージョンは，次のURLで公開されます:">
+
+<!ENTITY synckolab.settings.imapAcctTip 		"IMAPメールアカウントのみ指定できます．他形式(POPなど)では同期できません．">
+<!ENTITY synckolab.settings.SyncKolabHeader		"SyncKolab">
+<!ENTITY synckolab.settings.SyncKolabDescription 	"SyncKoabは，IMAPサーバを使って，コンタクト・カレンダーを複数のパソコン間で同期させます．">
+<!ENTITY synckolab.settings.DescKolabServer 		"フリーソフトウェアによるグループウェア Kolab については，次のURLを参照してください．">
+<!ENTITY synckolab.settings.DescOtherClients 		"SyncKolabは次のソフトウェアと互換性があります．">
+
+<!-- Account Tab -->
+<!ENTITY synckolab.settings.AccountDescription	"同期に使う IMAPメールアカウントを選択してください．">
+<!ENTITY synckolab.settings.SyncInterval 		"自動同期の時間間隔: ">
+<!ENTITY synckolab.settings.SyncIntervalDescription "自動同期を実行する間隔を指定してください．(「0」を指定すると自動同期を行いません．)">
+<!ENTITY synckolab.settings.SyncIntervalMinutes "分">
+<!ENTITY synckolab.settings.SaveToImapTip		"IMAPサーバへ変更を書き込まない場合には，チェックを外してください．(リードオンリーモード)">
+
+<!-- New Config Wizard -->
+<!ENTITY synckolab.newwizard.title 		"SyncKolab 設定ウィザード">
+<!ENTITY synckolab.wizard.LongDescription	"このウィザードでは，(1)アドレス帳，カレンダー，タスクリストの内，何を同期させるのか， (2)それぞれに対し，IMAPサーバ上のどのフォルダを使うのか， (3)その際どのような形式で保存するか(Kolab2, vcard/ical)を設定します．情報の共有に便利な，リードオンリーモードも指定できます．">
+
+<!ENTITY synckolab.newwizard.intro 		"IMAPサーバを使って，アドレス帳，カレンダー，タスクリストを複数のコンピュータで同期させます．">
+<!ENTITY synckolab.newwizard.selectAccount	"同期に使用するIMAPアカウントを指定してください．">
+<!ENTITY synckolab.newwizard.configName	"設定名">
+<!ENTITY synckolab.newwizard.descName "設定名には分かりやすい名前をつけてください．">
+<!ENTITY synckolab.wizard.AccountIntervalDescription "IMAPアカウントを選択し，基本設定を行ってください．">
+<!ENTITY synckolab.wizard.typePageDesc	"選択したIMAPアカウントで同期する項目を選択してください．">
+<!ENTITY synckolab.wizard.typePageLongDesc "アドレス帳，カレンダー，タスクリストの保存先となる，IMAP上のフォルダを選択してください．SyncKolabの設定一つ一つに対して行う必要があります．">
+
+<!ENTITY synckolab.wizard.typePageContact	"アドレス帳を同期させるには，チェックしてください．">
+<!ENTITY synckolab.wizard.typePageCalendar	"カレンダーを同期させるには，チェックしてください．">
+<!ENTITY synckolab.wizard.typePageTasks		"タスクリストを同期させるには，チェックしてください．">
+<!ENTITY synckolab.wizard.conPageInfo	"同期させたいアドレス帳と，そのために使うIMAPサーバ上のフォルダを指定してください，">
+<!ENTITY synckolab.wizard.calPageInfo	"同期させたいカレンダーと，そのために使うIMAPサーバ上のフォルダを指定してください，">
+<!ENTITY synckolab.wizard.taskPageInfo	"同期させたいタスクリストと，そのために使うIMAPサーバ上のフォルダを指定してください，">
+<!ENTITY synckolab.newwizard.DoneText	"設定が完了しました．「ツール」-「SyncKolabの同期開始」で同期できます．">
+
+<!ENTITY synckolab.newwizard.DoneText2	"同期が途中で止まったり，同期後にアドレス帳がおかしくなる等の不具合が起きてしまった場合，エラーメッセージ (「ツール」-「エラーコンソール」) を SyncKolabのメーリングリストへ報告してください．機能についての提案も歓迎します．">
+
+<!-- other -->
+<!ENTITY synckolab.with			"with">
+<!ENTITY synckolab.proprietary 	"proprietary">
+
+<!-- progress window -->
+<!ENTITY synckolab.progress.Pause			"一時停止">
+<!ENTITY synckolab.progress.UnPause			"再開">
+<!ENTITY synckolab.progress.Cancel			"キャンセル">
+<!ENTITY synckolab.progress.CurrentProgress	"進捗状況">
+<!ENTITY synckolab.progress.status			"ステータス">
+<!ENTITY synckolab.progress.content			"内容">
+<!ENTITY synckolab.progress.message			"メッセージ">
+<!ENTITY synckolab.progress.CurrentAction	"実行中の動作">
+<!ENTITY synckolab.progress.Processing		"処理中">
