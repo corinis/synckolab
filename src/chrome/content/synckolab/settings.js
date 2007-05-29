@@ -245,9 +245,6 @@ function init() {
 }
 
 function prefillFields() {
-	var rdf = Components.classes["@mozilla.org/rdf/rdf-service;1"].getService(Components.interfaces.nsIRDFService);
-
-	var directory = rdf.GetResource("moz-abdirectory://").QueryInterface(Components.interfaces.nsIAbDirectory);
 
 	// the format selection boxes:
 	var abList = document.getElementById("conFormat");
@@ -335,10 +332,14 @@ function prefillFields() {
 	
 	// the adress book list
 	// fill the contact selection
+	var rdf = Components.classes["@mozilla.org/rdf/rdf-service;1"].getService(Components.interfaces.nsIRDFService);
+	var directory = rdf.GetResource("moz-abdirectory://").QueryInterface(Components.interfaces.nsIAbDirectory);
+
 	var cn = directory.childNodes;
 	var ABook = cn.getNext();
 	var abList = document.getElementById("conURL");
 	var abpopup = document.createElement("menupopup");
+	abList.appendChild(abpopup);
 	
 	isFirst = true;
 	while (ABook != null)
@@ -349,6 +350,7 @@ function prefillFields() {
 		abchild.setAttribute("label", cur.directoryProperties.description);
 		abchild.setAttribute("value", cur.directoryProperties.fileName);
 		// default select the first item
+		
 		if (isFirst)
 		{
 			abchild.setAttribute("selected", "true");
@@ -359,7 +361,10 @@ function prefillFields() {
 		
 		try
 		{	
-			ABook = cn.getNext();
+			if (cn.hasMoreElements ())		
+				ABook = cn.getNext();
+			else
+				break;
 		}
 		catch (ex)
 		{

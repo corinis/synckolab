@@ -36,6 +36,7 @@
 		<em:locale>locale/en-US/</em:locale>
 		<em:locale>locale/de/</em:locale>
 		<em:locale>locale/it/</em:locale>
+		<em:locale>locale/ja-JP/</em:locale>
         <em:skin>skin/classic/synckolab/</em:skin>
       </Description>
     </em:file>
