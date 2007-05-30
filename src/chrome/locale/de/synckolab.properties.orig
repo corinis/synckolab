@@ -1,0 +1,23 @@
+contacts=Kontakte
+calendar=Kalender
+tasks=Aufgaben
+
+# status messages
+checking=teste
+parsing=lese
+unparseable=nicht lesbar
+unknown=unbekannt
+addToServer=neu am Server
+deleteOnServer=lösche vom Server
+updateOnServer=ändere am Server
+localAdd=neu Lokal
+localDelete=lösche Lokal
+localUpdate=ändere Lokal
+noChange=keine Änderung
+conflict=Konflikt
+
+# status: contacts only
+mailingList=Liste
+
+close=Fertig
+syncfinished=Fertig. Sie können das Fenster nun schließen.

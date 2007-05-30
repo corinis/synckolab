@@ -29,13 +29,22 @@
 			try {
 				configs = pref.getCharPref("SyncKolab.Configs");
 			} catch(ex) {}
-			curConfig = trim(document.getElementById('configName').value);
-			pref.setCharPref("SyncKolab.Configs", configs  + curConfig + ";");
-			pref.setCharPref("SyncKolab."+curConfig+".ContactFolderPath", conFolder);
-			pref.setCharPref("SyncKolab."+curConfig+".CalendarFolderPath", calFolder);
-			pref.setCharPref("SyncKolab."+curConfig+".TaskFolderPath", taskFolder);
+			var confName = trim(document.getElementById('configName').value);
+			try
+			{
+				// make sure the configuration is added multiple times
+				if (configs.indexOf(confName + ";" ) == -1)
+					pref.setCharPref("SyncKolab.Configs", configs  + confName + ";");
+			} catch (ex) {}
+
+			if (conFolder != null)
+				pref.setCharPref("SyncKolab."+confName+".ContactFolderPath", conFolder);
+			if (calFolder != null)
+				pref.setCharPref("SyncKolab."+confName+".CalendarFolderPath", calFolder);
+			if (taskFolder != null)
+				pref.setCharPref("SyncKolab."+confName+".TaskFolderPath", taskFolder);
 			
-			saveAllPrefs(curConfig);			
+			saveAllPrefs(confName);			
 		}
 	</script>
 

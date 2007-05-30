@@ -229,7 +229,7 @@ var syncAddressBook = {
 
 			// a new card or locally deleted 
 			if (aCard == null)
-			{				
+			{	
 				// if the file does not exist and it is not found in the adress book -
 				// we definitely have a new player here - add it 
 				// also do so if the forceLocalCopy flag is set (happens when you change the configuration)
@@ -252,7 +252,7 @@ var syncAddressBook = {
 					logMessage("card is new, add to address book: " + getUID(newCard), LOG_INFO + LOG_AB);	
 					
 					//update list item
-					this.curItemInListStatus.setAttribute("label", strBundle.getString("localAdd"));
+					this.curItemInListStatus.setAttribute("label", getLangString(strBundle, "localAdd"));
 					
 				}
 				else
@@ -260,7 +260,7 @@ var syncAddressBook = {
 					logMessage("card deleted locally: " + getUID(newCard), LOG_INFO + LOG_AB);	
 					
 					//update list item
-					this.curItemInListStatus.setAttribute("label", strBundle.getString("deleteOnServer"));
+					this.curItemInListStatus.setAttribute("label", getLangString(strBundle, "deleteOnServer"));
 	
 					try
 					{				
@@ -323,7 +323,7 @@ var syncAddressBook = {
 							case 2 :
 								//User chose to keep all local values
 								bUpdateServer = true;
-								this.curItemInListStatus.setAttribute("label", strBundle.getString("conflict") + ": " + strBundle.getString("updateOnServer"));
+								this.curItemInListStatus.setAttribute("label", getLangString(strBundle, "conflict") + ": " + strBundle.getString("updateOnServer"));
 								break;
 							case 3 :
 								//User chose a mix of values, therefore, both local and server need updating
@@ -331,7 +331,7 @@ var syncAddressBook = {
 								//newCard and aCard both already contain the new values
 								bUpdateLocal = true;
 								bUpdateServer = true;
-								this.curItemInListStatus.setAttribute("label", strBundle.getString("conflict") + ": both updated");
+								this.curItemInListStatus.setAttribute("label", getLangString(strBundle, "conflict") + ": both updated");
 								break;
 						}
 					
@@ -340,7 +340,7 @@ var syncAddressBook = {
 						//Changes to the way the SHA (code revisions) are calculated could cause this
 						logMessage("Contacts differ, however, assumed no change, update local" + getUID(newCard), LOG_WARNING + LOG_AB);
 						bUpdateLocal = true;
-						this.curItemInListStatus.setAttribute("label", "Auto Conflict Resolved : " + strBundle.getString("localUpdate"));
+						this.curItemInListStatus.setAttribute("label", "Auto Conflict Resolved : " + getLangString(strBundle, "localUpdate"));
 					}
 					
 					if ( bUpdateLocal ) {
@@ -427,7 +427,7 @@ var syncAddressBook = {
 					return cContent;
 				}
 				
-				this.curItemInListStatus.setAttribute("label", strBundle.getString("noChange"));
+				this.curItemInListStatus.setAttribute("label", getLangString(strBundle, "noChange"));
 				
 			}
 		}

@@ -1271,3 +1271,8 @@ function LaunchUrl(url)
                               .getService(Components.interfaces.nsIExternalProtocolService);
   protocolSvc.loadUrl(uri);
 }
+
+function getLangString(bundle, name)
+{
+	return bundle.getString(name);
+}

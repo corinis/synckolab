@@ -86,7 +86,7 @@ var LOG_CAL = 4;
 var LOG_AB = 8;
 var LOG_ALL = 12;
 
-var DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + LOG_WARNING;
+var DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + LOG_DEBUG;
 var SWITCH_TIME = 50;
 // set this to true and on every error there will be a pause so you can check the logs
 var PAUSE_ON_ERROR = true;

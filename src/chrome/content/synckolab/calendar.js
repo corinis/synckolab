@@ -378,7 +378,7 @@ var syncCalendar = {
 					}
 					
 					// update list item
-					this.curItemInListStatus.setAttribute("label", strBundle.getString("updateOnServer"));
+					this.curItemInListStatus.setAttribute("label", getLangString(strBundle, "updateOnServer"));
 
 					writeSyncDBFile (idxEntry, stripMailHeader(msg));
 					
@@ -387,7 +387,7 @@ var syncCalendar = {
 				}
 				
 				logMessage("no change for event:" + parsedEvent.id, LOG_CAL + LOG_INFO);
-				this.curItemInListStatus.setAttribute("label", strBundle.getString("noChange"));
+				this.curItemInListStatus.setAttribute("label", getLangString(strBundle, "noChange"));
 			}
 		}
 		return null;
