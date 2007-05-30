@@ -45,6 +45,9 @@
 				pref.setCharPref("SyncKolab."+confName+".TaskFolderPath", taskFolder);
 			
 			saveAllPrefs(confName);			
+			
+			// open settings dialog since we are finished
+			window.open('chrome://synckolab/content/synckolabPref.xul', 'options', 'chrome,resizable=1');
 		}
 	</script>
 
