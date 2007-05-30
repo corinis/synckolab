@@ -99,7 +99,7 @@
 			doneInit = true;
 		}
 	</script>
-		<description>
+		<description style="width: 350px">
 			&synckolab.newwizard.intro;
 		</description>
 		<label value="&synckolab.settings.Updates;"/>
@@ -109,7 +109,7 @@
     		<label value="&synckolab.newwizard.configName;"/>
 	    	<textbox id="configName" onkeyup="checkConfigName(this.value);"/>
     	</hbox>
-		<description>
+		<description style="width: 350px">
 			&synckolab.newwizard.descName;
 		</description>
 		
@@ -133,11 +133,11 @@
 			setFolders(document.getElementById("ImapAcct").value);
 		}
 	</script>
-			<description>
+			<description style="width: 350px">
 				&synckolab.wizard.LongDescription;
 			</description>
 	    	<separator class="thin"/>
-			<description>
+			<description style="width: 350px">
 				&synckolab.settings.AccountDescription;
 			</description>
 	    	<hbox>
@@ -169,18 +169,18 @@
 			
 		}
 	</script>
-		<description>
+		<description style="width: 320px">
 			&synckolab.wizard.typePageLongDesc;
 		</description>
-		<description>
+		<description style="width: 320px">
 			&synckolab.wizard.typePageContact;
 		</description>
       <checkbox id="syncContacts" label="&synckolab.settings.SyncContacts;" tooltiptext="&synckolab.settings.SyncContactsTip;" oncommand="setControlStateContacts(this.checked)" checked="true"/>	
-		<description>
+		<description style="width: 320px">
 			&synckolab.wizard.typePageCalendar;
 		</description>
       <checkbox id="syncCalendar" label="&synckolab.settings.SyncCalendar;" tooltiptext="&synckolab.settings.SyncCalendarTip;" oncommand="setControlStateCalendar(this.checked)" checked="true"/>	
-		<description>
+		<description style="width: 320px">
 			&synckolab.wizard.typePageTasks;
 		</description>
       <checkbox id="syncTasks" label="&synckolab.settings.SyncTasks;" tooltiptext="&synckolab.settings.SyncTasksTip;" oncommand="setControlStateTasks(this.checked)" checked="true"/>	
@@ -209,7 +209,7 @@
 			</menulist> 
 		</hbox>
 
-		<tree flex="7" id="conImapFolder" rows="7" height="100" width="250" hidecolumnpicker="true" seltype="single" onselect="setWizConFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
+		<tree flex="7" id="conImapFolder" rows="7" height="100" width="350" hidecolumnpicker="true" seltype="single" onselect="setWizConFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
       		<treecols>
 		      <treecol id="conFolder" label="&synckolab.settings.ContactFolder;" primary="true" flex="1"/>
   			</treecols>  			
@@ -242,7 +242,7 @@
 		</hbox>
     	<separator class="thin"/>
       
-      <tree flex="7" id="calImapFolder" rows="7" height="100" width="250" hidecolumnpicker="true" seltype="single" onselect="setWizCalFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
+      <tree flex="7" id="calImapFolder" rows="7" height="100" width="350" hidecolumnpicker="true" seltype="single" onselect="setWizCalFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
       	<treecols>
 		      <treecol id="calFolder" label="&synckolab.settings.CalendarFolder;" primary="true" flex="1"/>
   			</treecols>
@@ -274,7 +274,7 @@
 			</menulist> 
 		</hbox>
 
-      <tree flex="7" id="taskImapFolder" rows="7" height="100" width="250" hidecolumnpicker="true" seltype="single" onselect="setWizTaskFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
+      <tree flex="7" id="taskImapFolder" rows="7" height="100" width="350" hidecolumnpicker="true" seltype="single" onselect="setWizTaskFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
       	<treecols>
 		      <treecol id="taskFolder" label="&synckolab.settings.TaskFolder;" primary="true" flex="1"/>
   			</treecols>
@@ -282,10 +282,10 @@
       <checkbox id="saveToTaskImap" label="&synckolab.settings.SaveToImap;" checked="true" tooltiptext="&synckolab.settings.SaveToImapTip;"/>
 	</wizardpage>
 	<wizardpage id="donePage" pageid="donePageId" description="">
-		<description>
+		<description style="width: 350px">
 			&synckolab.newwizard.DoneText;
 		</description>
-		<description>
+		<description style="width: 350px">
 			&synckolab.newwizard.DoneText2;
 		</description>
 		<label class="text-link" onclick="LaunchUrl('http://synckolab.mozdev.org/')">synckolab.mozdev.org</label>

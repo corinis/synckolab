@@ -61,14 +61,14 @@
 <!ENTITY synckolab.newwizard.configName	"Anzeigename">
 <!ENTITY synckolab.newwizard.descName "Mithilfe des Anzeigenamens können Sie, vor allem wenn sie mehrere Konfigurationen haben, die verschiedenen Einstellungen leichter finden. Versuchen Sie einen beschreibenden Namen zu wählen (z.B. gemeinsame Adressen, Firmentermine, private Aufgaben).">
 <!ENTITY synckolab.wizard.AccountIntervalDescription "IMAP Account auswählen und die grundlegenden Synchronisationseinstellungen festlegen">
-<!ENTITY synckolab.wizard.typePageDesc	"Wählen Sie welche Informationen mit dem ausgwählten IMAP Konto synchronisiert werden sollen">
+<!ENTITY synckolab.wizard.typePageDesc	"Welche Informationen sollen synchronisiert werden">
 <!ENTITY synckolab.wizard.typePageLongDesc	"Pro SyncKolab Konfiguration können Sie je ein Verzeichnis mit einem Adressbuch, einem Kalender und/oder einer Aufgabenliste abgleichen.">
 <!ENTITY synckolab.wizard.typePageContact	"Wählen Sie dieses Feld aus, um ein Adressbuch mit einem IMAP Verzeichnis abzugleichen">
 <!ENTITY synckolab.wizard.typePageCalendar	"Wählen Sie dieses Feld aus, um einen Kalender mit einem IMAP Verzeichnis abzugleichen">
 <!ENTITY synckolab.wizard.typePageTasks	"Wählen Sie dieses Feld aus, um eine Aufgabenliste mit einem IMAP Verzeichnis abzugleichen">
-<!ENTITY synckolab.wizard.conPageInfo	"Wählen Sie das Adressbuch und das Verzeichnis aus, welche miteinander Verglichen werden sollen.">
-<!ENTITY synckolab.wizard.calPageInfo	"Wählen Sie den Kalender und das Verzeichnis aus, welche miteinander Verglichen werden sollen.">
-<!ENTITY synckolab.wizard.taskPageInfo	"Wählen Sie den Kalender für die Aufgaben und das Verzeichnis aus, welche miteinander Verglichen werden sollen.">
+<!ENTITY synckolab.wizard.conPageInfo	"Adressbuch und Verzeichnis auswählen">
+<!ENTITY synckolab.wizard.calPageInfo	"Kalender und Verzeichnis auswählen">
+<!ENTITY synckolab.wizard.taskPageInfo	"Kalender für Aufgaben und Verzeichnis auswählen">
 <!ENTITY synckolab.newwizard.DoneText	"Sie haben SyncKolab fertig eingestellt. Benutzen Sie den Menüpunkt 'Extras-Starte SyncKolab' zum starten der Synchronisation.">
 <!ENTITY synckolab.newwizard.DoneText2	"Sollte ein Fehler auftreten (z.b. die Synchronisation plötzlich aufhören oder ihre Einträge falsch synchronisiert werden - bitte nur mit Fehlermeldung von 'Extras-Javascript Konsole') oder wenn Sie Anregungen haben, wenden Sie sich bitte an die Mailingliste bzw. Bugzilla auf">
 

@@ -981,11 +981,14 @@ function updateTaskFolder (act)
 	}
 }
 
-function saveAllPrefs () {
-	if (curConfig == null)
+function saveAllPrefs (configName) {
+	if (curConfig == null && (!configName || configName == null))
 		return;
 	
-	config = curConfig;
+	var config = curConfig;
+	
+	if (config == null)
+		config = configName;
 		
 	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 	
