@@ -255,9 +255,6 @@ function prefillFields() {
 	abpopup.appendChild(abchild);
 	abchild.setAttribute("label", "VCard/Kolab1");
 	abchild.setAttribute("value", "VCard");
-	abchild.setAttribute("selected", "true");
-	abList.setAttribute("label", "VCard/Kolab1");
-	abList.setAttribute("value", "VCard");
 	abchild = document.createElement("menuitem");
 	abpopup.appendChild(abchild);
 	abchild.setAttribute("label", "Xml/Kolab2");
@@ -274,9 +271,6 @@ function prefillFields() {
 	abpopup.appendChild(abchild);
 	abchild.setAttribute("label", "iCal/Kolab1");
 	abchild.setAttribute("value", "iCal");
-	abchild.setAttribute("selected", "true");
-	abList.setAttribute("label", "iCal/Kolab1");
-	abList.setAttribute("value", "iCal");
 	abchild = document.createElement("menuitem");
 	abpopup.appendChild(abchild);
 	abchild.setAttribute("label", "Xml/Kolab2");
@@ -293,9 +287,6 @@ function prefillFields() {
 	abpopup.appendChild(abchild);
 	abchild.setAttribute("label", "iCal/Kolab1");
 	abchild.setAttribute("value", "iCal");
-	abchild.setAttribute("selected", "true");
-	abList.setAttribute("label", "iCal/Kolab1");
-	abList.setAttribute("value", "iCal");
 	abchild = document.createElement("menuitem");
 	abpopup.appendChild(abchild);
 	abchild.setAttribute("label", "Xml/Kolab2");

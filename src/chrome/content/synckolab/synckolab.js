@@ -267,34 +267,45 @@ function nextSync()
 			window.setTimeout(nextSync, SWITCH_TIME);	
 			return;
 		}
-
-		processMsg.value ="Calendar Configuration " + calConfigs[curCalConfig];
-		syncCalendar.init(calConfigs[curCalConfig]);
-		curCalConfig++;
-		
-		// maybe we do not want to sync calendar in this config
-		if (!syncCalendar.gSync)
+		try
 		{
-			window.setTimeout(nextSync, SWITCH_TIME, syncCalendar);	
-			return;
-		}
-		else
-		{		
-			syncCalendar.folder = getMsgFolder(syncCalendar.serverKey, syncCalendar.folderPath);		
-			syncCalendar.folderMsgURI = syncCalendar.folder.baseMessageURI;
-			syncCalendar.email = getAccountEMail(syncCalendar.serverKey);
-			syncCalendar.name = getAccountName(syncCalendar.serverKey);
+		
+			processMsg.value ="Calendar Configuration " + calConfigs[curCalConfig];
+			syncCalendar.init(calConfigs[curCalConfig]);
+			curCalConfig++;
 			
-	
-			// display stuff
-			syncCalendar.itemList = itemList;
-	
-			logMessage("Calendar: got calendar: " + syncCalendar.gCalendar.name + 
-				"\nMessage Folder: " + syncCalendar.folderMsgURI, LOG_DEBUG);
-	
-			syncCalendar.init2(getContent, syncCalendar);
-	        window.setTimeout(getContent, SWITCH_TIME, syncCalendar);		
-        }
+			// maybe we do not want to sync calendar in this config
+			if (!syncCalendar.gSync)
+			{
+				window.setTimeout(nextSync, SWITCH_TIME, syncCalendar);	
+				return;
+			}
+			else
+			{		
+				syncCalendar.folder = getMsgFolder(syncCalendar.serverKey, syncCalendar.folderPath);		
+				syncCalendar.folderMsgURI = syncCalendar.folder.baseMessageURI;
+				syncCalendar.email = getAccountEMail(syncCalendar.serverKey);
+				syncCalendar.name = getAccountName(syncCalendar.serverKey);
+				
+		
+				// display stuff
+				syncCalendar.itemList = itemList;
+		
+				logMessage("Calendar: got calendar: " + syncCalendar.gCalendar.name + 
+					"\nMessage Folder: " + syncCalendar.folderMsgURI, LOG_DEBUG);
+		
+				syncCalendar.init2(getContent, syncCalendar);
+		        window.setTimeout(getContent, SWITCH_TIME, syncCalendar);		
+	        }
+	    }
+	    catch (ex)
+	    {
+	    	// if an exception is found print it and continue
+			dump("Error setting calendar config: " + e + "\n");
+			curCalConfig++;
+			window.setTimeout(nextSync, SWITCH_TIME);	
+			return;
+	    }
 	}
 	else //done
 	{
