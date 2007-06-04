@@ -7,14 +7,14 @@
       <Description>
         <em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id>
         <em:minVersion>1.5</em:minVersion>
-        <em:maxVersion>3.0a</em:maxVersion>
+        <em:maxVersion>3.0a1</em:maxVersion>
       </Description>
     </em:targetApplication>
     
     <!-- Front End MetaData -->
     <em:id>{571CFACF-0F7D-49b4-BD77-E6FC7B209ADC}</em:id>
     <em:name>Sync Kolab</em:name>
-    <em:version>0.4.34</em:version>
+    <em:version>0.5.0</em:version>
     <em:type>2</em:type>
     <em:description>Synchronize the address book and calendar with IMAP folder or Kolab1/2 server</em:description>
     <em:creator>Niko Berger</em:creator>
