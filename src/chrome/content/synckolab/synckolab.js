@@ -311,6 +311,7 @@ function nextSync()
 		// close the status window
 		if (gCloseWnd)
 			gWnd.close();
+			
 		return;
 	}
 	
@@ -728,7 +729,7 @@ function writeContent ()
 	}
 
 	// if there happens an exception, we are done
-	content = gSync.nextUpdate();
+	var content = gSync.nextUpdate();
 	if (content == "done")
 	{
 			writeContentAfterSave ();

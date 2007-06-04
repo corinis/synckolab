@@ -1163,11 +1163,14 @@ function generateMail (cid, mail, adsubject, mime, part, content, hr)
 		msg += '--Boundary-00='+bound+'\n';
 		msg += 'Content-Type: Text/Plain;\ncharset="us-ascii"\n';
 		msg += 'Content-Transfer-Encoding: 7bit\n\n';
+		/* REMOVED human readable content beacuse other clients dont understand it
+			and dont update it (ie. a contact/event is different in its attachment than in the message
 		if (hr != null)
 		{
 			msg += hr;
 		}
 		else
+		*/
 		{
 			msg += 'This is a Kolab Groupware object.\n';
 			msg += 'To view this object you will need an email client that can understand the Kolab Groupware format.\n';

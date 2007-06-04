@@ -565,6 +565,7 @@ var syncAddressBook = {
 		else
 		{
 			var alreadyProcessed = false;
+			
 			// check if we have this uid in the messages
 			for (var i = 0; i < this.folderMessageUids.length; i++)
 			{
