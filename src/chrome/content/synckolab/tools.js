@@ -1208,7 +1208,8 @@ function logMessage (msg, level)
 		
 		// pause the sync on error if defined by globals
 		if (PAUSE_ON_ERROR && clvl == LOG_ERROR)
-			pauseSync();		
+			if (gWnd)
+				gWnd.pauseSync();
 		
 		// check if we are talking about the same loglevle: ERROR|WARN|INFO|DEBUG
 		if (clvl > infolvl)

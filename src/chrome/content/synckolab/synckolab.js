@@ -219,6 +219,8 @@ function nextSync()
 			window.setTimeout(nextSync, SWITCH_TIME);	
 			return;
 		}
+
+		logMessage("Trying adressbook config " + syncConfigs[curConConfig], LOG_DEBUG);
 		
 		processMsg.value ="AddressBook Configuration " + syncConfigs[curConConfig];
 		// sync the address book
@@ -228,6 +230,7 @@ function nextSync()
 		// maybe we do not want to sync contacts in this config
 		if (!syncAddressBook.gSync)
 		{
+			logMessage("Skipping adressbook config " + syncConfigs[curConConfig], LOG_DEBUG);
 			window.setTimeout(nextSync, SWITCH_TIME, syncCalendar);	
 			return;
 		}
@@ -250,6 +253,7 @@ function nextSync()
 	else
 	if (isCalendarAvailable () && curCalConfig < syncConfigs.length)
 	{
+		logMessage("Trying calendar config " + syncConfigs[curCalConfig], LOG_DEBUG);
 
 		// skip problematic configs :)
 		if (syncConfigs[curCalConfig].length <= 0)
@@ -271,6 +275,7 @@ function nextSync()
 			// maybe we do not want to sync calendar in this config
 			if (!syncCalendar.gSync)
 			{
+				logMessage("Skipping calendar config " + syncConfigs[curCalConfig], LOG_DEBUG);
 				window.setTimeout(nextSync, SWITCH_TIME, syncCalendar);	
 				return;
 			}
@@ -295,7 +300,7 @@ function nextSync()
 	    catch (ex)
 	    {
 	    	// if an exception is found print it and continue
-			dump("Error setting calendar config: " + e + "\n");
+			dump("Error setting calendar config: " + ex + "\n");
 			curCalConfig++;
 			window.setTimeout(nextSync, SWITCH_TIME);	
 			return;
@@ -305,6 +310,7 @@ function nextSync()
 	if (isCalendarAvailable () && curTaskConfig < syncConfigs.length)
 	{
 
+		logMessage("Trying task config " + syncConfigs[curTaskConfig], LOG_DEBUG);
 		// skip problematic configs :)
 		if (syncConfigs[curTaskConfig].length <= 0)
 		{
@@ -324,6 +330,7 @@ function nextSync()
 			// maybe we do not want to sync calendar in this config
 			if (!syncCalendar.gSync)
 			{
+				logMessage("skipping task config " + syncConfigs[curTaskConfig], LOG_DEBUG);
 				window.setTimeout(nextSync, SWITCH_TIME, syncCalendar);	
 				return;
 			}
@@ -348,7 +355,7 @@ function nextSync()
 	    catch (ex)
 	    {
 	    	// if an exception is found print it and continue
-			dump("Error setting task config: " + e + "\n");
+			dump("Error setting task config: " + ex + "\n");
 			curTaskConfig++;
 			window.setTimeout(nextSync, SWITCH_TIME);	
 			return;

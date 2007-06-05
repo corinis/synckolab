@@ -90,25 +90,26 @@ var syncCalendar = {
 			var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 			this.serverKey = pref.getCharPref("SyncKolab."+config+".IncomingServer");
 
-			if (syncTasks)
+			if (this.syncTasks)
 			{
 				// task config
+				this.gSync = pref.getBoolPref("SyncKolab."+config+".syncTasks");
 				this.folderPath = pref.getCharPref("SyncKolab."+config+".TaskFolderPath");
 				this.gCalendarName = pref.getCharPref("SyncKolab."+config+".Tasks");
 				this.format = pref.getCharPref("SyncKolab."+config+".TaskFormat");			
 				this.gSaveImap = pref.getBoolPref("SyncKolab."+config+".saveToTaskImap");
-				this.gSync = pref.getBoolPref("SyncKolab."+config+".syncTasks");
 			}
 			else
 			{
 				// calendar config
+				this.gSync = pref.getBoolPref("SyncKolab."+config+".syncCalendar");
 				this.folderPath = pref.getCharPref("SyncKolab."+config+".CalendarFolderPath");
 				this.gCalendarName = pref.getCharPref("SyncKolab."+config+".Calendar");
 				this.format = pref.getCharPref("SyncKolab."+config+".CalendarFormat");			
 				this.gSaveImap = pref.getBoolPref("SyncKolab."+config+".saveToCalendarImap");
-				this.gSync = pref.getBoolPref("SyncKolab."+config+".syncCalendar");
 			}			
 		} catch(e) {
+			logMessage("Error on reading config " + config + "\n" + e, LOG_ERROR);
 			return;
 		}
 
@@ -128,7 +129,7 @@ var syncCalendar = {
     	
     	// get the sync db
     	
-		if (syncTasks)
+		if (this.syncTasks)
 			this.dbFile = getHashDataBaseFile (config + ".task.db");
 		else
 			this.dbFile = getHashDataBaseFile (config + ".cal.db");
@@ -145,7 +146,7 @@ var syncCalendar = {
 		
 		// gCalendar might be invalid if no calendar is selected in the settings
 		if (this.gCalendar) {
-			if (syncTasks)
+			if (this.syncTasks)
 				this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_TODO, 0, null, null, this.gEvents);
 			else
 				this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_EVENT, 0, null, null, this.gEvents);
@@ -279,8 +280,8 @@ var syncCalendar = {
 			
 			var hasEntry = idxEntry.exists() && (cEvent != null);
 			// make sure cEvent is not null, else the comparision will fail
-			var equal2parsed = hasEntry && equalsEvent(cEvent, parsedEvent, syncTasks);
-			var equal2found = hasEntry && equalsEvent(cEvent, foundEvent, syncTasks);
+			var equal2parsed = hasEntry && equalsEvent(cEvent, parsedEvent, this.syncTasks);
+			var equal2found = hasEntry && equalsEvent(cEvent, foundEvent, this.syncTasks);
 
 			if (hasEntry && !equal2parsed && !equal2found)
  			{
@@ -323,14 +324,14 @@ var syncCalendar = {
                     var msg = null;
                     if (this.format == "Xml")
                     {
-                        msg = event2kolabXmlMsg(foundEvent, this.email, syncTasks);
+                        msg = event2kolabXmlMsg(foundEvent, this.email, this.syncTasks);
                     } 
                     else
                     {
 						icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
 							.getService(Components.interfaces.calIICSService);
 							
-						if (syncTasks)
+						if (this.syncTasks)
 						{
 							var calComp = icssrv.createIcalComponent("VTODO");
 							
@@ -399,13 +400,13 @@ var syncCalendar = {
 					var msg = null;
 					if (this.format == "Xml")
 					{
-						msg = event2kolabXmlMsg(foundEvent, this.email, syncTasks);
+						msg = event2kolabXmlMsg(foundEvent, this.email, this.syncTasks);
 					} 
 					else
 					{
 						icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
 							.getService(Components.interfaces.calIICSService);
-						if (syncTasks)
+						if (this.syncTasks)
 						{
 							var calComp = icssrv.createIcalComponent("VTODO");
 							
@@ -551,14 +552,14 @@ var syncCalendar = {
                 var msg = null;
                 if (this.format == "Xml")
                 {
-				    msg = event2kolabXmlMsg(cur, this.email, syncTasks);
+				    msg = event2kolabXmlMsg(cur, this.email, this.syncTasks);
                 } 
                 else
                 {
     				icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
     					.getService(Components.interfaces.calIICSService);
     					
-					if (syncTasks)
+					if (this.syncTasks)
 					{
 						var calComp = icssrv.createIcalComponent("VTODO");
 						
