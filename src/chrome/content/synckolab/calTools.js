@@ -786,11 +786,6 @@ function cnv_event2xml (event, skipVolatiles, syncTasks)
 	// TODO  not working ATM:
 	//    - yearly recurrence
 	
-	if (syncTasks)
-	{
-		alert("TASK: " + event.title);
-	}
-
     var hasOrganizer = false;
     var isAllDay = syncTasks?false:event.startDate.isDate;
     var endDate = syncTasks?event.dueDate:event.endDate;
