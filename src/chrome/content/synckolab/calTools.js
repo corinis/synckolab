@@ -285,6 +285,8 @@ function message2Event (fileContent)
  */
 function xml2Event (xml, event)
 {
+	var syncTasks = false;
+	
 	logMessage("Parsing an XML event:\n" + xml, LOG_CAL + LOG_DEBUG);
 	// TODO improve recurrence settings
 	//      not working ATM:
@@ -315,13 +317,17 @@ function xml2Event (xml, event)
 		logMessage("Error parsing the XML content of this message.\n" + xml, LOG_CAL + LOG_ERROR);
 		return false;
 	}
-	if ((topNode.nodeType != Node.ELEMENT_NODE) || (topNode.nodeName.toUpperCase() != "EVENT"))
+	if ((topNode.nodeType != Node.ELEMENT_NODE) || ((topNode.nodeName.toUpperCase() != "EVENT") && (topNode.nodeName.toUpperCase() != "TASK") ))
 	{
 		// this can't be an event in Kolab XML format
 		logMessage("This message doesn't contain an event in Kolab XML format.\n" + xml, LOG_CAL + LOG_ERROR);
 		return false;
 	}
 
+	// check for task
+	if (topNode.nodeName.toUpperCase() == "TASK")
+		syncTasks = true;
+		
 	var cur = topNode.firstChild;
 	// iterate over the DOM tree of the XML structure of the event
 	while(cur != null)
@@ -356,11 +362,24 @@ function xml2Event (xml, event)
 					if (s.indexOf(":") == -1)
 					{
     					// date values witout time part specify a full day event
-                        event.startDate = string2CalDate(s);
-						event.startDate.isDate = true;
+						if (syncTasks)
+						{
+	                        event.entryDate = string2CalDate(s);
+							event.entryDate.isDate = true;
+						}
+						else
+						{    					
+	                        event.startDate = string2CalDate(s);
+							event.startDate.isDate = true;
+						}
 					}
 					else
-                        event.startDate = string2CalDateTime(s, true);
+					{
+						if (syncTasks)
+	                        event.entryDate = string2CalDateTime(s, true);
+	                    else
+	                        event.startDate = string2CalDateTime(s, true);
+                    }
 					break;						
 
 				case "END-DATE":
@@ -376,6 +395,25 @@ function xml2Event (xml, event)
 					else
                         event.endDate = string2CalDateTime(s, true);
 					break;						
+					
+				case "DUE-DATE":
+					var s = cur.firstChild.data;
+					// 2005-03-30T15:28:52Z
+					if (s.indexOf(":") == -1)
+					{
+    					// date values witout time part specify a full day event
+                        event.dueDate = string2CalDate(s);
+						event.dueDate.day += 1;
+						event.dueDate.isDate = true;
+					}
+					else
+                        event.dueDate = string2CalDateTime(s, true);
+					break;
+					
+				case "COMPLETED":
+					var s = cur.firstChild.data;
+					event.isCompleted = (s == "0");
+					break;
 
 				case "SUMMARY":
 					event.title = cur.firstChild.data;
@@ -727,20 +765,34 @@ function cnv_event2xml (event, skipVolatiles, syncTasks)
 {
 	// TODO  not working ATM:
 	//    - yearly recurrence
+	
+	if (syncTasks)
+	{
+		alert("TASK: " + event.title);
+	}
 
     var hasOrganizer = false;
-    var isAllDay = event.startDate.isDate;
-    var endDate = event.endDate;
+    var isAllDay = syncTasks?false:event.startDate.isDate;
+    var endDate = syncTasks?event.dueDate:event.endDate;
 
     var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     if (syncTasks)
+    {
 	    xml += "<task version=\"1.0\" >\n"
+	    xml += " <completed>" + encode4XML(event.isCompleted) +"</completed>\n";	    
+	}
     else
 	    xml += "<event version=\"1.0\" >\n"
     xml += " <product-id>Synckolab " + gVersion + ", Calendar Sync</product-id>\n";
     xml += " <uid>" + event.id + "</uid>\n"
-    xml += " <start-date>" + calDateTime2String(event.startDate, isAllDay) + "</start-date>\n";
-    xml += " <end-date>" + calDateTime2String(endDate, isAllDay) + "</end-date>\n";
+    if(syncTasks)
+	    xml += " <start-date>" + calDateTime2String(event.entryDate, isAllDay) + "</start-date>\n";
+    else
+	    xml += " <start-date>" + calDateTime2String(event.startDate, isAllDay) + "</start-date>\n";
+    if(syncTasks)
+	    xml += " <due-date>" + calDateTime2String(endDate, isAllDay) + "</due-date>\n";
+   	else
+	    xml += " <end-date>" + calDateTime2String(endDate, isAllDay) + "</end-date>\n";
     xml += " <summary>" + encode4XML(event.title) +"</summary>\n";
 
     if (!skipVolatiles)

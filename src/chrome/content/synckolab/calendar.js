@@ -139,6 +139,8 @@ var syncCalendar = {
 	},
 	
 	init2: function (nextFunc, sync)	{
+
+		logMessage("INIT2", LOG_DEBUG);
 		// get ALL the items from calendar - when done call nextfunc
 		this.gEvents.nextFunc = nextFunc;
 		this.gEvents.events = new Array();
@@ -147,15 +149,18 @@ var syncCalendar = {
 		// gCalendar might be invalid if no calendar is selected in the settings
 		if (this.gCalendar) {
 			if (this.syncTasks)
-				this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_TODO, 0, null, null, this.gEvents);
+				this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_TODO | this.gCalendar.ITEM_FILTER_COMPLETED_ALL, 0, null, null, this.gEvents);
 			else
 				this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_EVENT, 0, null, null, this.gEvents);
-          // if no item has been read, onGetResult has never been called 
-          // leaving us stuck in the events chain
-		  if (this.gEvents.events.length > 0)
-		      return true;
-		  else
-		      return false;
+				
+			logMessage("Getting items from calendar" + e, LOG_CALENDAR + LOG_DEBUG);
+			
+			// if no item has been read, onGetResult has never been called 
+			// leaving us stuck in the events chain
+			if (this.gEvents.events.length > 0)
+			    return true;
+			else
+			    return false;
 		}
 		else {
 		  alert("Please select a calender as sync target before trying to synchronize.");
@@ -169,6 +174,7 @@ var syncCalendar = {
 		sync: '',
 		onOperationComplete: function(aCalendar, aStatus, aOperator, aId, aDetail) {		
 			    logMessage("operation: status="+aStatus + " Op=" + aOperator + " Detail=" + aDetail, LOG_DEBUG + LOG_CAL);
+			    this.nextFunc();
 			},
 		onGetResult: function(aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {
                 logMessage("got results: " + aCount + " items", LOG_DEBUG + LOG_CAL);

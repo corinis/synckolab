@@ -247,7 +247,11 @@ function nextSync()
 			
 			logMessage("Contacts: got folder: " + syncAddressBook.folder.URI + 
 				"\nMessage Folder: " + syncAddressBook.folderMsgURI, LOG_DEBUG);
-			window.setTimeout(getContent, SWITCH_TIME, syncAddressBook);	
+				
+			// remember the sync class
+			gSync = syncAddressBook;
+				
+			window.setTimeout(getContent, SWITCH_TIME);	
 		}	
 	}
 	else
@@ -292,9 +296,13 @@ function nextSync()
 		
 				logMessage("Calendar: got calendar: " + syncCalendar.gCalendar.name + 
 					"\nMessage Folder: " + syncCalendar.folderMsgURI, LOG_DEBUG);
-		
-				syncCalendar.init2(getContent, syncCalendar);
-		        window.setTimeout(getContent, SWITCH_TIME, syncCalendar);		
+
+				// remember the sync class
+				gSync = syncCalendar;
+				
+				// the init2 does the goon for us		
+				syncCalendar.init2(getContent, syncCalendar);				
+				return;
 	        }
 	    }
 	    catch (ex)
@@ -347,9 +355,13 @@ function nextSync()
 		
 				logMessage("Calendar: got calendar: " + syncCalendar.gCalendar.name + 
 					"\nMessage Folder: " + syncCalendar.folderMsgURI, LOG_DEBUG);
-		
+
+				// remember the sync class
+				gSync = syncCalendar;
+
+				// the init2 does the goon for us		
 				syncCalendar.init2(getContent, syncCalendar);
-		        window.setTimeout(getContent, SWITCH_TIME, syncCalendar);		
+				return;
 	        }
 	    }
 	    catch (ex)
@@ -400,38 +412,35 @@ var gSync;
 
 // start with the sync with the sync class
 // saves the contact folder into fileContent
-function getContent (sync)
-{
-	// remember the sync class
-	gSync = sync;
-	
+function getContent ()
+{	
 	// check if folder REALLY exists
-	sync.folder.clearNewMessages ();
+	gSync.folder.clearNewMessages ();
 	//sync.folder.downloadAllForOffline (myUrlListener, msgWindow);
 
 	// get the number of messages to go through
-	totalMessages = sync.folder.getTotalMessages(false);
+	totalMessages = gSync.folder.getTotalMessages(false);
 	logMessage("Have to sync " + totalMessages + " messages for the folder.", LOG_INFO);
 	
 	// fix bug #16848 and ask before deleting everything :P
-	if (totalMessages == 0 && sync.itemCount() > 0)
+	if (totalMessages == 0 && gSync.itemCount() > 0)
 	{
 		if (window.confirm("No items have been found on the server, but there are local items.\nDo you want to copy all items to the server?"))
-			sync.forceServerCopy = true;
+			gSync.forceServerCopy = true;
 	}
 	else
-	if (totalMessages > 0 && sync.itemCount() == 0)
+	if (totalMessages > 0 && gSync.itemCount() == 0)
 	{
 		if (window.confirm("No items have been found locally, but there are items on the server.\nDo you want to copy all items from the server?"))
-			sync.forceLocalCopy = true;
+			gSync.forceLocalCopy = true;
 	}
 	
 		
 	// get the message keys
-	gMessages = sync.folder.getMessages(null);	 // dont need the msgWindow use null
+	gMessages = gSync.folder.getMessages(null);	 // dont need the msgWindow use null
 	
 	// get the message database (a file with uid:size:date:localfile)
-	syncMessageDb = readDataBase(getHashDataBaseFile(sync.gConfig));
+	syncMessageDb = readDataBase(getHashDataBaseFile(gSync.gConfig));
 		
 	curMessage = 0;
 	updateMessages = new Array(); // saves the the message url to delete

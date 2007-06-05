@@ -770,6 +770,9 @@ function time2String (cdate)
 // produces: 2005-03-30 for allday = true
 function calDateTime2String (val, allday)
 {
+	if (val == null)
+		return "";
+		
     var datetime = val.jsDate
     var string = date2String(datetime);
     if (!allday)
