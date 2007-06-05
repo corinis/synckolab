@@ -987,6 +987,8 @@ function encode4XML(s)
 {
 	if (s == null)
 		return "";
+	if (!s.replace)
+		return s;
 		
 	return s.replace(/&/g, "&amp;").replace(/</g,
         "&lt;").replace(/>/g, "&gt;").replace(/amp;amp;/g, "amp;");

@@ -345,18 +345,27 @@ function xml2Event (xml, event)
 					break;
 					
 				case "CREATION-DATE":
+					if (!cur.firstChild)
+						break;
+
 					var s = cur.firstChild.data;
 					// 2005-03-30T15:28:52Z
 					event.setProperty("CREATED", string2CalDateTime(s, true));
 					break;						
 
 				case "LAST-MODIFICATION-DATE":
+					if (!cur.firstChild)
+						break;
+
 					var s = cur.firstChild.data;
 					// 2005-03-30T15:28:52Z
 					event.setProperty("LAST-MODIFIED", string2CalDateTime(s, true));
 					break;						
 
 				case "START-DATE":
+					if (!cur.firstChild)
+						break;
+						
 					var s = cur.firstChild.data;
 					// 2005-03-30T15:28:52Z
 					if (s.indexOf(":") == -1)
@@ -383,6 +392,9 @@ function xml2Event (xml, event)
 					break;						
 
 				case "END-DATE":
+					if (!cur.firstChild)
+						break;
+
 					var s = cur.firstChild.data;
 					// 2005-03-30T15:28:52Z
 					if (s.indexOf(":") == -1)
@@ -397,6 +409,9 @@ function xml2Event (xml, event)
 					break;						
 					
 				case "DUE-DATE":
+					if (!cur.firstChild)
+						break;
+
 					var s = cur.firstChild.data;
 					// 2005-03-30T15:28:52Z
 					if (s.indexOf(":") == -1)
@@ -411,8 +426,13 @@ function xml2Event (xml, event)
 					break;
 					
 				case "COMPLETED":
+					event.isCompleted = false;
+					
+					if (!cur.firstChild)
+						break;
+
 					var s = cur.firstChild.data;
-					event.isCompleted = (s == "0");
+					event.isCompleted = (s == "1");
 					break;
 
 				case "SUMMARY":
@@ -779,7 +799,7 @@ function cnv_event2xml (event, skipVolatiles, syncTasks)
     if (syncTasks)
     {
 	    xml += "<task version=\"1.0\" >\n"
-	    xml += " <completed>" + encode4XML(event.isCompleted) +"</completed>\n";	    
+	    xml += " <completed>" + event.isCompleted?"1":"0" +"</completed>\n";	
 	}
     else
 	    xml += "<event version=\"1.0\" >\n"
@@ -1009,17 +1029,20 @@ function cnv_event2xml (event, skipVolatiles, syncTasks)
 /**
  * Write an event into human readable form
  */
-function event2Human (event)
+function event2Human (event, syncTasks)
 {
-    var isAllDay = event.startDate.isDate;
-    var endDate = event.endDate;
     var txt = "Summary: " + event.title +"\n";
-    txt += "Start date: " + calDateTime2String(event.startDate, isAllDay) + "\n";
-    txt += "End date: " + calDateTime2String(endDate, isAllDay) + "\n\n";
-     if (event.getProperty("DESCRIPTION"))
-        txt += event.getProperty("DESCRIPTION") + "\n\n";
-     if (event.getProperty("LOCATION"))
-        txt += event.getProperty("LOCATION") +"\n";
+    if(!syncTasks)
+    {
+	    var isAllDay = event.startDate.isDate;
+	    var endDate = event.endDate;
+	    txt += "Start date: " + calDateTime2String(event.startDate, isAllDay) + "\n";
+	    txt += "End date: " + calDateTime2String(endDate, isAllDay) + "\n\n";
+    }
+    if (event.getProperty("DESCRIPTION"))
+       txt += event.getProperty("DESCRIPTION") + "\n\n";
+    if (event.getProperty("LOCATION"))
+       txt += event.getProperty("LOCATION") +"\n";
     return txt;
 }
 
@@ -1032,7 +1055,7 @@ function event2kolabXmlMsg (event, email, syncTasks)
 {
     var xml = event2xml(event, syncTasks);
 	var my_msg = generateMail(event.id, email, "", syncTasks?"application/x-vnd.kolab.task":"application/x-vnd.kolab.event", 
-			true, encode_utf8(xml), event2Human(event));
+			true, encode_utf8(xml), event2Human(event, syncTasks));
 	return my_msg;
 }
 
