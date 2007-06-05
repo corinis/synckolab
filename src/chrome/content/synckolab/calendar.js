@@ -48,15 +48,13 @@ var syncCalendar = {
 	gConfig: '', // remember the configuration name
 	gCurUID: '', // save the last checked uid - for external use
 
-	gToDo: '',
-	gCurTodo: 0,
 	gCurEvent: 0,
 	folder: '', // the contact folder type nsIMsgFolder
 	folderMsgURI: '', // the message uri
 	gCalendarName: '', // the calendar name
 	gCalendar: '', // the calendar
 	gCalendarEvents: '', // all events from the calendar
-	format: 'iCal', // the format iCal/Xml	
+	format: 'Xml', // the format iCal/Xml	
 	folderMessageUids: '',
 	
 	email: '', // holds the account email
@@ -73,6 +71,9 @@ var syncCalendar = {
 
 	forceServerCopy: false,
 	forceLocalCopy: false,
+	
+	syncTasks: false,	// sync tasks if true, otherwise sync events
+	
 	isCal: function() {
 		return true
 	},
@@ -87,19 +88,32 @@ var syncCalendar = {
 		// initialize the configuration
 		try {
 			var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
-			this.folderPath = pref.getCharPref("SyncKolab."+config+".CalendarFolderPath");
 			this.serverKey = pref.getCharPref("SyncKolab."+config+".IncomingServer");
-			this.gCalendarName = pref.getCharPref("SyncKolab."+config+".Calendar");
-			this.format = pref.getCharPref("SyncKolab."+config+".CalendarFormat");			
-			this.gSaveImap = pref.getBoolPref("SyncKolab."+config+".saveToCalendarImap");
-			this.gSync = pref.getBoolPref("SyncKolab."+config+".syncCalendar");
-			
+
+			if (syncTasks)
+			{
+				// task config
+				this.folderPath = pref.getCharPref("SyncKolab."+config+".TaskFolderPath");
+				this.gCalendarName = pref.getCharPref("SyncKolab."+config+".Tasks");
+				this.format = pref.getCharPref("SyncKolab."+config+".TaskFormat");			
+				this.gSaveImap = pref.getBoolPref("SyncKolab."+config+".saveToTaskImap");
+				this.gSync = pref.getBoolPref("SyncKolab."+config+".syncTasks");
+			}
+			else
+			{
+				// calendar config
+				this.folderPath = pref.getCharPref("SyncKolab."+config+".CalendarFolderPath");
+				this.gCalendarName = pref.getCharPref("SyncKolab."+config+".Calendar");
+				this.format = pref.getCharPref("SyncKolab."+config+".CalendarFormat");			
+				this.gSaveImap = pref.getBoolPref("SyncKolab."+config+".saveToCalendarImap");
+				this.gSync = pref.getBoolPref("SyncKolab."+config+".syncCalendar");
+			}			
 		} catch(e) {
 			return;
 		}
 
 		// get the correct calendar instance
-		var calendars = getCalendars();
+		var calendars = getSynckolabCalendars();
 		for( var i = 0; i < calendars.length; i++ )
 	    {
 	    	if (calendars[i].name == this.gCalendarName)
@@ -113,7 +127,12 @@ var syncCalendar = {
     	this.folderMessageUids = new Array(); // the checked uids - for better sync
     	
     	// get the sync db
-		this.dbFile = getHashDataBaseFile (config + ".cal");
+    	
+		if (syncTasks)
+			this.dbFile = getHashDataBaseFile (config + ".task.db");
+		else
+			this.dbFile = getHashDataBaseFile (config + ".cal.db");
+			
 		this.db = readDataBase (this.dbFile);
 		this.gConfig = config;
 	},
@@ -126,7 +145,10 @@ var syncCalendar = {
 		
 		// gCalendar might be invalid if no calendar is selected in the settings
 		if (this.gCalendar) {
-		  this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_EVENT, 0, null, null, this.gEvents);
+			if (syncTasks)
+				this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_TODO, 0, null, null, this.gEvents);
+			else
+				this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_EVENT, 0, null, null, this.gEvents);
           // if no item has been read, onGetResult has never been called 
           // leaving us stuck in the events chain
 		  if (this.gEvents.events.length > 0)
@@ -257,8 +279,8 @@ var syncCalendar = {
 			
 			var hasEntry = idxEntry.exists() && (cEvent != null);
 			// make sure cEvent is not null, else the comparision will fail
-			var equal2parsed = hasEntry && equalsEvent(cEvent, parsedEvent);
-			var equal2found = hasEntry && equalsEvent(cEvent, foundEvent);
+			var equal2parsed = hasEntry && equalsEvent(cEvent, parsedEvent, syncTasks);
+			var equal2found = hasEntry && equalsEvent(cEvent, foundEvent, syncTasks);
 
 			if (hasEntry && !equal2parsed && !equal2found)
  			{
@@ -301,19 +323,34 @@ var syncCalendar = {
                     var msg = null;
                     if (this.format == "Xml")
                     {
-                        msg = event2kolabXmlMsg(foundEvent, this.email);
+                        msg = event2kolabXmlMsg(foundEvent, this.email, syncTasks);
                     } 
                     else
                     {
 						icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
 							.getService(Components.interfaces.calIICSService);
-						var calComp = icssrv.createIcalComponent("VCALENDAR");
-						calComp.version = "2.0";
-						calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
-						calComp.addSubcomponent(foundEvent.icalComponent);
-						
-						msg = generateMail(cur.id, this.email, "iCal", "text/calendar", 
-							false, encodeQuoted(encode_utf8(calComp.serializeToICS())), null);
+							
+						if (syncTasks)
+						{
+							var calComp = icssrv.createIcalComponent("VTODO");
+							
+							calComp.version = "2.0";
+							calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
+							calComp.addSubcomponent(foundEvent.icalComponent);
+							
+							msg = generateMail(cur.id, this.email, "iCal", "text/todo", 
+								false, encodeQuoted(encode_utf8(calComp.serializeToICS())), null);
+						}
+						else
+						{
+							var calComp = icssrv.createIcalComponent("VCALENDAR");
+							calComp.version = "2.0";
+							calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
+							calComp.addSubcomponent(foundEvent.icalComponent);
+							
+							msg = generateMail(cur.id, this.email, "iCal", "text/calendar", 
+								false, encodeQuoted(encode_utf8(calComp.serializeToICS())), null);
+						}
 					}
 
 					writeSyncDBFile (idxEntry, stripMailHeader(msg));
@@ -362,19 +399,33 @@ var syncCalendar = {
 					var msg = null;
 					if (this.format == "Xml")
 					{
-						msg = event2kolabXmlMsg(foundEvent, this.email);
+						msg = event2kolabXmlMsg(foundEvent, this.email, syncTasks);
 					} 
 					else
 					{
 						icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
 							.getService(Components.interfaces.calIICSService);
-						var calComp = icssrv.createIcalComponent("VCALENDAR");
-						calComp.version = "2.0";
-						calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
-						calComp.addSubcomponent(foundEvent.icalComponent);
-						
-						msg = generateMail(parsedEvent.id, this.email, "iCal", "text/calendar", 
-							false, encodeQuoted(encode_utf8(calComp.serializeToICS())), null);
+						if (syncTasks)
+						{
+							var calComp = icssrv.createIcalComponent("VTODO");
+							
+							calComp.version = "2.0";
+							calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
+							calComp.addSubcomponent(foundEvent.icalComponent);
+							
+							msg = generateMail(cur.id, this.email, "iCal", "text/todo", 
+								false, encodeQuoted(encode_utf8(calComp.serializeToICS())), null);
+						}
+						else
+						{
+							var calComp = icssrv.createIcalComponent("VCALENDAR");
+							calComp.version = "2.0";
+							calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
+							calComp.addSubcomponent(foundEvent.icalComponent);
+							
+							msg = generateMail(parsedEvent.id, this.email, "iCal", "text/calendar", 
+								false, encodeQuoted(encode_utf8(calComp.serializeToICS())), null);
+						}
 					}
 					
 					// update list item
@@ -396,7 +447,6 @@ var syncCalendar = {
 	
 	initUpdate: function () {
 		this.gCurEvent = 0;
-		this.gCurTodo = 0;
 		return true;
 	},
 	
@@ -406,7 +456,7 @@ var syncCalendar = {
 	nextUpdate: function () {
 		logMessage("next update...", LOG_CAL + LOG_DEBUG);
 		// if there happens an exception, we are done
-		if ((this.gEvents == null || this.gCurEvent >= this.gEvents.events.length) && (this.gTodo == null || this.gCurTodo >= this.gTodo.length))
+		if ((this.gEvents == null || this.gCurEvent >= this.gEvents.events.length))
 		{
 			logMessage("done update...", LOG_CAL + LOG_INFO);
 			// we are done
@@ -501,20 +551,34 @@ var syncCalendar = {
                 var msg = null;
                 if (this.format == "Xml")
                 {
-				    msg = event2kolabXmlMsg(cur, this.email);
+				    msg = event2kolabXmlMsg(cur, this.email, syncTasks);
                 } 
                 else
                 {
     				icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
     					.getService(Components.interfaces.calIICSService);
-    				var calComp = icssrv.createIcalComponent("VCALENDAR");
-    				calComp.version = "2.0";
-    				calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
-    				calComp.addSubcomponent(cur.icalComponent);
-    				
-					msg = generateMail(cur.id, this.email, "iCal", "text/calendar", 
-						false, encodeQuoted(encode_utf8(calComp.serializeToICS())), null);
-					
+    					
+					if (syncTasks)
+					{
+						var calComp = icssrv.createIcalComponent("VTODO");
+						
+						calComp.version = "2.0";
+						calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
+						calComp.addSubcomponent(cur.icalComponent);
+						
+						msg = generateMail(cur.id, this.email, "iCal", "text/todo", 
+							false, encodeQuoted(encode_utf8(calComp.serializeToICS())), null);
+					}
+					else
+					{
+	    				var calComp = icssrv.createIcalComponent("VCALENDAR");
+	    				calComp.version = "2.0";
+	    				calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
+	    				calComp.addSubcomponent(cur.icalComponent);
+	    				
+						msg = generateMail(cur.id, this.email, "iCal", "text/calendar", 
+							false, encodeQuoted(encode_utf8(calComp.serializeToICS())), null);
+					}					
 				}
 				
 		    	logMessage("New event:\n" + msg, LOG_CAL + LOG_DEBUG);
@@ -526,36 +590,6 @@ var syncCalendar = {
 
 			}
 		}	
-		else
-		if (this.gTodo != null && this.gCurTodo <= this.gTodo.length)
-		{
-			var cur = this.gTodo[this.gCurTodo++];
-			var msg = null;
-	    	var writeCur = false;
-		    
-			writeCur = true;
-			// check if we have this uid in the messages
-			var i;
-			for (i = 0; i < this.folderMessageUids.length; i++)
-			{
-				if (cur.id == this.folderMessageUids[i])
-				{
-					logMessage("we got this todo: " + cur.id, LOG_CAL + LOG_INFO);
-					writeCur = false;
-					break;
-				}
-			}
-		
-			if (writeCur)
-			{
-				// and write the message
-				var msg = genMailHeader(cur.id, "iCal", "text/calendar", false);
-				msg += encodeQuoted(encode_utf8(cur.getIcalString()));
-				msg += "\n\n";s
-				
-				logMessage("New event [" + msg + "]", LOG_CAL + LOG_INFO);
-			}
-		}
 		
 		// return the event's content
 		return msg;

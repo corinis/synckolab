@@ -179,9 +179,9 @@ function getDayIndex (name)
  * TODO: make sure that event2xml does not create undesired ebhaviour when
  *   comparing iCal vs. XML
  */
-function equalsEvent (a, b)
+function equalsEvent (a, b, syncTasks)
 {
-	return cnv_event2xml(a, true) == cnv_event2xml(b, true);
+	return cnv_event2xml(a, true, syncTasks) == cnv_event2xml(b, true, syncTasks);
 /*
 	//Fields to look for
 	var fieldsArray = new Array(
@@ -711,9 +711,9 @@ function xml2Event (xml, event)
  *
  * @return XML string in Kolab 2 format
  */
-function event2xml (event)
+function event2xml (event, syncTasks)
 {
-    return cnv_event2xml( event, false);
+    return cnv_event2xml( event, false, syncTasks);
 }
 
 /**
@@ -723,7 +723,7 @@ function event2xml (event)
  *
  * @return XML string in Kolab 2 format
  */
-function cnv_event2xml (event, skipVolatiles)
+function cnv_event2xml (event, skipVolatiles, syncTasks)
 {
 	// TODO  not working ATM:
 	//    - yearly recurrence
@@ -733,7 +733,10 @@ function cnv_event2xml (event, skipVolatiles)
     var endDate = event.endDate;
 
     var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-    xml += "<event version=\"1.0\" >\n"
+    if (syncTasks)
+	    xml += "<task version=\"1.0\" >\n"
+    else
+	    xml += "<event version=\"1.0\" >\n"
     xml += " <product-id>Synckolab " + gVersion + ", Calendar Sync</product-id>\n";
     xml += " <uid>" + event.id + "</uid>\n"
     xml += " <start-date>" + calDateTime2String(event.startDate, isAllDay) + "</start-date>\n";
@@ -941,7 +944,10 @@ function cnv_event2xml (event, skipVolatiles)
     }
 
     xml += " <revision>0</revision>\n";
-    xml += "</event>\n"
+    if (syncTasks)
+	    xml += "</task>\n"
+	else
+	    xml += "</event>\n"
 
 	logMessage("Event in ICAL:\n=============\n" + event.icalString + "\n" 
 		+ "Created XML event structure:\n=============================\n" + xml, LOG_CAL + LOG_DEBUG);
@@ -970,10 +976,10 @@ function event2Human (event)
  *
  * @return a message in Kolab 2 format
  */
-function event2kolabXmlMsg (event, email)
+function event2kolabXmlMsg (event, email, syncTasks)
 {
-    var xml = event2xml(event);
-	var my_msg = generateMail(event.id, email, "", "application/x-vnd.kolab.event", 
+    var xml = event2xml(event, syncTasks);
+	var my_msg = generateMail(event.id, email, "", syncTasks?"application/x-vnd.kolab.task":"application/x-vnd.kolab.event", 
 			true, encode_utf8(xml), event2Human(event));
 	return my_msg;
 }
@@ -1004,9 +1010,17 @@ function ical2event (content)
   
     if (rootComp.componentType == 'VCALENDAR') {
 		event = rootComp;
-	} else {
+	} else 
+    if (rootComp.componentType == 'VTODO') {
+		event = rootComp;
+	} else 	{
 		event = rootComp.getFirstSubcomponent('VCALENDAR');
+		if (!event)
+		{
+			event = rootComp.getFirstSubcomponent('VTODO');
+		}
 	}
+	
 	var subComp = event.getFirstSubcomponent("ANY");
 	event = Components.classes["@mozilla.org/calendar/event;1"]
                       .createInstance(Components.interfaces.calIEvent);

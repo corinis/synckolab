@@ -170,10 +170,11 @@ function goWindow (wnd)
 }
 
 var gTmpFile;
-var conConfigs; // the addressbook configuration array
-var calConfigs; // the calendar configuration array
+var syncConfigs; // the configuration array
+
 var curConConfig; // the current addressbook config
 var curCalConfig; // the current calendar config
+var curTaskConfig; // the current task config
 
 function startSync(event) {
 	meter.setAttribute("value", "0%");
@@ -187,26 +188,16 @@ function startSync(event) {
 	file.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0664);
 	gTmpFile = file.path;
 	
-	conConfigs = new Array();
-	calConfigs = new Array();		
+	syncConfigs = new Array();
 	curConConfig = 0;
 	curCalConfig = 0;
+	curTaskConfig = 0;
 	
 	try {
-		var conConfig = pref.getCharPref("SyncKolab.Configs");
-		conConfigs = conConfig.split(';');
+		var syncConfig = pref.getCharPref("SyncKolab.Configs");
+		syncConfigs = syncConfig.split(';');
 	} catch(ex) 
 	{
-	}
-	
-	if (isCalendarAvailable ())
-	{
-		// there is only one way to read the configs :)
-		try {
-			var calConfig = pref.getCharPref("SyncKolab.Configs");
-			calConfigs = calConfig.split(';');
-		}
-		catch(ex) {}
 	}
 	
 	// all initialized, lets run
@@ -217,21 +208,21 @@ function startSync(event) {
 function nextSync()
 {
 
-	totalMeter.setAttribute("value", (((curConConfig+curCalConfig)*100)/(conConfigs.length+calConfigs.length)) +"%");
+	totalMeter.setAttribute("value", (((curConConfig+curCalConfig+curTaskConfig)*100)/(syncConfigs.length*3)) +"%");
 
-	if (curConConfig < conConfigs.length)
+	if (curConConfig < syncConfigs.length)
 	{
 		// skip problematic configs :)
-		if (conConfigs[curConConfig].length <= 0)
+		if (syncConfigs[curConConfig].length <= 0)
 		{
 			curConConfig++;
 			window.setTimeout(nextSync, SWITCH_TIME);	
 			return;
 		}
 		
-		processMsg.value ="AddressBook Configuration " + conConfigs[curConConfig];
+		processMsg.value ="AddressBook Configuration " + syncConfigs[curConConfig];
 		// sync the address book
-		syncAddressBook.init(conConfigs[curConConfig]);	
+		syncAddressBook.init(syncConfigs[curConConfig]);	
 		curConConfig++;		
 		
 		// maybe we do not want to sync contacts in this config
@@ -257,11 +248,11 @@ function nextSync()
 		}	
 	}
 	else
-	if (isCalendarAvailable () && curCalConfig < calConfigs.length)
+	if (isCalendarAvailable () && curCalConfig < syncConfigs.length)
 	{
 
 		// skip problematic configs :)
-		if (calConfigs[curCalConfig].length <= 0)
+		if (syncConfigs[curCalConfig].length <= 0)
 		{
 			curCalConfig++;
 			window.setTimeout(nextSync, SWITCH_TIME);	
@@ -270,8 +261,11 @@ function nextSync()
 		try
 		{
 		
-			processMsg.value ="Calendar Configuration " + calConfigs[curCalConfig];
-			syncCalendar.init(calConfigs[curCalConfig]);
+			processMsg.value ="Calendar Configuration " + syncConfigs[curCalConfig];
+			// make sure not to sync tasks
+			syncCalendar.syncTasks = false;
+			syncCalendar.init(syncConfigs[curCalConfig]);
+			
 			curCalConfig++;
 			
 			// maybe we do not want to sync calendar in this config
@@ -303,6 +297,59 @@ function nextSync()
 	    	// if an exception is found print it and continue
 			dump("Error setting calendar config: " + e + "\n");
 			curCalConfig++;
+			window.setTimeout(nextSync, SWITCH_TIME);	
+			return;
+	    }
+	}
+	else
+	if (isCalendarAvailable () && curTaskConfig < syncConfigs.length)
+	{
+
+		// skip problematic configs :)
+		if (syncConfigs[curTaskConfig].length <= 0)
+		{
+			curCalConfig++;
+			window.setTimeout(nextSync, SWITCH_TIME);	
+			return;
+		}
+		try
+		{
+		
+			processMsg.value ="Task Configuration " + syncConfigs[curTaskConfig];
+			// sync tasks
+			syncCalendar.syncTasks = true;
+			syncCalendar.init(syncConfigs[curTaskConfig]);
+			curTaskConfig++;
+			
+			// maybe we do not want to sync calendar in this config
+			if (!syncCalendar.gSync)
+			{
+				window.setTimeout(nextSync, SWITCH_TIME, syncCalendar);	
+				return;
+			}
+			else
+			{		
+				syncCalendar.folder = getMsgFolder(syncCalendar.serverKey, syncCalendar.folderPath);		
+				syncCalendar.folderMsgURI = syncCalendar.folder.baseMessageURI;
+				syncCalendar.email = getAccountEMail(syncCalendar.serverKey);
+				syncCalendar.name = getAccountName(syncCalendar.serverKey);
+				
+		
+				// display stuff
+				syncCalendar.itemList = itemList;
+		
+				logMessage("Calendar: got calendar: " + syncCalendar.gCalendar.name + 
+					"\nMessage Folder: " + syncCalendar.folderMsgURI, LOG_DEBUG);
+		
+				syncCalendar.init2(getContent, syncCalendar);
+		        window.setTimeout(getContent, SWITCH_TIME, syncCalendar);		
+	        }
+	    }
+	    catch (ex)
+	    {
+	    	// if an exception is found print it and continue
+			dump("Error setting task config: " + e + "\n");
+			curTaskConfig++;
 			window.setTimeout(nextSync, SWITCH_TIME);	
 			return;
 	    }
