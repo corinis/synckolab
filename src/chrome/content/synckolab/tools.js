@@ -187,13 +187,29 @@ function stripMailHeader (content)
 				if (startPos2 != -1 && (startPos2 < startPos || startPos == -1))
 					startPos = startPos2;
 				
-				var endPos = content.indexOf("--"+boundary)
-				content = content.substring(startPos, endPos).replace(/\r\n/g, "")
+				var endPos = content.indexOf("--"+boundary);
+				content = trim(content.substring(startPos, endPos).replace(/\r\n/g, ""));
+				
+				// for base64 we use a two storied approach
+				// first: use atob 
+				// if that gives us an outofmemoryexception use the slow but working javascript
+				// engine
 				try {
-					content = atob(trim(content))
+					content = atob(content)
 				} catch (e) {
-					logMessage("Error decoding base64: " + content, LOG_ERROR);
-					return null;
+					// out of memory error... this can be handled :)
+					if (e.result == Components.results.NS_ERROR_OUT_OF_MEMORY)
+					{
+						var base64 = new JavaScriptBase64;
+					 	base64.JavaScriptBase64(content);					
+						content = base64.decode();
+					
+					}
+					else
+					{
+						logMessage("Error decoding base64 (" + e + "): " + content, LOG_ERROR);
+						return null;
+					}
 				}
 			}
 			else
@@ -1284,4 +1300,92 @@ function LaunchUrl(url)
 function getLangString(bundle, name)
 {
 	return bundle.getString(name);
+}
+
+
+/*
+ * Base 64 decoder
+ * Usage:
+ 	var base64 = new JavaScriptBase64;
+ 	base64.JavaScriptBase64(STRING);
+ 	result = base64.decode(); / encode();
+ */
+ 
+function JavaScriptBase64()
+{
+    var string;
+    var base64;
+
+    this.JavaScriptBase64 = function(string)
+    {
+        this.string = new String(string);
+        this.base64 = new Array('A','B','C','D','E','F','G','H',
+                                'I','J','K','L','M','N','O','P',
+                                'Q','R','S','T','U','V','W','X',
+                                'Y','Z','a','b','c','d','e','f',
+                                'g','h','i','j','k','l','m','n',
+                                'o','p','q','r','s','t','u','v',
+                                'w','x','y','z','0','1','2','3',
+                                '4','5','6','7','8','9','*','/');
+    }
+    
+    this.encode = function()
+    {
+        var binary = new String();
+        var result = new String();
+        for(i = 0; i < this.string.length; i++)
+        {
+            binary += String("00000000" + this.string.charCodeAt(i).toString(2)).substring(this.string.charCodeAt(i).toString(2).length);
+        }
+        for(i = 0; i < binary.length; i+=6)
+        {
+            var number = new Number();
+            var counter = new Number();
+            for(j = 0; j < binary.substring(i, i+6).length; j++)
+            {
+                for(k = 32; k >= 1; k-=(k/2))
+                {
+                    if(binary.substring(i, i+6).charAt(counter++) == "1")
+                    {
+                        number += k;
+                    }
+                }
+            }
+            result += this.base64[number];
+        }
+        return result;
+    }
+
+    this.decode = function()
+    {
+        var binary = new String();
+        var result = new String();
+        for(i = 0; i < this.string.length; i++)
+        {
+            for(j = 0; j < this.base64.length; j++)
+            {
+                if(this.string.charAt(i) == this.base64[j])
+                {
+                    binary += String("000000" + j.toString(2)).substring(j.toString(2).length);
+                }
+            }
+        }
+        for(i = 0; i < binary.length; i+=8)
+        {
+            var number = new Number();
+            var counter = new Number();
+            for(j = 0; j < binary.substring(i, i+8).length; j++)
+            {
+                for(k = 128; k >= 1; k-=(k/2))
+                {
+                    if(binary.substring(i, i+8).charAt(counter++) == "1")
+                    {
+                        number += k;
+                    }
+                }
+            }
+            result += String.fromCharCode(number);
+        }
+        return result;
+    }
 }
