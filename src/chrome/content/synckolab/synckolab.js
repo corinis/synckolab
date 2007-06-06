@@ -251,7 +251,7 @@ function nextSync()
 			// remember the sync class
 			gSync = syncAddressBook;
 				
-			window.setTimeout(getContent, SWITCH_TIME);	
+			window.setTimeout(prepareContent, SWITCH_TIME);	
 		}	
 	}
 	else
@@ -301,7 +301,7 @@ function nextSync()
 				gSync = syncCalendar;
 				
 				// the init2 does the goon for us		
-				syncCalendar.init2(getContent, syncCalendar);				
+				syncCalendar.init2(prepareContent, syncCalendar);				
 				return;
 	        }
 	    }
@@ -360,7 +360,7 @@ function nextSync()
 				gSync = syncCalendar;
 
 				// the init2 does the goon for us		
-				syncCalendar.init2(getContent, syncCalendar);
+				syncCalendar.init2(prepareContent, syncCalendar);
 				return;
 	        }
 	    }
@@ -410,13 +410,23 @@ var updateMessagesContent;
 var gMessages;
 var gSync;
 
+// this function is being called just before the content parsing starts
+// its sole purpose is to make sure all messages are downloaded and refreshed
+function prepareContent ()
+{
+	// update folder information from imap and make sure we got everything
+	gSync.folder.updateFolder (msgWindow);
+	// my UrlListener calls getContent
+	gSync.folder.downloadAllForOffline (myUrlListener, msgWindow);
+	
+}
+
 // start with the sync with the sync class
 // saves the contact folder into fileContent
 function getContent ()
 {	
 	// check if folder REALLY exists
 	gSync.folder.clearNewMessages ();
-	//sync.folder.downloadAllForOffline (myUrlListener, msgWindow);
 
 	// get the number of messages to go through
 	totalMessages = gSync.folder.getTotalMessages(false);
@@ -554,10 +564,14 @@ function getMessage ()
 
 var myUrlListener = {
 	OnStartRunningUrl: function ( url )
-	{	},
+	{	
+	},
 	
 	OnStopRunningUrl: function ( url, exitCode )
-	{	}
+	{	
+		logMessage("Finished folder frefresh; ONSTOP="+exitCode+" : " + url, LOG_DEBUG );
+		getContent();
+	}
 }
 
 // nsIStreamListener
