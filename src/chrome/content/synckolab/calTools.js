@@ -401,7 +401,7 @@ function xml2Event (xml, event)
 					{
     					// date values witout time part specify a full day event
                         event.endDate = string2CalDate(s);
-						event.endDate.day += 1;
+//						event.endDate.day += 1; problematic?
 						event.endDate.isDate = true;
 					}
 					else
@@ -418,7 +418,7 @@ function xml2Event (xml, event)
 					{
     					// date values witout time part specify a full day event
                         event.dueDate = string2CalDate(s);
-						event.dueDate.day += 1;
+//						event.dueDate.day += 1; 
 						event.dueDate.isDate = true;
 					}
 					else
