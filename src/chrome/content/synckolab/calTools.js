@@ -253,7 +253,7 @@ function equalsEvent (a, b, syncTasks)
 }
 
 
-function message2Event (fileContent)
+function message2Event (fileContent, extraFields)
 {
 	if (fileContent == null)
 		return null;
@@ -263,7 +263,7 @@ function message2Event (fileContent)
 	{
 		parsedEvent = Components.classes["@mozilla.org/calendar/event;1"]
 			.createInstance(Components.interfaces.calIEvent);
-		if (xml2Event(fileContent, parsedEvent) == false)
+		if (xml2Event(fileContent, extraFields, parsedEvent) == false)
 		{
 			return null;
 		}
@@ -287,7 +287,7 @@ function message2Event (fileContent)
  *
  * @return true, if this event actually existed  
  */
-function xml2Event (xml, event)
+function xml2Event (xml, extraFields, event)
 {
 	var syncTasks = false;
 	
@@ -756,6 +756,13 @@ function xml2Event (xml, event)
 					// default is "none"
 			  		event.setProperty("X-KOLAB-COLOR-LABEL", decode4XML(cur.firstChild.data));
 					break;
+
+				default:
+			  		if (cur.firstChild == null)
+			  			break;
+					// remember other fields
+			  		addField(extraFields, cur.nodeName, decode4XML(cur.firstChild.data));
+	  				break;
 					
 			} // end switch
 		} // end if

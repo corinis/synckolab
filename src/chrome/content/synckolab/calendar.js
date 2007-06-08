@@ -217,8 +217,11 @@ var syncCalendar = {
 		// get the content in a nice format
 		fileContent = stripMailHeader(fileContent);
 
+		// this is an array of arrays that hold fieldname+fielddata of until-now-unknown fields
+		var messageFields = new Array();		
+
 		// parse the content
-		var parsedEvent = message2Event(fileContent);
+		var parsedEvent = message2Event(fileContent, messageFields);
 		
 		if (parsedEvent == null)
 		{
@@ -244,6 +247,8 @@ var syncCalendar = {
 		
 		// get the dbfile from the local disk
 		var idxEntry = getSyncDbFile(this.gConfig, true, parsedEvent.id);
+		// ... and the field file
+		var fEntry = getSyncFieldFile(this.gConfig, true, parsedEvent.id);
 		
 		// always add if the forceLocalCopy flag is set (happens when you change the configuration)
 		if (foundEvent == null || this.forceLocalCopy)
@@ -256,6 +261,10 @@ var syncCalendar = {
 				// this makes it easier to compare later on and makes sure no info is 
 				// lost/changed
 				writeSyncDBFile (idxEntry, fileContent);
+				
+				// also write the extra fields in a file
+				if (messageFields.length > 0)
+					writeDataBase(fEntry, messageFields);
 				
 				this.curItemInListStatus.setAttribute("label", strBundle.getString("localAdd"));
 				
@@ -273,6 +282,15 @@ var syncCalendar = {
 				// also remove the local db file since we deleted the contact
 				if (idxEntry.exists())
 					idxEntry.remove(false);
+
+				try
+				{				
+					// delete extra file if we dont need it
+					fEntry.remove(false);
+				}
+				catch (dele)
+				{ // ignore this - if the file does not exist
+				}
 				
 				return "DELETEME";
 			}
@@ -304,6 +322,10 @@ var syncCalendar = {
 					logMessage("Take event from server: " + parsedEvent.id, LOG_CAL + LOG_INFO);
 					
 					writeSyncDBFile (idxEntry, fileContent);
+	
+					// also write the extra fields in a file
+					if (messageFields.length > 0)
+						writeDataBase(fEntry, messageFields);
 	
 					for (var i = 0; i < this.gEvents.events.length; i++)
 					{
