@@ -583,6 +583,9 @@ function getAccountEMail (accountKey)
  */
 function getMsgFolder (accountKey, path)
 {
+
+	logMessage("trying to get folder: '" +  path + "' for account " + accountKey, LOG_DEBUG);
+
 	var accountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
 	var gInc = null;
 	for (var i = 0; i < accountManager.allServers.Count(); i++)
@@ -612,7 +615,7 @@ function getMsgFolder (accountKey, path)
 		}
 		catch (ex)
 		{
-			alert("NOTHING: " + msgFolder.prettyName);
+			alert("NOTHING " +ex+ " : " + msgFolder.prettyName);
 			return;
 		}
 		while (subfolders != null)
@@ -620,14 +623,17 @@ function getMsgFolder (accountKey, path)
 			var cur = subfolders.currentItem().QueryInterface(Components.interfaces.nsIMsgFolder);
 			// we found it
 			if (path == cur.URI)
+			{
+				logMessage("we found our path!!!: " + cur.URI, LOG_DEBUG);
 				return cur;
+			}
 				
-			// if the currents path is the start of what we are lookiong for, go deeper
+			// if the current path is the start of what we are lookiong for, go deeper
 			var cp = path.substring(0, path.indexOf('/', cur.URI.length));
 			
 			if (cp == cur.URI)
 			{
-				consoleService.logStringMessage("got folder: '" +  cur.URI + "'");
+				logMessage("got subpath: " + cur.URI, LOG_DEBUG);
 			
 				cFolder = cur;
 				break;

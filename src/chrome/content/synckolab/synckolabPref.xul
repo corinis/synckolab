@@ -29,7 +29,7 @@
 	<hbox flex="1">	
 		<vbox flex="1">
 			<!--  Tree with all configurations -->
-			<tree hidecolumnpicker="true" id="configTree" flex="1" onselect="setView(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));" width="150">
+			<tree hidecolumnpicker="true" id="configTree" flex="1" onselect="setSyncPrefView(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));" width="150">
 				<treecols>
 					<treecol id="name" flex="1" primary="true"/>
 				</treecols>

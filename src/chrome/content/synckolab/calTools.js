@@ -31,14 +31,14 @@
 
 /* ----- general functions to access calendar and events ----- */
 
-var activeCalendarManager;
+var activeCalendarManager = null;
 
 /**
  * New and updated calendar functions (lightning 0.1)
  */
 function getSynckolabCalendarManager()
 {
-    if (!activeCalendarManager) {
+    if (!activeCalendarManager || activeCalendarManager == null) {
          activeCalendarManager = Components.classes["@mozilla.org/calendar/manager;1"]
                                            .getService(Components.interfaces["calICalendarManager"]);
      }
@@ -67,10 +67,13 @@ function getSynckolabCalendarManager()
 function getSynckolabCalendars()
 {
      try {
-         return getSynckolabCalendarManager().getCalendars({});
+     	 var syncCalManager = getSynckolabCalendarManager();
+     	 if (syncCalManager == null || !syncCalManager)
+     	 	return null;
+         return syncCalManager.getCalendars({});
      } catch (e) {
-         dump("Error getting calendars: " + e + "\n");
-         return [];
+         dump ("Error getting calendars: " + e + "\n");
+         return null;
 	}
 }
 
@@ -80,7 +83,8 @@ function getSynckolabCalendars()
  */
 function isCalendarAvailable ()
 {
-	return getSynckolabCalendars() != [];
+	var syncCals = getSynckolabCalendars();
+	return syncCals != [] && syncCals != null;
 }
 
 

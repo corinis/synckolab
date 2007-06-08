@@ -120,7 +120,7 @@ function generateConfigTree (configuration)
 	}	
 }
 
-function setView(viewName)
+function setSyncPrefView(viewName)
 {
 	if (viewName.indexOf("-") == -1)
 	{

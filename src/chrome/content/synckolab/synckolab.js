@@ -770,7 +770,7 @@ function updateContentWrite ()
 			stream.close();
 			
 			// write the temp file back to the original directory
-			copyToFolder (gTmpFile, gSync.folder.folderURL);
+			copyToFolder (gTmpFile, gSync.folder); 
 			//copyToFolder (gTmpFile, tempFolderUri); // to the temp folder for testing!!!
 		}
 		else
@@ -851,7 +851,7 @@ function writeContent ()
 		
 		// write the temp file back to the original directory
 		logMessage("WriteContent Writing...", LOG_INFO);
-		copyToFolder (gTmpFile, gSync.folder.folderURL);
+		copyToFolder (gTmpFile, gSync.folder); 
 	}
 	else
 			writeContentAfterSave ();
@@ -909,7 +909,7 @@ function compact() {
  */
 function copyToFolder (fileName, folderUri)
 {
-	var mailFolder = RDF.GetResource(folderUri).QueryInterface(Components.interfaces.nsIMsgFolder);
+	var mailFolder = folderUri; //RDF.GetResource(folderUri).QueryInterface(Components.interfaces.nsIMsgFolder);
 	var fileSpec = Components.classes["@mozilla.org/filespec;1"].createInstance(Components.interfaces.nsIFileSpec);	
 	fileSpec.nativePath = fileName;
 
