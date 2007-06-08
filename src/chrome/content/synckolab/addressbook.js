@@ -413,7 +413,7 @@ var syncAddressBook = {
 				// is the db file equals server, but not local.. we got a local change
 				if (cEntry.exists() && !equalsContact(cCard, aCard) && equalsContact(cCard, newCard))
 				{
-				    logMessage("client changed: " + getUID(aCard), LOG_INFO + LOG_AB);
+				    logMessage("client changed: " + getUID(aCard) + cCard.primaryEmail, LOG_INFO + LOG_AB);
 					
 					// update list item
 					this.curItemInListStatus.setAttribute("label", strBundle.getString("updateOnServer"));

@@ -318,14 +318,15 @@ function nextSync()
 	if (isCalendarAvailable () && curTaskConfig < syncConfigs.length)
 	{
 
-		logMessage("Trying task config " + syncConfigs[curTaskConfig], LOG_DEBUG);
+		logMessage("Trying task config " +curTaskConfig+ ": " + syncConfigs[curTaskConfig], LOG_DEBUG);
 		// skip problematic configs :)
 		if (syncConfigs[curTaskConfig].length <= 0)
 		{
-			curCalConfig++;
+			curTaskConfig++;
 			window.setTimeout(nextSync, SWITCH_TIME);	
 			return;
 		}
+		
 		try
 		{
 		

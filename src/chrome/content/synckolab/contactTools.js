@@ -1102,16 +1102,16 @@ function message2Card (lines, card, extraFields, startI, endI)
 			case "EMAIL;INTERNET":
 			case "EMAIL": //This is here to limit compact to existing vcards
 				// make sure to fill all email fields
-				if (!gotEmailSecondary)
-				{
-					card.secondEmail = tok[1];
-					gotEmailSecondary = true;
-				}
-				else
 				if (!gotEmailPrimary)
 				{
 					card.primaryEmail = tok[1];
 					gotEmailPrimary = true;
+				}
+				else
+				if (!gotEmailSecondary)
+				{
+					card.secondEmail = tok[1];
+					gotEmailSecondary = true;
 				}
 				else
 				{

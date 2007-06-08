@@ -517,7 +517,7 @@ function changeConfig (config)
 			document.getElementById ("saveToContactImap").checked = pref.getBoolPref("SyncKolab."+config+".saveToContactImap");
 		} catch (ex) {}
 
-		document.getElementById ("syncContacts").checked = true;
+		document.getElementById ("syncContacts").checked = false;
 		try {
 			document.getElementById ("syncContacts").checked = pref.getBoolPref("SyncKolab."+config+".syncContacts");
 		} catch (ex) {}
@@ -593,7 +593,7 @@ function changeConfig (config)
 			}
 			catch (ex) {}
 			
-			document.getElementById ("syncCalendar").checked = true;
+			document.getElementById ("syncCalendar").checked = false;
 			try {
 				document.getElementById ("syncCalendar").checked = pref.getBoolPref("SyncKolab."+config+".syncCalendar");
 			} catch (ex) {}
@@ -666,7 +666,7 @@ function changeConfig (config)
 			}
 			catch (ex) {}
 			
-			document.getElementById ("syncTasks").checked = true;
+			document.getElementById ("syncTasks").checked = false;
 			try {
 				document.getElementById ("syncTasks").checked = pref.getBoolPref("SyncKolab."+config+".syncTasks");
 			} catch (ex) {}
