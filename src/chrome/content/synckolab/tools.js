@@ -178,7 +178,7 @@ function stripMailHeader (content)
 		{
 			if (content.indexOf("Content-Transfer-Encoding: base64") != -1)
 			{
-				logMessage("Base64 Decoding message.", LOG_INFO);
+				logMessage("Base64 Decoding message. (Boundary: "+boundary+")", LOG_INFO);
 				logMessage("Base64 message: " + content, LOG_DEBUG);
 				// get rid of the header
 				content = content.substring(content.indexOf("Content-Transfer-Encoding: base64"), content.length);
@@ -187,7 +187,7 @@ function stripMailHeader (content)
 				if (startPos2 != -1 && (startPos2 < startPos || startPos == -1))
 					startPos = startPos2;
 				
-				var endPos = content.indexOf("--"+boundary);
+				var endPos = content.indexOf("--"); // we could check for "--"+boundary but its not necessary since base64 doesnt allow it anyways
 				content = trim(content.substring(startPos, endPos).replace(/\r\n/g, ""));
 				
 				// for base64 we use a two storied approach
