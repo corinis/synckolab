@@ -77,7 +77,7 @@ function xml2Card (xml, extraFields, cards)
 				case "LAST-MODIFICATION-DATE":
 						/*
 						ignore this since thunderbird implementation just does not work
-						var s = cur.firstChild.data;
+						var s = decode4XML(cur.firstChild.data);
 						// now we gotta check times... convert the message first
 						// save the date in microseconds
 						// 2005-03-30T15:28:52Z
@@ -104,14 +104,14 @@ function xml2Card (xml, extraFields, cards)
 				case "JOB-TITLE":
 			  		if (cur.firstChild == null)
 			  			break;
-					card.jobTitle = cur.firstChild.data;
+					card.jobTitle = decode4XML(cur.firstChild.data);
 					found = true;
 					break;
 
 				case "NICK-NAME":
 			  		if (cur.firstChild == null)
 			  			break;
-					card.nickName = cur.firstChild.data;
+					card.nickName = decode4XML(cur.firstChild.data);
 					found = true;
 					break;
 
@@ -136,12 +136,12 @@ function xml2Card (xml, extraFields, cards)
 					
 				case "CATEGORIES":
 					if (cur.firstChild != null)
-						card.category = cur.firstChild.data;
+						card.category = decode4XML(cur.firstChild.data);
 					break;
 
 			  case "ORGANIZATION":
 			  		if (cur.firstChild != null)
-				  		card.company = cur.firstChild.data;
+				  		card.company = decode4XML(cur.firstChild.data);
 					found = true;
 			  	break;
 			  	
@@ -190,7 +190,7 @@ function xml2Card (xml, extraFields, cards)
 			  case "ANNIVERSARY":
 			  		if (cur.firstChild == null)
 			  			break;
-					var tok = cur.firstChild.data.split("-");
+					var tok = decode4XML(cur.firstChild.data).split("-");
 	
 					card.anniversaryYear = tok[0];
 					card.anniversaryMonth = tok[1];
@@ -201,7 +201,7 @@ function xml2Card (xml, extraFields, cards)
 			  	
 			  case "PREFERRED-ADDRESS":
 		  		if (cur.firstChild != null)
-				  	card.defaultAddress = cur.firstChild.data;
+				  	card.defaultAddress = decode4XML(cur.firstChild.data);
 			  	break;
 			  	
 			  case "ADDRESS":
@@ -229,56 +229,51 @@ function xml2Card (xml, extraFields, cards)
 			  case "BODY":
 			  		if (cur.firstChild == null)
 			  			break;
-				  	card.notes = cur.firstChild.data;
+				  	card.notes = decode4XML(cur.firstChild.data);
 					found = true;
 			  	break;
 			  case "DEPARTMENT":
 			  		if (cur.firstChild == null)
 			  			break;
-				  	card.department = cur.firstChild.data;
+				  	card.department = decode4XML(cur.firstChild.data);
 					found = true;
 			  	break;
 	
 			  case "WEB-PAGE":
 			  		if (cur.firstChild == null)
 			  			break;
-				  	card.webPage1 = cur.firstChild.data;
+				  	card.webPage1 = decode4XML(cur.firstChild.data);
 					found = true;
 					break;
 
 			  case "UID":
 		  		if (cur.firstChild == null)
 		  			break;
-			  	card.custom4 = cur.firstChild.data;
+			  	card.custom4 = decode4XML(cur.firstChild.data);
 			  	break;
 
 			  case "CUSTOM1":
 		  		if (cur.firstChild == null)
 		  			break;
-			  	card.custom1 = cur.firstChild.data;
+			  	card.custom1 = decode4XML(cur.firstChild.data);
 			  	break;
 			  case "CUSTOM2":
 		  		if (cur.firstChild == null)
 		  			break;
-			  	card.custom1 = cur.firstChild.data;
-			  	break;
-			  case "CUSTOM3":
-		  		if (cur.firstChild == null)
-		  			break;
-			  	card.custom1 = cur.firstChild.data;
+			  	card.custom1 = decode4XML(cur.firstChild.data);
 			  	break;
 			  	
 			  case "IM-ADDRESS":
 		  		if (cur.firstChild == null)
 		  			break;
-			  	card.aimScreenName = cur.firstChild.data;
+			  	card.aimScreenName = decode4XML(cur.firstChild.data);
 			  	break;
 			  	
 			default:
 		  		if (cur.firstChild == null)
 		  			break;
 				// remember other fields
-		  		addField(extraFields, cur.nodeName, cur.firstChild.data);
+		  		addField(extraFields, cur.nodeName, decode4XML(cur.firstChild.data));
   				break;
 			  	
 			} // end switch
@@ -565,7 +560,7 @@ function card2Xml (card, fields)
 		if (checkExist (card.firstName) || checkExist (card.lastName))
 		{
 			displayName = card.firstName + " " + card.lastName;
-			xml += "  <full-name>" + encode4XML(displayName) + "</full-name>\n";
+			xml += nodeWithContent("full-name", displayName);
 		}
 			
 		

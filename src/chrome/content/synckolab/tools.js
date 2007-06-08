@@ -680,8 +680,9 @@ function getXmlResult (node, name, def)
 			if (cur.hasChildNodes())
 			{
 				var value = cur.firstChild.nodeValue;
+				// decode the value
 				if (value != null)
-					return value;
+					return decode4XML(value);
 			}
 		}
 		cur = cur.nextSibling;
@@ -1011,9 +1012,19 @@ function encode4XML(s)
 		return "";
 	if (!s.replace)
 		return s;
-		
+	
 	return s.replace(/&/g, "&amp;").replace(/</g,
         "&lt;").replace(/>/g, "&gt;").replace(/amp;amp;/g, "amp;");
+}
+
+function decode4XML(s)
+{
+	if (s == null)
+		return "";
+	if (!s.replace)
+		return s;
+	
+	return s.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
 }
 
 function encode_utf8(rohtext) {

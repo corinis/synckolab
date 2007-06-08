@@ -341,18 +341,18 @@ function xml2Event (xml, event)
 			switch (cur.nodeName.toUpperCase())
 			{
 				case "UID":
-			  		event.id = cur.firstChild.data;
+			  		event.id = decode4XML(cur.firstChild.data);
 					// FIXME - for faster debugging only, so you can see the 
 					// uid resp. the msg subject in the URL field when opening the event, 
 					// you can find the appropriate msg very easily afterwards
-					event.setProperty("URL", cur.firstChild.data);
+					event.setProperty("URL", decode4XML(cur.firstChild.data));
 					break;
 					
 				case "CREATION-DATE":
 					if (!cur.firstChild)
 						break;
 
-					var s = cur.firstChild.data;
+					var s = decode4XML(cur.firstChild.data);
 					// 2005-03-30T15:28:52Z
 					event.setProperty("CREATED", string2CalDateTime(s, true));
 					break;						
@@ -361,7 +361,7 @@ function xml2Event (xml, event)
 					if (!cur.firstChild)
 						break;
 
-					var s = cur.firstChild.data;
+					var s = decode4XML(cur.firstChild.data);
 					// 2005-03-30T15:28:52Z
 					event.setProperty("LAST-MODIFIED", string2CalDateTime(s, true));
 					break;						
@@ -370,7 +370,7 @@ function xml2Event (xml, event)
 					if (!cur.firstChild)
 						break;
 						
-					var s = cur.firstChild.data;
+					var s = decode4XML(cur.firstChild.data);
 					// 2005-03-30T15:28:52Z
 					if (s.indexOf(":") == -1)
 					{
@@ -399,7 +399,7 @@ function xml2Event (xml, event)
 					if (!cur.firstChild)
 						break;
 
-					var s = cur.firstChild.data;
+					var s = decode4XML(cur.firstChild.data);
 					// 2005-03-30T15:28:52Z
 					if (s.indexOf(":") == -1)
 					{
@@ -416,7 +416,7 @@ function xml2Event (xml, event)
 					if (!cur.firstChild)
 						break;
 
-					var s = cur.firstChild.data;
+					var s = decode4XML(cur.firstChild.data);
 					// 2005-03-30T15:28:52Z
 					if (s.indexOf(":") == -1)
 					{
@@ -435,18 +435,18 @@ function xml2Event (xml, event)
 					if (!cur.firstChild)
 						break;
 
-					var s = cur.firstChild.data;
+					var s = decode4XML(cur.firstChild.data);
 					event.isCompleted = (s == "1");
 					break;
 
 				case "SUMMARY":
-					event.title = cur.firstChild.data;
+					event.title = decode4XML(cur.firstChild.data);
 					break;
 
 				case "BODY":
 				    // sometimes we have <body></body> in the XML
 				    if (cur.firstChild)
-						event.setProperty("DESCRIPTION", cur.firstChild.data);
+						event.setProperty("DESCRIPTION", decode4XML(cur.firstChild.data));
 					break;
 					
 				case "CREATOR":
@@ -469,22 +469,22 @@ function xml2Event (xml, event)
 				case "LOCATION":
 				    // sometimes we have <location></location> in the XML
 				    if (cur.firstChild)
-						event.setProperty("LOCATION", cur.firstChild.data);
+						event.setProperty("LOCATION", decode4XML(cur.firstChild.data));
 					break;
 
 				case "CATEGORIES":
 				    if (cur.firstChild)
-						event.setProperty("CATEGORIES", cur.firstChild.data);
+						event.setProperty("CATEGORIES", decode4XML(cur.firstChild.data));
 					break;
 
 				case "ALARM":
 				    if (cur.firstChild)
-						event.alarmOffset = createDuration(cur.firstChild.data);
+						event.alarmOffset = createDuration(decode4XML(cur.firstChild.data));
 					break;
 					
 				case "SENSITIVITY":
                     event.setProperty("CLASS", 'PUBLIC');
-        			switch (cur.firstChild.data)
+        			switch (decode4XML(cur.firstChild.data))
                     {
                         case "private":
                             event.setProperty("CLASS", 'PRIVATE');
@@ -749,12 +749,12 @@ function xml2Event (xml, event)
 					
 				case "SHOW-TIME-AS":
 					// default is "none"
-			  		event.setProperty("X-KOLAB-SHOW-TIME-AS", cur.firstChild.data);
+			  		event.setProperty("X-KOLAB-SHOW-TIME-AS", decode4XML(cur.firstChild.data));
 					break;
 					
 				case "COLOR-LABEL":
 					// default is "none"
-			  		event.setProperty("X-KOLAB-COLOR-LABEL", cur.firstChild.data);
+			  		event.setProperty("X-KOLAB-COLOR-LABEL", decode4XML(cur.firstChild.data));
 					break;
 					
 			} // end switch
