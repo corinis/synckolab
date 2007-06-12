@@ -405,7 +405,13 @@ function xml2Event (xml, extraFields, event)
 					{
     					// date values witout time part specify a full day event
                         event.endDate = string2CalDate(s);
-//						event.endDate.day += 1; problematic?
+                        // Kolab uses for 1-day-event:
+                        // startdate = day_x, enddate = day_x
+                        // Sunbird uses for 1-day-event:
+                        // startdate = day_x, enddate = day_x + 1
+                        var tmp_date = event.endDate.jsDate;
+                        tmp_date.setTime(tmp_date.getTime() + 24*60*60000);
+						event.endDate.jsDate = tmp_date;
 						event.endDate.isDate = true;
 					}
 					else
@@ -801,6 +807,19 @@ function cnv_event2xml (event, skipVolatiles, syncTasks)
     var isAllDay = syncTasks?false:event.startDate.isDate;
     var endDate = syncTasks?event.dueDate:event.endDate;
 
+    // correct the end date for all day events before writing the XML object
+    // Kolab uses for 1-day-event:
+    // startdate = day_x, enddate = day_x
+    // Sunbird uses for 1-day-event:
+    // startdate = day_x, enddate = day_x + 1
+    if (isAllDay)
+    {
+        var tmp_date = event.endDate.jsDate;
+        tmp_date.setTime(tmp_date.getTime() - 24*60*60000);
+        endDate = new CalDateTime();
+        endDate.jsDate = tmp_date;
+    }
+
     var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     if (syncTasks)
     {
@@ -1011,6 +1030,9 @@ function cnv_event2xml (event, skipVolatiles, syncTasks)
 
     if (event.getProperty("X-KOLAB-SHOW-TIME-AS"))
         xml += " <show-time-as>" + event.getProperty("X-KOLAB-SHOW-TIME-AS") + "</show-time-as>\n";
+    else // make sure we mark new events as busy - TODO validate this 
+        xml += " <show-time-as>busy</show-time-as>\n";
+        
     if (event.getProperty("X-KOLAB-COLOR-LABEL"))
         xml += " <color-label>" + event.getProperty("X-KOLAB-COLOR-LABEL") + "</color-label>\n";
     if (event.getProperty("X-KOLAB-CREATOR-DISPLAY-NAME") && event.getProperty("X-KOLAB-CREATOR-SMTP-ADDRESS"))
