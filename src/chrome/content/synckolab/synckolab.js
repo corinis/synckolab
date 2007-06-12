@@ -418,7 +418,7 @@ function prepareContent ()
 	// update folder information from imap and make sure we got everything
 	gSync.folder.updateFolder (msgWindow);
 	// my UrlListener calls getContent
-	gSync.folder.downloadAllForOffline (myUrlListener, msgWindow);
+	gSync.folder.compact (myUrlListener, msgWindow); // this should take care of refreshes
 	
 }
 
