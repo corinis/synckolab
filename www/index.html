@@ -6,7 +6,7 @@
 <ul>
 
 <li><a href="http://www.gargan.org/extensions/synckolab-NIGHTLY.xpi">synckolab NIGHTLY</a></li>
-<li><a href="http://www.gargan.org/extensions/synckolab-0.4.33.xpi">synckolab 0.4.33</a></li>
+<li><a href="http://www.gargan.org/extensions/synckolab-0.4.34.xpi">synckolab 0.4.34</a></li>
 </ul>
 </div>
 
@@ -43,8 +43,8 @@
 <h1>Sync Kolab</h1>
 <p>
 SyncKolab was written to add kolab functionality to thunderbird. It reads a selected Imap folder and synchronizes it with the local address book (and calendar in the future). It is currently under heavy development, so use with care!<br/>
-It has been tested under Thunderbird 1 for Windows and Linux. Wheres under Linux it does not seem to work. I still working on that.
-Since I do not always have cvs access, I may update this site less often then my regular homepage <a href="http://www.gargan.org">www.gargan.org</a>
+It has been tested under Thunderbird for Windows, Linux and MacOSX. <br/>
+For up-to-date information and most recent version, check out my regular homepage at <a href="http://www.gargan.org">www.gargan.org</a>
 </p>
 <h2>What is Kolab?</h2>
 <p>
@@ -82,72 +82,15 @@ You can get a nightly build at <a href="http://www.gargan.org/extensions/synckol
 </p>
 Beware that this may easily break all you contacts/calender entries, altough we try to create stable nighlies.<br/>
 So create a backup of your thunderbird profile folder before trying it out!
-<pre>
-* fixed weird behaviour after sync bug (hopefully)
-* added local database reading for unchanged messages (used messagesize+date as keys) for major speed increase
-* added code to mark all new messages as unread
-* fixed mime setting for vcards
-* added xml fixes in contact-parsing
-* added menuitems in tools for options and start (you dont need to add the icon any more)
-* added stringbundles for translation
-* loads of translation (german/english)
-* completely revamped configuration - should be easier to understand now
-* removed splitting of configs
-* implemented a fix for the "account '' not found"- problem
-* added autosync capability
-* changed complete debug behaviour (see synckolab.js)
-* syncing of lists implemented
-* more description in option dialog
-* updated version support up to and including 3.0a
-* fixed bugs:
-        #16902: added fixing of xml-characters when writing/reading
-        #16903: fixed isAllDay error when writing xml
-        #16910: fixed permission settings of new folders for linux
-        #16901: added syncing of custom1-3 fields in xml format (has to be tested with other clients)
-
-</pre>
 
 <h2>Status of the Kolab Extension</h2>
 <b>Synckolab is still beta and waits to be testet :P</b><br/>
-To V 0.2.0
-<ul>
-    <li>Reading of the address book: DONE</li>
-    <li>Writing of the address book: DONE</li>        
-	<li>Configuration: Addressbook: DONE</li>
-	<li>Configuration: Mail Folder: DONE</li>        
-	<li>Reading of the mail folder: DONE</li>        
-	<li>parsing mail to card: DONE</li>        
-	<li>parsing card to mail: DONE</li>        
-	<li>saving cards to address book: DONE</li>        
-	<li><i>saving mail to local folder: DONE</i> - this is a debug step</li>        
-	<li>saving mail to imap folder: DONE</li>        
-	<li>works under windows: YES</li>        
-	<li>works under linux: YES</li>        
-	<li>works under mac: YES</li>
-</ul>
-
-To V 0.3.0
-<ul>
-	<li>Reading of Calendar Entries: DONE/tested</li>
-	<li>Writing of Calendar Entries: DONE/tested</li>
-	<li>Configuration: Calendar: DONE/tested</li>
-	<li>parsing calendar to mail: DONE/tested</li>
-	<li>parsing mail to calendar: DONE/tested</li>
-</ul>
-To V 0.4.0
-<ul>
-	<li>Configuration: multiple address books/calendars to folder: DONE</li>
-	<li>Syncing more than one address book/calendar: DONE</li>
-	<li>deleting of events/contacts: DONE</li>
-	<li>Lightning Support: 95%</li>
-
-</ul>
 To V 0.5.0
 <ul>
-	<li>Kolab2 xml Format: 95%</li>
-	<li>testing with different kolab 1+2 clients: 40%</li>
-	<li>Auto synching on start/shutdown (with the dialog hidden): 70%</li>
-	<li>Translation: 40%</li>
+	<li>Kolab2 xml Format: DONE</li>
+	<li>testing with different kolab 1+2 clients: DONE</li>
+	<li>Auto synching on start/shutdown (with the dialog hidden): DONE</li>
+	<li>Translation: en/de/ja-jp</li>
 </ul>
 To V 1.0.0
 <ul>
@@ -162,10 +105,6 @@ Best thing you can do is get the most recent release, subscribe to the mailing l
 <p>
 You may aquire the current source code from the mozdev cvs, or get it directly from the xpi (simply unzip the latest xpi found on <a href="http://www.gargan.org">gargan.org</a> you will find all source files in there (js).
 </p>
-<h2>Known Bugs-missing Features</h2>
-<ul>
-	<li>When selecting a new account in the option widow, the first time it will not display the folders correctly, it has to be done two times (any help?)</li>
-</ul>
 <h2>In the wild...</h2>
 <p>I started a few threads around the globe on different sites during development. If you are interested in some insight you can check them out.
 </p>
