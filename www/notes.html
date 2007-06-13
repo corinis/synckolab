@@ -1,25 +1,56 @@
-<!-- MAIN CONTENT -->
+<h2>Installation</h2>
+<h3>SyncKolab 0.4.34+</h3>
 <p>
-<img src="synckolab-options.png" alt="synkolab option"/>
+<b>Step 1:</b> Download the <a href="http://www.mozilla.org/projects/calendar/lightning/index.html" target="_blank">lightning plugin</a> then the
+<a href="http://www.gargan.org/extensions/synckolab-0.4.34.xpi">extension</a> (use "rightclick/save as" otherwise firefox will try to install it) <br/>
+<b>Step 2:</b> Open Thunderbird and use Tools/Extensions then install the downloaded calendar and the synckolab xpi<br/>
+<b>Step 3:</b> Restart Thunderbird<br/>
+<b>Step 4:</b> Configure the plugin<br/>
+<img src="images/synckolab-menu-options.png" alt="Option Menu under Tools"/><br/>
+<i>(1)</i> will open the configuration wizard<br/>
+<b>Optional Step 5: get the icon</b> <br/>
+<img src="images/synckolab-getIcon.png"/><br/>
+<img src="images/synckolab-getIcon2.png"/><br/>
+rightclick on the icon bar <i>(2)</i> (next to Stop) go to customize and drag the "Sync Kolab" Icon <i>(3)</i> to the
+bar <i>(4)</i><br/>
+<b>Step 6:</b> click the icon or menu entry and the sync will start<br/>
+<b>MAKE SURE YOU READ THE RELEASE NOTES OF THE VERSION!!!</b>
+</p>
+
+<h2>Configuration Wizard</h2>
+<img src="images/synckolab-wiz-1.png"/><br/>
+<i>(2)</i> Choose a configuration display name. Make sure you do not use any special characters (including "-,.+# ) as name. If you entered a non-existant valid name, the next button will become clickable.<br/>
+<img src="images/synckolab-wiz-2.png"/><br/>
+<i>(3)</i> Select an imap account. If you do not see anything in the account box, you probably do not have an imap account. Ask your Internet Provider or System Administrator for an IMAP Account.<br/>
+<img src="images/synckolab-wiz-3.png"/><br/>
+Select which kind of data you want to sync. Calendar and Tasks will only be selectable if you installed the lightning extension.<br/>
+<img src="images/synckolab-wiz-4.png"/><br/>
+For each data-type (Contacts, Calendar, Tasks) you will see a similar wizardpage.<br/>
+<i>(4)</i> select the adress book/calendar you want to use for syncing<br/>
+<i>(5)</i> select if you want the (prefered) xml/kolab format or the vcard/ical format. It is recommended to use the xml format because the vcard/ical format is very outdated and not as clearly specified. <br/>
+<i>(6)</i> select the folder that should be used for sync. Make sure you specify a different folder for calendar/adress book and tasks, otherwise the sync may fail<br/>
+<i>(7)</i> The checkbox is only important for shared folders where you have read-only access. This makes sure synckolab does not try to write any data into the imap folder<br/>
+Once you configured all of this the next Button will become clickable and take you to the next page. 
+
+<h2>Configuration</h2>
+<img src="images/synckolab-menu-options.png" alt="Option Menu under Tools"/><br/>
+<i>(1)</i> will open the configuration wizard (if its the first time you use synckolab) or the configuration dialog if you already have a configuration.<br/>
+
+<p>
+<img src="images/synckolab-settings.gif" alt="synkolab settings"/>
 <br>
-To open the configuration go to Tools->Extensions, then select the synckolab extension and click on options (see image).
-<br/><br/>
-<img src="synckolab-ab.png"/>
 <ol>
-        <li>Select the address book to sync with (a list of available address books is shown)</li>
-        <li>Select the email account to sync with (has to be an imap account)</li>
-        <li>In the list of folders, select an imap folder to sync with</li>
-        <li><b>Save to Imap Folder</b>: if not selected the syncronisation will work one way, no data will be changed on the imap folder (no new messages will be added/nothing deleted) the contacts will be changed</li>
-        <li><b>Sync Contacts</b>: if not selected, the contact synchronisation will be skipped</li>
-        <li><b>Sync Calendar</b>: If not not selected, the calendar (and todo) synchronisation will be skipped</li>
-</ol>
-<br/><br/>
-<img src="synckolab-cal.png"/>
-<ol>
-        <li>Select a calendar to sync with</li>
-        <li>select the email account to sync with (has to be an imap account)</li>
-        <li>In the list of folders, select an imap folder to sync with</li>
-        <li><b>Save to Imap Folder</b>: if not selected the syncronisation will work one way, no data will be changed on the imap folder (no new messages will be added/nothing deleted) the calendar will be changed</li>
+	<li>Here you see all your defined configurations. Under each configuration your find your sync-datapoints (clicking on an item will open one of the ocnfiguration screens as shown in the images)</li>
+	<li>This dropdown box lets you select the calendar/adressbook used for syncing</li>
+	<li>In the list of folders, select an imap folder to sync with</li>
+	<li>Contact Format: Select the (prefered) xml/kolab format or the vcard/ical format. It is recommended to use the xml format because the vcard/ical format is very outdated and not as clearly specified.</li>
+	<li>Save to Imap Folde: The checkbox is only important for shared folders where you have read-only access. This makes sure synckolab does not try to write any data into the imap folder uncheck this box. This will overwrite the local data on each sync.</li>
+	<li>Sync: Unchecking this box means that you do not want to sync the data at all.</li>
+	<li>Close Sync Window when done: unchecking this will keep the sync window open after a successfull sync</li>
+	<li>Account: Select the imap account which should be used for sync. Make sure that you configure the folder correctly after changing this or there will be errors</li>
+	<li>Sync Interval: The sync interval is 0 per default (do not sync automatically). You can change this to the number of minutes between each sync. If you want auto-sync use 5-10 Minutes for autosync in a workgroup. Depending on the internet connection and imap server you can decrease this number.</li>
+	<li>Add: Click here to open the configuration wizard for a new configuration</li>
+	<li>Delete: this will remove the currently selected configuration</li>
 </ol>
 </p>
 <?php $local_conf_show_notes_form = ON; require(NOTES); ?>
