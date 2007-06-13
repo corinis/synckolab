@@ -50,6 +50,7 @@
 <!ENTITY synckolab.settings.SyncIntervalDescription "自動同期を実行する間隔を指定してください．(「0」を指定すると自動同期を行いません．)">
 <!ENTITY synckolab.settings.SyncIntervalMinutes "分">
 <!ENTITY synckolab.settings.SaveToImapTip		"IMAPサーバへ変更を書き込まない場合には，チェックを外してください．(リードオンリーモード)">
+<!ENTITY synckolab.settings.HiddenWindow		"Hide the status window when syncing automatically">
 
 <!-- New Config Wizard -->
 <!ENTITY synckolab.newwizard.title 		"SyncKolab 設定ウィザード">

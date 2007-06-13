@@ -98,6 +98,8 @@
 				<textbox id="syncInterval" maxlength="3" style="width: 30px"/>
 				<label value="&synckolab.settings.SyncIntervalMinutes;"/>
 			</hbox>			
+			
+		    <checkbox id="hiddenWnd" label="&synckolab.settings.HiddenWindow;"/>	    
 	    	
     	</vbox>
     </tabpanel>

@@ -52,6 +52,7 @@
 <!ENTITY synckolab.settings.SyncIntervalMinutes "Minuten">
 <!ENTITY synckolab.settings.SyncIntervalDescription "Spezifizieren Sie einen Intervall in dem SyncKolab nach neuen Einträgen suchen soll. 0 bedeuted dass nur manuell synchronisiert wird.">
 <!ENTITY synckolab.settings.SaveToImapTip		"Diese option abwählen, wenn nichts auf den server geschriben werden soll">
+<!ENTITY synckolab.settings.HiddenWindow		"Statusfenster beim automatischen Abgleich verstecken">
 
 <!-- New Config Wizard -->
 <!ENTITY synckolab.newwizard.title "SyncKolab Einrichtungs-Wizard">

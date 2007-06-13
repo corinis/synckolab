@@ -239,6 +239,12 @@ function init() {
 		document.getElementById ("syncInterval").value = pref.getCharPref("SyncKolab.autoSync");
 	} catch (ex) {};
 	
+	// default do hide the window
+	document.getElementById ("hiddenWnd").checked = true;
+	try {		
+		document.getElementById ("hiddenWnd").checked = pref.getBoolPref("SyncKolab.hiddenWindow");
+	} catch (ex) {};
+	
 	// preselect the first item
 	// changeConfig(curConfig); DONT DO THAT NOW :P
 	return;	
@@ -1014,6 +1020,7 @@ function savePrefs() {
 //	pref.setBoolPref("SyncKolab.syncCalendar", document.getElementById ("syncCal").checked);
 	pref.setBoolPref("SyncKolab.closeWindow", document.getElementById ("closeWnd").checked);
 	pref.setCharPref("SyncKolab.autoSync", document.getElementById ("syncInterval").value);
+	pref.setBoolPref("SyncKolab.hiddenWindow", document.getElementById ("hiddenWnd").checked);
 
 	var tree = document.getElementById("configTree");
 	// get the treechildren item

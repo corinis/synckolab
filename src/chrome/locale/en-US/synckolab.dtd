@@ -50,6 +50,7 @@
 <!ENTITY synckolab.settings.SyncIntervalDescription "Define the interval in which SyncKolab will check for updates. Use 0 for manual update only.">
 <!ENTITY synckolab.settings.SyncIntervalMinutes "minutes">
 <!ENTITY synckolab.settings.SaveToImapTip		"Uncheck this, if you do not want anything written to the imap server (read only)">
+<!ENTITY synckolab.settings.HiddenWindow		"Hide the status window when syncing automatically">
 
 <!-- New Config Wizard -->
 <!ENTITY synckolab.newwizard.title 		"SyncKolab Setup Wizard">

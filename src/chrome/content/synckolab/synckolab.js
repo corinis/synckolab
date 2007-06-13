@@ -94,6 +94,8 @@ var PAUSE_ON_ERROR = true;
 // this is the timer function.. will call itself once a minute and check the configs
 var gSyncTimer = -1;
 var gAutoRun = -1;
+var gAutoHideWindow = false;
+var doHideWindow = false;
 
 function syncKolabTimer ()
 {
@@ -106,6 +108,7 @@ function syncKolabTimer ()
 		try {
 		    var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 			gAutoRun = pref.getCharPref("SyncKolab.autoSync");
+			gAutoHideWindow = pref.getBoolPref("SyncKolab.hiddenWindow");
 			logMessage("Automatically running syncKolab every " + gAutoRun + " minutes....", LOG_INFO);
 		} catch(e) {
 		}
@@ -116,10 +119,14 @@ function syncKolabTimer ()
 	{
 		logMessage("running syncKolab and resetting timer....", LOG_INFO);
 		gSyncTimer = -1;
+		// hide the window 
+		if (gAutoHideWindow)
+			doHideWindow = true;
 		syncKolab();		
+		doHideWindow = false;
 	}
 	// wait a minute
-	window.setTimeout(syncKolabTimer, 60000);		 
+	window.setTimeout(syncKolabTimer, 20000);		 
 }
   
 function syncKolab(event) {
@@ -129,7 +136,7 @@ function syncKolab(event) {
 	// copy a file to a folder
 	// call external func
 	//Copart, added resizeable property to allow user to enlarge window when needed
-	gWnd = window.open("chrome://synckolab/content/progressWindow.xul", "bmarks", "chrome,width=350,height=350,resizable=1");
+	gWnd = window.open("chrome://synckolab/content/progressWindow.xul", "bmarks", (doHideWindow?"chrome,width=0,height=0,resizable=0,hidden=1,hidechrome=1,popunder=1,centerscreen":"chrome,width=350,height=350,resizable=1"));
 	
 	try {
 	    var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
