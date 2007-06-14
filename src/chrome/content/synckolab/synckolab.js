@@ -126,21 +126,21 @@ function syncKolabTimer ()
 		doHideWindow = false;
 	}
 	// wait a minute
-	window.setTimeout(syncKolabTimer, 20000);		 
+	window.setTimeout(syncKolabTimer, 60000);		 
 }
   
 function syncKolab(event) {
 
 	strBundle = document.getElementById("synckolabBundle");
 
-	// copy a file to a folder
-	// call external func
-	//Copart, added resizeable property to allow user to enlarge window when needed
-	gWnd = window.open("chrome://synckolab/content/progressWindow.xul", "bmarks", (doHideWindow?"chrome,width=0,height=0,resizable=0,hidden=1,hidechrome=1,popunder=1,centerscreen":"chrome,width=350,height=350,resizable=1"));
+	if (doHideWindow)
+		gWnd = null;
+	else
+		gWnd = window.open("chrome://synckolab/content/progressWindow.xul", "bmarks", "chrome,width=350,height=350,resizable=1");
 	
 	try {
 	    var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
-			gCloseWnd = pref.getBoolPref("SyncKolab.closeWindow");
+		gCloseWnd = pref.getBoolPref("SyncKolab.closeWindow");
 	} catch(e) {
 	}
 	// wait until loaded
@@ -149,12 +149,18 @@ function syncKolab(event) {
 
 function goWindow (wnd)
 {
-	var statusMsg1 = wnd.document.getElementById('current-action');
-	if (statusMsg1 == null || !statusMsg1)
+	// wait until the window is loaded
+	if (wnd != null)
 	{
-		window.setTimeout(goWindow, SWITCH_TIME, wnd);		 
+		var statusMsg1 = wnd.document.getElementById('current-action');
+		if (statusMsg1 == null || !statusMsg1)
+		{
+			window.setTimeout(goWindow, SWITCH_TIME, wnd);		 
+			return;
+		}
 	}
-	else
+
+	if (wnd != null)
 	{
 		// some window elements for displaying the status
 		meter = wnd.document.getElementById('progress');
@@ -163,17 +169,52 @@ function goWindow (wnd)
 		processMsg = wnd.document.getElementById('current-process');
 		curCounter = wnd.document.getElementById('current-counter');
 		itemList = wnd.document.getElementById('itemList');
-		if (isCalendarAvailable ())
-		{
-			logMessage("Calendar available", LOG_INFO);
-			include("chrome://calendar/content/importExport.js");
-			include("chrome://calendar/content/calendar.js");
-		}
-		else
-			logMessage("Calendar not available - disabling", LOG_INFO);
-		
-		window.setTimeout(startSync, SWITCH_TIME);		 
 	}
+	else
+	{
+		var sb = document.getElementById("status-bar");
+
+
+		meter = document.getElementById('progress');
+		if (meter == null)
+			meter = document.createElement("progressmeter");
+		meter.setAttribute("mode", "determined");
+		meter.setAttribute("value", "0");
+		meter.setAttribute("style", "width:100px");
+		meter.setAttribute("id", "progress");
+
+
+		statusMsg = document.getElementById('current-action');		
+		if (statusMsg == null)
+			statusMsg = document.createElement("statusbarpanel");
+		statusMsg.setAttribute("id", "current-action");
+
+		curCounter = document.getElementById('current-counter');		
+		if (curCounter == null)
+			curCounter = document.createElement("statusbarpanel");
+		curCounter.setAttribute("id", "current-counter");
+		curCounter.setAttribute("label", "-/-");
+		
+		sb.appendChild(statusMsg);
+		sb.appendChild(meter);
+		sb.appendChild(curCounter);
+		
+		processMsg = null;
+		totalMeter = null;
+		itemList = null;
+		itemList = null;
+	}
+	
+	if (isCalendarAvailable ())
+	{
+		logMessage("Calendar available", LOG_INFO);
+		include("chrome://calendar/content/importExport.js");
+		include("chrome://calendar/content/calendar.js");
+	}
+	else
+		logMessage("Calendar not available - disabling", LOG_INFO);
+	
+	window.setTimeout(startSync, SWITCH_TIME);		 
 }
 
 var gTmpFile;
@@ -185,7 +226,8 @@ var curTaskConfig; // the current task config
 
 function startSync(event) {
 	meter.setAttribute("value", "0%");
-	totalMeter.setAttribute("value", "0%");
+	if (gWnd != null)
+		totalMeter.setAttribute("value", "0%");
 
 	// get temp file
 	var file = Components.classes["@mozilla.org/file/directory_service;1"].
@@ -215,7 +257,8 @@ function startSync(event) {
 function nextSync()
 {
 
-	totalMeter.setAttribute("value", (((curConConfig+curCalConfig+curTaskConfig)*100)/(syncConfigs.length*3)) +"%");
+	if (gWnd != null)
+		totalMeter.setAttribute("value", (((curConConfig+curCalConfig+curTaskConfig)*100)/(syncConfigs.length*3)) +"%");
 
 	if (curConConfig < syncConfigs.length)
 	{
@@ -229,7 +272,8 @@ function nextSync()
 
 		logMessage("Trying adressbook config " + syncConfigs[curConConfig], LOG_DEBUG);
 		
-		processMsg.value ="AddressBook Configuration " + syncConfigs[curConConfig];
+		if (processMsg != null)
+			processMsg.value ="AddressBook Configuration " + syncConfigs[curConConfig];
 		// sync the address book
 		syncAddressBook.init(syncConfigs[curConConfig]);	
 		curConConfig++;		
@@ -276,7 +320,8 @@ function nextSync()
 		try
 		{
 		
-			processMsg.value ="Calendar Configuration " + syncConfigs[curCalConfig];
+			if (processMsg != null)
+				processMsg.value ="Calendar Configuration " + syncConfigs[curCalConfig];
 			// make sure not to sync tasks
 			syncCalendar.syncTasks = false;
 			syncCalendar.init(syncConfigs[curCalConfig]);
@@ -336,8 +381,8 @@ function nextSync()
 		
 		try
 		{
-		
-			processMsg.value ="Task Configuration " + syncConfigs[curTaskConfig];
+			if (processMsg != null)
+				processMsg.value ="Task Configuration " + syncConfigs[curTaskConfig];
 			// sync tasks
 			syncCalendar.syncTasks = true;
 			syncCalendar.init(syncConfigs[curTaskConfig]);
@@ -383,10 +428,17 @@ function nextSync()
 	}
 	else //done
 	{
-		totalMeter.setAttribute("value", "100%");
+		if (gWnd != null)
+			totalMeter.setAttribute("value", "100%");
+		
 		meter.setAttribute("value", "100%");
-		statusMsg.value = strBundle.getString("syncfinished");
-		gWnd.document.getElementById('cancel-button').label = strBundle.getString("close"); 
+		if (gWnd != null)
+			statusMsg.value = strBundle.getString("syncfinished");
+		else
+			statusMsg.setAttribute("label", strBundle.getString("syncfinished"));
+		
+		if (gWnd != null)
+			gWnd.document.getElementById('cancel-button').label = strBundle.getString("close"); 
 		// delete the temp file
 		var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
 		sfile.initWithPath(gTmpFile);
@@ -394,15 +446,32 @@ function nextSync()
 			sfile.remove(true);
 			
 		// close the status window
-		if (gCloseWnd)
+		if (gCloseWnd && gWnd != null)
 			gWnd.close();
+
+		// remove all status bar elements
+		if (gWnd == null)
+		{
+			var sb = document.getElementById("status-bar");
+		
+			sb.removeChild(meter);
+			sb.removeChild(statusMsg);
+			sb.removeChild(curCounter);
+		}
 			
 		return;
 	}
 	
-	
 	// Step 3
-	statusMsg.value ="Getting Content ...";
+	if (gWnd != null)
+	{
+		statusMsg.value = strBundle.getString("getContent");
+	}
+	else
+	{
+		statusMsg.setAttribute("label", strBundle.getString("getContent"));
+	}
+	
 	meter.setAttribute("value", "5%");
 }
 
@@ -464,8 +533,10 @@ function getContent ()
 	updateMessages = new Array(); // saves the the message url to delete
 	updateMessagesContent = new Array(); // saves the card to use to update
 	
-	
-	statusMsg.value = "Synchronizing entries...";
+	if (gWnd != null)
+		statusMsg.value = strBundle.getString("syncEntries");
+	else
+		statusMsg.setAttribute("label", strBundle.getString("syncEntries"));
 	meter.setAttribute("value", "5%");
 	window.setTimeout(getMessage, SWITCH_TIME);	
 }
@@ -475,12 +546,12 @@ function getContent ()
 function getMessage ()
 {
 	// pause sync...
-	if (gWnd.gPauseSync)
+	if (gWnd != null && gWnd.gPauseSync)
 	{
 		window.setTimeout(getMessage, SWITCH_TIME);
 		return;
 	}
-	if (gWnd.gStopSync)
+	if (gWnd != null && gWnd.gStopSync)
 	{
 		alert("Stopped SyncKolab...");
 		return;
@@ -611,18 +682,19 @@ var myStreamListener = {
 function parseMessageRunner ()
 {
 	// pause sync...
-	if (gWnd.gPauseSync)
+	if (gWnd != null && gWnd.gPauseSync)
 	{
 		window.setTimeout(parseMessageRunner, SWITCH_TIME);	
 		return;
 	}
-	if (gWnd.gStopSync)
+	if (gWnd != null && gWnd.gStopSync)
 	{
 		alert("Stopped SyncKolab...");
 		return;
 	}
 
-   	logMessage("parsing message... PAUSE: " + gWnd.gPauseSync, LOG_DEBUG);
+	
+   	logMessage("parsing message... ", LOG_DEBUG);
 	
 	// fix the message for line truncs (last char in line is =)
 	fileContent = fileContent.replace(/=\n/g, "");
@@ -656,7 +728,11 @@ function parseMessageRunner ()
 	{
 		var curpointer = 5 + (55*(curMessage/totalMessages));
 		meter.setAttribute("value", curpointer + "%");
-		curCounter.setAttribute("value", curMessage + "/" + totalMessages);
+		if (gWnd != null)
+			curCounter.setAttribute("value", curMessage + "/" + totalMessages);
+		else
+			curCounter.setAttribute("label", curMessage + "/" + totalMessages);
+		
 		// next message
 		window.setTimeout(getMessage, SWITCH_TIME);	
 	}
@@ -681,8 +757,18 @@ function parseFolderToAddressFinish ()
     writeDataBase(getHashDataBaseFile(gSync.gConfig), syncMessageDb);
 
 	meter.setAttribute("value", "60%");
-	statusMsg.value = "Writing changed entries...";
-	curCounter.setAttribute("value", "0/0");
+	if (gWnd != null)
+	{
+		statusMsg.value = strBundle.getString("writeChangedEntries");
+		curCounter.setAttribute("value", "0/0");
+	}
+	else
+	{
+		statusMsg.setAttribute("label", strBundle.getString("writeChangedEntries"));
+		curCounter.setAttribute("label", "0/0");
+	}
+	
+	
 	window.setTimeout(updateContent, SWITCH_TIME);	
 }
 
@@ -693,13 +779,13 @@ function parseFolderToAddressFinish ()
 function updateContent()
 {
 	// pause sync...
-	if (gWnd.gPauseSync)
+	if (gWnd != null && gWnd.gPauseSync)
 	{
 		window.setTimeout(updateContent, SWITCH_TIME);	
 		return;
 	}
 		
-	if (gWnd.gStopSync)
+	if (gWnd != null && gWnd.gStopSync)
 	{
 		alert("Stopped SyncKolab...");
 		return;
@@ -738,13 +824,13 @@ function updateContent()
 function updateContentWrite ()
 {
 	// pause sync...
-	if (gWnd.gPauseSync)
+	if (gWnd != null && gWnd.gPauseSync)
 	{
 		window.setTimeout(updateContentWrite, SWITCH_TIME);	
 		return;
 	}
 		
-	if (gWnd.gStopSync)
+	if (gWnd != null && gWnd.gStopSync)
 	{
 		alert("Stopped SyncKolab...");
 		return;
@@ -802,8 +888,17 @@ function updateContentAfterSave ()
 	}
 
 	meter.setAttribute("value", "80%");
-	statusMsg.value = "Writing new entries...";
-	curCounter.setAttribute("value", "...");
+	if (gWnd != null)
+	{
+		statusMsg.value = strBundle.getString("writeNewEntries");
+		curCounter.setAttribute("value", "...");
+	}
+	else
+	{
+		statusMsg.setAttribute("label", strBundle.getString("writeNewEntries"));
+		curCounter.setAttribute("label", "...");
+	}
+	
 	window.setTimeout(writeContent, SWITCH_TIME);	
 }
 
@@ -812,13 +907,13 @@ function updateContentAfterSave ()
 function writeContent ()
 {
 	// pause sync...
-	if (gWnd.gPauseSync)
+	if (gWnd != null && gWnd.gPauseSync)
 	{
 		window.setTimeout(writeContent, SWITCH_TIME);	
 		return;
 	}
 		
-	if (gWnd.gStopSync)
+	if (gWnd != null && gWnd.gStopSync)
 	{
 		alert("Stopped SyncKolab...");
 		return;
@@ -871,12 +966,12 @@ function writeContent ()
 function writeContentAfterSave ()
 {
 	// pause sync...
-	if (gWnd.gPauseSync)
+	if (gWnd != null && gWnd.gPauseSync)
 	{
 		window.setTimeout(writeContentAfterSave, SWITCH_TIME);	
 		return;
 	}
-	if (gWnd.gStopSync)
+	if (gWnd != null && gWnd.gStopSync)
 	{
 		alert("Stopped SyncKolab...");
 		return;

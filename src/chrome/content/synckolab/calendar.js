@@ -211,7 +211,8 @@ var syncCalendar = {
 		this.curItemInList.appendChild(this.curItemInListStatus);
 		this.curItemInList.appendChild(this.curItemInListContent);
 		
-		this.itemList.appendChild(this.curItemInList);
+		if (this.itemList != null)
+			this.itemList.appendChild(this.curItemInList);
 		
 		
 		// get the content in a nice format
@@ -549,7 +550,8 @@ var syncCalendar = {
 					this.curItemInList.appendChild(this.curItemInListStatus);
 					this.curItemInList.appendChild(this.curItemInListContent);
 					
-					this.itemList.appendChild(this.curItemInList);
+					if (this.itemList != null)
+						this.itemList.appendChild(this.curItemInList);
 					
 				}
 				else
@@ -567,7 +569,8 @@ var syncCalendar = {
 					this.curItemInList.appendChild(this.curItemInListStatus);
 					this.curItemInList.appendChild(this.curItemInListContent);
 					
-					this.itemList.appendChild(this.curItemInList);
+					if (this.itemList != null)
+						this.itemList.appendChild(this.curItemInList);
 				}
 			}
 

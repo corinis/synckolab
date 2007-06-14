@@ -175,7 +175,8 @@ var syncAddressBook = {
 		this.curItemInList.appendChild(this.curItemInListStatus);
 		this.curItemInList.appendChild(this.curItemInListContent);
 		
-		this.itemList.appendChild(this.curItemInList);
+		if (this.itemList != null)
+			this.itemList.appendChild(this.curItemInList);
 		
 		// get the content in a nice format
 		fileContent = stripMailHeader(fileContent);
@@ -550,7 +551,8 @@ var syncAddressBook = {
 			this.curItemInList.appendChild(this.curItemInListStatus);
 			this.curItemInList.appendChild(this.curItemInListContent);
 			
-			this.itemList.appendChild(this.curItemInList);
+			if (this.itemList != null)
+				this.itemList.appendChild(this.curItemInList);
 			
 			// and write the message
 			content = card2Message(curItem, this.email, this.format);
@@ -610,7 +612,8 @@ var syncAddressBook = {
 					this.curItemInList.appendChild(this.curItemInListStatus);
 					this.curItemInList.appendChild(this.curItemInListContent);
 					
-					this.itemList.appendChild(this.curItemInList);
+					if (this.itemList != null)
+						this.itemList.appendChild(this.curItemInList);
 					
 					// also remove the local db file since we deleted the contact on the server
 					cEntry.remove(false);
@@ -636,7 +639,8 @@ var syncAddressBook = {
 					this.curItemInList.appendChild(this.curItemInListStatus);
 					this.curItemInList.appendChild(this.curItemInListContent);
 					
-					this.itemList.appendChild(this.curItemInList);
+					if (this.itemList != null)
+						this.itemList.appendChild(this.curItemInList);
 					
 					// and write the message
 					content = card2Message(curItem, this.email, this.format);
