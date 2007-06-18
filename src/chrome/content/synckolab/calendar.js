@@ -90,10 +90,12 @@ var syncCalendar = {
 			var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 			this.serverKey = pref.getCharPref("SyncKolab."+config+".IncomingServer");
 
-			if (this.syncTasks)
+			if (this.syncTasks == true)
 			{
 				// task config
 				this.gSync = pref.getBoolPref("SyncKolab."+config+".syncTasks");
+				if (this.gSync == false)
+					return;
 				this.folderPath = pref.getCharPref("SyncKolab."+config+".TaskFolderPath");
 				this.gCalendarName = pref.getCharPref("SyncKolab."+config+".Tasks");
 				this.format = pref.getCharPref("SyncKolab."+config+".TaskFormat");			
@@ -103,6 +105,8 @@ var syncCalendar = {
 			{
 				// calendar config
 				this.gSync = pref.getBoolPref("SyncKolab."+config+".syncCalendar");
+				if (this.gSync == false)
+					return;
 				this.folderPath = pref.getCharPref("SyncKolab."+config+".CalendarFolderPath");
 				this.gCalendarName = pref.getCharPref("SyncKolab."+config+".Calendar");
 				this.format = pref.getCharPref("SyncKolab."+config+".CalendarFormat");			
@@ -140,7 +144,7 @@ var syncCalendar = {
 	
 	init2: function (nextFunc, sync)	{
 
-		logMessage("INIT2", LOG_DEBUG);
+		logMessage("Init2 for " + (this.syncTasks == true?"tasks":"calendar"), LOG_DEBUG);
 		// get ALL the items from calendar - when done call nextfunc
 		this.gEvents.nextFunc = nextFunc;
 		this.gEvents.events = new Array();
@@ -148,12 +152,12 @@ var syncCalendar = {
 		
 		// gCalendar might be invalid if no calendar is selected in the settings
 		if (this.gCalendar) {
-			if (this.syncTasks)
+			if (this.syncTasks == true)
 				this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_TODO | this.gCalendar.ITEM_FILTER_COMPLETED_ALL, 0, null, null, this.gEvents);
 			else
 				this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_EVENT, 0, null, null, this.gEvents);
 				
-			logMessage("Getting items from calendar" + e, LOG_CALENDAR + LOG_DEBUG);
+			logMessage("Getting items for " + (this.syncTasks == true?"tasks":"calendar"), LOG_CAL + LOG_DEBUG);
 			
 			// if no item has been read, onGetResult has never been called 
 			// leaving us stuck in the events chain
@@ -173,7 +177,7 @@ var syncCalendar = {
 		events: new Array(),
 		sync: '',
 		onOperationComplete: function(aCalendar, aStatus, aOperator, aId, aDetail) {		
-			    logMessage("operation: status="+aStatus + " Op=" + aOperator + " Detail=" + aDetail, LOG_DEBUG + LOG_CAL);
+			    logMessage("operation "+(this.syncTasks == true?"tasks":"calendar")+": status="+aStatus + " Op=" + aOperator + " Detail=" + aDetail, LOG_DEBUG + LOG_CAL);
 			    this.nextFunc();
 			},
 		onGetResult: function(aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {

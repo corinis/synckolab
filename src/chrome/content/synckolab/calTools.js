@@ -375,7 +375,7 @@ function xml2Event (xml, extraFields, event)
 					if (s.indexOf(":") == -1)
 					{
     					// date values witout time part specify a full day event
-						if (syncTasks)
+						if (syncTasks == true)
 						{
 	                        event.entryDate = string2CalDate(s);
 							event.entryDate.isDate = true;
@@ -388,7 +388,7 @@ function xml2Event (xml, extraFields, event)
 					}
 					else
 					{
-						if (syncTasks)
+						if (syncTasks == true)
 	                        event.entryDate = string2CalDateTime(s, true);
 	                    else
 	                        event.startDate = string2CalDateTime(s, true);
@@ -804,8 +804,8 @@ function cnv_event2xml (event, skipVolatiles, syncTasks)
 	//    - yearly recurrence
 	
     var hasOrganizer = false;
-    var isAllDay = syncTasks?false:event.startDate.isDate;
-    var endDate = syncTasks?event.dueDate:event.endDate;
+    var isAllDay = (syncTasks==true)?false:event.startDate.isDate;
+    var endDate = (syncTasks==true)?event.dueDate:event.endDate;
 
     // correct the end date for all day events before writing the XML object
     // Kolab uses for 1-day-event:
@@ -821,23 +821,28 @@ function cnv_event2xml (event, skipVolatiles, syncTasks)
     }
 
     var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-    if (syncTasks)
+    if (syncTasks == true)
     {
 	    xml += "<task version=\"1.0\" >\n"
 	    xml += " <completed>" + event.isCompleted?"1":"0" +"</completed>\n";	
 	}
     else
 	    xml += "<event version=\"1.0\" >\n"
+	    
     xml += " <product-id>Synckolab " + gVersion + ", Calendar Sync</product-id>\n";
     xml += " <uid>" + event.id + "</uid>\n"
-    if(syncTasks)
+    
+    if(syncTasks == true)
+    {
 	    xml += " <start-date>" + calDateTime2String(event.entryDate, isAllDay) + "</start-date>\n";
-    else
-	    xml += " <start-date>" + calDateTime2String(event.startDate, isAllDay) + "</start-date>\n";
-    if(syncTasks)
 	    xml += " <due-date>" + calDateTime2String(endDate, isAllDay) + "</due-date>\n";
-   	else
+	}
+    else
+	{
+	    xml += " <start-date>" + calDateTime2String(event.startDate, isAllDay) + "</start-date>\n";
 	    xml += " <end-date>" + calDateTime2String(endDate, isAllDay) + "</end-date>\n";
+	 }
+	    
     xml += " <summary>" + encode4XML(event.title) +"</summary>\n";
 
     if (!skipVolatiles)
@@ -1044,7 +1049,7 @@ function cnv_event2xml (event, skipVolatiles, syncTasks)
     }
 
     xml += " <revision>0</revision>\n";
-    if (syncTasks)
+    if (syncTasks == true)
 	    xml += "</task>\n"
 	else
 	    xml += "</event>\n"
@@ -1060,7 +1065,7 @@ function cnv_event2xml (event, skipVolatiles, syncTasks)
 function event2Human (event, syncTasks)
 {
     var txt = "Summary: " + event.title +"\n";
-    if(!syncTasks)
+    if(syncTasks == false)
     {
 	    var isAllDay = event.startDate.isDate;
 	    var endDate = event.endDate;

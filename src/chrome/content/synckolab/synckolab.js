@@ -360,7 +360,7 @@ function nextSync()
 	    catch (ex)
 	    {
 	    	// if an exception is found print it and continue
-			dump("Error setting calendar config: " + ex + "\n");
+			logMessage("Error setting calendar config: " + ex, LOG_DEBUG);
 			curCalConfig++;
 			window.setTimeout(nextSync, SWITCH_TIME);	
 			return;
