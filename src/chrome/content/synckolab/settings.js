@@ -414,6 +414,7 @@ function prefillFields() {
 
 function changeConfig (config)
 {
+	
 	// didnt change anything
 	if (config == curConfig)
 		return;
@@ -452,8 +453,9 @@ function changeConfig (config)
 		// if no account config found - preselect the first one
 		if (act == null)
 		{
+			alert("No account found");
 		}
-	
+		
 		// select the account
 		var actList = document.getElementById("ImapAcct");
 		// go through the items
@@ -469,7 +471,7 @@ function changeConfig (config)
 			}
 			cur = cur.nextSibling;
 		}
-		
+
 		// update the folder selections
 		// the address book
 		var ab = null;
@@ -479,7 +481,7 @@ function changeConfig (config)
 		}
 		catch (ex)
 		{}
-		
+
 		actList = document.getElementById("conURL");
 		// go through the items
 		if (actList.firstChild != null)
@@ -535,15 +537,23 @@ function changeConfig (config)
 			sCurFolder = pref.getCharPref("SyncKolab."+config+".ContactFolderPath");
 		} catch (ex) {}
 		
+
 		updateFolder (act);
 		updateFolder (act);
+
 		if (sCurFolder != null)
 		{
-			var tree= document.getElementById ("conImapFolder");
-			var treei = tree.view.getIndexOfItem(document.getElementById(sCurFolder));
-			tree.view.selection.select(treei); 
-			if (tree.boxObject)
-				tree.boxObject.scrollToRow(treei);
+			var tree = document.getElementById ("conImapFolder");
+			
+			// make sure we have the correct folder in the view
+			if (document.getElementById(sCurFolder) != null)
+			{			
+				var treei = tree.view.getIndexOfItem(document.getElementById(sCurFolder));
+				
+				tree.view.selection.select(treei); 
+				if (tree.boxObject)
+					tree.boxObject.scrollToRow(treei);
+			}
 		}
 		
 		// same stuff for the calendarcontrols		
@@ -615,10 +625,14 @@ function changeConfig (config)
 			if (sCurFolder != null)
 			{
 				var tree= document.getElementById ("calImapFolder");
-				var treei = tree.view.getIndexOfItem(document.getElementById(sCurFolder+"c"));
-				tree.view.selection.select(treei); 
-				if (tree.boxObject)
-					tree.boxObject.scrollToRow(treei);
+				// make sure we have the correct folder in the view
+				if (document.getElementById(sCurFolder+"c") != null)
+				{			
+					var treei = tree.view.getIndexOfItem(document.getElementById(sCurFolder+"c"));
+					tree.view.selection.select(treei); 
+					if (tree.boxObject)
+						tree.boxObject.scrollToRow(treei);
+				}
 			}
 			
 			// the tasks
@@ -688,10 +702,14 @@ function changeConfig (config)
 			if (sCurFolder != null)
 			{
 				var tree= document.getElementById ("taskImapFolder");
-				var treei = tree.view.getIndexOfItem(document.getElementById(sCurFolder+"t"));
-				tree.view.selection.select(treei); 
-				if (tree.boxObject)
-					tree.boxObject.scrollToRow(treei);
+				// make sure we have the correct folder in the view
+				if (document.getElementById(sCurFolder+"t") != null)
+				{			
+					var treei = tree.view.getIndexOfItem(document.getElementById(sCurFolder+"t"));
+					tree.view.selection.select(treei); 
+					if (tree.boxObject)
+						tree.boxObject.scrollToRow(treei);
+				}
 			}
 		}
 	}
