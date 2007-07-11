@@ -88,6 +88,7 @@ var LOG_ALL = 12;
 
 var DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + LOG_DEBUG;
 var SWITCH_TIME = 50;
+
 // set this to true and on every error there will be a pause so you can check the logs
 var PAUSE_ON_ERROR = true;
  
@@ -754,7 +755,12 @@ function parseFolderToAddressFinish ()
     logMessage("parseFolderToAddressFinish", LOG_DEBUG);
     
     // write the db file back
-    writeDataBase(gSync.dbFile, syncMessageDb);
+    if (syncMessageDb == null)
+    {
+	    logMessage("syncMessageDB is null: " + gSync.dbFile, LOG_ERROR);
+    }
+    else
+	    writeDataBase(gSync.dbFile, syncMessageDb);
 
 	meter.setAttribute("value", "60%");
 	if (gWnd != null)

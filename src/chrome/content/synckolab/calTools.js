@@ -253,7 +253,7 @@ function equalsEvent (a, b, syncTasks)
 }
 
 
-function message2Event (fileContent, extraFields)
+function message2Event (fileContent, extraFields, syncTasks)
 {
 	if (fileContent == null)
 		return null;
@@ -261,8 +261,12 @@ function message2Event (fileContent, extraFields)
 	var parsedEvent = null;
 	if (fileContent.indexOf("<?xml") != -1 || fileContent.indexOf("<?XML") != -1)
 	{
-		parsedEvent = Components.classes["@mozilla.org/calendar/event;1"]
-			.createInstance(Components.interfaces.calIEvent);
+		if (syncTasks)
+			parsedEvent = Components.classes["@mozilla.org/calendar/todo;1"]
+				.createInstance(Components.interfaces.calITodo);
+		else
+			parsedEvent = Components.classes["@mozilla.org/calendar/event;1"]
+				.createInstance(Components.interfaces.calIEvent);
 		if (xml2Event(fileContent, extraFields, parsedEvent) == false)
 		{
 			return null;
@@ -272,7 +276,7 @@ function message2Event (fileContent, extraFields)
 	{
 		fileContent = decode_utf8(DecodeQuoted(fileContent));
 		 // this.format == 'iCal'
-		parsedEvent = ical2event(fileContent);
+		parsedEvent = ical2event(fileContent, syncTasks);
 	}
 	return parsedEvent;
 
@@ -390,10 +394,8 @@ function xml2Event (xml, extraFields, event)
 					{
 						if (syncTasks == false)
 	                        event.startDate = string2CalDateTime(s, true);
-	                    /* Entrydate does is not writeable.. skip this
 	                    else
 	                        event.entryDate = string2CalDateTime(s, true);
-	                    */
                     }
 					break;						
 
@@ -439,14 +441,33 @@ function xml2Event (xml, extraFields, event)
 					
 				case "COMPLETED":
 					event.isCompleted = false;
+					event.percentComplete = 0;
 					
 					if (!cur.firstChild)
 						break;
 
 					var s = decode4XML(cur.firstChild.data);
-					event.isCompleted = (s == "1");
+					event.percentComplete = s;
+					if (s == 100)
+						event.isCompleted = true;
 					break;
+					/*
+				case "COMPLETED-DATE":
+					if (!cur.firstChild)
+						break;
 
+					var s = decode4XML(cur.firstChild.data);
+					// 2005-03-30T15:28:52Z
+					if (s.indexOf(":") == -1)
+					{
+    					// date values witout time part specify a full day event
+                        event.completedDate = string2CalDate(s);
+						event.completedDate.isDate = true;
+					}
+					else
+                        event.completedDate = string2CalDateTime(s, true);
+					break;
+					*/
 				case "SUMMARY":
 					event.title = decode4XML(cur.firstChild.data);
 					break;
@@ -826,7 +847,10 @@ function cnv_event2xml (event, skipVolatiles, syncTasks)
     if (syncTasks == true)
     {
 	    xml += "<task version=\"1.0\" >\n"
-	    xml += " <completed>" + event.isCompleted?"1":"0" +"</completed>\n";	
+	    if (event.isCompleted)
+		    xml += " <completed>100</completed>\n";	
+		else
+		    xml += " <completed>" + event.percentComplete +"</completed>\n";	
 	}
     else
 	    xml += "<event version=\"1.0\" >\n"
@@ -836,9 +860,12 @@ function cnv_event2xml (event, skipVolatiles, syncTasks)
     
     if(syncTasks == true)
     {
-	    if (!skipVolatiles)
-		    xml += " <start-date>" + calDateTime2String(event.entryDate, isAllDay) + "</start-date>\n";
+	    xml += " <start-date>" + calDateTime2String(event.entryDate, isAllDay) + "</start-date>\n";
 	    xml += " <due-date>" + calDateTime2String(endDate, isAllDay) + "</due-date>\n";
+	    /*
+	    if (!skipVolatiles)
+		    xml += " <completed-date>" + calDateTime2String(completedDate, true) + "</completed-date>\n";
+		*/
 	}
     else
 	{
@@ -1102,7 +1129,7 @@ function event2kolabXmlMsg (event, email, syncTasks)
  */
 
 
-function ical2event (content)
+function ical2event (content, todo)
 {
     var event;
 	var icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
@@ -1133,8 +1160,14 @@ function ical2event (content)
 	}
 	
 	var subComp = event.getFirstSubcomponent("ANY");
-	event = Components.classes["@mozilla.org/calendar/event;1"]
+
+	if (todo)
+		event = Components.classes["@mozilla.org/calendar/todo;1"]
+                      .createInstance(Components.interfaces.calITodo);
+	else                 
+		event = Components.classes["@mozilla.org/calendar/event;1"]
                       .createInstance(Components.interfaces.calIEvent);
+    
     try
     {
     	event.icalComponent = subComp;

@@ -60,7 +60,7 @@ function getSyncDbFile (config, type, id)
 {
 	if (id == null)
 	{
-    	logMessage("Error: entry has no id (" +config + ": " + cal + ")", LOG_ERROR);	
+    	logMessage("Error: entry has no id (" +config + ": " + type + ")", LOG_ERROR);	
 		return null;
 	}
 		

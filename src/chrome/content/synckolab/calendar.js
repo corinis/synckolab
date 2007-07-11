@@ -229,7 +229,7 @@ var syncCalendar = {
 		var messageFields = new Array();		
 
 		// parse the content
-		var parsedEvent = message2Event(fileContent, messageFields);
+		var parsedEvent = message2Event(fileContent, messageFields, this.syncTasks);
 		
 		if (parsedEvent == null)
 		{
@@ -244,7 +244,7 @@ var syncCalendar = {
 		this.curItemInListId.setAttribute("label", parsedEvent.id);
 		this.curItemInListStatus.setAttribute("label", strBundle.getString("checking"));
 		var info = parsedEvent.title + " (" +
-		           date2String(parsedEvent.startDate.jsDate) + ")";
+		           this.syncTasks?"":date2String(parsedEvent.startDate.jsDate) + ")";
 		this.curItemInListContent.setAttribute("label", info);
 		
 		// remember that we did this uid already
@@ -308,7 +308,7 @@ var syncCalendar = {
 		    // event exists in local calendar
 			logMessage("Event exists local: " + parsedEvent.id, LOG_CAL + LOG_DEBUG);
 			
-			var cEvent = message2Event(readSyncDBFile(idxEntry));
+			var cEvent = message2Event(readSyncDBFile(idxEntry), null, this.syncTasks);
 			
 			var hasEntry = idxEntry.exists() && (cEvent != null);
 			// make sure cEvent is not null, else the comparision will fail
@@ -637,6 +637,6 @@ var syncCalendar = {
 	
 	doneParsing: function ()
 	{
-		writeDataBase (this.dbFile, this.db);
+//		writeDataBase (this.dbFile, this.db);
 	}
 }
