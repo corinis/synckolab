@@ -29,6 +29,9 @@
 <!ENTITY synckolab.settings.SyncTasks		"Aufgaben abgleichen">
 <!ENTITY synckolab.settings.CloseWindow		"Statusfenster nach Beendigung schliessen">
 <!ENTITY synckolab.settings.add				"Neu">
+<!ENTITY synckolab.settings.load			"Importieren">
+<!ENTITY synckolab.settings.saveSingle		"Exportieren">
+<!ENTITY synckolab.settings.saveAll			"alle Exportieren">
 <!ENTITY synckolab.settings.del				"Entfernen">
 <!ENTITY synckolab.settings.SyncCalendar	"Kalender abgleichen">
 <!ENTITY synckolab.settings.SyncCalendarTip	"Aktivieren wenn in dieser Konfiguration der Kalender abgeglichen werden soll">

@@ -27,6 +27,9 @@
 <!ENTITY synckolab.settings.SyncTasks		"タスクリストを同期する">
 <!ENTITY synckolab.settings.CloseWindow		"同期が完了したら，ウインドウを閉じる">
 <!ENTITY synckolab.settings.add			"追加">
+<!ENTITY synckolab.settings.load			"Load">
+<!ENTITY synckolab.settings.saveSingle		"Save">
+<!ENTITY synckolab.settings.saveAll			"Save All">
 <!ENTITY synckolab.settings.del			"削除">
 <!ENTITY synckolab.settings.SyncCalendar	"カレンダーを同期する">
 <!ENTITY synckolab.settings.SyncCalendarTip	"カレンダーを同期する場合はチェックしてください．">

@@ -39,6 +39,7 @@ var consoleService = Components.classes["@mozilla.org/consoleservice;1"].getServ
 // string bundle use: strBundle.getString("KEYNAME")
 var strBundle;
 
+String.prototype.trim = function() { return this.replace(/^\s+|\s+$/g, ''); }
 
 /**
  * Generate the interface subtree for a new configuration 
@@ -281,8 +282,6 @@ function init() {
 		document.getElementById ("hiddenWnd").checked = pref.getBoolPref("SyncKolab.hiddenWindow");
 	} catch (ex) {};
 	
-	// preselect the first item
-	// changeConfig(curConfig); DONT DO THAT NOW :P
 	return;	
 }
 
@@ -1100,7 +1099,8 @@ function savePrefs() {
 	{
 		if (cur.nodeName == "treeitem")
 		{
-			configs += cur.firstChild.firstChild.getAttribute("label") + ";";
+			if (cur.firstChild.firstChild.getAttribute("id") != "Welcome-Welcome")
+				configs += cur.firstChild.firstChild.getAttribute("label") + ";";
 		}
 		cur = cur.nextSibling;
 	}
@@ -1270,4 +1270,333 @@ function setControlStateTasks(active)
 	for(var i=0 ; i < fieldsArray.length ; i++ ) {
 		document.getElementById(fieldsArray[i]).disabled = !active;
 	}
+}
+
+
+/**
+ * Save a single Configuration
+ */
+function saveSingleConfig()
+{
+	var configName = curConfig;
+	var nsIFilePicker = Components.interfaces.nsIFilePicker;
+	var fp = Components.classes["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
+	fp.init(window, strBundle.getString("saveConfig"), nsIFilePicker.modeSave);
+	fp.appendFilter(strBundle.getString("configFiles"),"*.config");
+	fp.defaultString = configName + ".config";
+	fp.defaultExtension = "config";
+	var res = fp.show();
+	if (res == nsIFilePicker.returnOK){
+		var thefile = fp.file;
+		// open the file
+		thefile.create(thefile.NORMAL_FILE_TYPE, 0666);
+	 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
+	 	stream.init(thefile, 2, 0x200, false); // open as "write only"
+
+		var s = "# SyncKolab V0.5.0 Configuration File\n";
+		stream.write(s, s.length);
+		writeLine(stream, "Configuration", configName);
+		
+		writeConfig(configName, stream);
+		
+		s = "\n\n";
+		stream.write(s, s.length);
+		stream.close();
+	}
+}
+
+/**
+ * Load a configuration from a file
+ */
+function loadConfig()
+{
+	var nsIFilePicker = Components.interfaces.nsIFilePicker;
+	var fp = Components.classes["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
+	fp.init(window, strBundle.getString("loadConfig"), nsIFilePicker.modeOpen);
+	fp.appendFilter(strBundle.getString("configFiles"),"*.config");
+	fp.defaultString = "SyncKolab.config";
+	fp.defaultExtension = "config";
+	var res = fp.show();
+	if (res == nsIFilePicker.returnOK){
+		var file = fp.file;
+
+		if ((!file.exists()) || (!file.isReadable()))
+			return null;
+		
+		 // setup the input stream on the file
+		var istream = Components.classes["@mozilla.org/network/file-input-stream;1"]
+			.createInstance(Components.interfaces.nsIFileInputStream);
+		istream.init(file, 0x01, 4, null);
+		var fileScriptableIO = Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance(Components.interfaces.nsIScriptableInputStream); 
+		fileScriptableIO.init(istream);
+		// parse the xml into our internal document
+		istream.QueryInterface(Components.interfaces.nsILineInputStream); 
+		var fileContent = "";
+		var csize = 0; 
+		while ((csize = fileScriptableIO.available()) != 0)
+		{
+			fileContent += fileScriptableIO.read( csize );
+		}
+		fileScriptableIO.close(); 	
+		istream.close();
+
+	 	// read basics
+		var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+		var lePrefs = fileContent.split("\n");
+		
+		var fullPref = false;
+		for (var i=0; i < lePrefs.length; i++)
+		{
+			if (lePrefs[i].indexOf("SyncKolab.Configs") != -1)
+				fullPref = true;		
+		}
+		
+		if (fullPref)
+		{
+			if (!confirm(strBundle.getString("configReplaceAll")))
+				return;
+				
+			for (var i=0; i < lePrefs.length; i++)
+			{
+				var cLine = lePrefs[i].trim();
+				// skip comments
+				if (cLine.indexOf("#") == 0)
+					continue;
+				if (cLine.length < 4)
+					continue;
+				
+				var cPref = cLine.split('=');
+				var name = cPref[0].trim();
+				
+				var value = cPref[1];
+				for (var j=2; j < cPref.length; j++)
+					value += "=" + cPref[j];
+					
+					
+				pref.setCharPref(name, value);				
+			}
+		}
+		else
+		{
+			var prefName = null;
+			for (var i=0; i < lePrefs.length; i++)
+			{
+				var cLine = lePrefs[i].trim();
+				if (cLine.indexOf("Configuration") == 0)
+					prefName = cLine.split('=')[1].trim();
+			}
+			
+			if (prefName == null)
+			{
+				alert(strBundle.getString("configInvalid"));
+				return;
+			}
+
+			// get all available configurations
+			var configs = new Array();
+		
+			try {
+				var Config = pref.getCharPref("SyncKolab.Configs");
+				configs = Config.split(';');
+			} catch(ex) {}
+
+			var haveConfig = false;			
+			for (var i=0; i < configs.length; i++)
+			{
+				if (configs[i] == prefName)
+				{
+					if (!confirm(strBundle.getString("configOverwrite") + prefName))
+						return;
+					haveConfig = true;
+					break;
+				}
+			}
+			
+			if (!haveConfig)
+			{
+				var Config = configs.join(";");
+				Config += ";" + prefName;
+				pref.setCharPref("SyncKolab.Configs", Config);
+			}
+
+			for (var i=0; i < lePrefs.length; i++)
+			{
+				var cLine = lePrefs[i].trim();
+				// skip comments
+				if (cLine.indexOf("#") == 0)
+					continue;
+				if (cLine.indexOf("Configuration") == 0)
+					continue;
+				if (cLine.length < 4)
+					continue;
+				
+				var cPref = cLine.split('=');
+				var name = cPref[0].trim();
+				
+				var value = cPref[1];
+				for (var j=2; j < cPref.length; j++)
+					value += "=" + cPref[j];
+					
+				pref.setCharPref(name, value);				
+			}
+			
+		}
+	}
+	
+	// reopen config dialog
+	window.open('chrome://synckolab/content/synckolabPref.xul', '', 'chrome,resizable=1');
+	this.close();	
+}
+
+/**
+ * Save all Configurations (incl. global options)
+ */
+function saveAllConfig()
+{
+	var nsIFilePicker = Components.interfaces.nsIFilePicker;
+	var fp = Components.classes["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
+	fp.init(window, strBundle.getString("saveConfig"), nsIFilePicker.modeSave);
+	fp.appendFilter(strBundle.getString("configFiles"),"*.config");
+	fp.defaultString = "SyncKolab.config";
+	fp.defaultExtension = "config";
+	var res = fp.show();
+	if (res == nsIFilePicker.returnOK){
+		var thefile = fp.file;
+
+	 	// write basics
+		var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+
+		// get all available configurations
+		var configs = new Array();
+	
+		try {
+			var Config = pref.getCharPref("SyncKolab.Configs");
+			configs = Config.split(';');
+		} catch(ex) {}
+	
+		// in case we did not find anything - check if there are "old" configurations
+		// and use them (like an importer)
+		if (configs.length == 0)
+		{
+			var oldConfigs = new Array();
+			try {
+				var conConfig = pref.getCharPref("SyncKolab.AddressBookConfigs");
+				oldConfigs = conConfig.split(';');
+			} catch(ex) {}
+			
+			try {
+				var calConfig = pref.getCharPref("SyncKolab.CalendarConfigs");
+				oldConfigs = oldConfigs.concat(calConfig.split(';'));
+			}
+			catch(ex) {}
+			
+			// now add each and make sure no doublenames are added:
+			for (var i=0; i < oldConfigs.length; i++)
+			{
+				var addMe = true;
+				for (var j=0; j < configs.length; j++)
+					if (configs[j] == oldConfigs[i])
+					{
+						addMe = false;
+						break;
+					}
+				if (addMe && oldConfigs[i].length > 2)
+					configs.push(oldConfigs[i]);
+			}
+		}
+	
+		if (configs.length == 0)
+		{
+			return;
+		}
+
+		// open the file
+		thefile.create(thefile.NORMAL_FILE_TYPE, 0666);
+	 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
+	 	stream.init(thefile, 2, 0x200, false); // open as "write only"
+
+		var s = "# SyncKolab V0.5.0 Configuration File\n";
+		stream.write(s, s.length);
+
+		// generate the configuration in the tree control 	
+		s = '';
+		for (var i=0; i < configs.length; i++)
+		{
+			s += configs[i] + ';';
+			writeConfig(configs[i], stream);
+		}
+		writeLine(stream, "SyncKolab.Configs", s);
+		
+		// char prefs:
+		var fieldsArray = new Array(
+			"closeWindow","autoSync","hiddenWindow"
+			);
+	
+		for(var i=0 ; i < fieldsArray.length ; i++ ) {
+			try
+			{
+				writeLine(stream, "SyncKolab." + fieldsArray[i], pref.getCharPref("SyncKolab." + fieldsArray[i]));
+			}
+			catch (exw) {} // can be ignored savely
+		}	
+		
+		s = "\n\n";
+		stream.write(s, s.length);
+		stream.close();
+	}
+}
+
+function writeLine (file, key, value)
+{
+	if (value == null || key == null)
+		return;
+	var s = key + "=" + value + "\n";
+	file.write(s, s.length);
+}
+/**
+ * Writes the configuration into a open file stream
+ */
+function writeConfig (config, file)
+{
+	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+		
+	var act = null;
+	try
+	{
+		act = pref.getCharPref("SyncKolab."+config+".IncomingServer");
+	}
+	catch (ex)
+	{
+		// get the contact incoming (old style)
+		try
+		{
+			act = pref.getCharPref("SyncKolab."+config+".ContactIncomingServer");
+		}
+		catch (ex2) 
+		{
+			try
+			{
+				act = pref.getCharPref("SyncKolab."+config+".CalendarIncomingServer");
+			}
+			catch (ex3) {}
+		}
+	}
+	
+	writeLine(file, "SyncKolab."+config+".IncomingServer", act);
+	
+	// char prefs:
+	var fieldsArray = new Array(
+		"AddressBook","AddressBookFormat","syncContacts","saveToContactImap",
+		"ContactFolderPath","Calendar","CalendarFormat",
+		"saveToCalendarImap","syncCalendar","CalendarFolderPath",
+		"Tasks","TaskFormat","saveToTaskImap","syncTasks","TaskFolderPath"
+		);
+
+	for(var i=0 ; i < fieldsArray.length ; i++ ) {
+		try
+		{
+			writeLine(file, "SyncKolab."+config+"." + fieldsArray[i], pref.getCharPref("SyncKolab."+config+"." + fieldsArray[i]));
+		}
+		catch (exw) {} // can be ignored savely
+	}	
 }

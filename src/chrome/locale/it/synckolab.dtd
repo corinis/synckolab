@@ -27,6 +27,9 @@
 <!ENTITY synckolab.settings.SyncTasks		"Sincronizza Eventi">
 <!ENTITY synckolab.settings.CloseWindow		"Chiudi la finestra di sincronizzazione quando finito">
 <!ENTITY synckolab.settings.add				"Aggiungi">
+<!ENTITY synckolab.settings.load			"Import">
+<!ENTITY synckolab.settings.saveSingle		"Export">
+<!ENTITY synckolab.settings.saveAll			"Export All">
 <!ENTITY synckolab.settings.del				"Cancella">
 <!ENTITY synckolab.settings.SyncCalendar	"Sincronizza calendario">
 <!ENTITY synckolab.settings.SyncCalendarTip	"attiva se vuoi sincronizzare il calendario con la configurazione">

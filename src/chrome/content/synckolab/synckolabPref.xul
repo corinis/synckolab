@@ -38,6 +38,7 @@
 				</treechildren>
 			</tree>
 			<button label="&synckolab.settings.add;" oncommand="addConfig();"/>
+			<button label="&synckolab.settings.load;" oncommand="loadConfig();"/>
 			<button label="&synckolab.settings.del;" oncommand="delConfig();"/>
 		</vbox>
 		<splitter collapse="before" resizeafter="farthest">
@@ -71,6 +72,9 @@
 		<label class="text-link" onclick="LaunchUrl('http://www.toltec.co.za')">MS Outlook &synckolab.with; Toltec Connector (&synckolab.proprietary;)</label>
 		<label class="text-link" onclick="LaunchUrl('http://www.konsec.com')">MS Outlook &synckolab.with; KONSEC Konnektor (&synckolab.proprietary;)</label>
 		<label class="text-link" onclick="LaunchUrl('http://www.bynari.net')">MS Outlook &synckolab.with; Bynari (&synckolab.proprietary;)</label>		
+
+	    	<separator class="thin"/>
+		<button label="&synckolab.settings.saveAll;" oncommand="saveAllConfig();"/>
 	</vbox>
   	</tabpanel>
     <tabpanel id="accountTab" style="border:0px solid #000">
@@ -100,6 +104,8 @@
 			</hbox>			
 			
 		    <checkbox id="hiddenWnd" label="&synckolab.settings.HiddenWindow;"/>	    
+	    	<separator class="thin"/>
+			<button label="&synckolab.settings.saveSingle;" oncommand="saveSingleConfig();"/>
 	    	
     	</vbox>
     </tabpanel>
