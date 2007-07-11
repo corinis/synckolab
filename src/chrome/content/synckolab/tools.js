@@ -150,15 +150,11 @@ function stripMailHeader (content)
 		return null;
 		
 	var isMultiPart = content.indexOf('boundary="') != -1;
-	var boundary = null;
-	if (isMultiPart)
-		boundary = content.substring(content.indexOf('boundary="')+10, 
-			content.indexOf('"', content.indexOf('boundary="')+12));
+
 	
-	// try to get the start of an xml part
-	var contTypeIdx = content.indexOf('Content-Type: application/x-vnd.kolab.');
+	
  	// seems we go us a vcard/ical when no xml is found
-	if (contTypeIdx == -1)
+	if (!isMultiPart)
  	{
 		var startPos = content.indexOf("\r\n\r\n");
 		if (startPos == -1 || startPos > content.length - 10)
@@ -169,64 +165,92 @@ function stripMailHeader (content)
 
 		return trim(content.substring(startPos, content.length));
 	}
-	else
+
+	// we got a multipart message - strip it apart
+
+	var boundary = null;
+	boundary = content.substring(content.indexOf('boundary="')+10, 
+			content.indexOf('"', content.indexOf('boundary="')+12));
+
+	// try to get the start of the card part
+	
+	// check kolab XML first
+	var contentIdx = -1;
+	var contTypeIdx = content.indexOf('Content-Type: application/x-vnd.kolab.');
+	if (contTypeIdx != -1)
 	{
 		content = content.substring(contTypeIdx); // cut everything before this part
-		var contentIdx = content.indexOf("<?xml")
-		
-		if (contentIdx == -1)
+		contentIdx = content.indexOf("<?xml")
+	}
+	else
+	{
+		// check for vcard | ical
+		contTypeIdx = content.indexOf('Content-Type: text/x-vcard');
+		if (contTypeIdx == -1)
+			contTypeIdx = content.indexOf('Content-Type: text/x-ical');
+			
+		if (contTypeIdx != -1)
 		{
-			if (content.indexOf("Content-Transfer-Encoding: base64") != -1)
-			{
-				logMessage("Base64 Decoding message. (Boundary: "+boundary+")", LOG_INFO);
-				logMessage("Base64 message: " + content, LOG_DEBUG);
-				// get rid of the header
-				content = content.substring(content.indexOf("Content-Transfer-Encoding: base64"), content.length);
-				var startPos = content.indexOf("\r\n\r\n");
-				var startPos2 = content.indexOf("\n\n");
-				if (startPos2 != -1 && (startPos2 < startPos || startPos == -1))
-					startPos = startPos2;
+			content = content.substring(contTypeIdx); // cut everything before this part
+			contentIdx = content.indexOf("BEGIN:")
+		}
+	}
+	 
+
+	// if we did not find a decoded card, it might be base64
+	if (contentIdx == -1)
+	{
+		if (content.indexOf("Content-Transfer-Encoding: base64") != -1)
+		{
+			logMessage("Base64 Decoding message. (Boundary: "+boundary+")", LOG_INFO);
+			logMessage("Base64 message: " + content, LOG_DEBUG);
+			// get rid of the header
+			content = content.substring(content.indexOf("Content-Transfer-Encoding: base64"), content.length);
+			var startPos = content.indexOf("\r\n\r\n");
+			var startPos2 = content.indexOf("\n\n");
+			if (startPos2 != -1 && (startPos2 < startPos || startPos == -1))
+				startPos = startPos2;
+			
+			var endPos = content.indexOf("--"); // we could check for "--"+boundary but its not necessary since base64 doesnt allow it anyways
+			content = trim(content.substring(startPos, endPos).replace(/\r\n/g, ""));
+			
+			// for base64 we use a two storied approach
+			// first: use atob 
+			// if that gives us an outofmemoryexception use the slow but working javascript
+			// engine
+			try {
+				content = atob(content)
+			} catch (e) {
+				// out of memory error... this can be handled :)
+				if (e.result == Components.results.NS_ERROR_OUT_OF_MEMORY)
+				{
+					var base64 = new JavaScriptBase64;
+				 	base64.JavaScriptBase64(content);					
+					content = base64.decode();
 				
-				var endPos = content.indexOf("--"); // we could check for "--"+boundary but its not necessary since base64 doesnt allow it anyways
-				content = trim(content.substring(startPos, endPos).replace(/\r\n/g, ""));
-				
-				// for base64 we use a two storied approach
-				// first: use atob 
-				// if that gives us an outofmemoryexception use the slow but working javascript
-				// engine
-				try {
-					content = atob(content)
-				} catch (e) {
-					// out of memory error... this can be handled :)
-					if (e.result == Components.results.NS_ERROR_OUT_OF_MEMORY)
-					{
-						var base64 = new JavaScriptBase64;
-					 	base64.JavaScriptBase64(content);					
-						content = base64.decode();
-					
-					}
-					else
-					{
-						logMessage("Error decoding base64 (" + e + "): " + content, LOG_ERROR);
-						return null;
-					}
 				}
-			}
-			else
-			{
-				// so this message has no <xml>something</xml> area
-				logMessage("Error parsing this message: no xml segment found\n" + content, LOG_ERROR);
-				return null;
+				else
+				{
+					logMessage("Error decoding base64 (" + e + "): " + content, LOG_ERROR);
+					return null;
+				}
 			}
 		}
 		else
 		{
-			content = content.substring(contentIdx);
-			// until the boundary = end of xml
-			if (content.indexOf(boundary) != -1)
-				content = content.substring(0, content.indexOf("--"+boundary));
-		}		
+			// so this message has no <xml>something</xml> area
+			logMessage("Error parsing this message: no xml segment found\n" + content, LOG_ERROR);
+			return null;
+		}
 	}
+	else
+	{
+		content = content.substring(contentIdx);
+		// until the boundary = end of xml|vcard/ical
+		if (content.indexOf(boundary) != -1)
+			content = content.substring(0, content.indexOf("--"+boundary));
+	}		
+
 	return trim(content);
 }
 
