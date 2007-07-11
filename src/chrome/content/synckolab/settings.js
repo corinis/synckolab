@@ -1099,7 +1099,7 @@ function savePrefs() {
 	{
 		if (cur.nodeName == "treeitem")
 		{
-			if (cur.firstChild.firstChild.getAttribute("id") != "Welcome-Welcome")
+			if (cur.firstChild.firstChild.getAttribute("id") != "Welcome-Welcome" && cur.firstChild.firstChild.getAttribute("label") != strBundle.getString("aboutSyncKolab"))
 				configs += cur.firstChild.firstChild.getAttribute("label") + ";";
 		}
 		cur = cur.nextSibling;
@@ -1198,7 +1198,12 @@ function delConfig()
 					delNode = cur;
 				}
 				else
+				{
+					if (cur.firstChild.firstChild.getAttribute("id") != "Welcome-Welcome" && cur.firstChild.firstChild.getAttribute("label") != strBundle.getString("aboutSyncKolab"))
+						continue;
+						
 					configs += cur.firstChild.firstChild.getAttribute("label") + ";";
+				}
 			}
 			cur = cur.nextSibling;
 		}
