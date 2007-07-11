@@ -132,6 +132,10 @@ function setSyncPrefView(viewName)
 	var tabs =document.getElementById("tabs");
 	switch (opts[1])
 	{
+		// on welcome we return - no change config
+		case "Welcome":
+			tabs.selectedPanel = document.getElementById("welcome");
+			return;
 		case "Acct":
 			tabs.selectedPanel = document.getElementById("accountTab");
 			break;
@@ -210,6 +214,38 @@ function init() {
 		return;
 	}
 
+	// the the about
+	// get the root tree element
+	var tree = document.getElementById("configTree");
+	
+	var ctree = null;
+	
+	var cnode = tree.firstChild;
+	while (cnode != null)
+	{
+		if (cnode.nodeName == "treechildren")
+		{
+			ctree = cnode;
+			break;
+		}
+		cnode = cnode.nextSibling;
+	}
+	
+	if (ctree == null)
+		return null;
+
+	var tItem = document.createElement("treeitem");
+	tItem.setAttribute("container", "true");
+	tItem.setAttribute("open", "true");
+	ctree.appendChild(tItem);
+	var tRow = document.createElement("treerow");
+	tItem.appendChild(tRow);
+	var tCell = document.createElement("treecell");
+	tRow.appendChild(tCell);
+	tItem.setAttribute("id", "Welcome-Welcome");
+	tCell.setAttribute("label", strBundle.getString("aboutSyncKolab"));
+	tCell.setAttribute("value", "Welcome-Welcome");
+	
 	// generate the configuration in the tree control 	
 	for (var i=0; i < configs.length; i++)
 		generateConfigTree(configs[i]);
