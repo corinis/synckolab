@@ -527,7 +527,7 @@ function getContent ()
 	gMessages = gSync.folder.getMessages(null);	 // dont need the msgWindow use null
 	
 	// get the message database (a file with uid:size:date:localfile)
-	syncMessageDb = readDataBase(getHashDataBaseFile(gSync.gConfig));
+	syncMessageDb = readDataBase(gSync.dbFile);
 		
 	curMessage = 0;
 	updateMessages = new Array(); // saves the the message url to delete
@@ -602,7 +602,7 @@ function getMessage ()
 		{
 			// get the content from the cached file and ignore the imap
 			logMessage("taking content from: " + syncMessageDb[gSyncFileKey][3] + syncMessageDb[gSyncFileKey][4], LOG_INFO);
-			fileContent = readSyncDBFile(getSyncDbFile(syncMessageDb[gSyncFileKey][3], gSync.isCal(), syncMessageDb[gSyncFileKey][4]));
+			fileContent = readSyncDBFile(getSyncDbFile(syncMessageDb[gSyncFileKey][3], gSync.getType(), syncMessageDb[gSyncFileKey][4]));
 
 			// make sure we dont read an empty file
 			if (fileContent != null && fileContent != "")
@@ -754,7 +754,7 @@ function parseFolderToAddressFinish ()
     logMessage("parseFolderToAddressFinish", LOG_DEBUG);
     
     // write the db file back
-    writeDataBase(getHashDataBaseFile(gSync.gConfig), syncMessageDb);
+    writeDataBase(gSync.dbFile, syncMessageDb);
 
 	meter.setAttribute("value", "60%");
 	if (gWnd != null)

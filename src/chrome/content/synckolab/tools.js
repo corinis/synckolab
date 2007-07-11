@@ -56,7 +56,7 @@ function accountNameFix (name)
  * this also creates the required subdirectories if not yet existant
  * you can use the .exists() function to check if we go this one already
  */
-function getSyncDbFile (config, cal, id)
+function getSyncDbFile (config, type, id)
 {
 	if (id == null)
 	{
@@ -71,10 +71,9 @@ function getSyncDbFile (config, cal, id)
 	file.append("synckolab");
 	if (!file.exists())
 		file.create(1, 0775);
-	if (cal)
-		file.append("calendar");
-	else
-		file.append("contact");
+		
+	file.append("type");
+	
 	if (!file.exists())
 		file.create(1, 0775);
 
@@ -257,13 +256,14 @@ function stripMailHeader (content)
 
 /**
  * Retrieves a file in the user profile dir which includes the config database
- * make sure to add .cal or .con at the config so there are no duplicate names
+ * make sure to add .cal, .con or .task at the config so there are no duplicate names
  */
 function getHashDataBaseFile (config)
 {
 	var file = Components.classes["@mozilla.org/file/directory_service;1"].
 	   getService(Components.interfaces.nsIProperties).
 	   get("ProfD", Components.interfaces.nsIFile);
+	
 	file.append(config+".hdb");
 	return file;
 }

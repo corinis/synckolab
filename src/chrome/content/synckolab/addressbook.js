@@ -61,11 +61,18 @@ var syncAddressBook = {
 	curItemInListId: '',
 	curItemInListStatus: '',
 	curItemInListContent: '',
+
+	dbFile: '', // the current sync database filen (a file with uid:size:date:localfile)
 	
 	forceServerCopy: false,
 	forceLocalCopy: false,
 	isCal: function() {
 		return false
+	},
+
+	// return tasks/calendar for correct foldernames
+	getType: function() {
+		return "contact";
 	},
 	
 	init: function(config) {
@@ -113,6 +120,8 @@ var syncAddressBook = {
 		}
 		
 		// we got the address book in gAddressBook
+
+		this.dbFile = getHashDataBaseFile (config + ".ab");
 		
 		// get the sync config
 		this.gConfig = config;
@@ -224,9 +233,9 @@ var syncAddressBook = {
 			var aCard = findCard (cards, getUID(newCard), this.gAddressBook);
 
 			// get the dbfile from the local disk
-			var cEntry = getSyncDbFile	(this.gConfig, false, getUID(newCard));
+			var cEntry = getSyncDbFile	(this.gConfig, this.getType(), getUID(newCard));
 			// ... and the field file
-			var fEntry = getSyncFieldFile(this.gConfig, false, getUID(newCard));
+			var fEntry = getSyncFieldFile(this.gConfig, this.getType(), getUID(newCard));
 
 			// a new card or locally deleted 
 			if (aCard == null)
@@ -559,7 +568,7 @@ var syncAddressBook = {
 	        logMessage("New Card " + getUID(curItem), 2);
 
 			// get the dbfile from the local disk
-			var cEntry = getSyncDbFile	(this.gConfig, false, getUID(curItem));
+			var cEntry = getSyncDbFile	(this.gConfig, this.getType(), getUID(curItem));
 			// write the current content in the sync-db file
 			writeSyncDBFile (cEntry, stripMailHeader(content));			
 			
@@ -585,7 +594,7 @@ var syncAddressBook = {
 			if (!alreadyProcessed)
 			{
 				// get the dbfile from the local disk
-				var cEntry = getSyncDbFile	(this.gConfig, false, getUID(curItem));
+				var cEntry = getSyncDbFile	(this.gConfig, this.getType(), getUID(curItem));
 				if (getUID(curItem) == null)
 				{
 					alert("UID is NULL???" + curItem.custom4);
@@ -647,7 +656,7 @@ var syncAddressBook = {
 					logMessage("New Card " + getUID(curItem), LOG_INFO + LOG_AB);
 					
 					// get the dbfile from the local disk
-					var cEntry = getSyncDbFile	(this.gConfig, false, getUID(curItem));
+					var cEntry = getSyncDbFile	(this.gConfig, this.getType(), getUID(curItem));
 					// write the current content in the sync-db file
 					writeSyncDBFile (cEntry, stripMailHeader(content));			
 				}				

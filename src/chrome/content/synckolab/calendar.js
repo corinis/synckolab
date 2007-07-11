@@ -60,8 +60,7 @@ var syncCalendar = {
 	email: '', // holds the account email
 	name: '', // holds the account name
 
-	dbFile: '', // the current sync database file
-	db: '', // the current sync database
+	dbFile: '', // the current sync database filen (a file with uid:size:date:localfile)
 
 	itemList: '', // display the currently processed item with status
 	curItemInList: '', // the current item in the list (for updating the status)
@@ -76,6 +75,11 @@ var syncCalendar = {
 	
 	isCal: function() {
 		return true
+	},
+	
+	// return tasks/calendar for correct foldernames
+	getType: function() {
+		return (this.syncTasks == true?"tasks":"calendar");
 	},
 
 	init: function(config) {
@@ -134,11 +138,10 @@ var syncCalendar = {
     	// get the sync db
     	
 		if (this.syncTasks)
-			this.dbFile = getHashDataBaseFile (config + ".task.db");
+			this.dbFile = getHashDataBaseFile (config + ".task");
 		else
-			this.dbFile = getHashDataBaseFile (config + ".cal.db");
+			this.dbFile = getHashDataBaseFile (config + ".cal");
 			
-		this.db = readDataBase (this.dbFile);
 		this.gConfig = config;
 	},
 	
@@ -251,9 +254,9 @@ var syncCalendar = {
 		var foundEvent = findEvent (this.gEvents, parsedEvent.id);
 		
 		// get the dbfile from the local disk
-		var idxEntry = getSyncDbFile(this.gConfig, true, parsedEvent.id);
+		var idxEntry = getSyncDbFile(this.gConfig, this.getType(), parsedEvent.id);
 		// ... and the field file
-		var fEntry = getSyncFieldFile(this.gConfig, true, parsedEvent.id);
+		var fEntry = getSyncFieldFile(this.gConfig, this.getType(), parsedEvent.id);
 		
 		// always add if the forceLocalCopy flag is set (happens when you change the configuration)
 		if (foundEvent == null || this.forceLocalCopy)
@@ -526,7 +529,7 @@ var syncCalendar = {
 			{
 				logMessage("nextUpdate decided to write event:" + cur.id, LOG_CAL + LOG_INFO);
 
-				var cEntry = getSyncDbFile	(this.gConfig, true, cur.id);
+				var cEntry = getSyncDbFile	(this.gConfig, this.getType(), cur.id);
 				
 				if (cEntry.exists() && !this.forceServerCopy)
 				{
@@ -621,7 +624,7 @@ var syncCalendar = {
 				logMessage("nextUpdate puts event into db (2):" + cur.id, LOG_CAL + LOG_INFO);
 				
 				// add the new event into the db
-				var cEntry = getSyncDbFile	(this.gConfig, true, cur.id);
+				var cEntry = getSyncDbFile	(this.gConfig, this.getType(), cur.id);
 				writeSyncDBFile (cEntry, stripMailHeader(msg));
 
 			}

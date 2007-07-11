@@ -388,10 +388,12 @@ function xml2Event (xml, extraFields, event)
 					}
 					else
 					{
-						if (syncTasks == true)
-	                        event.entryDate = string2CalDateTime(s, true);
-	                    else
+						if (syncTasks == false)
 	                        event.startDate = string2CalDateTime(s, true);
+	                    /* Entrydate does is not writeable.. skip this
+	                    else
+	                        event.entryDate = string2CalDateTime(s, true);
+	                    */
                     }
 					break;						
 
@@ -834,7 +836,8 @@ function cnv_event2xml (event, skipVolatiles, syncTasks)
     
     if(syncTasks == true)
     {
-	    xml += " <start-date>" + calDateTime2String(event.entryDate, isAllDay) + "</start-date>\n";
+	    if (!skipVolatiles)
+		    xml += " <start-date>" + calDateTime2String(event.entryDate, isAllDay) + "</start-date>\n";
 	    xml += " <due-date>" + calDateTime2String(endDate, isAllDay) + "</due-date>\n";
 	}
     else
