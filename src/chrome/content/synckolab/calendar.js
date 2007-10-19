@@ -125,7 +125,8 @@ var syncCalendar = {
 		var calendars = getSynckolabCalendars();
 		for( var i = 0; i < calendars.length; i++ )
 	    {
-	    	if (calendars[i].name == this.gCalendarName)
+	    	if (calendars[i].name == this.gCalendarName || 
+	    	fixNameToMiniCharset(calendars[i].name) == fixNameToMiniCharset(this.gCalendarName))
 	    	{
 	    		this.gCalendar = calendars[i];
 	    		break;

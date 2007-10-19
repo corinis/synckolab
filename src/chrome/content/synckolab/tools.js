@@ -51,6 +51,106 @@ function accountNameFix (name)
 	return name.replace(/[ :@\%\'\"-\?\#+\*\.;$\\\/]/g, "");
 }
 
+
+function fixNameToMiniCharset (name)
+{
+	var ret = "";
+	var placeHolder = false;
+	for (var i = 0; i < name.length; i++)
+	{
+		switch (name.charAt(i))
+		{
+			// character replaces... better this way
+			case 'Ä':
+			case 'Â':
+			case 'À':
+			case 'Á':
+				placeHolder = false;
+				ret += 'A';
+				break;
+				
+			case 'ä':
+			case 'â':
+			case 'á':
+			case 'à':
+				placeHolder = false;
+				ret += 'a';
+				break;
+			case 'Ö':
+			case 'Ò':
+			case 'Ó':
+			case 'Ô':
+				placeHolder = false;
+				ret += 'O';
+				break;
+			case 'ö':
+			case 'ô':
+			case 'ó':
+			case 'ò':
+				placeHolder = false;
+				ret += 'o';
+				break;
+			case 'Ü':
+			case 'Û':
+			case 'Ú':
+			case 'Ù':
+				placeHolder = false;
+				ret += 'U';
+				break;
+			case 'ü':
+			case 'û':
+			case 'ú':
+			case 'ù':
+				placeHolder = false;
+				ret += 'u';
+				break;
+			case 'î':
+			case 'ì':
+			case 'í':
+				placeHolder = false;
+				ret += 'i';
+				break;
+			case 'Î':
+			case 'Í':
+			case 'Ì':
+				placeHolder = false;
+				ret += 'I';
+				break;
+			case 'ß':
+				placeHolder = false;
+				ret += 's';
+				break;
+
+			// chars which are no problem just stay
+			case '~':
+			case '-':
+			case '.':
+				placeHolder = false;
+				ret += name.charAt(i);
+				break;
+				
+			default:
+				var c = name.charAt(i);
+				if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '1' &&
+						c <= '0'))
+				{
+					placeHolder = false;
+					ret += c;
+				}
+				else
+				{
+					if (!placeHolder)
+					{
+						ret += '_';
+						placeHolder = true;
+					}
+				}
+			}
+		
+		}
+	}
+}
+
 /**
  * Returns a file class for the given sync db file
  * this also creates the required subdirectories if not yet existant
@@ -1268,11 +1368,6 @@ function logMessage (msg, level)
 		var clvl = level%4;
 		var cstate = level - clvl;
 		
-		// pause the sync on error if defined by globals
-		if (PAUSE_ON_ERROR && clvl == LOG_ERROR)
-			if (gWnd)
-				gWnd.pauseSync();
-		
 		// check if we are talking about the same loglevle: ERROR|WARN|INFO|DEBUG
 		if (clvl > infolvl)
 			return;
@@ -1282,8 +1377,13 @@ function logMessage (msg, level)
 		// if the two states are diffeent and infostate != LOG_ALL we want outta here
 		if (infostate != cstate && infostate != LOG_ALL)
 			return;
-						
+
 		consoleService.logStringMessage(msg);
+		
+		// pause the sync on error if defined by globals
+		if (PAUSE_ON_ERROR && clvl == LOG_ERROR)
+			if (gWnd && gWnd.pauseSync)
+				gWnd.pauseSync();
 	}
 }
 

@@ -902,7 +902,8 @@ function parseMessage (message, extraFields, cards)
 		logMessage("XML message!", LOG_INFO + LOG_AB);	
 		return xml2Card(message, extraFields, cards);
 	}
-
+	else
+		logMessage("VCARD/VLIST!", LOG_INFO + LOG_AB);	
 
 	// decode utf8
 	message = decode_utf8(DecodeQuoted(message));

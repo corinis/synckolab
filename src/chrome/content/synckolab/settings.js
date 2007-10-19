@@ -425,23 +425,23 @@ function prefillFields() {
 			var abchild = document.createElement("menuitem");
 			abpopup.appendChild(abchild);
 			abchild.setAttribute("label", calendars[i].name);
-			abchild.setAttribute("value", calendars[i].name);
+			abchild.setAttribute("value", fixNameToMiniCharset(calendars[i].name));
 			if (i == 0)
 			{
 				abchild.setAttribute("selected", "true");
 				abList.setAttribute("label", calendars[i].name);
-				abList.setAttribute("value", calendars[i].name);
+				abList.setAttribute("value", fixNameToMiniCharset(calendars[i].name));
 			}
 
 			abchild = document.createElement("menuitem");
 			taskpopup.appendChild(abchild);
 			abchild.setAttribute("label", calendars[i].name);
-			abchild.setAttribute("value", calendars[i].name);
+			abchild.setAttribute("value", fixNameToMiniCharset(calendars[i].name));
 			if (i == 0)
 			{
 				abchild.setAttribute("selected", "true");
 				taskList.setAttribute("label", calendars[i].name);
-				taskList.setAttribute("value", calendars[i].name);				
+				taskList.setAttribute("value", fixNameToMiniCharset(calendars[i].name));				
 			}
     	}
 	}	
