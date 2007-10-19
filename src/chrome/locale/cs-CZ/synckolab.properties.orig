@@ -1,0 +1,34 @@
+contacts=Adresář
+calendar=Kalendář
+tasks=Úkoly
+aboutSyncKolab=O programu SyncKolab
+saveConfig=Uložit konfiguraci
+configFiles=Konfigurační soubory
+loadConfig=Načíst konfiguraci
+configReplaceAll=Jste si jisti, že chcete nahradit aktuální konfiguraci?
+configInvalid=Vadný konfigurační soubor
+configOverwrite=Jste si jisti, že chcete konfiguraci přepsat: 
+
+# status messages
+checking=konrola
+parsing=parsování
+unparseable=neparsovatelné
+unknown=neznámý
+addToServer=přidat na server
+deleteOnServer=smazat na serveru
+updateOnServer=aktualizovat na serveru
+localAdd=přidat lokální
+localDelete=smazat lokální
+localUpdate=aktualizovat lokální
+noChange=bezezměny
+conflict=konflikt
+
+# status: contacts only
+mailingList=seznam
+
+close=Zavřít
+syncfinished=Hotovo. Nyní můžete toto okno zavřít!
+syncEntries=Synchronizuji záznamy...
+writeChangedEntries=Zapisuji změněné záznamy...
+writeNewEntries=Zapisuji nové záznamy...
+getContent=Načítám obsah...

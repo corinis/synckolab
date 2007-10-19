@@ -1,0 +1,90 @@
+<!-- buttons -->
+<!ENTITY synckolab.syncMenu.label				"Spustit SyncKolab">
+<!ENTITY synckolab.optionMenu.label				"Nastavení SyncKolab">
+
+<!ENTITY synckolab.sync.label					"Sync Kolab">
+<!ENTITY synckolab.sync.tip						"Synchronizovat Kolab složky">
+
+<!ENTITY synckolab.contactConflict.dialogTitle		"Konflikt kontaktů">
+<!ENTITY synckolab.contactConflict.dialogMessage	"Zjištěn konflikt. Zvolte, prosím, jakou verzi použít pro jednotlivá pole.">
+
+<!ENTITY synckolab.settings.Account		"Účet">
+<!ENTITY synckolab.settings.abook		"Adresář">
+<!ENTITY synckolab.settings.Contact		"Kontakt">
+<!ENTITY synckolab.settings.Calendar	"Kalendář">
+<!ENTITY synckolab.settings.Tasks		"Úkoly">
+
+<!ENTITY synckolab.settings.ContactFolder	"Složka kontaktů">
+<!ENTITY synckolab.settings.ContactFormat	"Formát kontaktů">
+<!ENTITY synckolab.settings.SaveToImap		"Uložit do IMAP složky">
+<!ENTITY synckolab.settings.Configuration	"Konfigurace">
+<!ENTITY synckolab.settings.CalendarFormat	"Formát kalendáře">
+<!ENTITY synckolab.settings.CalendarFolder	"Složka kalendáře">
+<!ENTITY synckolab.settings.TaskFormat		"Formát úkolů">
+<!ENTITY synckolab.settings.TaskFolder		"Složka úkolů">
+<!ENTITY synckolab.settings.SyncContacts	"Synchronizovat kontakty">
+<!ENTITY synckolab.settings.SyncCalendar	"Synchronizovat kalendář">
+<!ENTITY synckolab.settings.SyncTasks		"Synchronizovat úkoly">
+<!ENTITY synckolab.settings.CloseWindow		"Po dokončení zavřít okno synchronizace">
+<!ENTITY synckolab.settings.add				"Přidat">
+<!ENTITY synckolab.settings.load			"Importovat">
+<!ENTITY synckolab.settings.saveSingle		"Exportovat">
+<!ENTITY synckolab.settings.saveAll			"Exportovat vše">
+<!ENTITY synckolab.settings.del				"Smazat">
+<!ENTITY synckolab.settings.SyncCalendar	"Synchronizovat kalendář">
+<!ENTITY synckolab.settings.SyncCalendarTip	"Aktivujte, pokud chcete synchronizovat kalendář s konfigurací">
+<!ENTITY synckolab.settings.SyncContacts	"Synchronizovat kontakty">
+<!ENTITY synckolab.settings.SyncContactsTip	"Aktivujte, pokud chcete synchronizovat adresář s konfigurací">
+<!ENTITY synckolab.settings.SyncTasks		"Synchronizovat úkoly">
+<!ENTITY synckolab.settings.SyncTasksTip	"Aktivujte, pokud chcete synchronizovat úkoly s konfigurací">
+<!ENTITY synckolab.settings.FormatTip		"Zvolte XML formát jestliže máte Kolab2 server. V opačném případě zvolte vcard/ical standard.">
+
+<!ENTITY synckolab.settings.Updates			"Zkontrolujte dostupné aktualizace na:">
+
+<!ENTITY synckolab.settings.imapAcctTip 			"Podporovány jsou pouze IMAP účty, jiné typy účtů nebudou synchronizovány.">
+<!ENTITY synckolab.settings.SyncKolabHeader			"SyncKolab">
+<!ENTITY synckolab.settings.SyncKolabDescription 	"SyncKolab vám umožní synchronizovat vaše kontakty a záznamy v kalendáři na více strojích jen pomocí standardního IMAP serveru.">
+<!ENTITY synckolab.settings.DescKolabServer 		"Pro plnou podporu pracovních skupin vám doporučujeme seznámit se s kolab serverem: ">
+<!ENTITY synckolab.settings.DescOtherClients 		"Další klienti, se kterými je SyncKolab kompatibilní: ">
+
+<!-- Account Tab -->
+<!ENTITY synckolab.settings.AccountDescription	"Prosím, zvolte IMAP účet, který chcete synchronizovat">
+<!ENTITY synckolab.settings.SyncInterval 		"Synchronizační interval: ">
+<!ENTITY synckolab.settings.SyncIntervalDescription "Definuje interval za který SyncKolab zkontroluje změny. Použujte 0 pokud chcete jen manuální spuštění synchronizace.">
+<!ENTITY synckolab.settings.SyncIntervalMinutes "minut">
+<!ENTITY synckolab.settings.SaveToImapTip		"Zrušte zatržení této volby, pokud nechcete, aby SyncKolab cokoliv zapsal na IMAP server (tj. povoleno jen čtení)">
+<!ENTITY synckolab.settings.HiddenWindow		"Skrýt stavové okno při automatické synchronizaci">
+
+<!-- New Config Wizard -->
+<!ENTITY synckolab.newwizard.title 		"Průvodce nastavením SyncKolabu">
+<!ENTITY synckolab.wizard.LongDescription	"Na následujících stránkách si můžete zvolit pro každý typ (kalendář, adresář, úkoly) složku na IMAP serveru se kterou bude provedena synchronizace. Také můžete specifikovat, zda chcete použít režim jen čtení (nic není zapsáno na IMAP server - pro sdílené složky) a formát ukládání dat (xml pro Kolab2 nebo vcard/ical).">
+<!ENTITY synckolab.newwizard.intro 		"SyncKolab vám umožní synchronizovat vaše kontakty a záznamy v kalendáři na více strojích jen pomocí standardního IMAP serveru.">
+<!ENTITY synckolab.newwizard.selectAccount	"Prosím, zvolte IMAP účet, který chcete synchronizovat">
+<!ENTITY synckolab.newwizard.configName	"Zobrazené jméno">
+<!ENTITY synckolab.newwizard.descName "Zobrazené jméno nemá žádný zvláštní význam, jen vám umožní identifikovat vaši konfiguraci. Pokud máte více konfigurací/složek k synchronizaci, je vhodné použít výstižná jména (např. SdilAdresar, KancelarskyKalendar, DomaciUkoly). Ujistěte se, že již nemáte konfiguraci stejného jména a že jméno neobsahuje speciální znaky jako .-[]#. ">
+<!ENTITY synckolab.wizard.AccountIntervalDescription "Zvolte IMAP účet a specifikujte vašezákladní nastavení pro synchronizaci">
+<!ENTITY synckolab.wizard.typePageDesc	"Specifikujte, jaké informace mají být synchronizovány se zvoleným IMAP účtem">
+<!ENTITY synckolab.wizard.typePageLongDesc	"Pro každou konfiguraci programu SyncKolab můžete použít složky na jednom IMAP účtu pro synchronizaci s adresářem, kalendářem nebo seznamem úkolů">
+<!ENTITY synckolab.wizard.typePageContact	"Aktivujte tuto volbu, pokud chcete synchronizovat kontakty z IMAP složky s lokálním adresářem Thunderbirdu">
+<!ENTITY synckolab.wizard.typePageCalendar	"Aktivujte tuto volbu, pokud chcete synchronizovat události z IMAP složky s lokálním kalendářem">
+<!ENTITY synckolab.wizard.typePageTasks		"Aktivujte tuto volbu, pokud chcete synchronizovat úkoly z IMAP složky s lokálním seznamem úkolů">
+<!ENTITY synckolab.wizard.conPageInfo	"Zvolte adresář a složku, které chcete synchronizovat.">
+<!ENTITY synckolab.wizard.calPageInfo	"Zvolte kalendář a složku, které chcete synchronizovat.">
+<!ENTITY synckolab.wizard.taskPageInfo	"Zvolte kalendář s úkoly a složku, které chcete synchronizovat.">
+<!ENTITY synckolab.newwizard.DoneText	"Úspěšně jste nastavili novou konfiguraci pro SyncKolab. nyní můžete spustit synchronizaci z nabídky 'Nastavení - Spustit SyncKolab'.">
+<!ENTITY synckolab.newwizard.DoneText2	"V případě, že se vyskytne chyba (např. náhle přerušená synchronizace nebo pokud jsou nekteré z vašich záznamů při synchronizaci chybně interpretovány), prosím, nahlašte jen chyby zaznamenané v 'Nástroje - Chybová konzole' nebo pokud máte nějaké návrhy, neváhejte a kontaktujte nás přes mailing list nebo vytvořte nový záznam v bugzille.">
+
+<!-- other -->
+<!ENTITY synckolab.with			"s">
+<!ENTITY synckolab.proprietary 	"proprietární">
+
+<!-- progress window -->
+<!ENTITY synckolab.progress.Pause			"Pozastavit">
+<!ENTITY synckolab.progress.UnPause			"Pokračovat">
+<!ENTITY synckolab.progress.Cancel			"Zrušit">
+<!ENTITY synckolab.progress.CurrentProgress	"Aktuální průběh">
+<!ENTITY synckolab.progress.status			"Stav">
+<!ENTITY synckolab.progress.content			"Obsah">
+<!ENTITY synckolab.progress.message			"Zpráva">
+<!ENTITY synckolab.progress.CurrentAction	"Aktuální akce">
+<!ENTITY synckolab.progress.Processing		"Probíhá">
