@@ -14,7 +14,7 @@
     <!-- Front End MetaData -->
     <em:id>{571CFACF-0F7D-49b4-BD77-E6FC7B209ADC}</em:id>
     <em:name>Sync Kolab</em:name>
-    <em:version>0.5.0</em:version>
+    <em:version>0.5.1</em:version>
     <em:type>2</em:type>
     <em:description>Synchronize the address book and calendar with IMAP folder or Kolab1/2 server</em:description>
     <em:creator>Niko Berger</em:creator>
@@ -26,6 +26,7 @@
     <em:contributor>Steven D Miller (Copart);stevendm@rellims.com</em:contributor>
     <em:contributor>Michele Petrazzo; michele.petrazzo@unipex.it; www.unipex.it</em:contributor>
     <em:contributor>Leona Okamura</em:contributor>
+    <em:contributor>Hanus VAVRCIK aka Hank</em:contributor>
 
     <!-- Front End Integration Hooks (used by Extension Manager)-->
     
@@ -37,6 +38,7 @@
 		<em:locale>locale/de/</em:locale>
 		<em:locale>locale/it/</em:locale>
 		<em:locale>locale/ja-JP/</em:locale>
+		<em:locale>locale/cs-CZ/</em:locale>
         <em:skin>skin/classic/synckolab/</em:skin>
       </Description>
     </em:file>

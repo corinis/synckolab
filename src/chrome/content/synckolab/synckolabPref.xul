@@ -8,7 +8,7 @@
         buttons="accept,cancel"
         ondialogaccept="savePrefs();"
         persist="screenX screenY"
-        title="SyncKolab 0.5.0">
+        title="SyncKolab 0.5.1">
 
 	<script type="application/x-javascript" src="chrome://synckolab/content/settings.js"/>
 	<script type="application/x-javascript" src="chrome://synckolab/content/calTools.js"/>
@@ -51,7 +51,7 @@
   	<vbox>
    		<hbox>
 			<label value="&synckolab.settings.SyncKolabHeader;" style="font-size: 16pt;"/>
-			<label value=" 0.5.0"/>
+			<label value=" 0.5.1"/>
 		</hbox>
 		<description style="width: 300px">
 			&synckolab.settings.SyncKolabDescription;
