@@ -145,8 +145,6 @@ function fixNameToMiniCharset (name)
 						placeHolder = true;
 					}
 				}
-			}
-		
 		}
 	}
 }
