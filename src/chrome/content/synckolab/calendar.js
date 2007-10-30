@@ -229,7 +229,10 @@ var syncCalendar = {
 		this.curItemInList.appendChild(this.curItemInListContent);
 		
 		if (this.itemList != null)
+		{
 			this.itemList.appendChild(this.curItemInList);
+			scrollToBottom();
+		}
 		
 		
 		// get the content in a nice format
@@ -582,7 +585,10 @@ var syncCalendar = {
 					this.curItemInList.appendChild(this.curItemInListContent);
 					
 					if (this.itemList != null)
+					{
 						this.itemList.appendChild(this.curItemInList);
+						scrollToBottom();
+					}
 					
 				}
 				else
@@ -601,7 +607,10 @@ var syncCalendar = {
 					this.curItemInList.appendChild(this.curItemInListContent);
 					
 					if (this.itemList != null)
+					{
 						this.itemList.appendChild(this.curItemInList);
+						scrollToBottom();
+					}
 				}
 			}
 

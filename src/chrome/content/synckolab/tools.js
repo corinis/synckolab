@@ -131,8 +131,8 @@ function fixNameToMiniCharset (name)
 				
 			default:
 				var c = name.charAt(i);
-				if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '1' &&
-						c <= '0'))
+				if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' &&
+						c <= '9'))
 				{
 					placeHolder = false;
 					ret += c;
@@ -147,6 +147,7 @@ function fixNameToMiniCharset (name)
 				}
 		}
 	}
+	return ret;
 }
 
 /**

@@ -1047,3 +1047,16 @@ var kolabCopyServiceListener = {
 };
 
 
+function scrollToBottom ()
+{
+	if (gWnd != null)
+	{
+		// select and deselect the newly appended item (makes it scroll to the bottom)				
+		var lastItemPos = gWnd.document.getElementById('itemList').getRowCount() - 1;
+		if (lastItemPos > 0)
+		{
+			gWnd.document.getElementById('itemList').scrollToIndex(lastItemPos);
+			gWnd.document.getElementById('itemList').ensureIndexIsVisible(lastItemPos);
+		}
+	}
+}

@@ -1070,7 +1070,10 @@ function saveAllPrefs (configName) {
 	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 	
 	pref.setCharPref("SyncKolab."+config+".IncomingServer", document.getElementById ("ImapAcct").value);
-	pref.setCharPref("SyncKolab."+config+".Resolve", document.getElementById ("DefaultResolve").value);
+	if (document.getElementById("DefaultResolve"))
+		pref.setCharPref("SyncKolab."+config+".Resolve", document.getElementById ("DefaultResolve").value);
+	else
+		pref.setCharPref("SyncKolab."+config+".Resolve", "ask");
 	
 	pref.setCharPref("SyncKolab."+config+".AddressBook", document.getElementById ("conURL").value);
 	pref.setCharPref("SyncKolab."+config+".AddressBookFormat", document.getElementById ("conFormat").value);
@@ -1228,7 +1231,11 @@ function delConfig()
 				else
 				{
 					if (cur.firstChild.firstChild.getAttribute("id") != "Welcome-Welcome" && cur.firstChild.firstChild.getAttribute("label") != strBundle.getString("aboutSyncKolab"))
+					{
+						// skip this node
+						cur = cur.nextSibling;
 						continue;
+					}
 						
 					configs += cur.firstChild.firstChild.getAttribute("label") + ";";
 				}
