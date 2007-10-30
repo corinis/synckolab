@@ -38,6 +38,11 @@
 <!ENTITY synckolab.settings.SyncTasks		"Synchronizovat úkoly">
 <!ENTITY synckolab.settings.SyncTasksTip	"Aktivujte, pokud chcete synchronizovat úkoly s konfigurací">
 <!ENTITY synckolab.settings.FormatTip		"Zvolte XML formát jestliže máte Kolab2 server. V opačném případě zvolte vcard/ical standard.">
+<!ENTITY synckolab.settings.DefaultResolve	"On sync conflict: ">
+<!ENTITY synckolab.settings.ResolveAsk		"ask">
+<!ENTITY synckolab.settings.ResolveServer	"use server version">
+<!ENTITY synckolab.settings.ResolveClient	"use local version">
+<!ENTITY synckolab.settings.ResolveSmart	"Automatic merge and resolve">
 
 <!ENTITY synckolab.settings.Updates			"Zkontrolujte dostupné aktualizace na:">
 

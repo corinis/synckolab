@@ -258,6 +258,7 @@ function init() {
 	prefillFields();
 		
 	// now some global settings
+	
 /*
 	try {
 		document.getElementById ("syncCon").checked = pref.getBoolPref("SyncKolab.syncContacts");
@@ -498,6 +499,32 @@ function changeConfig (config)
 		while (cur != null)
 		{
 			if (cur.getAttribute("value") == act)
+			{
+				actList.selectedItem = cur;
+				actList.setAttribute("label", cur.getAttribute("label"));
+				actList.setAttribute("value", cur.getAttribute("value"));
+				break;
+			}
+			cur = cur.nextSibling;
+		}
+
+		// update the resolve settings
+		var resolve = 'ask';		
+		try
+		{
+			resolve = pref.getCharPref("SyncKolab."+config+".Resolve");
+		}
+		catch (ex)
+		{
+			// ignore (use ask)
+		}
+		
+		actList = document.getElementById("DefaultResolve");
+		// go through the items
+		cur = actList.firstChild.firstChild;
+		while (cur != null)
+		{
+			if (cur.getAttribute("value") == resolve)
 			{
 				actList.selectedItem = cur;
 				actList.setAttribute("label", cur.getAttribute("label"));
@@ -1043,6 +1070,7 @@ function saveAllPrefs (configName) {
 	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 	
 	pref.setCharPref("SyncKolab."+config+".IncomingServer", document.getElementById ("ImapAcct").value);
+	pref.setCharPref("SyncKolab."+config+".Resolve", document.getElementById ("DefaultResolve").value);
 	
 	pref.setCharPref("SyncKolab."+config+".AddressBook", document.getElementById ("conURL").value);
 	pref.setCharPref("SyncKolab."+config+".AddressBookFormat", document.getElementById ("conFormat").value);
@@ -1592,7 +1620,7 @@ function writeConfig (config, file)
 	// char prefs:
 	var fieldsArray = new Array(
 		"AddressBook","AddressBookFormat","syncContacts","saveToContactImap",
-		"ContactFolderPath","Calendar","CalendarFormat",
+		"ContactFolderPath","Calendar","CalendarFormat","Resolve",
 		"saveToCalendarImap","syncCalendar","CalendarFolderPath",
 		"Tasks","TaskFormat","saveToTaskImap","syncTasks","TaskFolderPath"
 		);

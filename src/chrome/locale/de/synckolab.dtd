@@ -40,6 +40,11 @@
 <!ENTITY synckolab.settings.SyncTasks		"Aufgaben abgleichen">
 <!ENTITY synckolab.settings.SyncTasksTip	"Aktivieren wenn in dieser Konfiguration die Aufgaben abgeglichen werden sollen">
 <!ENTITY synckolab.settings.FormatTip		"Nehmen Sie das XML Format wenn Sie einen Kolab2 Server haben, ansonsten bleiben Sie bei vCard/iCal.">
+<!ENTITY synckolab.settings.DefaultResolve	"Bei einem Konflikt: ">
+<!ENTITY synckolab.settings.ResolveAsk		"Nachfragen">
+<!ENTITY synckolab.settings.ResolveServer	"Server Version verwenden">
+<!ENTITY synckolab.settings.ResolveClient	"Lokale Version verwenden">
+<!ENTITY synckolab.settings.ResolveSmart	"Automatisch entscheiden">
 
 <!ENTITY synckolab.settings.Updates			"Für Updates besuchen Sie:">
 

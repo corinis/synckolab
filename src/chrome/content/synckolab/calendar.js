@@ -41,6 +41,8 @@
  */
 
 var syncCalendar = {
+	gConflictResolve : "ask", // conflict resolution (default: ask what to do)
+
 	folderPath: '', // String - the path for the entries
 	serverKey: '', // the incoming server
 	gSaveImap: true, // write back to folder
@@ -93,6 +95,13 @@ var syncCalendar = {
 		try {
 			var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 			this.serverKey = pref.getCharPref("SyncKolab."+config+".IncomingServer");
+			try {
+				this.gConflictResolve = pref.getCharPref("SyncKolab."+config+".Resolve");
+			}
+			catch (e) 
+			{
+				// ignore
+			}
 
 			if (this.syncTasks == true)
 			{
@@ -320,12 +329,26 @@ var syncCalendar = {
  			{
 			    // changed locally and on server side
 				logMessage("Changed on server and local: " + parsedEvent.id, LOG_CAL + LOG_DEBUG);
+
+				//Holds the users response, must be an object so that we can pass by reference
+				conflictResolution = new Object();
+				conflictResolution.result = 0;
+  				
+				// check for conflict resolution settings 
+				if (this.gConflictResolve = 'server')
+					conflictResolution.result = 1;
+				else
+				if (this.gConflictResolve = 'client')												
+					conflictResolution.result = 2;
+				else
+				// display a dialog asking for whats going on
+				if (window.confirm("Changes were made on the server and local. Click ok to use the server version.\nClient Event: " + 
+					foundEvent.title + "<"+ foundEvent.id + ">\nServer Event: " + parsedEvent.title + "<"+ parsedEvent.id + ">"))
+					conflictResolution.result = 1;
+				else
+					conflictResolution.result = 2;
 				
-                // FIXME
-                takeAlwaysFromServer = false;				
-				if (takeAlwaysFromServer || 
-				   (window.confirm("Changes were made on the server and local. Click ok to use the server version.\nClient Event: " + 
-					foundEvent.title + "<"+ foundEvent.id + ">\nServer Event: " + parsedEvent.title + "<"+ parsedEvent.id + ">")))
+				if (conflictResolution.result == 1)
  				{
  					// take event from server
 					logMessage("Take event from server: " + parsedEvent.id, LOG_CAL + LOG_INFO);

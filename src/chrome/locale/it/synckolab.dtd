@@ -38,6 +38,11 @@
 <!ENTITY synckolab.settings.SyncTasks		"Sincronizza eventi">
 <!ENTITY synckolab.settings.SyncTasksTip	"attiva se vuoi sincronizzare gli eventi con la configurazione">
 <!ENTITY synckolab.settings.FormatTip		"Choose the XML format if you have a Kolab2 server. Otherwise stay with the vcard/ical standard.">
+<!ENTITY synckolab.settings.DefaultResolve	"On sync conflict: ">
+<!ENTITY synckolab.settings.ResolveAsk		"Always Ask">
+<!ENTITY synckolab.settings.ResolveServer	"Server always wins">
+<!ENTITY synckolab.settings.ResolveClient	"Client always wins">
+<!ENTITY synckolab.settings.ResolveSmart	"Automatic merge and resolve">
 
 <!ENTITY synckolab.settings.Updates			"Per gli aggiornamenti seleziona:">
 

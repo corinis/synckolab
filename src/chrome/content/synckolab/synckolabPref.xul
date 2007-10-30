@@ -51,7 +51,7 @@
   	<vbox>
    		<hbox>
 			<label value="&synckolab.settings.SyncKolabHeader;" style="font-size: 16pt;"/>
-			<label value=" 0.5.2"/>
+			<label value=" 0.5.3"/>
 		</hbox>
 		<description style="width: 300px">
 			&synckolab.settings.SyncKolabDescription;
@@ -104,6 +104,18 @@
 			</hbox>			
 			
 		    <checkbox id="hiddenWnd" label="&synckolab.settings.HiddenWindow;"/>	    
+			<hbox>
+				<label value="&synckolab.settings.DefaultResolve;"/>
+				<menulist id="DefaultResolve" oncommand="setResolve(this.value);">
+					<menuitem label="&synckolab.settings.ResolveAsk;" value="ask"/>
+					<menuitem label="&synckolab.settings.ResolveServer;" value="server"/>
+					<menuitem label="&synckolab.settings.ResolveClient;" value="client"/>
+					<!-- 
+						smartresolve is a nive to have feature for a future version
+						<menuitem label="&synckolab.settings.ResolveSmart;" value="auto"/>
+					 -->
+				</menulist> 
+			</hbox>
 	    	<separator class="thin"/>
 			<button label="&synckolab.settings.saveSingle;" oncommand="saveSingleConfig();"/>
 	    	

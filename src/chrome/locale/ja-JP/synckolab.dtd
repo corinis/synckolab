@@ -38,6 +38,11 @@
 <!ENTITY synckolab.settings.SyncTasks		"タスクリストを同期する">
 <!ENTITY synckolab.settings.SyncTasksTip	"タスクリストを同期する場合はチェックしてください．">
 <!ENTITY synckolab.settings.FormatTip		"Kolab2サーバの場合は「XML」を，それ以外の場合は「vcard/ical」を選択してください．">
+<!ENTITY synckolab.settings.DefaultResolve	"On sync conflict: ">
+<!ENTITY synckolab.settings.ResolveAsk		"Always Ask">
+<!ENTITY synckolab.settings.ResolveServer	"Server always wins">
+<!ENTITY synckolab.settings.ResolveClient	"Client always wins">
+<!ENTITY synckolab.settings.ResolveSmart	"Automatic merge and resolve">
 
 <!ENTITY synckolab.settings.Updates			"SyncKolabの新しいバージョンは，次のURLで公開されます:">
 

@@ -39,6 +39,9 @@
  *  
  */
 var syncAddressBook = {
+
+	gConflictResolve : "ask", // conflict resolution (default: ask what to do)
+
 	folderPath: '', // String - the path for the contacts
 	serverKey: '', // the incoming server
 	gSaveImap: true, // write back to folder
@@ -82,6 +85,14 @@ var syncAddressBook = {
 		this.forceLocalCopy = false;
 		
 		this.folderMessageUids = new Array(); // the checked uids - for better sync
+		try {
+			this.gConflictResolve = pref.getCharPref("SyncKolab."+config+".Resolve");
+		}
+		catch (e) 
+		{
+			// ignore
+		}
+		
 		// initialize the configuration
 		try 
 		{
@@ -316,7 +327,14 @@ var syncAddressBook = {
 						conflictResolution.result = 0;
     				
 						//Open the contact conflict dialog
-						var conflictDlg = window.openDialog("chrome://synckolab/content/contactConflictDialog.xul","conflictDlg","chrome,modal,resizable=1,width=600,height=400",conflicts,conflictResolution,newCard,aCard);
+						if (this.gConflictResolve = 'server')
+							conflictResolution.result = 1;
+						else
+						if (this.gConflictResolve = 'client')												
+							conflictResolution.result = 2;
+						else
+							var conflictDlg = window.openDialog("chrome://synckolab/content/contactConflictDialog.xul","conflictDlg","chrome,modal,resizable=1,width=600,height=400",conflicts,conflictResolution,newCard,aCard);
+						
 						
 						var bUpdateLocal = false;
 						var bUpdateServer = false;

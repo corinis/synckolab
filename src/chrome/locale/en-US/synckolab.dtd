@@ -38,6 +38,11 @@
 <!ENTITY synckolab.settings.SyncTasks		"Sync tasks">
 <!ENTITY synckolab.settings.SyncTasksTip	"activate if you want to synchronize the tasks with the configuration">
 <!ENTITY synckolab.settings.FormatTip		"Choose the XML format if you have a Kolab2 server. Otherwise stay with the vcard/ical standard.">
+<!ENTITY synckolab.settings.DefaultResolve	"On sync conflict: ">
+<!ENTITY synckolab.settings.ResolveAsk		"ask">
+<!ENTITY synckolab.settings.ResolveServer	"use server version">
+<!ENTITY synckolab.settings.ResolveClient	"use local version">
+<!ENTITY synckolab.settings.ResolveSmart	"Automatic merge and resolve">
 
 <!ENTITY synckolab.settings.Updates			"For updates please check out:">
 
