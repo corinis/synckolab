@@ -8,7 +8,7 @@
         buttons="accept,cancel"
         ondialogaccept="savePrefs();"
         persist="screenX screenY"
-        title="SyncKolab 0.5.2">
+        title="SyncKolab 0.5.3">
 
 	<script type="application/x-javascript" src="chrome://synckolab/content/settings.js"/>
 	<script type="application/x-javascript" src="chrome://synckolab/content/calTools.js"/>
