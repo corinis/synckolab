@@ -827,7 +827,7 @@ function cnv_event2xml (event, skipVolatiles, syncTasks)
 	//    - yearly recurrence
 	
     var hasOrganizer = false;
-    var isAllDay = (syncTasks==true)?false:event.startDate.isDate;
+    var isAllDay = (syncTasks==true)?false:(event.startDate?event.startDate.isDate:false);
     var endDate = (syncTasks==true)?event.dueDate:event.endDate;
 
     // correct the end date for all day events before writing the XML object
@@ -1175,7 +1175,7 @@ function ical2event (content, todo)
 	}
 	catch (exc)
 	{
-	    logMessage("unable to parse event: \n" + content, LOG_CAL + LOG_WARNING);
+	    logMessage("unable to parse event: \n" + content, LOG_CAL + LOG_ERROR);
 	    return null;
 	}
     return event;
