@@ -1,10 +1,11 @@
 <!-- MAIN CONTENT -->
 <h5 class="page-header"><a id="content" name="content">Download</a></h5>
 <h6>Latest stable</h6>
-<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.34.xpi">SyncKolab 0.4.34</a></p>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.5.2.xpi">SyncKolab 0.5.2</a></p>
 <h6>Latest Nightly</h6>
 <p><a href="http://www.gargan.org/extensions/synckolab-NIGHTLY.xpi">SyncKolab NIGHTLY</a></p>
 <h6>Previous Releases</h6>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.34.xpi">SyncKolab 0.4.34</a></p>
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.33.xpi">SyncKolab 0.4.33</a></p>
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.32.xpi">SyncKolab 0.4.32</a></p>
 
@@ -81,6 +82,132 @@ Step 1: from 0.3.0 to 0.4.19 <b>calendar is required</b>. <a href="http://www.mo
 </p>
 <h5 class="page-header">Release Notes</h5>
 <h6>For updated release notes see <a href="http://www.gargan.org/extensions/synckolab.html">www.gargan.org</a></h6>
+
+<h3>synckolab 0.5.2</h3>
+<p><pre>
+This is apretty big release since &lt; 0.4.34.
+
+In case you have problems:
+- uninstall synckolab
+- remove all lines containing synckolab from your prefs.js (in your thunderbird profile folder)
+- remove all *.hdb files from your profile folder
+- install 0.5.2 and configure everything
+
+Changelog:
+* when informaiton window is hidden the status bar holds the sync status
+* added an option to hide the information window on autosync
+* fixed problem with all-day calendar entries
+* fixed problem with task config
+* fixed comparation problem with adressbook
+* fixed problem with certain charaters in xml-format (<>&) not being correctly decoded
+* fixed problem with space in folderpath preventing write on imap 
+* fixed problem with -, #, [, ] and . in confignames (not allowed any more)
+* fixed checking for calendar and wizard
+* included code to make sure all messages are downloaded (retested and working)
+* applied the fix for duplicate entries on full-day events in calendar
+* fixed problem with toltec messages (out of memory error)
+* updated japanese language properties
+* fixed weird behaviour after sync (for good :P)
+* enabled todo for sync
+* changed behaviour back to kolab message: if you sync with more than one client this message might get obsolete if not changed with the content
+* fixed task behaviour (was a bug with the new caching)
+* added export/import of configuration
+* fixed parsing for attachments (now vcard/icals will be found too)
+* added Czech translation
+* added fix for names of calendars
+</pre></p>
+
+<h3>synckolab 0.4.34</h3>
+<pre>
+
+* fixed weird behaviour after sync bug (hopefully)
+* added local database reading for unchanged messages (used messagesize+date as keys) for major speed increase
+* added code to mark all new messages as unread
+* fixed mime setting for vcards
+* added xml fixes in contact-parsing
+* added menuitems in tools for options and start (you dont need to add the icon any more)
+* added stringbundles for translation
+* loads of translation (german/english)
+* completely revamped configuration - should be easier to understand now
+* removed splitting of configs
+* implemented a fix for the "account '' not found"- problem
+* added autosync capability
+* changed complete debug behaviour (see synckolab.js)
+* syncing of lists implemented
+* more description in option dialog
+* updated version support up to and including 3.0a
+* added task support (configuration only for now)
+* all control elements are disabled now on pages which do not sync
+* added wizard for new configurations
+* loads of little bugs fixed
+* fixed base64 encoder (tested with toltec message)
+* added italian translation
+* added japanese translation
+* fixed bugs:
+        #16902: added fixing of xml-characters when writing/reading
+        #16903: fixed isAllDay error when writing xml
+        #16910: fixed permission settings of new folders for linux
+        #16901: added syncing of custom1-3 fields in xml format (has to be tested with other clients)
+</pre>
+<h3>synckolab 0.4.33</h3>
+<pre>
+* fixed bugs:
+     # 16848: now a window pops up asking you if it should "force"
+         updates locally/on server if no entries have been found on the other
+         side (this way you wont EVER loose all your entries unless you say no)
+     # 16847: Included a human readable message in multipart kolab-xml
+         messages
+     # 16844: added parsing checks/encodings with special chars like &
+         and </> in XML format
+     # 16839: made sure colon is parsed correctly in vcard format
+     # 16766: workaround for possible parsing errors added
+* added default selection in configuration (this way the dialog does not break out of its borders any more)
+* changed some checks for duplicate entries and added more fields to vcards
+</pre>
+<h3>synckolab 0.4.32</h3>
+<pre>
+ - New local database format: all contacts/adresses are written in their
+        original format (xml/vcard/ical) in the profile folder. You can easily backup
+        them there (nackup/restore functionality in one of the next versions)
+        Additionally: fields that are only available in other lcients than synckolab will be preserved
+        as long as no local change is done
+ - fixed comparing in contacts
+ - fix for primary/secondary email address
+ - added debug levels (thanks to andreas gungl)
+ - added calendar fixes from andreas gungl
+ - automatic discovery if files are xml/vcard: now you can
+        have mixed folders and synckolab will be able to read them
+ - reduced complexity of code
+ - started with localization (english and german - if you want to translate into your language feel free to submit the dtd (you can find the originials in your
+        extensiond/{571CFACF-0F7D-49b4-BD77-E6FC7B209ADC}/chrome/content/synckolab/locale directory)
+</pre>
+
+<h3>synckolab 0.4.32</h3>
+<pre>
+ - New local database format: all contacts/adresses are written in their 
+	original format (xml/vcard/ical) in the profile folder. You can easily backup
+	them there (nackup/restore functionality in one of the next versions)
+	Additionally: fields that are only available in other lcients than synckolab will be preserved
+	as long as no local change is done
+ - fixed comparing in contacts
+ - fix for primary/secondary email address
+ - added debug levels (thanks to andreas gungl)
+ - added calendar fixes from andreas gungl
+ - automatic discovery if files are xml/vcard: now you can 
+	have mixed folders and synckolab will be able to read them
+ - reduced complexity of code
+ - started with localization (english and german - if you want to translate into your language feel free to submit the dtd (you can find the originials in your 
+	extensiond/{571CFACF-0F7D-49b4-BD77-E6FC7B209ADC}/chrome/content/synckolab/locale directory)
+</pre>
+
+<h3>synckolab 0.4.31 (bugged)</h3>
+
+<pre>
+- space in confignames is being checked for
+- added some changes for the calendar parsing to make sure the cellphone is parsed correctly
+- implemented the contributions from andreas
+- made sure the sync window is resizeable
+</pre>
 
 <h3>synckolab 0.4.30</h3>
 <p><pre>
