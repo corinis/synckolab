@@ -191,7 +191,6 @@ var syncCalendar = {
 		sync: '',
 		onOperationComplete: function(aCalendar, aStatus, aOperator, aId, aDetail) {		
 			    logMessage("operation "+(this.syncTasks == true?"tasks":"calendar")+": status="+aStatus + " Op=" + aOperator + " Detail=" + aDetail, LOG_DEBUG + LOG_CAL);
-			    this.nextFunc();
 			},
 		onGetResult: function(aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {
                 logMessage("got results: " + aCount + " items", LOG_DEBUG + LOG_CAL);
@@ -256,8 +255,11 @@ var syncCalendar = {
 		// update list item
 		this.curItemInListId.setAttribute("label", parsedEvent.id);
 		this.curItemInListStatus.setAttribute("label", strBundle.getString("checking"));
-		var info = parsedEvent.title + " (" +
-		           this.syncTasks?"":date2String(parsedEvent.startDate.jsDate) + ")";
+		var info = parsedEvent.title;
+		if (!this.syncTasks)
+		{
+		    info += " (" + date2String(parsedEvent.startDate.jsDate) + ")";
+		}
 		this.curItemInListContent.setAttribute("label", info);
 		
 		// remember that we did this uid already

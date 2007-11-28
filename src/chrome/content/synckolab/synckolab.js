@@ -203,7 +203,6 @@ function goWindow (wnd)
 		processMsg = null;
 		totalMeter = null;
 		itemList = null;
-		itemList = null;
 	}
 	
 	if (isCalendarAvailable ())
@@ -327,17 +326,17 @@ function nextSync()
 			syncCalendar.syncTasks = false;
 			syncCalendar.init(syncConfigs[curCalConfig]);
 			
-			curCalConfig++;
-			
 			// maybe we do not want to sync calendar in this config
 			if (!syncCalendar.gSync)
 			{
 				logMessage("Skipping calendar config " + syncConfigs[curCalConfig], LOG_DEBUG);
+				curCalConfig++;
 				window.setTimeout(nextSync, SWITCH_TIME, syncCalendar);	
 				return;
 			}
 			else
 			{		
+				curCalConfig++;
 				syncCalendar.folder = getMsgFolder(syncCalendar.serverKey, syncCalendar.folderPath);		
 				syncCalendar.folderMsgURI = syncCalendar.folder.baseMessageURI;
 				syncCalendar.email = getAccountEMail(syncCalendar.serverKey);
@@ -354,7 +353,9 @@ function nextSync()
 				gSync = syncCalendar;
 				
 				// the init2 does the goon for us		
-				syncCalendar.init2(prepareContent, syncCalendar);				
+				syncCalendar.init2(prepareContent, syncCalendar);
+
+				window.setTimeout(prepareContent, SWITCH_TIME, syncCalendar);
 				return;
 	        }
 	    }
@@ -415,6 +416,8 @@ function nextSync()
 
 				// the init2 does the goon for us		
 				syncCalendar.init2(prepareContent, syncCalendar);
+
+				window.setTimeout(prepareContent, SWITCH_TIME, syncCalendar);
 				return;
 	        }
 	    }
