@@ -498,7 +498,7 @@ function prepareContent ()
 	// update folder information from imap and make sure we got everything
 	gSync.folder.updateFolder (msgWindow);
 	// my UrlListener calls getContent
-	gSync.folder.compact (myUrlListener, msgWindow); // this should take care of refreshes
+	gSync.folder.compact (syncKolabUrlListener, msgWindow); // this should take care of refreshes
 	
 }
 
@@ -641,11 +641,11 @@ function getMessage ()
 	var aurl = new Object();	
 	gMessageService.CopyMessage(
         gSync.folderMsgURI +"#"+gCurMessageKey,
-        myStreamListener, false, null, msgWindow, aurl
+        syncKolabStreamListener, false, null, msgWindow, aurl
         ); 
 }
 
-var myUrlListener = {
+var syncKolabUrlListener = {
 	OnStartRunningUrl: function ( url )
 	{	
 	},
@@ -658,7 +658,7 @@ var myUrlListener = {
 }
 
 // nsIStreamListener
-var myStreamListener = {
+var syncKolabStreamListener = {
  onDataAvailable: function(request, context, inputStream, offset, count){
     try
     {
