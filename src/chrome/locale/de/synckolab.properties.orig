@@ -1,6 +1,13 @@
 contacts=Kontakte
 calendar=Kalender
 tasks=Aufgaben
+aboutSyncKolab=Über SyncKolab
+saveConfig=Konfiguration Speichern
+configFiles=Konfigurationen
+loadConfig=Konfiguration Laden
+configReplaceAll=Möchten Sie die gesamte Konfiguration überschreiben?
+configInvalid=Die Konfigurationsdatei ist fehlerhaft!
+configOverwrite=Möchten Sie die Konfiguration überschreiben: 
 
 # status messages
 checking=teste
