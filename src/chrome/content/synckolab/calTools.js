@@ -440,7 +440,7 @@ function xml2Event (xml, extraFields, event)
 					break;
 					
 				case "COMPLETED":
-					event.isCompleted = false;
+					// event.isCompleted: is a read only attribude
 					event.percentComplete = 0;
 					
 					if (!cur.firstChild)
@@ -448,8 +448,6 @@ function xml2Event (xml, extraFields, event)
 
 					var s = decode4XML(cur.firstChild.data);
 					event.percentComplete = s;
-					if (s == 100)
-						event.isCompleted = true;
 					break;
 					/*
 				case "COMPLETED-DATE":
@@ -847,7 +845,7 @@ function cnv_event2xml (event, skipVolatiles, syncTasks)
     if (syncTasks == true)
     {
 	    xml += "<task version=\"1.0\" >\n"
-	    if (event.isCompleted)
+	    if (event.isCompleted || event.percentComplete == 100)
 		    xml += " <completed>100</completed>\n";	
 		else
 		    xml += " <completed>" + event.percentComplete +"</completed>\n";	
