@@ -12,7 +12,7 @@
  * License.
  *
  * Contributor(s): Niko Berger <niko.berger@corinis.com>
- *                 Andreas Gungl <a.gungl@gmx.de>
+ *				 Andreas Gungl <a.gungl@gmx.de>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -38,26 +38,26 @@ var activeCalendarManager = null;
  */
 function getSynckolabCalendarManager()
 {
-    if (!activeCalendarManager || activeCalendarManager == null) {
-         activeCalendarManager = Components.classes["@mozilla.org/calendar/manager;1"]
-                                           .getService(Components.interfaces["calICalendarManager"]);
-     }
+	if (!activeCalendarManager || activeCalendarManager == null) {
+		 activeCalendarManager = Components.classes["@mozilla.org/calendar/manager;1"]
+										   .getService(Components.interfaces["calICalendarManager"]);
+	 }
  
-     if (activeCalendarManager.getCalendars({}).length == 0) {
-         var homeCalendar = activeCalendarManager.createCalendar("storage", 
-                            makeURL("moz-profile-calendar://"));
-         activeCalendarManager.registerCalendar(homeCalendar);
+	 if (activeCalendarManager.getCalendars({}).length == 0) {
+		 var homeCalendar = activeCalendarManager.createCalendar("storage", 
+							makeURL("moz-profile-calendar://"));
+		 activeCalendarManager.registerCalendar(homeCalendar);
  
-         var sbs = Components.classes["@mozilla.org/intl/stringbundle;1"]
-                             .getService(Components.interfaces.nsIStringBundleService);
-         var props = sbs.createBundle("chrome://calendar/locale/calendar.properties");
-         homeCalendar.name = props.GetStringFromName("homeCalendarName");
+		 var sbs = Components.classes["@mozilla.org/intl/stringbundle;1"]
+							 .getService(Components.interfaces.nsIStringBundleService);
+		 var props = sbs.createBundle("chrome://calendar/locale/calendar.properties");
+		 homeCalendar.name = props.GetStringFromName("homeCalendarName");
  
-         var composite = getCompositeCalendar();
-         composite.addCalendar(homeCalendar);
-         // XXX this doesn't make it selected, but you do add to it
-     }
-     return activeCalendarManager;
+		 var composite = getCompositeCalendar();
+		 composite.addCalendar(homeCalendar);
+		 // XXX this doesn't make it selected, but you do add to it
+	 }
+	 return activeCalendarManager;
 }
 
  
@@ -66,14 +66,14 @@ function getSynckolabCalendarManager()
  */
 function getSynckolabCalendars()
 {
-     try {
-     	 var syncCalManager = getSynckolabCalendarManager();
-     	 if (syncCalManager == null || !syncCalManager)
-     	 	return null;
-         return syncCalManager.getCalendars({});
-     } catch (e) {
-         dump ("Error getting calendars: " + e + "\n");
-         return null;
+	 try {
+	 	 var syncCalManager = getSynckolabCalendarManager();
+	 	 if (syncCalManager == null || !syncCalManager)
+	 	 	return null;
+		 return syncCalManager.getCalendars({});
+	 } catch (e) {
+		 dump ("Error getting calendars: " + e + "\n");
+		 return null;
 	}
 }
 
@@ -112,32 +112,32 @@ function findEvent(events, uid)
  */
 function getKolabXmlDayName (index)
 {
-    var name = "sunday";
-    switch (index)
-    {
-        case 1:
-            name = "sunday";
-            break;
-        case 2:
-            name = "monday";
-            break;
-        case 3:
-            name = "tuesday";
-            break;
-        case 4:
-            name = "wednesday";
-            break;
-        case 5:
-            name = "thursday";
-            break;
-        case 6:
-            name = "friday";
-            break;
-        case 7:
-            name = "saturday";
-            break;
-    }
-    return name;
+	var name = "sunday";
+	switch (index)
+	{
+		case 1:
+			name = "sunday";
+			break;
+		case 2:
+			name = "monday";
+			break;
+		case 3:
+			name = "tuesday";
+			break;
+		case 4:
+			name = "wednesday";
+			break;
+		case 5:
+			name = "thursday";
+			break;
+		case 6:
+			name = "friday";
+			break;
+		case 7:
+			name = "saturday";
+			break;
+	}
+	return name;
 }
 
 
@@ -150,32 +150,32 @@ function getKolabXmlDayName (index)
  */
 function getDayIndex (name)
 {
-    var index = 1;
-    switch (name.toLowerCase())
-    {
-        case "sunday":
-            index = 1;
-            break;
-        case "monday":
-            index = 2;
-            break;
-        case "tuesday":
-            index = 3;
-            break;
-        case "wednesday":
-            index = 4;
-            break;
-        case "thursday":
-            index = 5;
-            break;
-        case "friday":
-            index = 6;
-            break;
-        case "saturday":
-            index = 7;
-            break;
-    }
-    return index;
+	var index = 1;
+	switch (name.toLowerCase())
+	{
+		case "sunday":
+			index = 1;
+			break;
+		case "monday":
+			index = 2;
+			break;
+		case "tuesday":
+			index = 3;
+			break;
+		case "wednesday":
+			index = 4;
+			break;
+		case "thursday":
+			index = 5;
+			break;
+		case "friday":
+			index = 6;
+			break;
+		case "saturday":
+			index = 7;
+			break;
+	}
+	return index;
 }
 
 /**
@@ -217,8 +217,8 @@ function equalsEvent (a, b, syncTasks)
 	
 	// check attendees
 	
-    var attendees = a.getAttendees({});
-    var battendees = b.getAttendees({});
+	var attendees = a.getAttendees({});
+	var battendees = b.getAttendees({});
 	if (attendees && !battendees)
 		return false;
 	if (battendees && !attendees)
@@ -226,9 +226,9 @@ function equalsEvent (a, b, syncTasks)
 	if (attendees.length != battendees.length)
 		return false;
 		
-    if (attendees.length > 0 ) 
-    {
-        for each (var attendee in attendees) 
+	if (attendees.length > 0 ) 
+	{
+		for each (var attendee in attendees) 
 		{
 			var found = false;
 			for each (var battendee in battendees) 
@@ -246,8 +246,8 @@ function equalsEvent (a, b, syncTasks)
 				logMessage("some attendee has not been found.. not eqal", LOG_CAL + LOG_DEBUG);
 				return false;
 			}
-        }
-    }	
+		}
+	}	
 	return true;	
 */	
 }
@@ -297,15 +297,15 @@ function xml2Event (xml, extraFields, event)
 	
 	logMessage("Parsing an XML event:\n" + xml, LOG_CAL + LOG_DEBUG);
 	// TODO improve recurrence settings
-	//      not working ATM:
-	//          - yearly recurrence
+	//	  not working ATM:
+	//		  - yearly recurrence
 	
 	// FIXME clean up - ToDos have a folder on their own in Kolab, 
 	// so we don't need to support them in this function
 	//
-    //calendarToDo.due.clear();
-    //calendarToDo.start.setTime( startDate );
-    //var iCalToDo = Components.classes["@mozilla.org/icaltodo;1"].createInstance().QueryInterface(Components.interfaces.oeIICalTodo);
+	//calendarToDo.due.clear();
+	//calendarToDo.start.setTime( startDate );
+	//var iCalToDo = Components.classes["@mozilla.org/icaltodo;1"].createInstance().QueryInterface(Components.interfaces.oeIICalTodo);
 
 	
 	// decode utf chars and make sure an & is an &amp; (otherwise this is unparseable)
@@ -378,25 +378,25 @@ function xml2Event (xml, extraFields, event)
 					// 2005-03-30T15:28:52Z
 					if (s.indexOf(":") == -1)
 					{
-    					// date values witout time part specify a full day event
+						// date values witout time part specify a full day event
 						if (syncTasks == true)
 						{
-	                        event.entryDate = string2CalDate(s);
+							event.entryDate = string2CalDate(s);
 							event.entryDate.isDate = true;
 						}
 						else
-						{    					
-	                        event.startDate = string2CalDate(s);
+						{						
+							event.startDate = string2CalDate(s);
 							event.startDate.isDate = true;
 						}
 					}
 					else
 					{
 						if (syncTasks == false)
-	                        event.startDate = string2CalDateTime(s, true);
-	                    else
-	                        event.entryDate = string2CalDateTime(s, true);
-                    }
+							event.startDate = string2CalDateTime(s, true);
+						else
+							event.entryDate = string2CalDateTime(s, true);
+					}
 					break;						
 
 				case "END-DATE":
@@ -407,19 +407,19 @@ function xml2Event (xml, extraFields, event)
 					// 2005-03-30T15:28:52Z
 					if (s.indexOf(":") == -1)
 					{
-    					// date values witout time part specify a full day event
-                        event.endDate = string2CalDate(s);
-                        // Kolab uses for 1-day-event:
-                        // startdate = day_x, enddate = day_x
-                        // Sunbird uses for 1-day-event:
-                        // startdate = day_x, enddate = day_x + 1
-                        var tmp_date = event.endDate.jsDate;
-                        tmp_date.setTime(tmp_date.getTime() + 24*60*60000);
+						// date values witout time part specify a full day event
+						event.endDate = string2CalDate(s);
+						// Kolab uses for 1-day-event:
+						// startdate = day_x, enddate = day_x
+						// Sunbird uses for 1-day-event:
+						// startdate = day_x, enddate = day_x + 1
+						var tmp_date = event.endDate.jsDate;
+						tmp_date.setTime(tmp_date.getTime() + 24*60*60000);
 						event.endDate.jsDate = tmp_date;
 						event.endDate.isDate = true;
 					}
 					else
-                        event.endDate = string2CalDateTime(s, true);
+						event.endDate = string2CalDateTime(s, true);
 					break;						
 					
 				case "DUE-DATE":
@@ -430,19 +430,23 @@ function xml2Event (xml, extraFields, event)
 					// 2005-03-30T15:28:52Z
 					if (s.indexOf(":") == -1)
 					{
-    					// date values witout time part specify a full day event
-                        event.dueDate = string2CalDate(s);
+						// date values witout time part specify a full day event
+						event.dueDate = string2CalDate(s);
 //						event.dueDate.day += 1; 
 						event.dueDate.isDate = true;
 					}
 					else
-                        event.dueDate = string2CalDateTime(s, true);
+						event.dueDate = string2CalDateTime(s, true);
 					break;
 					
 				case "COMPLETED":
+					// only tasks have a completed field
+					if (syncTasks == false)
+						break;
+
 					// event.isCompleted: is a read only attribude
 					event.percentComplete = 0;
-					
+				
 					if (!cur.firstChild)
 						break;
 
@@ -458,12 +462,12 @@ function xml2Event (xml, extraFields, event)
 					// 2005-03-30T15:28:52Z
 					if (s.indexOf(":") == -1)
 					{
-    					// date values witout time part specify a full day event
-                        event.completedDate = string2CalDate(s);
+						// date values witout time part specify a full day event
+						event.completedDate = string2CalDate(s);
 						event.completedDate.isDate = true;
 					}
 					else
-                        event.completedDate = string2CalDateTime(s, true);
+						event.completedDate = string2CalDateTime(s, true);
 					break;
 					*/
 				case "SUMMARY":
@@ -471,8 +475,8 @@ function xml2Event (xml, extraFields, event)
 					break;
 
 				case "BODY":
-				    // sometimes we have <body></body> in the XML
-				    if (cur.firstChild)
+					// sometimes we have <body></body> in the XML
+					if (cur.firstChild)
 						event.setProperty("DESCRIPTION", decode4XML(cur.firstChild.data));
 					break;
 					
@@ -483,52 +487,52 @@ function xml2Event (xml, extraFields, event)
 					
 				case "ORGANIZER":
 					organizer = Components.classes["@mozilla.org/calendar/attendee;1"]
-                                          .createInstance(Components.interfaces.calIAttendee);
-                    organizer.id = "MAILTO:" + getXmlResult(cur, "SMTP-ADDRESS", "unknown");
+										  .createInstance(Components.interfaces.calIAttendee);
+					organizer.id = "MAILTO:" + getXmlResult(cur, "SMTP-ADDRESS", "unknown");
 					organizer.commonName = getXmlResult(cur, "DISPLAY-NAME", "");
-                    organizer.participationStatus = "ACCEPTED";
-                    organizer.rsvp = false;
-                    organizer.role = "CHAIR";
+					organizer.participationStatus = "ACCEPTED";
+					organizer.rsvp = false;
+					organizer.role = "CHAIR";
 					organizer.isOrganizer = true;
 					event.addAttendee(organizer);
 					break;
 					
 				case "LOCATION":
-				    // sometimes we have <location></location> in the XML
-				    if (cur.firstChild)
+					// sometimes we have <location></location> in the XML
+					if (cur.firstChild)
 						event.setProperty("LOCATION", decode4XML(cur.firstChild.data));
 					break;
 
 				case "CATEGORIES":
-				    if (cur.firstChild)
+					if (cur.firstChild)
 						event.setProperty("CATEGORIES", decode4XML(cur.firstChild.data));
 					break;
 
 				case "ALARM":
-				    if (cur.firstChild)
+					if (cur.firstChild)
 						event.alarmOffset = createDuration(decode4XML(cur.firstChild.data));
 					break;
 					
 				case "SENSITIVITY":
-                    event.setProperty("CLASS", 'PUBLIC');
-        			switch (decode4XML(cur.firstChild.data))
-                    {
-                        case "private":
-                            event.setProperty("CLASS", 'PRIVATE');
-                            break;
-                        case "confidential":
-                            event.setProperty("CLASS", 'CONFIDENTIAL');
-                            break;
-                    }
+					event.setProperty("CLASS", 'PUBLIC');
+						switch (decode4XML(cur.firstChild.data))
+					{
+					case "private":
+						event.setProperty("CLASS", 'PRIVATE');
+						break;
+					case "confidential":
+						event.setProperty("CLASS", 'CONFIDENTIAL');
+						break;
+					}
 					break;
 
 				case "RECURRENCE":
 					logMessage("Parsing recurring event: " + event.id, LOG_CAL + LOG_INFO);
-                    recInfo = Components.classes["@mozilla.org/calendar/recurrence-info;1"] 
-                                      .createInstance(Components.interfaces.calIRecurrenceInfo);
-                    recInfo.item = event;
+					recInfo = Components.classes["@mozilla.org/calendar/recurrence-info;1"] 
+						.createInstance(Components.interfaces.calIRecurrenceInfo);
+					recInfo.item = event;
 					recRule = Components.classes["@mozilla.org/calendar/recurrence-rule;1"] 
-                                        .createInstance(Components.interfaces.calIRecurrenceRule);
+						.createInstance(Components.interfaces.calIRecurrenceRule);
 					// read the "cycle" attribute for the units and
 					// map the Kolab XML values to the Sunbird values
 					units = getXmlAttributeValue(cur, "cycle");
@@ -541,134 +545,134 @@ function xml2Event (xml, extraFields, event)
 							// nothing else to do here
 							break;
 						case "WEEKLY":
-						    // need to process the <day> value here
-						    var onDays = [];
-						    var recur = cur.firstChild;
-						    // iterate over the DOM subtre
-						    while(recur != null)
-						    {
-						        if ((recur.nodeType == Node.ELEMENT_NODE)
-						           && (recur.nodeName.toUpperCase() == "DAY"))
-						        {
-						            var day = recur.firstChild.data;
-						            onDays.push(getDayIndex(day));
-						        }
-						        recur = recur.nextSibling;
-						    }
-						    if (onDays.length > 0)
-                                recRule.setComponent("BYDAY", onDays.length, onDays);
-						    break;
+							// need to process the <day> value here
+							var onDays = [];
+							var recur = cur.firstChild;
+							// iterate over the DOM subtre
+							while(recur != null)
+							{
+								if ((recur.nodeType == Node.ELEMENT_NODE)
+								   && (recur.nodeName.toUpperCase() == "DAY"))
+								{
+									var day = recur.firstChild.data;
+									onDays.push(getDayIndex(day));
+								}
+								recur = recur.nextSibling;
+							}
+							if (onDays.length > 0)
+								recRule.setComponent("BYDAY", onDays.length, onDays);
+							break;
 						case "MONTHLY":
 							// need to process extra type "type" which can be
 							// "daynumber" or "weekday"
-                            mode = getXmlAttributeValue(cur, "type");
-                            switch (mode.toUpperCase())
-                            {
-                                case "DAYNUMBER":
-                                    // daynumber has <daynumber>
-        						    var detail = getXmlChildNode(cur, "daynumber");
-                                    if ((detail != null)
-                                        && (detail.nodeType == Node.ELEMENT_NODE)
-                                        && (detail.nodeName.toUpperCase() == "DAYNUMBER"))
-                                    {
-                                        var daynumber = detail.firstChild.data;
-                                        recRule.setComponent("BYMONTHDAY", 1, [daynumber]);
-    						        }
-                                    break;
-                                case "WEEKDAY":
-        							// weekday has <daynumber> and <day>
-                                    var detail = cur.firstChild;
-                                    var day;
-                                    var daynumber;
-                                    var dayindex;
-                                    while(detail != null)
-                                    {
-                                        if ((detail.nodeType == Node.ELEMENT_NODE)
-                                            && (detail.nodeName.toUpperCase() == "DAY"))
-                                        {
-        						            day = detail.firstChild.data;
-                                        }
-                                        if ((detail.nodeType == Node.ELEMENT_NODE)
-                                            && (detail.nodeName.toUpperCase() == "DAYNUMBER"))
-                                        {
-                                            daynumber = detail.firstChild.data;
-                                        }
-                                        detail = detail.nextSibling;
-                                    }
-						            dayindex = getDayIndex(day);
-						            if (daynumber == -1)
-                                        recRule.setComponent("BYDAY", 1, [(-1)*(8+dayindex)]);
-                                    else
-                                        recRule.setComponent("BYDAY", 1, [daynumber*8 + dayindex]);
-                                    break;
-                            }
+							mode = getXmlAttributeValue(cur, "type");
+							switch (mode.toUpperCase())
+							{
+								case "DAYNUMBER":
+									// daynumber has <daynumber>
+									var detail = getXmlChildNode(cur, "daynumber");
+									if ((detail != null)
+										&& (detail.nodeType == Node.ELEMENT_NODE)
+										&& (detail.nodeName.toUpperCase() == "DAYNUMBER"))
+									{
+										var daynumber = detail.firstChild.data;
+										recRule.setComponent("BYMONTHDAY", 1, [daynumber]);
+									}
+									break;
+								case "WEEKDAY":
+									// weekday has <daynumber> and <day>
+									var detail = cur.firstChild;
+									var day;
+									var daynumber;
+									var dayindex;
+									while(detail != null)
+									{
+										if ((detail.nodeType == Node.ELEMENT_NODE)
+											&& (detail.nodeName.toUpperCase() == "DAY"))
+										{
+											day = detail.firstChild.data;
+										}
+										if ((detail.nodeType == Node.ELEMENT_NODE)
+											&& (detail.nodeName.toUpperCase() == "DAYNUMBER"))
+										{
+											daynumber = detail.firstChild.data;
+										}
+										detail = detail.nextSibling;
+									}
+									dayindex = getDayIndex(day);
+									if (daynumber == -1)
+										recRule.setComponent("BYDAY", 1, [(-1)*(8+dayindex)]);
+									else
+										recRule.setComponent("BYDAY", 1, [daynumber*8 + dayindex]);
+									break;
+							}
 							break;
 						case "YEARLY":
 							// need to process extra type "type" which can be
 							// "weekday", monthday" or "yearday"
-                            mode = getXmlAttributeValue(cur, "type");
-                            var day;
-                            var daynumber;
-                            var month;
-                            switch (mode.toUpperCase())
-                            {
-                                case "YEARDAY":
-                                    // yearday has <daynumber>
-        						    var detail = cur.firstChild;
-                                    if ((detail != null)
-                                        && (detail.nodeType == Node.ELEMENT_NODE)
-                                        && (detail.nodeName.toUpperCase() == "DAYNUMBER"))
-                                    {
-                                        daynumber = detail.firstChild.data;
-                                        // FIXME this needs to be written to the event when supported by Lightning
-    						        }
-                                    break;
-                                case "MONTHDAY":
-                                    // monthday has <daynumber> and <month>
-                                    var detail = cur.firstChild;
-                                    var day;
-                                    var daynumber;
-                                    while(detail != null)
-                                    {
-                                        if ((detail.nodeType == Node.ELEMENT_NODE)
-                                            && (detail.nodeName.toUpperCase() == "MONTH"))
-                                        {
-        						            month = detail.firstChild.data;
-                                        }
-                                        if ((detail.nodeType == Node.ELEMENT_NODE)
-                                            && (detail.nodeName.toUpperCase() == "DAYNUMBER"))
-                                        {
-                                            daynumber = detail.firstChild.data;
-                                        }
-                                        detail = detail.nextSibling;
-                                    }
-                                    // FIXME this needs to be written to the event when supported by Lightning
-                                    break;
-                                case "WEEKDAY":
-                                    // weekday has <day>, <daynumber> and <month>
-                                    var detail = cur.firstChild;
-                                    while(detail != null)
-                                    {
-                                        if ((detail.nodeType == Node.ELEMENT_NODE)
-                                            && (detail.nodeName.toUpperCase() == "DAY"))
-                                        {
-        						            day = detail.firstChild.data;
-                                        }
-                                        if ((detail.nodeType == Node.ELEMENT_NODE)
-                                            && (detail.nodeName.toUpperCase() == "MONTH"))
-                                        {
-        						            month = detail.firstChild.data;
-                                        }
-                                        if ((detail.nodeType == Node.ELEMENT_NODE)
-                                            && (detail.nodeName.toUpperCase() == "DAYNUMBER"))
-                                        {
-                                            daynumber = detail.firstChild.data;
-                                        }
-                                        detail = detail.nextSibling;
-                                    }
-                                    // FIXME this needs to be written to the event when supported by Lightning
-                                    break;
-                            }
+							mode = getXmlAttributeValue(cur, "type");
+							var day;
+							var daynumber;
+							var month;
+							switch (mode.toUpperCase())
+							{
+								case "YEARDAY":
+									// yearday has <daynumber>
+									var detail = cur.firstChild;
+									if ((detail != null)
+										&& (detail.nodeType == Node.ELEMENT_NODE)
+										&& (detail.nodeName.toUpperCase() == "DAYNUMBER"))
+									{
+										daynumber = detail.firstChild.data;
+										// FIXME this needs to be written to the event when supported by Lightning
+									}
+									break;
+								case "MONTHDAY":
+									// monthday has <daynumber> and <month>
+									var detail = cur.firstChild;
+									var day;
+									var daynumber;
+									while(detail != null)
+									{
+										if ((detail.nodeType == Node.ELEMENT_NODE)
+											&& (detail.nodeName.toUpperCase() == "MONTH"))
+										{
+											month = detail.firstChild.data;
+										}
+										if ((detail.nodeType == Node.ELEMENT_NODE)
+											&& (detail.nodeName.toUpperCase() == "DAYNUMBER"))
+										{
+											daynumber = detail.firstChild.data;
+										}
+										detail = detail.nextSibling;
+									}
+									// FIXME this needs to be written to the event when supported by Lightning
+									break;
+								case "WEEKDAY":
+									// weekday has <day>, <daynumber> and <month>
+									var detail = cur.firstChild;
+									while(detail != null)
+									{
+										if ((detail.nodeType == Node.ELEMENT_NODE)
+											&& (detail.nodeName.toUpperCase() == "DAY"))
+										{
+											day = detail.firstChild.data;
+										}
+										if ((detail.nodeType == Node.ELEMENT_NODE)
+											&& (detail.nodeName.toUpperCase() == "MONTH"))
+										{
+											month = detail.firstChild.data;
+										}
+										if ((detail.nodeType == Node.ELEMENT_NODE)
+											&& (detail.nodeName.toUpperCase() == "DAYNUMBER"))
+										{
+											daynumber = detail.firstChild.data;
+										}
+										detail = detail.nextSibling;
+									}
+									// FIXME this needs to be written to the event when supported by Lightning
+									break;
+							}
 							break;
 					}
 					
@@ -717,58 +721,58 @@ function xml2Event (xml, extraFields, event)
 					   && (node.nodeName.toUpperCase() == "EXCLUSION"))
 					{
 					   date = string2CalDate(node.firstChild.data);
-                       recInfo.removeOccurrenceAt(date);
-                       node = node.nextSibling;
-                       // skip non-element nodes
+					   recInfo.removeOccurrenceAt(date);
+					   node = node.nextSibling;
+					   // skip non-element nodes
 					   while ((node != null) && (node.nodeType != Node.ELEMENT_NODE))
 					   {
-                          node = node.nextSibling;
-                       }
-                    }
-                    event.recurrenceInfo = recInfo;
+						  node = node.nextSibling;
+					   }
+					}
+					event.recurrenceInfo = recInfo;
 					break;
 	
 				case "ATTENDEE":
 					attendee = Components.classes["@mozilla.org/calendar/attendee;1"]
-                                         .createInstance(Components.interfaces.calIAttendee);
-                    attendee.id = "MAILTO:" + getXmlResult(cur, "SMTP-ADDRESS", "unknown");
+										 .createInstance(Components.interfaces.calIAttendee);
+					attendee.id = "MAILTO:" + getXmlResult(cur, "SMTP-ADDRESS", "unknown");
 					attendee.commonName = getXmlResult(cur, "DISPLAY-NAME", "");
 					// The status must be one of none, tentative, accepted, or declined.
 					switch (getXmlResult(cur, "STATUS", "none"))
 					{
-                        case "tentative":
-                            attendee.participationStatus = "TENTATIVE";
-                            break;
-                        case "accepted":
-                            attendee.participationStatus = "ACCEPTED";
-                            break;
-                        case "declined":
-                            attendee.participationStatus = "DECLINED";
-                            break;
-                        default:
-                            attendee.participationStatus = "NEEDS-ACTION";
+						case "tentative":
+							attendee.participationStatus = "TENTATIVE";
+							break;
+						case "accepted":
+							attendee.participationStatus = "ACCEPTED";
+							break;
+						case "declined":
+							attendee.participationStatus = "DECLINED";
+							break;
+						default:
+							attendee.participationStatus = "NEEDS-ACTION";
 					}
-                    // The request response status is true or false
+					// The request response status is true or false
 					if (getXmlResult(cur, "REQUEST-RESPONSE", "false") == "true")
-                        attendee.rsvp = true;
-                    else
-                        attendee.rsvp = false;
+						attendee.rsvp = true;
+					else
+						attendee.rsvp = false;
 					// Role is one of required, optional, or resource.
 					switch (getXmlResult(cur, "ROLE", "optional"))
 					{
-                        case "required":
-                            attendee.role = "REQ-PARTICIPANT";
-                            break;
-                        case "optional":
-                            attendee.role = "OPT-PARTICIPANT";
-                            break;
-                        case "resource":
-                            // FIXME it's currently the only way to map a "resource" attendee
-                            attendee.role = "NON-PARTICIPANT";
-                            break;
-                        default:
-                            attendee.role = "NON-PARTICIPANT";
-                    }
+						case "required":
+							attendee.role = "REQ-PARTICIPANT";
+							break;
+						case "optional":
+							attendee.role = "OPT-PARTICIPANT";
+							break;
+						case "resource":
+							// FIXME it's currently the only way to map a "resource" attendee
+							attendee.role = "NON-PARTICIPANT";
+							break;
+						default:
+							attendee.role = "NON-PARTICIPANT";
+					}
 					attendee.isOrganizer = false;
 					event.addAttendee(attendee);
 					// "invitation-sent" is missing, it can be "true" or false"
@@ -809,7 +813,7 @@ function xml2Event (xml, extraFields, event)
  */
 function event2xml (event, syncTasks)
 {
-    return cnv_event2xml( event, false, syncTasks);
+	return cnv_event2xml( event, false, syncTasks);
 }
 
 /**
@@ -822,265 +826,265 @@ function event2xml (event, syncTasks)
 function cnv_event2xml (event, skipVolatiles, syncTasks)
 {
 	// TODO  not working ATM:
-	//    - yearly recurrence
+	//	- yearly recurrence
 	
-    var hasOrganizer = false;
-    var isAllDay = (syncTasks==true)?false:(event.startDate?event.startDate.isDate:false);
-    var endDate = (syncTasks==true)?event.dueDate:event.endDate;
+	var hasOrganizer = false;
+	var isAllDay = (syncTasks==true)?false:(event.startDate?event.startDate.isDate:false);
+	var endDate = (syncTasks==true)?event.dueDate:event.endDate;
 
-    // correct the end date for all day events before writing the XML object
-    // Kolab uses for 1-day-event:
-    // startdate = day_x, enddate = day_x
-    // Sunbird uses for 1-day-event:
-    // startdate = day_x, enddate = day_x + 1
-    if (isAllDay)
-    {
-        var tmp_date = event.endDate.jsDate;
-        tmp_date.setTime(tmp_date.getTime() - 24*60*60000);
-        endDate = new CalDateTime();
-        endDate.jsDate = tmp_date;
-    }
-
-    var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-    if (syncTasks == true)
-    {
-	    xml += "<task version=\"1.0\" >\n"
-	    if (event.isCompleted || event.percentComplete == 100)
-		    xml += " <completed>100</completed>\n";	
-		else
-		    xml += " <completed>" + event.percentComplete +"</completed>\n";	
+	// correct the end date for all day events before writing the XML object
+	// Kolab uses for 1-day-event:
+	// startdate = day_x, enddate = day_x
+	// Sunbird uses for 1-day-event:
+	// startdate = day_x, enddate = day_x + 1
+	if (isAllDay)
+	{
+		var tmp_date = event.endDate.jsDate;
+		tmp_date.setTime(tmp_date.getTime() - 24*60*60000);
+		endDate = new CalDateTime();
+		endDate.jsDate = tmp_date;
 	}
-    else
-	    xml += "<event version=\"1.0\" >\n"
-	    
-    xml += " <product-id>Synckolab " + gVersion + ", Calendar Sync</product-id>\n";
-    xml += " <uid>" + event.id + "</uid>\n"
-    
-    if(syncTasks == true)
-    {
-	    xml += " <start-date>" + calDateTime2String(event.entryDate, isAllDay) + "</start-date>\n";
-	    xml += " <due-date>" + calDateTime2String(endDate, isAllDay) + "</due-date>\n";
-	    /*
-	    if (!skipVolatiles)
-		    xml += " <completed-date>" + calDateTime2String(completedDate, true) + "</completed-date>\n";
+
+	var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+	if (syncTasks == true)
+	{
+		xml += "<task version=\"1.0\" >\n"
+		if (event.isCompleted || event.percentComplete == 100)
+			xml += " <completed>100</completed>\n";	
+		else
+			xml += " <completed>" + event.percentComplete +"</completed>\n";	
+	}
+	else
+		xml += "<event version=\"1.0\" >\n"
+		
+	xml += " <product-id>Synckolab " + gVersion + ", Calendar Sync</product-id>\n";
+	xml += " <uid>" + event.id + "</uid>\n"
+	
+	if(syncTasks == true)
+	{
+		xml += " <start-date>" + calDateTime2String(event.entryDate, isAllDay) + "</start-date>\n";
+		xml += " <due-date>" + calDateTime2String(endDate, isAllDay) + "</due-date>\n";
+		/*
+		if (!skipVolatiles)
+			xml += " <completed-date>" + calDateTime2String(completedDate, true) + "</completed-date>\n";
 		*/
 	}
-    else
+	else
 	{
-	    xml += " <start-date>" + calDateTime2String(event.startDate, isAllDay) + "</start-date>\n";
-	    xml += " <end-date>" + calDateTime2String(endDate, isAllDay) + "</end-date>\n";
+		xml += " <start-date>" + calDateTime2String(event.startDate, isAllDay) + "</start-date>\n";
+		xml += " <end-date>" + calDateTime2String(endDate, isAllDay) + "</end-date>\n";
 	 }
-	    
-    xml += " <summary>" + encode4XML(event.title) +"</summary>\n";
+		
+	xml += " <summary>" + encode4XML(event.title) +"</summary>\n";
 
-    if (!skipVolatiles)
-    {
-        xml += " <creation-date>" + calDateTime2String(event.getProperty("CREATED"), false) + "</creation-date>\n";
-        xml += " <last-modification-date>" + calDateTime2String(event.getProperty("LAST-MODIFIED"), false) + "</last-modification-date>\n";
-    }
+	if (!skipVolatiles)
+	{
+		xml += " <creation-date>" + calDateTime2String(event.getProperty("CREATED"), false) + "</creation-date>\n";
+		xml += " <last-modification-date>" + calDateTime2String(event.getProperty("LAST-MODIFIED"), false) + "</last-modification-date>\n";
+	}
 
-    if (event.getProperty("DESCRIPTION"))
-        xml += " <body>" + encode4XML(event.getProperty("DESCRIPTION")) + "</body>\n";
-    if (event.getProperty("CLASS"))
-        xml += " <sensitivity>" + event.getProperty("CLASS").toLowerCase() + "</sensitivity>\n";
-    else
-        xml += " <sensitivity>public</sensitivity>\n";
-    if (event.getProperty("LOCATION"))
-        xml += " <location>" + event.getProperty("LOCATION") +"</location>\n";
-    if (event.alarmOffset && event.alarmOffset.inSeconds != 0)
-    {
-        minutes = Math.floor(Math.abs(event.alarmOffset.inSeconds)/60);
-        xml += " <alarm>" + minutes + "</alarm>\n";
-    }
-    if (event.getProperty("CATEGORIES"))
-        xml += " <categories>" + event.getProperty("CATEGORIES") + "</categories>\n";
+	if (event.getProperty("DESCRIPTION"))
+		xml += " <body>" + encode4XML(event.getProperty("DESCRIPTION")) + "</body>\n";
+	if (event.getProperty("CLASS"))
+		xml += " <sensitivity>" + event.getProperty("CLASS").toLowerCase() + "</sensitivity>\n";
+	else
+		xml += " <sensitivity>public</sensitivity>\n";
+	if (event.getProperty("LOCATION"))
+		xml += " <location>" + event.getProperty("LOCATION") +"</location>\n";
+	if (event.alarmOffset && event.alarmOffset.inSeconds != 0)
+	{
+		minutes = Math.floor(Math.abs(event.alarmOffset.inSeconds)/60);
+		xml += " <alarm>" + minutes + "</alarm>\n";
+	}
+	if (event.getProperty("CATEGORIES"))
+		xml += " <categories>" + event.getProperty("CATEGORIES") + "</categories>\n";
 
-    var recInfo = event.recurrenceInfo;
-    if (recInfo && recInfo.countRecurrenceItems() >= 1)
-    {
-        // read the first recurrence rule and process it
-        recRule = recInfo.getRecurrenceItemAt(0);
+	var recInfo = event.recurrenceInfo;
+	if (recInfo && recInfo.countRecurrenceItems() >= 1)
+	{
+		// read the first recurrence rule and process it
+		recRule = recInfo.getRecurrenceItemAt(0);
 		switch (recRule.type)
 		{
 			case "DAILY":
-                xml += " <recurrence cycle=\"daily\">\n";
+				xml += " <recurrence cycle=\"daily\">\n";
 				break;
 			case "WEEKLY":
-                xml += " <recurrence cycle=\"weekly\">\n";
-			    // need to process the <day> value here
-                for each (var i in recRule.getComponent("BYDAY", {})) {
-                    xml += "  <day>" + getKolabXmlDayName(i) + "</day>\n";
-                }
-			    break;
+				xml += " <recurrence cycle=\"weekly\">\n";
+				// need to process the <day> value here
+				for each (var i in recRule.getComponent("BYDAY", {})) {
+					xml += "  <day>" + getKolabXmlDayName(i) + "</day>\n";
+				}
+				break;
 			case "MONTHLY":
 				// "daynumber" or "weekday"
-                var days = recRule.getComponent("BYMONTHDAY", {});
-                if (days && days.length > 0 && days[0]) {
-				    // daynumber has <daynumber>
-                    xml += " <recurrence cycle=\"monthly\" type=\"daynumber\">\n";
-                    xml += "  <daynumber>" + days[0] + "</daynumber>\n";
-                }
-                else
-                {
-                    xml += " <recurrence cycle=\"monthly\" type=\"weekday\">\n";
-    				// weekday has <daynumber> and <day>
-    				days = recRule.getComponent("BYDAY", {});
-    				if (days && days.length > 0 && days[0] > 0)
-                    {
-                        dayindex = days[0] % 8
-                        daynumber = (days[0] - dayindex) / 8
-                        xml += "  <daynumber>" + daynumber + "</daynumber>\n";
-                        xml += "  <day>" + getKolabXmlDayName(dayindex) + "</day>\n";
-    		        }
-                    else
-                    {
-                        xml += "  <daynumber>-1</daynumber>\n";
-                        if (days && days.length > 0 && days[0] < 0)
-                            dayindex = days[0] * -1 - 8;
-                        else
-                            dayindex = 1;
-                        xml += "  <day>" + getKolabXmlDayName(dayindex) + "</day>\n";
-                    }
+				var days = recRule.getComponent("BYMONTHDAY", {});
+				if (days && days.length > 0 && days[0]) {
+					// daynumber has <daynumber>
+					xml += " <recurrence cycle=\"monthly\" type=\"daynumber\">\n";
+					xml += "  <daynumber>" + days[0] + "</daynumber>\n";
+				}
+				else
+				{
+					xml += " <recurrence cycle=\"monthly\" type=\"weekday\">\n";
+					// weekday has <daynumber> and <day>
+					days = recRule.getComponent("BYDAY", {});
+					if (days && days.length > 0 && days[0] > 0)
+					{
+						dayindex = days[0] % 8
+						daynumber = (days[0] - dayindex) / 8
+						xml += "  <daynumber>" + daynumber + "</daynumber>\n";
+						xml += "  <day>" + getKolabXmlDayName(dayindex) + "</day>\n";
+					}
+					else
+					{
+						xml += "  <daynumber>-1</daynumber>\n";
+						if (days && days.length > 0 && days[0] < 0)
+							dayindex = days[0] * -1 - 8;
+						else
+							dayindex = 1;
+						xml += "  <day>" + getKolabXmlDayName(dayindex) + "</day>\n";
+					}
 				}
 				break;
 			case "YEARLY":
 				// "weekday", monthday" or "yearday"
 				// weekday has <day>, <daynumber> and <month>
 				// FIXME weekday is not yet supported by Lightning
-                //xml += " <recurrence cycle=\"yearly\" type=\"weekday\">\n";
-                //xml += "  <day>tuesday</day>\n";
-                //xml += "  <daynumber>2</daynumber>\n";
-                //xml += "  <month>july</month>\n";
+				//xml += " <recurrence cycle=\"yearly\" type=\"weekday\">\n";
+				//xml += "  <day>tuesday</day>\n";
+				//xml += "  <daynumber>2</daynumber>\n";
+				//xml += "  <month>july</month>\n";
 
 				// monthday has <daynumber> and <month>
 				// FIXME monthday is not yet supported by Lightning
-                //xml += " <recurrence cycle=\"yearly\" type=\"monthday\">\n";
-                //xml += "  <daynumber>2</daynumber>\n";
-                //xml += "  <month>july</month>\n";
+				//xml += " <recurrence cycle=\"yearly\" type=\"monthday\">\n";
+				//xml += "  <daynumber>2</daynumber>\n";
+				//xml += "  <month>july</month>\n";
 
 				// yearday has <daynumber>
-                xml += " <recurrence cycle=\"yearly\" type=\"yearday\">\n";
-                // FIXME we have no matching field in Lighning yet
-                xml += "  <daynumber>1</daynumber>\n";
+				xml += " <recurrence cycle=\"yearly\" type=\"yearday\">\n";
+				// FIXME we have no matching field in Lighning yet
+				xml += "  <daynumber>1</daynumber>\n";
 				break;
 		}
-        xml += "  <interval>" + recRule.interval + "</interval>\n";
-        if (recRule.isByCount)
-        {
-            if (recRule.count > 0)
-                xml += "  <range type=\"number\">" + recRule.count + "</range>\n";
-            else
-                xml += "  <range type=\"none\"/>\n";
-        }
-        else
-        {
-            var endDate = recRule.endDate;
-            if (endDate)
-                xml += "  <range type=\"date\">" + date2String(endDate.jsDate) + "</range>\n";
-            else
-                xml += "  <range type=\"none\"/>\n";
-        }
+		xml += "  <interval>" + recRule.interval + "</interval>\n";
+		if (recRule.isByCount)
+		{
+			if (recRule.count > 0)
+				xml += "  <range type=\"number\">" + recRule.count + "</range>\n";
+			else
+				xml += "  <range type=\"none\"/>\n";
+		}
+		else
+		{
+			var endDate = recRule.endDate;
+			if (endDate)
+				xml += "  <range type=\"date\">" + date2String(endDate.jsDate) + "</range>\n";
+			else
+				xml += "  <range type=\"none\"/>\n";
+		}
 
-        var items = recInfo.getRecurrenceItems({});
-        for (var i in items)
-        {
-            var item = items[i];
-            if (item.isNegative)
-                xml += "  <exclusion>" + calDateTime2String(item.date, true) + "</exclusion>\n";
-        }
-        xml += " </recurrence>\n";
-    }
+		var items = recInfo.getRecurrenceItems({});
+		for (var i in items)
+		{
+			var item = items[i];
+			if (item.isNegative)
+				xml += "  <exclusion>" + calDateTime2String(item.date, true) + "</exclusion>\n";
+		}
+		xml += " </recurrence>\n";
+	}
 
-    var attendees = event.getAttendees({});
-    if (attendees && attendees.length > 0) 
-    {
-        for each (var attendee in attendees) 
-        {
-            mail = attendee.id.replace(/MAILTO:/, '');
-            // FIXME the check for the array size == 1 is a hack to work around a Lightning bug
-            // where isOrganizer() doesn't get true
-            if (attendee.isOrganizer || (attendee.role == "CHAIR") || (attendees.length == 1))
-            {
-                xml += " <organizer>\n";
-                xml += "  <display-name>" + attendee.commonName + "</display-name>\n";
-                xml += "  <smtp-address>" + mail + "</smtp-address>\n";
-                xml += " </organizer>\n";
-                hasOrganizer = true;
-                // FIXME indicator for workaround
-                if (!attendee.isOrganizer) logMessage("Organizer status expected!!!", LOG_CAL + LOG_WARNING); 
-            }
-            else
-            {
-    			var status = "none";
-                switch (attendee.participationStatus)
-                {
-                    case "TENTATIVE":
-                        status = "tentative";
-                        break;
-                    case "ACCEPTED":
-                        status = "accepted";
-                        break;
-                    case "DECLINED":
-                        status = "declined";
-                        break;
-                    case "NEEDS-ACTION":
-                        status = "none";
-                        break;
-                }
-                xml += " <attendee>\n";
-                xml += "  <display-name>" + attendee.commonName + "</display-name>\n";
-                xml += "  <smtp-address>" + mail + "</smtp-address>\n";
-                xml += "  <status>" + status + "</status>\n";
-                xml += "  <request-response>" + (attendee.rsvp ? "true" : "false") + "</request-response>\n";
-                switch (attendee.role)
-                {
-                    case "REQ-PARTICIPANT":
-                        xml += "  <role>required</role>\n";
-                        break;
-                    case "OPT-PARTICIPANT":
-                        xml += "  <role>optional</role>\n";
-                        break;
-                    case "NON-PARTICIPANT":
-                        xml += "  <role>resource</role>\n";
-                        break;
-                    default:
-                        xml += "  <role>required</role>\n";
-                }
-                xml += " </attendee>\n";
-            }
-        }
-    }
+	var attendees = event.getAttendees({});
+	if (attendees && attendees.length > 0) 
+	{
+		for each (var attendee in attendees) 
+		{
+			mail = attendee.id.replace(/MAILTO:/, '');
+			// FIXME the check for the array size == 1 is a hack to work around a Lightning bug
+			// where isOrganizer() doesn't get true
+			if (attendee.isOrganizer || (attendee.role == "CHAIR") || (attendees.length == 1))
+			{
+				xml += " <organizer>\n";
+				xml += "  <display-name>" + attendee.commonName + "</display-name>\n";
+				xml += "  <smtp-address>" + mail + "</smtp-address>\n";
+				xml += " </organizer>\n";
+				hasOrganizer = true;
+				// FIXME indicator for workaround
+				if (!attendee.isOrganizer) logMessage("Organizer status expected!!!", LOG_CAL + LOG_WARNING); 
+			}
+			else
+			{
+				var status = "none";
+				switch (attendee.participationStatus)
+				{
+					case "TENTATIVE":
+						status = "tentative";
+						break;
+					case "ACCEPTED":
+						status = "accepted";
+						break;
+					case "DECLINED":
+						status = "declined";
+						break;
+					case "NEEDS-ACTION":
+						status = "none";
+						break;
+				}
+				xml += " <attendee>\n";
+				xml += "  <display-name>" + attendee.commonName + "</display-name>\n";
+				xml += "  <smtp-address>" + mail + "</smtp-address>\n";
+				xml += "  <status>" + status + "</status>\n";
+				xml += "  <request-response>" + (attendee.rsvp ? "true" : "false") + "</request-response>\n";
+				switch (attendee.role)
+				{
+					case "REQ-PARTICIPANT":
+						xml += "  <role>required</role>\n";
+						break;
+					case "OPT-PARTICIPANT":
+						xml += "  <role>optional</role>\n";
+						break;
+					case "NON-PARTICIPANT":
+						xml += "  <role>resource</role>\n";
+						break;
+					default:
+						xml += "  <role>required</role>\n";
+				}
+				xml += " </attendee>\n";
+			}
+		}
+	}
 
-    if (!hasOrganizer)
-    {
-        // FIXME Try to read the sender data from the settings of the 
-        // account specified in the synckolab settings
-        xml += " <organizer>\n";
-        xml += "  <display-name>" + "Synckolab" + "</display-name>\n";
-        xml += "  <smtp-address>" + "synckolab@no.tld" + "</smtp-address>\n";
-        xml += " </organizer>\n";
-    }
+	if (!hasOrganizer)
+	{
+		// FIXME Try to read the sender data from the settings of the 
+		// account specified in the synckolab settings
+		xml += " <organizer>\n";
+		xml += "  <display-name>" + "Synckolab" + "</display-name>\n";
+		xml += "  <smtp-address>" + "synckolab@no.tld" + "</smtp-address>\n";
+		xml += " </organizer>\n";
+	}
 
-    if (event.getProperty("X-KOLAB-SHOW-TIME-AS"))
-        xml += " <show-time-as>" + event.getProperty("X-KOLAB-SHOW-TIME-AS") + "</show-time-as>\n";
-    else // make sure we mark new events as busy - TODO validate this 
-        xml += " <show-time-as>busy</show-time-as>\n";
-        
-    if (event.getProperty("X-KOLAB-COLOR-LABEL"))
-        xml += " <color-label>" + event.getProperty("X-KOLAB-COLOR-LABEL") + "</color-label>\n";
-    if (event.getProperty("X-KOLAB-CREATOR-DISPLAY-NAME") && event.getProperty("X-KOLAB-CREATOR-SMTP-ADDRESS"))
-    {
-        xml += " <creator>\n";
-        xml += "  <display-name>" + event.getProperty("X-KOLAB-CREATOR-DISPLAY-NAME") + "</display-name>\n";
-        xml += "  <smtp-address>" + event.getProperty("X-KOLAB-CREATOR-SMTP-ADDRESS") + "</smtp-address>\n";
-        xml += " </creator>\n";
-    }
+	if (event.getProperty("X-KOLAB-SHOW-TIME-AS"))
+		xml += " <show-time-as>" + event.getProperty("X-KOLAB-SHOW-TIME-AS") + "</show-time-as>\n";
+	else // make sure we mark new events as busy - TODO validate this 
+		xml += " <show-time-as>busy</show-time-as>\n";
+		
+	if (event.getProperty("X-KOLAB-COLOR-LABEL"))
+		xml += " <color-label>" + event.getProperty("X-KOLAB-COLOR-LABEL") + "</color-label>\n";
+	if (event.getProperty("X-KOLAB-CREATOR-DISPLAY-NAME") && event.getProperty("X-KOLAB-CREATOR-SMTP-ADDRESS"))
+	{
+		xml += " <creator>\n";
+		xml += "  <display-name>" + event.getProperty("X-KOLAB-CREATOR-DISPLAY-NAME") + "</display-name>\n";
+		xml += "  <smtp-address>" + event.getProperty("X-KOLAB-CREATOR-SMTP-ADDRESS") + "</smtp-address>\n";
+		xml += " </creator>\n";
+	}
 
-    xml += " <revision>0</revision>\n";
-    if (syncTasks == true)
-	    xml += "</task>\n"
+	xml += " <revision>0</revision>\n";
+	if (syncTasks == true)
+		xml += "</task>\n"
 	else
-	    xml += "</event>\n"
+		xml += "</event>\n"
 
 	logMessage("Event in ICAL:\n=============\n" + event.icalString + "\n" 
 		+ "Created XML event structure:\n=============================\n" + xml, LOG_CAL + LOG_DEBUG);
@@ -1092,19 +1096,19 @@ function cnv_event2xml (event, skipVolatiles, syncTasks)
  */
 function event2Human (event, syncTasks)
 {
-    var txt = "Summary: " + event.title +"\n";
-    if(syncTasks == false)
-    {
-	    var isAllDay = event.startDate.isDate;
-	    var endDate = event.endDate;
-	    txt += "Start date: " + calDateTime2String(event.startDate, isAllDay) + "\n";
-	    txt += "End date: " + calDateTime2String(endDate, isAllDay) + "\n\n";
-    }
-    if (event.getProperty("DESCRIPTION"))
-       txt += event.getProperty("DESCRIPTION") + "\n\n";
-    if (event.getProperty("LOCATION"))
-       txt += event.getProperty("LOCATION") +"\n";
-    return txt;
+	var txt = "Summary: " + event.title +"\n";
+	if(syncTasks == false)
+	{
+		var isAllDay = event.startDate.isDate;
+		var endDate = event.endDate;
+		txt += "Start date: " + calDateTime2String(event.startDate, isAllDay) + "\n";
+		txt += "End date: " + calDateTime2String(endDate, isAllDay) + "\n\n";
+	}
+	if (event.getProperty("DESCRIPTION"))
+	   txt += event.getProperty("DESCRIPTION") + "\n\n";
+	if (event.getProperty("LOCATION"))
+	   txt += event.getProperty("LOCATION") +"\n";
+	return txt;
 }
 
 /**
@@ -1114,7 +1118,7 @@ function event2Human (event, syncTasks)
  */
 function event2kolabXmlMsg (event, email, syncTasks)
 {
-    var xml = event2xml(event, syncTasks);
+	var xml = event2xml(event, syncTasks);
 	var my_msg = generateMail(event.id, email, "", syncTasks?"application/x-vnd.kolab.task":"application/x-vnd.kolab.event", 
 			true, encode_utf8(xml), event2Human(event, syncTasks));
 	return my_msg;
@@ -1129,10 +1133,10 @@ function event2kolabXmlMsg (event, email, syncTasks)
 
 function ical2event (content, todo)
 {
-    var event;
+	var event;
 	var icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
-                           .getService(Components.interfaces.calIICSService);
-              
+						   .getService(Components.interfaces.calIICSService);
+			  
 	var rootComp = null;
 	try
 	{
@@ -1140,14 +1144,14 @@ function ical2event (content, todo)
 	}
 	catch (ex)
 	{
-	    logMessage("unable to parse ical: " + content, LOG_CAL + LOG_ERROR);
-	    return null;
+		logMessage("unable to parse ical: " + content, LOG_CAL + LOG_ERROR);
+		return null;
 	}
   
-    if (rootComp.componentType == 'VCALENDAR') {
+	if (rootComp.componentType == 'VCALENDAR') {
 		event = rootComp;
 	} else 
-    if (rootComp.componentType == 'VTODO') {
+	if (rootComp.componentType == 'VTODO') {
 		event = rootComp;
 	} else 	{
 		event = rootComp.getFirstSubcomponent('VCALENDAR');
@@ -1161,22 +1165,22 @@ function ical2event (content, todo)
 
 	if (todo)
 		event = Components.classes["@mozilla.org/calendar/todo;1"]
-                      .createInstance(Components.interfaces.calITodo);
-	else                 
+					  .createInstance(Components.interfaces.calITodo);
+	else				 
 		event = Components.classes["@mozilla.org/calendar/event;1"]
-                      .createInstance(Components.interfaces.calIEvent);
-    
-    try
-    {
-    	event.icalComponent = subComp;
-	    logMessage("parsed event: " + event + ":" + event.id, LOG_CAL + LOG_INFO);
+					  .createInstance(Components.interfaces.calIEvent);
+	
+	try
+	{
+		event.icalComponent = subComp;
+		logMessage("parsed event: " + event + ":" + event.id, LOG_CAL + LOG_INFO);
 	}
 	catch (exc)
 	{
-	    logMessage("unable to parse event: \n" + content, LOG_CAL + LOG_ERROR);
-	    return null;
+		logMessage("unable to parse event: \n" + content, LOG_CAL + LOG_ERROR);
+		return null;
 	}
-    return event;
+	return event;
 }
 
 
