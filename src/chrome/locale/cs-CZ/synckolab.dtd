@@ -43,6 +43,8 @@
 <!ENTITY synckolab.settings.ResolveServer	"use server version">
 <!ENTITY synckolab.settings.ResolveClient	"use local version">
 <!ENTITY synckolab.settings.ResolveSmart	"Automatic merge and resolve">
+<!ENTITY synckolab.settings.CalSyncTimeframe	"Ignore entries older than ">
+<!ENTITY synckolab.settings.TimeframeSyncDays	" days">
 
 <!ENTITY synckolab.settings.Updates			"Zkontrolujte dostupné aktualizace na:">
 

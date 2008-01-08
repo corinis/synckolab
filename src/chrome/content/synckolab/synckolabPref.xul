@@ -3,216 +3,266 @@
 <?xul-overlay href="chrome://messenger/content/msgFolderPickerOverlay.xul"?>
 <!DOCTYPE loc SYSTEM "chrome://synckolab/locale/synckolab.dtd">
 
-<dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-        onload="init();"
-        buttons="accept,cancel"
-        ondialogaccept="savePrefs();"
-        persist="screenX screenY"
-        title="SyncKolab 0.5.3">
+<dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" onload="init();"
+    buttons="accept,cancel" ondialogaccept="savePrefs();" persist="screenX screenY"
+    title="SyncKolab 0.5.3">
 
-	<script type="application/x-javascript" src="chrome://synckolab/content/settings.js"/>
-	<script type="application/x-javascript" src="chrome://synckolab/content/calTools.js"/>
-	<script type="application/x-javascript" src="chrome://synckolab/content/tools.js"/>
-	<script type="application/x-javascript" src="chrome://synckolab/content/sha1.js"/>
-	<script type="application/x-javascript" src="chrome://synckolab/content/jslib/jslib.js"/>
-	
-	<script type="application/x-javascript" src="chrome://synckolab/content/jslib/io/io.js"/>
-	<script type="application/x-javascript" src="chrome://synckolab/content/jslib/rdf/rdf.js"/>
-	<script type="application/x-javascript" src="chrome://synckolab/content/jslib/rdf/rdfFile.js"/>
+    <script type="application/x-javascript" src="chrome://synckolab/content/settings.js"/>
+    <script type="application/x-javascript" src="chrome://synckolab/content/calTools.js"/>
+    <script type="application/x-javascript" src="chrome://synckolab/content/tools.js"/>
+    <script type="application/x-javascript" src="chrome://synckolab/content/sha1.js"/>
+    <script type="application/x-javascript" src="chrome://synckolab/content/jslib/jslib.js"/>
 
-	<stringbundleset id="stringbundleset">
-		<stringbundle id="bundle_messenger" src="chrome://messenger/locale/messenger.properties"/>
-		<stringbundle src="chrome://synckolab/locale/synckolab.properties" id="synckolabBundle" /> 
-	</stringbundleset>
+    <script type="application/x-javascript" src="chrome://synckolab/content/jslib/io/io.js"/>
+    <script type="application/x-javascript" src="chrome://synckolab/content/jslib/rdf/rdf.js"/>
+    <script type="application/x-javascript" src="chrome://synckolab/content/jslib/rdf/rdfFile.js"/>
 
-<vbox>
-	<hbox flex="1">	
-		<vbox flex="1">
-			<!--  Tree with all configurations -->
-			<tree hidecolumnpicker="true" id="configTree" flex="1" onselect="setSyncPrefView(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));" width="150">
-				<treecols>
-					<treecol id="name" flex="1" primary="true"/>
-				</treecols>
-				
-				<treechildren>
-				</treechildren>
-			</tree>
-			<button label="&synckolab.settings.add;" oncommand="addConfig();"/>
-			<button label="&synckolab.settings.load;" oncommand="loadConfig();"/>
-			<button label="&synckolab.settings.del;" oncommand="delConfig();"/>
-		</vbox>
-		<splitter collapse="before" resizeafter="farthest">
-			<gripp/>
-		</splitter>
-		
-<tabbox style="border:0px solid #000">
-  <tabpanels id="tabs">
-  	<tabpanel id="welcome" style="border:0px solid #000">
-  	<vbox>
-   		<hbox>
-			<label value="&synckolab.settings.SyncKolabHeader;" style="font-size: 16pt;"/>
-			<label value=" 0.5.3"/>
-		</hbox>
-		<description style="width: 300px">
-			&synckolab.settings.SyncKolabDescription;
-		</description>
-		<description style="width: 300px">
-			&synckolab.settings.DescKolabServer; 
-		</description>
-		
-		<label class="text-link" onclick="LaunchUrl('http://www.kolab.org')">www.kolab.org</label>
+    <stringbundleset id="stringbundleset">
+        <stringbundle id="bundle_messenger" src="chrome://messenger/locale/messenger.properties"/>
+        <stringbundle src="chrome://synckolab/locale/synckolab.properties" id="synckolabBundle"/>
+    </stringbundleset>
 
-		<description style="width: 300px">
-			&synckolab.settings.DescOtherClients;
-		</description>
-		
-		<label class="text-link" onclick="LaunchUrl('http://www.kontact.org')">KDE Client (Kontact) (GPL)</label>
-		<label class="text-link" onclick="LaunchUrl('http://www.horde.org')">Horde Webmail (GPL)</label>
-		<label class="text-link" onclick="LaunchUrl('http://www.thekompany.com/projects/aethera')">Athera (GPL)</label>
-		<label class="text-link" onclick="LaunchUrl('http://www.toltec.co.za')">MS Outlook &synckolab.with; Toltec Connector (&synckolab.proprietary;)</label>
-		<label class="text-link" onclick="LaunchUrl('http://www.konsec.com')">MS Outlook &synckolab.with; KONSEC Konnektor (&synckolab.proprietary;)</label>
-		<label class="text-link" onclick="LaunchUrl('http://www.bynari.net')">MS Outlook &synckolab.with; Bynari (&synckolab.proprietary;)</label>		
+    <vbox flex="1">
+        <hbox flex="1">
+            <vbox flex="1">
+                <!--  Tree with all configurations -->
+                <tree hidecolumnpicker="true" id="configTree" flex="1"
+                    onselect="setSyncPrefView(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));"
+                    width="150">
+                    <treecols>
+                        <treecol id="name" flex="1" primary="true"/>
+                    </treecols>
 
-	    	<separator class="thin"/>
-		<button label="&synckolab.settings.saveAll;" oncommand="saveAllConfig();"/>
-	</vbox>
-  	</tabpanel>
-    <tabpanel id="accountTab" style="border:0px solid #000">
-    	<vbox>
-    		<hbox>
-			<label value="&synckolab.settings.SyncKolabHeader;" style="font-size: 16pt;"/>
-			</hbox>
-			<label value="&synckolab.settings.Updates;"/>
-			<label class="text-link" onclick="LaunchUrl('http://www.gargan.org')">www.gargan.org</label>
-	    	<separator class="thin"/>
-			<description style="width: 300px">
-				&synckolab.settings.AccountDescription;
-			</description>
-	    	<hbox>
-				<label value="&synckolab.settings.Account;"/>
-				<menulist id="ImapAcct" oncommand="setFolders(this.value);" tooltiptext="&synckolab.settings.imapAcctTip;">
-				</menulist> 
-			</hbox>			
-	    	<separator class="thin"/>
-			<description style="width: 300px">
-				&synckolab.settings.SyncIntervalDescription;
-			</description>				
-	    	<hbox>
-				<label value="&synckolab.settings.SyncInterval;"/>
-				<textbox id="syncInterval" maxlength="3" style="width: 30px"/>
-				<label value="&synckolab.settings.SyncIntervalMinutes;"/>
-			</hbox>			
-			
-		    <checkbox id="hiddenWnd" label="&synckolab.settings.HiddenWindow;"/>	    
-			<hbox>
-				<label value="&synckolab.settings.DefaultResolve;"/>
-				<menulist id="DefaultResolve" oncommand="setResolve(this.value);">
-					<menupopup>
-						<menuitem label="&synckolab.settings.ResolveAsk;" value="ask"/>
-						<menuitem label="&synckolab.settings.ResolveServer;" value="server"/>
-						<menuitem label="&synckolab.settings.ResolveClient;" value="client"/>
-						<!-- 
-							smartresolve is a nive to have feature for a future version
-							<menuitem label="&synckolab.settings.ResolveSmart;" value="auto"/>
-						 -->
-					</menupopup>
-				</menulist> 
-			</hbox>
-	    	<separator class="thin"/>
-			<button label="&synckolab.settings.saveSingle;" oncommand="saveSingleConfig();"/>
-	    	
-    	</vbox>
-    </tabpanel>
-    <tabpanel id="contactTab" style="border:0px solid #000">
-    
-  <vbox>
-     
-      <label value="&synckolab.settings.abook;"/>
-			<menulist id="conURL">
-			</menulist> 
-    	<separator class="thin"/>
+                    <treechildren> </treechildren>
+                </tree>
+                <hbox>
+                    <button image="url(chrome://synckolab/skin/new.png)" oncommand="addConfig();"/>
+                    <button image="url(chrome://synckolab/skin/import.png)"
+                        oncommand="loadConfig();"/>
+                    <button image="url(chrome://synckolab/skin/trash.png)"
+                        oncommand="delConfig();"/>
+                </hbox>
+            </vbox>
+            <splitter collapse="before" resizeafter="farthest">
+                <gripp/>
+            </splitter>
 
-      <tree flex="7" id="conImapFolder" rows="7" height="150" width="250" hidecolumnpicker="true" seltype="single" onselect="setFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
-      	<treecols>
-		      <treecol id="conFolder" label="&synckolab.settings.ContactFolder;" primary="true" flex="1"/>
-  			</treecols>
-  			
-      </tree>
+            <tabbox style="border:0px solid #000">
+                <tabpanels id="tabs">
+                    <tabpanel id="welcome" style="border:0px solid #000">
+                        <vbox>
+                            <hbox>
+                                <label value="&synckolab.settings.SyncKolabHeader;"
+                                    style="font-size: 16pt;"/>
+                                <label value=" 0.5.3"/>
+                            </hbox>
+                            <description style="width: 300px">
+                                &synckolab.settings.SyncKolabDescription; </description>
+                            <description style="width: 300px">
+                                &synckolab.settings.DescKolabServer; </description>
 
-      <label value="&synckolab.settings.ContactFormat;"/>
-			<menulist id="conFormat">
-			</menulist> 
-    	<separator class="thin"/>
-      
-      <checkbox id="saveToContactImap" label="&synckolab.settings.SaveToImap;" tooltiptext="&synckolab.settings.SaveToImapTip;"/>
-    <separator class="thin"/>
-      <checkbox id="syncContacts" label="&synckolab.settings.SyncContacts;" tooltiptext="&synckolab.settings.SyncContactsTip;" oncommand="setControlStateContacts(this.checked)"/>
-      
-  </vbox>
-  
- 		</tabpanel>
- 		
-    <tabpanel id="calTab" style="border:0px solid #000">
-    
-  <vbox>
-      
-      <label value="&synckolab.settings.Calendar;"/>
-			<menulist id="calURL">
-			</menulist> 
+                            <label class="text-link" onclick="LaunchUrl('http://www.kolab.org')"
+                                >www.kolab.org</label>
 
-    	<separator class="thin"/>
-      
-      <tree flex="7" id="calImapFolder" rows="7" height="150" width="250" hidecolumnpicker="true" seltype="single" onselect="setCalFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
-      	<treecols>
-		      <treecol id="calFolder" label="&synckolab.settings.CalendarFolder;" primary="true" flex="1"/>
-  			</treecols>
-      </tree>
+                            <description style="width: 300px">
+                                &synckolab.settings.DescOtherClients; </description>
 
-      <label value="&synckolab.settings.CalendarFormat;"/>
-			<menulist id="calFormat">
-			</menulist> 
-      
-      <checkbox id="saveToCalendarImap" label="&synckolab.settings.SaveToImap;" tooltiptext="&synckolab.settings.SaveToImapTip;"/>
-    <separator class="thin"/>
-      <checkbox id="syncCalendar" label="&synckolab.settings.SyncCalendar;" tooltiptext="&synckolab.settings.SyncCalendarTip;" oncommand="setControlStateCalendar(this.checked)"/>
-  </vbox>
+                            <label class="text-link" onclick="LaunchUrl('http://www.kontact.org')"
+                                >KDE Client (Kontact) (GPL)</label>
+                            <label class="text-link" onclick="LaunchUrl('http://www.horde.org')"
+                                >Horde Webmail (GPL)</label>
+                            <label class="text-link"
+                                onclick="LaunchUrl('http://www.thekompany.com/projects/aethera')"
+                                >Athera (GPL)</label>
+                            <label class="text-link" onclick="LaunchUrl('http://www.toltec.co.za')"
+                                >MS Outlook &synckolab.with; Toltec Connector
+                                (&synckolab.proprietary;)</label>
+                            <label class="text-link" onclick="LaunchUrl('http://www.konsec.com')">MS
+                                Outlook &synckolab.with; KONSEC Konnektor
+                                (&synckolab.proprietary;)</label>
+                            <label class="text-link" onclick="LaunchUrl('http://www.bynari.net')">MS
+                                Outlook &synckolab.with; Bynari (&synckolab.proprietary;)</label>
 
- 		</tabpanel>
-	    <tabpanel id="taskTab" style="border:0px solid #000">
+                            <separator class="thin"/>
+                            <button label="&synckolab.settings.saveAll;"
+                                oncommand="saveAllConfig();"/>
+                        </vbox>
+                    </tabpanel>
+                    <tabpanel id="accountTab" style="border:0px solid #000">
+                        <vbox>
+                            <hbox>
+                                <label value="&synckolab.settings.SyncKolabHeader;"
+                                    style="font-size: 16pt;"/>
+                            </hbox>
+                            <label value="&synckolab.settings.Updates;"/>
+                            <label class="text-link" onclick="LaunchUrl('http://www.gargan.org')"
+                                >www.gargan.org</label>
+                            <separator class="thin"/>
+                            <description style="width: 300px">
+                                &synckolab.settings.AccountDescription; </description>
+                            <hbox>
+                                <label value="&synckolab.settings.Account;"/>
+                                <menulist id="ImapAcct" oncommand="setFolders(this.value);"
+                                    tooltiptext="&synckolab.settings.imapAcctTip;"> </menulist>
+                            </hbox>
+                            <separator class="thin"/>
+                            <description style="width: 300px">
+                                &synckolab.settings.SyncIntervalDescription; </description>
+                            <hbox>
+                                <label value="&synckolab.settings.SyncInterval;"/>
+                                <textbox id="syncInterval" maxlength="3" style="width: 30px"/>
+                                <label value="&synckolab.settings.SyncIntervalMinutes;"/>
+                            </hbox>
 
-  <vbox>
-      
-      <label value="&synckolab.settings.Tasks;"/>
-			<menulist id="taskURL">
-			</menulist> 
+                            <checkbox id="hiddenWnd" label="&synckolab.settings.HiddenWindow;"/>
+                            <hbox>
+                                <label value="&synckolab.settings.DefaultResolve;"/>
+                                <menulist id="DefaultResolve" oncommand="setResolve(this.value);">
+                                    <menupopup>
+                                        <menuitem label="&synckolab.settings.ResolveAsk;"
+                                            value="ask"/>
+                                        <menuitem label="&synckolab.settings.ResolveServer;"
+                                            value="server"/>
+                                        <menuitem label="&synckolab.settings.ResolveClient;"
+                                            value="client"/>
+                                        <!-- 
+                                            smartresolve is a nive to have feature for a future version
+                                            <menuitem label="&synckolab.settings.ResolveSmart;" value="auto"/>
+                                        -->
+                                    </menupopup>
+                                </menulist>
+                            </hbox>
+                            <separator class="thin"/>
+                            <button label="&synckolab.settings.saveSingle;"
+                                oncommand="saveSingleConfig();"/>
 
-    	<separator class="thin"/>
-      
-      <tree flex="7" id="taskImapFolder" rows="7" height="150" width="250" hidecolumnpicker="true" seltype="single" onselect="setTaskFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
-      	<treecols>
-		      <treecol id="taskFolder" label="&synckolab.settings.TaskFolder;" primary="true" flex="1"/>
-  			</treecols>
-      </tree>
+                        </vbox>
+                    </tabpanel>
+                    <tabpanel id="contactTab" style="border:0px solid #000">
 
-      <label value="&synckolab.settings.TaskFormat;"/>
-			<menulist id="taskFormat">
-			</menulist> 
-      
-      <checkbox id="saveToTaskImap" label="&synckolab.settings.SaveToImap;" tooltiptext="&synckolab.settings.SaveToImapTip;"/>
-    <separator class="thin"/>
-      <checkbox id="syncTasks" label="&synckolab.settings.SyncTasks;" tooltiptext="&synckolab.settings.SyncTasksTip;" oncommand="setControlStateTasks(this.checked)"/>
-  </vbox>
+                        <vbox>
 
-    	</tabpanel>
+                            <label value="&synckolab.settings.abook;"/>
+                            <menulist id="conURL"> </menulist>
+                            <separator class="thin"/>
 
-  </tabpanels>
-  
-</tabbox>
+                            <tree flex="7" id="conImapFolder" rows="7" height="150" width="250"
+                                hidecolumnpicker="true" seltype="single"
+                                onselect="setFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
+                                <treecols>
+                                    <treecol id="conFolder"
+                                        label="&synckolab.settings.ContactFolder;"
+                                        primary="true" flex="1"/>
+                                </treecols>
 
-	</hbox>
-	<hbox>
+                            </tree>
 
-	    <checkbox id="closeWnd" label="&synckolab.settings.CloseWindow;"/>	    
-    </hbox>
-</vbox>	
+							<hbox>
+	                            <label value="&synckolab.settings.ContactFormat;"/>
+    	                        <menulist id="conFormat"> </menulist>
+    	                    </hbox>
+    	                    
+                            <separator class="thin"/>
+
+                            <checkbox id="saveToContactImap"
+                                label="&synckolab.settings.SaveToImap;"
+                                tooltiptext="&synckolab.settings.SaveToImapTip;"/>
+                            <separator class="thin"/>
+                            <checkbox id="syncContacts"
+                                label="&synckolab.settings.SyncContacts;"
+                                tooltiptext="&synckolab.settings.SyncContactsTip;"
+                                oncommand="setControlStateContacts(this.checked)"/>
+
+                        </vbox>
+
+                    </tabpanel>
+
+                    <tabpanel id="calTab" style="border:0px solid #000">
+
+                        <vbox>
+
+                            <label value="&synckolab.settings.Calendar;"/>
+                            <menulist id="calURL"> </menulist>
+
+                            <separator class="thin"/>
+
+                            <tree flex="7" id="calImapFolder" rows="7" height="150" width="250"
+                                hidecolumnpicker="true" seltype="single"
+                                onselect="setCalFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
+                                <treecols>
+                                    <treecol id="calFolder"
+                                        label="&synckolab.settings.CalendarFolder;"
+                                        primary="true" flex="1"/>
+                                </treecols>
+                            </tree>                            
+							<hbox>
+	                            <label value="&synckolab.settings.CalendarFormat;"/>
+	                            <menulist id="calFormat"> </menulist>
+                            </hbox>
+    	                    <hbox>
+    	                    	<label value="&synckolab.settings.CalSyncTimeframe;"/>
+    	                    	<textbox id="calSyncTimeframe" maxlength="4" style="width: 30px"/>
+    	                    	<label value="&synckolab.settings.TimeframeSyncDays;"/>
+    	                    </hbox>
+
+                            <checkbox id="saveToCalendarImap"
+                                label="&synckolab.settings.SaveToImap;"
+                                tooltiptext="&synckolab.settings.SaveToImapTip;"/>
+                            <separator class="thin"/>
+                            <checkbox id="syncCalendar"
+                                label="&synckolab.settings.SyncCalendar;"
+                                tooltiptext="&synckolab.settings.SyncCalendarTip;"
+                                oncommand="setControlStateCalendar(this.checked)"/>
+                        </vbox>
+
+                    </tabpanel>
+                    <tabpanel id="taskTab" style="border:0px solid #000">
+
+                        <vbox>
+
+                            <label value="&synckolab.settings.Tasks;"/>
+                            <menulist id="taskURL"> </menulist>
+
+                            <separator class="thin"/>
+
+                            <tree flex="7" id="taskImapFolder" rows="7" height="150" width="250"
+                                hidecolumnpicker="true" seltype="single"
+                                onselect="setTaskFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
+                                <treecols>
+                                    <treecol id="taskFolder"
+                                        label="&synckolab.settings.TaskFolder;" primary="true"
+                                        flex="1"/>
+                                </treecols>
+                            </tree>
+
+							<hbox>
+	                            <label value="&synckolab.settings.TaskFormat;"/>
+    	                        <menulist id="taskFormat"> </menulist>
+    	                    </hbox>
+    	                    <hbox>
+    	                    	<label value="&synckolab.settings.CalSyncTimeframe;"/>
+    	                    	<textbox id="taskSyncTimeframe" maxlength="4" style="width: 30px"/>
+    	                    	<label value="&synckolab.settings.TimeframeSyncDays;"/>
+    	                    </hbox>
+
+                            <checkbox id="saveToTaskImap"
+                                label="&synckolab.settings.SaveToImap;"
+                                tooltiptext="&synckolab.settings.SaveToImapTip;"/>
+                            <separator class="thin"/>
+                            <checkbox id="syncTasks" label="&synckolab.settings.SyncTasks;"
+                                tooltiptext="&synckolab.settings.SyncTasksTip;"
+                                oncommand="setControlStateTasks(this.checked)"/>
+                        </vbox>
+
+                    </tabpanel>
+
+                </tabpanels>
+
+            </tabbox>
+
+        </hbox>
+        <hbox>
+            <checkbox id="closeWnd" label="&synckolab.settings.CloseWindow;"/>
+        </hbox>
+    </vbox>
 </dialog>

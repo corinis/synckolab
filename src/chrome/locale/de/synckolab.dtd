@@ -45,6 +45,8 @@
 <!ENTITY synckolab.settings.ResolveServer	"Server Version verwenden">
 <!ENTITY synckolab.settings.ResolveClient	"Lokale Version verwenden">
 <!ENTITY synckolab.settings.ResolveSmart	"Automatisch entscheiden">
+<!ENTITY synckolab.settings.CalSyncTimeframe	"Einträge alter als ">
+<!ENTITY synckolab.settings.TimeframeSyncDays	" Tage ignorieren.">
 
 <!ENTITY synckolab.settings.Updates			"Für Updates besuchen Sie:">
 

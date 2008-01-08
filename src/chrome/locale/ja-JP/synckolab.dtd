@@ -43,6 +43,8 @@
 <!ENTITY synckolab.settings.ResolveServer	"Server always wins">
 <!ENTITY synckolab.settings.ResolveClient	"Client always wins">
 <!ENTITY synckolab.settings.ResolveSmart	"Automatic merge and resolve">
+<!ENTITY synckolab.settings.CalSyncTimeframe	"Ignore entries older than ">
+<!ENTITY synckolab.settings.TimeframeSyncDays	" days">
 
 <!ENTITY synckolab.settings.Updates			"SyncKolabの新しいバージョンは，次のURLで公開されます:">
 
