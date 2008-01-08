@@ -47,7 +47,7 @@
                 <gripp/>
             </splitter>
 
-            <tabbox style="border:0px solid #000">
+            <tabbox style="border:0px solid #000" flex="1">
                 <tabpanels id="tabs">
                     <tabpanel id="welcome" style="border:0px solid #000">
                         <vbox>
