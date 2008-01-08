@@ -36,3 +36,15 @@ toolbar[iconsize="small"] #SyncKolab-button[disabled] {
   -moz-image-region: rect(32px 16px 48px 0px);
 }
 
+/* icons in configuration */
+#newConfig {
+	 list-style-image: url(chrome://synckolab/skin/new.png);
+}
+
+#loadConfig {
+	list-style-image: url(chrome://synckolab/skin/import.png);
+}
+
+#delConfig {
+	list-style-image: url(chrome://synckolab/skin/trash.png);
+}

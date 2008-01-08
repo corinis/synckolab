@@ -1,5 +1,7 @@
 <?xml version="1.0"?> 
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://synckolab/skin/synckolab.css" type="text/css"?>
+
 <?xul-overlay href="chrome://messenger/content/msgFolderPickerOverlay.xul"?>
 <!DOCTYPE loc SYSTEM "chrome://synckolab/locale/synckolab.dtd">
 
@@ -36,11 +38,9 @@
                     <treechildren> </treechildren>
                 </tree>
                 <hbox>
-                    <button image="url(chrome://synckolab/skin/new.png)" oncommand="addConfig();"/>
-                    <button image="url(chrome://synckolab/skin/import.png)"
-                        oncommand="loadConfig();"/>
-                    <button image="url(chrome://synckolab/skin/trash.png)"
-                        oncommand="delConfig();"/>
+                    <button id="newConfig" oncommand="addConfig();"/>
+                    <button id="loadConfig" oncommand="loadConfig();"/>
+                    <button id="delConfig" oncommand="delConfig();"/>
                 </hbox>
             </vbox>
             <splitter collapse="before" resizeafter="farthest">
