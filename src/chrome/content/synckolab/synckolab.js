@@ -579,8 +579,41 @@ function getMessage ()
 		updateContentAfterSave ();
     	return;
 	}
-	// check message isnt deleted
-	logMessage("Message " + cur.mime2DecodedSubject + " has flags: " + cur.flags, LOG_DEBUG);
+	
+	// check message flags
+	logMessage("Message " + cur.mime2DecodedSubject + " (dateInSeconds: " + cur.dateInSeconds + ") has flags: " + cur.flags, LOG_DEBUG);
+	
+	// check if we can ignore this message because its too old (0=take all into accout)	
+	if(gSync.gSyncTimeFrame > 0)
+	{
+		// now get the correct startdate (convert in milliseconds)
+		if ((cur.dateInSeconds + (gSync.gSyncTimeFrame * 86400))*1000 < (new Date()).getTime())
+		{
+			logMessage("Message " + cur.mime2DecodedSubject + " will be ignored (too old) Now: " + (new Date()).getTime(), LOG_INFO);
+			// skip current and process next nessage	
+			curMessage++;
+			if (curMessage <= totalMessages)
+			{
+				var curpointer = 5 + (55*(curMessage/totalMessages));
+				meter.setAttribute("value", curpointer + "%");
+				if (gWnd != null)
+					curCounter.setAttribute("value", curMessage + "/" + totalMessages);
+				else
+					curCounter.setAttribute("label", curMessage + "/" + totalMessages);
+				
+				// next message
+				window.setTimeout(getMessage, SWITCH_TIME);	
+			}
+			else
+			{
+				window.setTimeout(parseFolderToAddressFinish, SWITCH_TIME);	
+			}
+			return;
+		}
+	}
+//	PRTime?
+//	cur.date
+	
 	
 	// check if we actually have to process this message, or if this is already known
 	
@@ -725,8 +758,8 @@ function parseMessageRunner ()
 		syncMessageDb[gSyncFileKey][3] = gSync.gConfig;
 		syncMessageDb[gSyncFileKey][4] = gSync.gCurUID;
 	}
-	
-	
+
+	// process next nessage	
 	curMessage++;
 	if (curMessage <= totalMessages)
 	{

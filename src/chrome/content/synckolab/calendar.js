@@ -36,10 +36,11 @@
  * create email content and called with email content (complete 
  * body) to generate add/update contacts in the calendar. 
  * 
- * This WILL be replaced and put into a real calendar provider
- * (As described by the Mozilla Calendar project)
+ * Notice:
+ *   - all events/tasks older then today-gSyncTimeFrame(in days) will be ignored completely (not deleted, modified, added,...)
+ *   - all email messages with a date-header older than today-gSyncTimeFrame(in days) will also be ignored!
+ *   - 0=take all messages
  */
-
 var syncCalendar = {
 	gConflictResolve : "ask", // conflict resolution (default: ask what to do)
 
@@ -53,6 +54,7 @@ var syncCalendar = {
 	gCurEvent: 0,
 	folder: '', // the contact folder type nsIMsgFolder
 	folderMsgURI: '', // the message uri
+	gSyncTimeFrame: 180, // time frame to take into account (all older than X days will be ignored completely)
 	gCalendarName: '', // the calendar name
 	gCalendar: '', // the calendar
 	gCalendarEvents: '', // all events from the calendar
@@ -111,8 +113,13 @@ var syncCalendar = {
 					return;
 				this.folderPath = pref.getCharPref("SyncKolab."+config+".TaskFolderPath");
 				this.gCalendarName = pref.getCharPref("SyncKolab."+config+".Tasks");
-				this.format = pref.getCharPref("SyncKolab."+config+".TaskFormat");			
+				this.format = pref.getCharPref("SyncKolab."+config+".TaskFormat");
 				this.gSaveImap = pref.getBoolPref("SyncKolab."+config+".saveToTaskImap");
+				// use defualt timeframe if not specified
+				try {
+				this.gSyncTimeFrame = parseInt(pref.getCharPref("SyncKolab."+config+".taskSyncTimeframe");
+				}
+				catch (te) {}
 			}
 			else
 			{
@@ -124,6 +131,12 @@ var syncCalendar = {
 				this.gCalendarName = pref.getCharPref("SyncKolab."+config+".Calendar");
 				this.format = pref.getCharPref("SyncKolab."+config+".CalendarFormat");			
 				this.gSaveImap = pref.getBoolPref("SyncKolab."+config+".saveToCalendarImap");
+				// use defualt timeframe if not specified
+				try
+				{
+				this.gSyncTimeFrame = parseInt(pref.getCharPref("SyncKolab."+config+".calSyncTimeframe");
+				}
+				catch (et) {} 
 			}			
 		} catch(e) {
 			logMessage("Error on reading config " + config + "\n" + e, LOG_ERROR);
@@ -518,6 +531,8 @@ var syncCalendar = {
 	
 	/**
 	 * read the next todo/event and return the content if update needed
+	 * @return null to skip this one completely
+	 * @return "done" to specify that the sync is finished
 	 */
 	nextUpdate: function () {
 		logMessage("next update...", LOG_CAL + LOG_DEBUG);
@@ -537,6 +552,14 @@ var syncCalendar = {
 			var writeCur = true;
 		    
 			logMessage ("nextUpdate for event:" + cur.id, LOG_CAL + LOG_DEBUG);
+			
+			// check if we can skip this entry
+			var endDate = (this.syncTasks==true)?event.dueDate.jsDate:event.endDate.jsDate;
+			if (endDate.getTime() + (this.gSyncTimeFrame * 86400 *1000) < (new Date()).getTime() )
+			{
+					logMessage("skipping event because its too old: " + cur.id, LOG_CAL + LOG_INFO);
+					return null;
+			}
 
 			// check if we have this uid in the messages, skip it if it
 			// has been processed already when reading the IMAP msgs

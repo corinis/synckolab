@@ -53,6 +53,7 @@ var syncAddressBook = {
 	gCards: '', // remember the current card list
 	folder: '', // the contact folder type nsIMsgFolder
 	folderMsgURI: '', // the message uri
+	gSyncTimeFrame: 0, // time frame to take into account (for adress book always 0=all)
 	format: 'VCard', // the format VCard/Xml
 	folderMessageUids: '',
 	

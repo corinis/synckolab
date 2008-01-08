@@ -422,7 +422,7 @@ function prefillFields() {
 		// get the calendar manager to find the right files
 		for( var i = 0; i < calendars.length; i++ )
 	    {
-    		// only non-remote calendars - hey we are already doin remote sync :)
+    		// only non-remote calendars - hey we are already doin remote sync here :)
 			var abchild = document.createElement("menuitem");
 			abpopup.appendChild(abchild);
 			abchild.setAttribute("label", calendars[i].name);
@@ -663,7 +663,15 @@ function changeConfig (config)
 				}
 				cur = cur.nextSibling;
 			}
-	
+			
+			// per default: sync last 6 monts (~180 days)
+			document.getElementById ("calSyncTimeframe").value = "180";
+			try
+			{
+				document.getElementById ("calSyncTimeframe").value = pref.getCharPref("SyncKolab."+config+".calSyncTimeframe");
+			}	
+			catch (ex) {}
+			
 			document.getElementById ("saveToCalendarImap").checked = true;
 			try
 			{
@@ -740,6 +748,14 @@ function changeConfig (config)
 				}
 				cur = cur.nextSibling;
 			}
+	
+			// per default: sync last 6 monts (~180 days)
+			document.getElementById ("taskSyncTimeframe").value = "180";
+			try
+			{
+				document.getElementById ("taskSyncTimeframe").value = pref.getCharPref("SyncKolab."+config+".taskSyncTimeframe");
+			}	
+			catch (ex) {}
 	
 			document.getElementById ("saveToTaskImap").checked = true;
 			try
@@ -1087,11 +1103,13 @@ function saveAllPrefs (configName) {
 		pref.setCharPref("SyncKolab."+config+".CalendarFormat", document.getElementById ("calFormat").value);
 		pref.setBoolPref("SyncKolab."+config+".saveToCalendarImap", document.getElementById ("saveToCalendarImap").checked);
 		pref.setBoolPref("SyncKolab."+config+".syncCalendar", document.getElementById ("syncCalendar").checked);
+		pref.setCharPref("SyncKolab."+config+".calSyncTimeframe", document.getElementById("calSyncTimeframe").value);
 
 		pref.setCharPref("SyncKolab."+config+".Tasks", document.getElementById ("taskURL").value);
 		pref.setCharPref("SyncKolab."+config+".TaskFormat", document.getElementById ("taskFormat").value);
 		pref.setBoolPref("SyncKolab."+config+".saveToTaskImap", document.getElementById ("saveToTaskImap").checked);
 		pref.setBoolPref("SyncKolab."+config+".syncTasks", document.getElementById ("syncTasks").checked);
+		pref.setCharPref("SyncKolab."+config+".taskSyncTimeframe", document.getElementById("taskSyncTimeframe").value);
 	}
 }
 
