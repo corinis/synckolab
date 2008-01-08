@@ -78,7 +78,7 @@ var syncCalendar = {
 	syncTasks: false,	// sync tasks if true, otherwise sync events
 	
 	isCal: function() {
-		return true
+		return true;
 	},
 	
 	// return tasks/calendar for correct foldernames
@@ -89,6 +89,8 @@ var syncCalendar = {
 	init: function(config) {
 		if (!isCalendarAvailable ())
 			return;
+
+		logMessage("Initialising calendar...", LOG_INFO);
 			
 		this.forceServerCopy = false;
 		this.forceLocalCopy = false;
@@ -117,9 +119,11 @@ var syncCalendar = {
 				this.gSaveImap = pref.getBoolPref("SyncKolab."+config+".saveToTaskImap");
 				// use defualt timeframe if not specified
 				try {
-				this.gSyncTimeFrame = parseInt(pref.getCharPref("SyncKolab."+config+".taskSyncTimeframe");
+					this.gSyncTimeFrame = parseInt(pref.getCharPref("SyncKolab."+config+".taskSyncTimeframe"));
 				}
-				catch (te) {}
+				catch (ignore) {
+					logMessage("Sync Time frame is not specified", LOG_WARNING);
+				}
 			}
 			else
 			{
@@ -134,9 +138,11 @@ var syncCalendar = {
 				// use defualt timeframe if not specified
 				try
 				{
-				this.gSyncTimeFrame = parseInt(pref.getCharPref("SyncKolab."+config+".calSyncTimeframe");
+					this.gSyncTimeFrame = parseInt(pref.getCharPref("SyncKolab."+config+".calSyncTimeframe"));
 				}
-				catch (et) {} 
+				catch (ignore) {
+					logMessage("Sync Time frame is not specified", LOG_WARNING);
+				}			 
 			}			
 		} catch(e) {
 			logMessage("Error on reading config " + config + "\n" + e, LOG_ERROR);

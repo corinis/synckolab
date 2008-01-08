@@ -502,6 +502,7 @@ var syncAddressBook = {
 		catch (ext)
 		{
 			// we are done
+			logMessage("Finished syncing adress book", LOG_INFO);
 			return "done";
 		}
 		
@@ -512,6 +513,7 @@ var syncAddressBook = {
 		// mailing lists are nsIABDirectory 
 		if (cur.isMailList)
 		{
+			logMessage("GOT A MAILING LIST!!!", LOG_INFO);
 			var cn = this.gAddressBook.childNodes;
 			var ABook = cn.getNext();
 			while (ABook != null)

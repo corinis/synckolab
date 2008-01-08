@@ -28,8 +28,8 @@
 	
 	<script type="application/x-javascript" src="chrome://global/content/nsUserSettings.js"/>
     <script type="application/x-javascript" src="chrome://synckolab/content/synckolab.js"/>
-    <script type="application/x-javascript" src="chrome://synckolab/content/addressbook.js"/>
     <script type="application/x-javascript" src="chrome://synckolab/content/calendar.js"/>
+    <script type="application/x-javascript" src="chrome://synckolab/content/addressbook.js"/>
 	<script type="application/x-javascript" src="chrome://synckolab/content/sha1.js"/>
     <script type="application/x-javascript" src="chrome://synckolab/content/tools.js"/>
     <script type="application/x-javascript" src="chrome://synckolab/content/contactTools.js"/>

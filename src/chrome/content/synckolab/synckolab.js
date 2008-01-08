@@ -282,7 +282,7 @@ function nextSync()
 		if (!syncAddressBook.gSync)
 		{
 			logMessage("Skipping adressbook config " + syncConfigs[curConConfig], LOG_DEBUG);
-			window.setTimeout(nextSync, SWITCH_TIME, syncCalendar);	
+			window.setTimeout(nextSync, SWITCH_TIME);	
 			return;
 		}
 		else
@@ -586,6 +586,8 @@ function getMessage ()
 	// check if we can ignore this message because its too old (0=take all into accout)	
 	if(gSync.gSyncTimeFrame > 0)
 	{
+		logMessage("Checking if message might be too old for now " + (new Date()).getTime(), LOG_DEBUG);
+
 		// now get the correct startdate (convert in milliseconds)
 		if ((cur.dateInSeconds + (gSync.gSyncTimeFrame * 86400))*1000 < (new Date()).getTime())
 		{
@@ -1019,6 +1021,7 @@ function writeContentAfterSave ()
 		return;
 	}
 
+	logMessage("Setting all messages to read...", LOG_INFO);
 	// before done, set all unread messages to read in the sync folder
 	gMessages = gSync.folder.getMessages(msgWindow);	
 	while (gMessages.hasMoreElements ())
@@ -1032,7 +1035,8 @@ function writeContentAfterSave ()
 	gMessages = null;
 	
 
-	setTimeout(compact, 1000);  // wait for a second
+	logMessage("Running compact", LOG_INFO);
+	window.setTimeout(compact, 2000);  // wait for a second
 }
 
 function compact() {
@@ -1042,7 +1046,8 @@ function compact() {
 	} catch(e) { }
 	
 	gSync.doneParsing();
-	window.setTimeout(nextSync, SWITCH_TIME, syncCalendar);	
+	logMessage("nextSync", LOG_INFO);
+	window.setTimeout(nextSync, SWITCH_TIME);	
 }
 
 
