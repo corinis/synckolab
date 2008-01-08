@@ -467,13 +467,11 @@ function xml2Event (xml, extraFields, event)
 						setKolabItemProperty(event, "DESCRIPTION", decode4XML(cur.firstChild.data));
 					break;
 		
-				// creator should be=organizer - shouldnt it?			
 				case "CREATOR":
-/*
 			  		setKolabItemProperty(event, "X-KOLAB-CREATOR-DISPLAY-NAME", getXmlResult(cur, "DISPLAY-NAME", ""));
 			  		setKolabItemProperty(event, "X-KOLAB-CREATOR-SMTP-ADDRESS", getXmlResult(cur, "SMTP-ADDRESS", ""));
 					break;
-	*/				
+					
 				case "ORGANIZER":
 					organizer = Components.classes["@mozilla.org/calendar/attendee;1"]
 										  .createInstance(Components.interfaces.calIAttendee);
