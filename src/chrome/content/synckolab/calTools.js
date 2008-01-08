@@ -349,7 +349,7 @@ function xml2Event (xml, extraFields, event)
 					// FIXME - for faster debugging only, so you can see the 
 					// uid resp. the msg subject in the URL field when opening the event, 
 					// you can find the appropriate msg very easily afterwards
-					event.setProperty("URL", decode4XML(cur.firstChild.data));
+					setKolabItemProperty(event, "URL", decode4XML(cur.firstChild.data));
 					break;
 					
 				case "CREATION-DATE":
@@ -358,7 +358,7 @@ function xml2Event (xml, extraFields, event)
 
 					var s = decode4XML(cur.firstChild.data);
 					// 2005-03-30T15:28:52Z
-					event.setProperty("CREATED", string2CalDateTime(s, true));
+					setKolabItemProperty(event, "CREATED", string2CalDateTime(s, true));
 					break;						
 
 				case "LAST-MODIFICATION-DATE":
@@ -367,9 +367,11 @@ function xml2Event (xml, extraFields, event)
 
 					var s = decode4XML(cur.firstChild.data);
 					// 2005-03-30T15:28:52Z
-					event.setProperty("LAST-MODIFIED", string2CalDateTime(s, true));
+					setKolabItemProperty(event, "LAST-MODIFIED", string2CalDateTime(s, true));
 					break;						
 
+				// entry date and start date can be handled the same way 
+				case "ENTRY-DATE":
 				case "START-DATE":
 					if (!cur.firstChild)
 						break;
@@ -378,113 +380,100 @@ function xml2Event (xml, extraFields, event)
 					// 2005-03-30T15:28:52Z
 					if (s.indexOf(":") == -1)
 					{
+						var cDate = string2CalDate(s);
+						cDate.isDate = true;
 						// date values witout time part specify a full day event
 						if (syncTasks == true)
-						{
-							event.entryDate = string2CalDate(s);
-							event.entryDate.isDate = true;
-						}
+							setKolabItemProperty(event, "entryDate", cDate);
 						else
-						{						
-							event.startDate = string2CalDate(s);
-							event.startDate.isDate = true;
-						}
+							setKolabItemProperty(event, "startDate", cDate);
 					}
 					else
 					{
-						if (syncTasks == false)
-							event.startDate = string2CalDateTime(s, true);
+						if (syncTasks == true)
+							setKolabItemProperty(event, "entryDate", string2CalDateTime(s, true));
 						else
-							event.entryDate = string2CalDateTime(s, true);
+							setKolabItemProperty(event, "startDate", string2CalDateTime(s, true));
 					}
 					break;						
 
+				// hande end date and due-date, completed-date the same way (completed date also sets the percent complete to 100)
+				case "COMPLETED-DATE":
+					if (syncTasks == true)
+						setKolabItemProperty(event, "PERCENT-COMPLETE", 100);
+				
+				case "DUE-DATE":
 				case "END-DATE":
 					if (!cur.firstChild)
 						break;
 
 					var s = decode4XML(cur.firstChild.data);
 					// 2005-03-30T15:28:52Z
-					if (s.indexOf(":") == -1)
+					if (s.indexOf(":") == -1) // full time event
 					{
 						// date values witout time part specify a full day event
-						event.endDate = string2CalDate(s);
+						var cDate = string2CalDate(s);
 						// Kolab uses for 1-day-event:
 						// startdate = day_x, enddate = day_x
 						// Sunbird uses for 1-day-event:
 						// startdate = day_x, enddate = day_x + 1
-						var tmp_date = event.endDate.jsDate;
+						var tmp_date = cDate.jsDate;
 						tmp_date.setTime(tmp_date.getTime() + 24*60*60000);
-						event.endDate.jsDate = tmp_date;
-						event.endDate.isDate = true;
-					}
-					else
-						event.endDate = string2CalDateTime(s, true);
-					break;						
-					
-				case "DUE-DATE":
-					if (!cur.firstChild)
-						break;
+						cDate.jsDate = tmp_date;
+						cDate.isDate = true;
 
-					var s = decode4XML(cur.firstChild.data);
-					// 2005-03-30T15:28:52Z
-					if (s.indexOf(":") == -1)
-					{
-						// date values witout time part specify a full day event
-						event.dueDate = string2CalDate(s);
-//						event.dueDate.day += 1; 
-						event.dueDate.isDate = true;
+						// for tasks its endDate
+						if (syncTasks == true)
+							setKolabItemProperty(event, "endDate", cDate);
+						else
+							setKolabItemProperty(event, "dueDate", cDate);
 					}
 					else
-						event.dueDate = string2CalDateTime(s, true);
-					break;
-					
+					{
+						if (syncTasks == true)
+							setKolabItemProperty(event, "endDate", string2CalDateTime(s, true));
+						else
+							setKolabItemProperty(event, "dueDate", string2CalDateTime(s, true));
+					}
+					break;						
+										
 				case "COMPLETED":
 					// only tasks have a completed field
 					if (syncTasks == false)
 						break;
 
-					// event.isCompleted: is a read only attribude
-					event.percentComplete = 0;
-				
-					if (!cur.firstChild)
-						break;
-
-					var s = decode4XML(cur.firstChild.data);
-					event.percentComplete = s;
-					break;
-					/*
-				case "COMPLETED-DATE":
-					if (!cur.firstChild)
-						break;
-
-					var s = decode4XML(cur.firstChild.data);
-					// 2005-03-30T15:28:52Z
-					if (s.indexOf(":") == -1)
+					var iComplete = 0;
+					if (cur.firstChild)
 					{
-						// date values witout time part specify a full day event
-						event.completedDate = string2CalDate(s);
-						event.completedDate.isDate = true;
+						iComplete = parseInt(cur.firstChild.data);
 					}
+					
+					if (iComplete < 0)
+						iComplete = 0;
 					else
-						event.completedDate = string2CalDateTime(s, true);
+					if (iComplete > 100)
+						iComplete = 100;
+					
+					setKolabItemProperty(event, "PERCENT-COMPLETE", iComplete);
 					break;
-					*/
+					
 				case "SUMMARY":
-					event.title = decode4XML(cur.firstChild.data);
+					setKolabItemProperty(event, "title", decode4XML(cur.firstChild.data));
 					break;
 
 				case "BODY":
 					// sometimes we have <body></body> in the XML
 					if (cur.firstChild)
-						event.setProperty("DESCRIPTION", decode4XML(cur.firstChild.data));
+						setKolabItemProperty(event, "DESCRIPTION", decode4XML(cur.firstChild.data));
 					break;
-					
+		
+				// creator should be=organizer - shouldnt it?			
 				case "CREATOR":
-			  		event.setProperty("X-KOLAB-CREATOR-DISPLAY-NAME", getXmlResult(cur, "DISPLAY-NAME", ""));
-			  		event.setProperty("X-KOLAB-CREATOR-SMTP-ADDRESS", getXmlResult(cur, "SMTP-ADDRESS", ""));
+/*
+			  		setKolabItemProperty(event, "X-KOLAB-CREATOR-DISPLAY-NAME", getXmlResult(cur, "DISPLAY-NAME", ""));
+			  		setKolabItemProperty(event, "X-KOLAB-CREATOR-SMTP-ADDRESS", getXmlResult(cur, "SMTP-ADDRESS", ""));
 					break;
-					
+	*/				
 				case "ORGANIZER":
 					organizer = Components.classes["@mozilla.org/calendar/attendee;1"]
 										  .createInstance(Components.interfaces.calIAttendee);
@@ -500,12 +489,12 @@ function xml2Event (xml, extraFields, event)
 				case "LOCATION":
 					// sometimes we have <location></location> in the XML
 					if (cur.firstChild)
-						event.setProperty("LOCATION", decode4XML(cur.firstChild.data));
+						setKolabItemProperty(event, "LOCATION", decode4XML(cur.firstChild.data));
 					break;
 
 				case "CATEGORIES":
 					if (cur.firstChild)
-						event.setProperty("CATEGORIES", decode4XML(cur.firstChild.data));
+						setKolabItemProperty(event, "CATEGORIES", decode4XML(cur.firstChild.data));
 					break;
 
 				case "ALARM":
@@ -514,15 +503,15 @@ function xml2Event (xml, extraFields, event)
 					break;
 					
 				case "SENSITIVITY":
-					event.setProperty("CLASS", 'PUBLIC');
-						switch (decode4XML(cur.firstChild.data))
+					setKolabItemProperty(event, "CLASS", 'PUBLIC');
+					switch (decode4XML(cur.firstChild.data))
 					{
-					case "private":
-						event.setProperty("CLASS", 'PRIVATE');
-						break;
-					case "confidential":
-						event.setProperty("CLASS", 'CONFIDENTIAL');
-						break;
+						case "private":
+							setKolabItemProperty(event, "CLASS", 'PRIVATE');
+							break;
+						case "confidential":
+							setKolabItemProperty(event, "CLASS", 'CONFIDENTIAL');
+							break;
 					}
 					break;
 
@@ -780,12 +769,12 @@ function xml2Event (xml, extraFields, event)
 					
 				case "SHOW-TIME-AS":
 					// default is "none"
-			  		event.setProperty("X-KOLAB-SHOW-TIME-AS", decode4XML(cur.firstChild.data));
+			  		setKolabItemProperty(event, "X-KOLAB-SHOW-TIME-AS", decode4XML(cur.firstChild.data));
 					break;
 					
 				case "COLOR-LABEL":
 					// default is "none"
-			  		event.setProperty("X-KOLAB-COLOR-LABEL", decode4XML(cur.firstChild.data));
+			  		setKolabItemProperty(event, "X-KOLAB-COLOR-LABEL", decode4XML(cur.firstChild.data));
 					break;
 
 				default:
@@ -1129,8 +1118,6 @@ function event2kolabXmlMsg (event, email, syncTasks)
 /**
  * functions to handle the iCal event format
  */
-
-
 function ical2event (content, todo)
 {
 	var event;
@@ -1184,3 +1171,65 @@ function ical2event (content, todo)
 }
 
 
+
+
+/* 
+ * Set the property of an event / task
+ * This is taken from the lightning extension (calendar-event-dialog.js#938ff setItemProperty)
+ */
+function setKolabItemProperty(item, propertyName, value)
+{
+	switch(propertyName) {
+    case "startDate":
+        if (value.isDate && !item.startDate.isDate ||
+            !value.isDate && item.startDate.isDate ||
+            value.timezone != item.startDate.timezone ||
+            value.compare(item.startDate) != 0)
+				item.startDate = value;
+        break;
+    case "endDate":
+        if (value.isDate && !item.endDate.isDate ||
+            !value.isDate && item.endDate.isDate ||
+            value.timezone != item.endDate.timezone ||
+            value.compare(item.endDate) != 0)
+				item.endDate = value;
+        break;
+
+    case "entryDate":
+        if (value == item.entryDate)
+            break;
+        if ((value && !item.entryDate) ||
+            (!value && item.entryDate) ||
+            (value.timezone != item.entryDate.timezone) ||
+            (value.compare(item.entryDate) != 0) ||
+            (value.isDate != item.entryDate.isDate))
+            item.entryDate = value;
+        break;
+    case "dueDate":
+        if (value == item.dueDate)
+            break;
+        if ((value && !item.dueDate) ||
+            (!value && item.dueDate) ||
+            (value.timezone != item.dueDate.timezone) ||
+            (value.compare(item.dueDate) != 0) ||
+            (value.isDate != item.dueDate.isDate))
+            item.dueDate = value;
+        break;
+    case "isCompleted":
+        if (value != item.isCompleted)
+            item.isCompleted = value;
+        break;
+
+    case "title":
+        if (value != item.title)
+            item.title = value;
+        break;
+
+    default:
+        if (!value || value == "")
+            item.deleteProperty(propertyName);
+        else if (item.getProperty(propertyName) != value)
+            item.setProperty(propertyName, value);
+        break;
+    }
+}
