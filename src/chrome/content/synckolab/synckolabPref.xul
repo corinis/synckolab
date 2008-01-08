@@ -38,9 +38,9 @@
                     <treechildren> </treechildren>
                 </tree>
                 <hbox>
-                    <button id="newConfig" oncommand="addConfig();"/>
-                    <button id="loadConfig" oncommand="loadConfig();"/>
-                    <button id="delConfig" oncommand="delConfig();"/>
+                    <button id="newConfig" label="&synckolab.settings.add;" orient="vertical" oncommand="addConfig();"/>
+                    <button id="loadConfig" label="&synckolab.settings.load;" orient="vertical" oncommand="loadConfig();"/>
+                    <button id="delConfig" label="&synckolab.settings.del;" orient="vertical" oncommand="delConfig();"/>
                 </hbox>
             </vbox>
             <splitter collapse="before" resizeafter="farthest">

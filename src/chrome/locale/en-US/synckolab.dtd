@@ -26,8 +26,8 @@
 <!ENTITY synckolab.settings.SyncCalendar	"Sync Calendar">
 <!ENTITY synckolab.settings.SyncTasks		"Sync Tasks">
 <!ENTITY synckolab.settings.CloseWindow		"Close Sync Window when done">
-<!ENTITY synckolab.settings.add				"Add">
-<!ENTITY synckolab.settings.load			"Import">
+<!ENTITY synckolab.settings.add				"New">
+<!ENTITY synckolab.settings.load			"Load">
 <!ENTITY synckolab.settings.saveSingle		"Export">
 <!ENTITY synckolab.settings.saveAll			"Export All">
 <!ENTITY synckolab.settings.del				"Delete">
