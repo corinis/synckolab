@@ -557,15 +557,17 @@ var syncCalendar = {
 			var msg = null;
 			var writeCur = true;
 		    
-			logMessage ("nextUpdate for event:" + cur.id, LOG_CAL + LOG_DEBUG);
+			logMessage ("nextUpdate for "+ ((this.syncTasks==true)?"task":"event") +":" + cur.id, LOG_CAL + LOG_DEBUG);
 			
 			// check if we can skip this entry
-			var endDate = (this.syncTasks==true)?event.dueDate.jsDate:event.endDate.jsDate;
-			if (endDate.getTime() + (this.gSyncTimeFrame * 86400 *1000) < (new Date()).getTime() )
+			var endDate = (this.syncTasks==true)?(cur.dueDate?cur.dueDate.jsDate:null):cur.endDate.jsDate;
+			if (endDate != null && endDate.getTime() + (this.gSyncTimeFrame * 86400000) < (new Date()).getTime() )
 			{
 					logMessage("skipping event because its too old: " + cur.id, LOG_CAL + LOG_INFO);
 					return null;
 			}
+			
+			logMessage("processing event", LOG_CAL + LOG_DEBUG);
 
 			// check if we have this uid in the messages, skip it if it
 			// has been processed already when reading the IMAP msgs

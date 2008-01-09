@@ -185,7 +185,7 @@ function getDayIndex (name)
  */
 function equalsEvent (a, b, syncTasks)
 {
-	return cnv_event2xml(a, true, syncTasks) == cnv_event2xml(b, true, syncTasks);
+	return cnv_event2xml(a, true, syncTasks, 'sync') == cnv_event2xml(b, true, syncTasks, 'sync');
 /*
 	//Fields to look for
 	var fieldsArray = new Array(
@@ -261,9 +261,11 @@ function message2Event (fileContent, extraFields, syncTasks)
 	var parsedEvent = null;
 	if (fileContent.indexOf("<?xml") != -1 || fileContent.indexOf("<?XML") != -1)
 	{
-		if (syncTasks)
+		if (syncTasks == true)
+		{
 			parsedEvent = Components.classes["@mozilla.org/calendar/todo;1"]
 				.createInstance(Components.interfaces.calITodo);
+		}
 		else
 			parsedEvent = Components.classes["@mozilla.org/calendar/event;1"]
 				.createInstance(Components.interfaces.calIEvent);
@@ -300,14 +302,6 @@ function xml2Event (xml, extraFields, event)
 	//	  not working ATM:
 	//		  - yearly recurrence
 	
-	// FIXME clean up - ToDos have a folder on their own in Kolab, 
-	// so we don't need to support them in this function
-	//
-	//calendarToDo.due.clear();
-	//calendarToDo.start.setTime( startDate );
-	//var iCalToDo = Components.classes["@mozilla.org/icaltodo;1"].createInstance().QueryInterface(Components.interfaces.oeIICalTodo);
-
-	
 	// decode utf chars and make sure an & is an &amp; (otherwise this is unparseable)
 	xml = decode_utf8(DecodeQuoted(xml)).replace(/&/g, "&amp;").replace(/amp;amp;/g, "amp;");
 	
@@ -335,6 +329,18 @@ function xml2Event (xml, extraFields, event)
 	// check for task
 	if (topNode.nodeName.toUpperCase() == "TASK")
 		syncTasks = true;
+		
+	if (syncTasks == true && event instanceof Components.interfaces.calIEvent)
+	{
+		logMessage("There is an event in the task folder! skipping\n" + event, LOG_CAL + LOG_WARNING);
+		return false;
+	}
+
+	if (syncTasks == false && ! (event instanceof Components.interfaces.calIEvent))
+	{
+		logMessage("There is a task in the calendar folder! skipping\n" + event, LOG_CAL + LOG_WARNING);
+		return false;
+	}
 		
 	var cur = topNode.firstChild;
 	// iterate over the DOM tree of the XML structure of the event
@@ -424,16 +430,16 @@ function xml2Event (xml, extraFields, event)
 
 						// for tasks its endDate
 						if (syncTasks == true)
-							setKolabItemProperty(event, "endDate", cDate);
-						else
 							setKolabItemProperty(event, "dueDate", cDate);
+						else
+							setKolabItemProperty(event, "endDate", cDate);
 					}
 					else
 					{
 						if (syncTasks == true)
-							setKolabItemProperty(event, "endDate", string2CalDateTime(s, true));
-						else
 							setKolabItemProperty(event, "dueDate", string2CalDateTime(s, true));
+						else
+							setKolabItemProperty(event, "endDate", string2CalDateTime(s, true));
 					}
 					break;						
 										
@@ -798,9 +804,9 @@ function xml2Event (xml, extraFields, event)
  *
  * @return XML string in Kolab 2 format
  */
-function event2xml (event, syncTasks)
+function event2xml (event, syncTasks, email)
 {
-	return cnv_event2xml( event, false, syncTasks);
+	return cnv_event2xml( event, false, syncTasks, email);
 }
 
 /**
@@ -810,7 +816,7 @@ function event2xml (event, syncTasks)
  *
  * @return XML string in Kolab 2 format
  */
-function cnv_event2xml (event, skipVolatiles, syncTasks)
+function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 {
 	// TODO  not working ATM:
 	//	- yearly recurrence
@@ -1044,11 +1050,9 @@ function cnv_event2xml (event, skipVolatiles, syncTasks)
 
 	if (!hasOrganizer)
 	{
-		// FIXME Try to read the sender data from the settings of the 
-		// account specified in the synckolab settings
 		xml += " <organizer>\n";
-		xml += "  <display-name>" + "Synckolab" + "</display-name>\n";
-		xml += "  <smtp-address>" + "synckolab@no.tld" + "</smtp-address>\n";
+		xml += "  <display-name>" + email + "</display-name>\n";
+		xml += "  <smtp-address>" + email + "</smtp-address>\n";
 		xml += " </organizer>\n";
 	}
 
@@ -1105,7 +1109,7 @@ function event2Human (event, syncTasks)
  */
 function event2kolabXmlMsg (event, email, syncTasks)
 {
-	var xml = event2xml(event, syncTasks);
+	var xml = event2xml(event, syncTasks, email);
 	var my_msg = generateMail(event.id, email, "", syncTasks?"application/x-vnd.kolab.task":"application/x-vnd.kolab.event", 
 			true, encode_utf8(xml), event2Human(event, syncTasks));
 	return my_msg;
@@ -1179,48 +1183,24 @@ function setKolabItemProperty(item, propertyName, value)
 {
 	switch(propertyName) {
     case "startDate":
-        if (value.isDate && !item.startDate.isDate ||
-            !value.isDate && item.startDate.isDate ||
-            value.timezone != item.startDate.timezone ||
-            value.compare(item.startDate) != 0)
-				item.startDate = value;
+		item.startDate = value;
         break;
     case "endDate":
-        if (value.isDate && !item.endDate.isDate ||
-            !value.isDate && item.endDate.isDate ||
-            value.timezone != item.endDate.timezone ||
-            value.compare(item.endDate) != 0)
-				item.endDate = value;
+		item.endDate = value;
         break;
 
     case "entryDate":
-        if (value == item.entryDate)
-            break;
-        if ((value && !item.entryDate) ||
-            (!value && item.entryDate) ||
-            (value.timezone != item.entryDate.timezone) ||
-            (value.compare(item.entryDate) != 0) ||
-            (value.isDate != item.entryDate.isDate))
-            item.entryDate = value;
+        item.entryDate = value;
         break;
     case "dueDate":
-        if (value == item.dueDate)
-            break;
-        if ((value && !item.dueDate) ||
-            (!value && item.dueDate) ||
-            (value.timezone != item.dueDate.timezone) ||
-            (value.compare(item.dueDate) != 0) ||
-            (value.isDate != item.dueDate.isDate))
-            item.dueDate = value;
+        item.dueDate = value;
         break;
     case "isCompleted":
-        if (value != item.isCompleted)
-            item.isCompleted = value;
+        item.isCompleted = value;
         break;
 
     case "title":
-        if (value != item.title)
-            item.title = value;
+        item.title = value;
         break;
 
     default:
