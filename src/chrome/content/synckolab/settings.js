@@ -1284,7 +1284,8 @@ function setControlStateContacts(active)
 		"conURL",
 		"conImapFolder",
 		"conFormat",
-		"saveToContactImap"
+		"saveToContactImap",
+		"conSyncTimeframe"
 	);
 
 	
@@ -1303,7 +1304,8 @@ function setControlStateCalendar(active)
 		"calURL",
 		"calImapFolder",
 		"calFormat",
-		"saveToCalendarImap"
+		"saveToCalendarImap",
+		"taskSyncTimeframe"
 	);
 
 	
