@@ -77,6 +77,8 @@ var strBundle;
 
 // Global debug setting (on)
 var DEBUG_SYNCKOLAB = true;
+// set this to true to also print timing information
+var PERFLOG_SYNCKOLAB = true;
 
 var LOG_ERROR = 0;
 var LOG_WARNING = 1;
@@ -87,7 +89,7 @@ var LOG_AB = 8;
 var LOG_ALL = 12;
 
 var DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + LOG_DEBUG;
-var SWITCH_TIME = 50;
+var SWITCH_TIME = 100;
 
 // set this to true and on every error there will be a pause so you can check the logs
 var PAUSE_ON_ERROR = false;

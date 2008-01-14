@@ -1352,38 +1352,54 @@ function generateMail (cid, mail, adsubject, mime, part, content, hr)
 	return msg;
 }
 
+var start = -1;
+var lastmsg = -1;
+ 
 
 /**
  * Prints out debug messages to the cosole if the global variable DEBUG_SYNCKOLAB is set to true
+ * Also prints out performance related stuff
  */
 function logMessage (msg, level)
 {
     if (!level)
         level = LOG_INFO;
-	if (DEBUG_SYNCKOLAB)
-	{
-		var infolvl = DEBUG_SYNCKOLAB_LEVEL%4;
-		var infostate = DEBUG_SYNCKOLAB_LEVEL - infolvl;
-		var clvl = level%4;
-		var cstate = level - clvl;
+	
+	var infolvl = DEBUG_SYNCKOLAB_LEVEL%4;
+	var infostate = DEBUG_SYNCKOLAB_LEVEL - infolvl;
+	var clvl = level%4;
+	var cstate = level - clvl;
+	
+	// check if we are talking about the same loglevle: ERROR|WARN|INFO|DEBUG
+	if (clvl > infolvl)
+		return;
 		
-		// check if we are talking about the same loglevle: ERROR|WARN|INFO|DEBUG
-		if (clvl > infolvl)
-			return;
-			
-		// now lets see if we want the same type of error NORMAL|CALENDAR|ADRESSBOOK|ALL		
-		
-		// if the two states are diffeent and infostate != LOG_ALL we want outta here
-		if (infostate != cstate && infostate != LOG_ALL)
-			return;
+	// now lets see if we want the same type of error NORMAL|CALENDAR|ADRESSBOOK|ALL		
+	
+	// if the two states are diffeent and infostate != LOG_ALL we want outta here
+	if (infostate != cstate && infostate != LOG_ALL)
+		return;
 
-		consoleService.logStringMessage(msg);
-		
-		// pause the sync on error if defined by globals
-		if (PAUSE_ON_ERROR && clvl == LOG_ERROR)
-			if (gWnd && gWnd.pauseSync)
-				gWnd.pauseSync();
+	if (DEBUG_SYNCKOLAB || clvl = LOG_ERROR)
+	{
+		if (PERFLOG_SYNCKOLAB == true)
+		{
+			if (start == -1)
+			{
+				start = (new Date()).getTime();
+				lastmsg = start;
+			}
+			var cTime = (new Date()).getTime();
+			msg = (cTime - lastmsg) + "/" + (cTime - start) + " - " + msg;
+			lastmsg = cTime;
+		}
+		consoleService.logStringMessage(msg);		
 	}
+	
+	// pause the sync on error if defined by globals
+	if (PAUSE_ON_ERROR && clvl == LOG_ERROR)
+		if (gWnd && gWnd.pauseSync)
+			gWnd.pauseSync();
 }
 
 /**
