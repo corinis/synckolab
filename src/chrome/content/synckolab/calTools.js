@@ -960,32 +960,39 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 				// FIXME we have no matching field in Lighning yet
 				xml += "  <daynumber>1</daynumber>\n";
 				break;
+			// no recurrence
+			default:
+				recInfo = null;
 		}
-		xml += "  <interval>" + recRule.interval + "</interval>\n";
-		if (recRule.isByCount)
+		// we still might not have a reccurence :)
+		if (recInfo != null)
 		{
-			if (recRule.count > 0)
-				xml += "  <range type=\"number\">" + recRule.count + "</range>\n";
+			xml += "  <interval>" + recRule.interval + "</interval>\n";
+			if (recRule.isByCount)
+			{
+				if (recRule.count > 0)
+					xml += "  <range type=\"number\">" + recRule.count + "</range>\n";
+				else
+					xml += "  <range type=\"none\"/>\n";
+			}
 			else
-				xml += "  <range type=\"none\"/>\n";
+			{
+				var endDate = recRule.endDate;
+				if (endDate)
+					xml += "  <range type=\"date\">" + date2String(endDate.jsDate) + "</range>\n";
+				else
+					xml += "  <range type=\"none\"/>\n";
+			}
+	
+			var items = recInfo.getRecurrenceItems({});
+			for (var i in items)
+			{
+				var item = items[i];
+				if (item.isNegative)
+					xml += "  <exclusion>" + calDateTime2String(item.date, true) + "</exclusion>\n";
+			}
+			xml += " </recurrence>\n";
 		}
-		else
-		{
-			var endDate = recRule.endDate;
-			if (endDate)
-				xml += "  <range type=\"date\">" + date2String(endDate.jsDate) + "</range>\n";
-			else
-				xml += "  <range type=\"none\"/>\n";
-		}
-
-		var items = recInfo.getRecurrenceItems({});
-		for (var i in items)
-		{
-			var item = items[i];
-			if (item.isNegative)
-				xml += "  <exclusion>" + calDateTime2String(item.date, true) + "</exclusion>\n";
-		}
-		xml += " </recurrence>\n";
 	}
 
 	var attendees = event.getAttendees({});

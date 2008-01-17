@@ -42,11 +42,13 @@ function contactConflictTest(serverCard,localCard)
 		"workPhone","homePhone","faxNumber","pagerNumber","cellularNumber",
 		"homeAddress","homeAddress2","homeCity","homeState","homeZipCode","homeCountry","webPage2",
 		"jobTitle","department","company","workAddress","workAddress2","workCity","workState","workZipCode","workCountry","webPage1",
-		"custom1","custom2","custom3","notes");
+		"birthYear", "birthMonth", "birthDay",
+		"custom1","custom2","notes");
 
 	for( i=0 ; i < fieldsArray.length ; i++ ) {
 		if ( eval("localCard."+fieldsArray[i]) != eval("serverCard."+fieldsArray[i]) )
 			conflictArray.push(fieldsArray[i]);
 	}
+	
 	return conflictArray;
 }
