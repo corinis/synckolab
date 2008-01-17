@@ -65,7 +65,7 @@
 			document.getElementById("introPage").next = "accountPageId";
 			
 			var isOk = true;
-			if (trim(name).length > 1 &amp;&amp; name.indexOf(" ") == - 1 && name.indexOf("-") == -1 &amp;&amp; name.indexOf(".") == -1 &amp;&amp; name.indexOf("#") == -1 &amp;&amp; name.indexOf("[") == -1
+			if (trim(name).length > 1 &amp;&amp; name.indexOf(" ") == - 1 &amp;&amp; name.indexOf("-") == -1 &amp;&amp; name.indexOf(".") == -1 &amp;&amp; name.indexOf("#") == -1 &amp;&amp; name.indexOf("[") == -1
 				&amp;&amp; name.indexOf("]") == -1)
 			{
 				var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
