@@ -1103,13 +1103,19 @@ function saveAllPrefs (configName) {
 		pref.setCharPref("SyncKolab."+config+".CalendarFormat", document.getElementById ("calFormat").value);
 		pref.setBoolPref("SyncKolab."+config+".saveToCalendarImap", document.getElementById ("saveToCalendarImap").checked);
 		pref.setBoolPref("SyncKolab."+config+".syncCalendar", document.getElementById ("syncCalendar").checked);
-		pref.setCharPref("SyncKolab."+config+".calSyncTimeframe", document.getElementById("calSyncTimeframe").value);
-
+		if (document.getElementById("calSyncTimeframe") != null)
+			pref.setCharPref("SyncKolab."+config+".calSyncTimeframe", document.getElementById("calSyncTimeframe").value);
+		else
+			pref.setCharPref("SyncKolab."+config+".calSyncTimeframe", "180");
+			
 		pref.setCharPref("SyncKolab."+config+".Tasks", document.getElementById ("taskURL").value);
 		pref.setCharPref("SyncKolab."+config+".TaskFormat", document.getElementById ("taskFormat").value);
 		pref.setBoolPref("SyncKolab."+config+".saveToTaskImap", document.getElementById ("saveToTaskImap").checked);
 		pref.setBoolPref("SyncKolab."+config+".syncTasks", document.getElementById ("syncTasks").checked);
-		pref.setCharPref("SyncKolab."+config+".taskSyncTimeframe", document.getElementById("taskSyncTimeframe").value);
+		if (document.getElementById("taskSyncTimeframe"))
+			pref.setCharPref("SyncKolab."+config+".taskSyncTimeframe", document.getElementById("taskSyncTimeframe").value);
+		else
+			pref.setCharPref("SyncKolab."+config+".taskSyncTimeframe", "180");
 	}
 }
 
@@ -1309,7 +1315,8 @@ function setControlStateCalendar(active)
 
 	
 	for(var i=0 ; i < fieldsArray.length ; i++ ) {
-		document.getElementById(fieldsArray[i]).disabled = !active;
+		if (document.getElementById(fieldsArray[i]) != null)
+			document.getElementById(fieldsArray[i]).disabled = !active;
 	}
 }
 
@@ -1328,7 +1335,8 @@ function setControlStateTasks(active)
 
 	
 	for(var i=0 ; i < fieldsArray.length ; i++ ) {
-		document.getElementById(fieldsArray[i]).disabled = !active;
+		if (document.getElementById(fieldsArray[i]) != null)
+			document.getElementById(fieldsArray[i]).disabled = !active;
 	}
 }
 
