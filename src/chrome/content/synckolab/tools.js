@@ -1420,8 +1420,11 @@ function logMessage (msg, level)
 				lastmsg = start;
 			}
 			var cTime = (new Date()).getTime();
-			msg = (cTime - lastmsg) + "/" + (cTime - start) + " - " + msg;
-			lastmsg = cTime;
+			if (cTime - lastmsg != 0)
+			{			
+				msg = (cTime - lastmsg) + " - " + msg;
+				lastmsg = cTime;
+			}
 		}
 		consoleService.logStringMessage(msg);		
 	}
