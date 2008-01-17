@@ -247,7 +247,7 @@ function stripMailHeader (content)
 	if (content == null)
 		return null;
 		
-	var isMultiPart = content.indexOf('boundary="') != -1;
+	var isMultiPart = content.indexOf('boundary=') != -1;
 
 	
 	
@@ -266,10 +266,36 @@ function stripMailHeader (content)
 
 	// we got a multipart message - strip it apart
 
+	// XXXboundary="XXX" or XXXboundary=XXX\n
 	var boundary = null;
-	boundary = content.substring(content.indexOf('boundary="')+10, 
-			content.indexOf('"', content.indexOf('boundary="')+12));
+	boundary = content.substring(content.indexOf('boundary=')+9);
 
+	// lets trim boundary (in case we have whitespace after the =
+	boundary = trim(boundary);
+
+	// if the boundary string starts with "... we look for an end
+	if (boundary.charAt(0) == '"')
+	{
+		// get rid of the first "
+		boundary = boundary.substring(1);
+		// find the second "
+		boundary = boundary.substring(0, boundary.indexOf('"'));
+	}
+	else
+	{
+		// cur away at \n or \r or space.. whichever comes first
+		var cutWS = boundary.indexOf(' ');		
+		var ws = boundary.indexOf('\n');
+		if (ws != -1 && ws < cutWS)
+			cutWS = ws;
+		ws = boundary.indexOf('\t');
+		if (ws != -1 && ws < cutWS)
+			cutWS = ws;
+		ws = boundary.indexOf('\r');
+		if (ws != -1 && ws < cutWS)
+			cutWS = ws;
+		boundary = boundary.substring(0, cutWS);
+	}
 	// try to get the start of the card part
 	
 	// check kolab XML first
@@ -407,16 +433,20 @@ function readDataBase (dbf)
  * Gets rid of whitespace at the beginning and the end of a string
  */
 function trim(s) {
-  while (s.substring(0,1) == ' ' || s.substring(0,1) == '\n' || s.substring(0,1) == '\r' || s.substring(0,1) == '\t') {
-    s = s.substring(1,s.length);
-  }
+  while (isWhiteSpace(s.charAt(0)))
+    s = s.substring(1);
   
-  while (s.substring(s.length-1,s.length) == ' ' || s.substring(s.length-1,s.length) == '\n' || s.substring(s.length-1,s.length) == '\r' || s.substring(s.length-1,s.length) == '\t') {
+  while (isWhiteSpace(s.charAt(s.length-1)))
     s = s.substring(0,s.length-1);
-  }
+    
   return s;
 }
 
+
+function isWhiteSpace (c)
+{
+	return c == ' ' || c == '\n' || c == '\r' || c == '\t';
+}
 
 /**
  * returns the position of this entry in the db
