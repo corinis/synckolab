@@ -1,10 +1,11 @@
 <!-- MAIN CONTENT -->
 <h5 class="page-header"><a id="content" name="content">Download</a></h5>
 <h6>Latest stable</h6>
-<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.5.2.xpi">SyncKolab 0.5.2</a></p>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.5.3.xpi">SyncKolab 0.5.3</a></p>
 <h6>Latest Nightly</h6>
 <p><a href="http://www.gargan.org/extensions/synckolab-NIGHTLY.xpi">SyncKolab NIGHTLY</a></p>
 <h6>Previous Releases</h6>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.5.2.xpi">SyncKolab 0.5.2</a></p>
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.34.xpi">SyncKolab 0.4.34</a></p>
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.33.xpi">SyncKolab 0.4.33</a></p>
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.32.xpi">SyncKolab 0.4.32</a></p>
@@ -82,6 +83,28 @@ Step 1: from 0.3.0 to 0.4.19 <b>calendar is required</b>. <a href="http://www.mo
 </p>
 <h5 class="page-header">Release Notes</h5>
 <h6>For updated release notes see <a href="http://www.gargan.org/extensions/synckolab.html">www.gargan.org</a></h6>
+
+
+<h3>synckolab 0.5.3</h3>
+<p><pre>
+* added selection for default behaviour when a conflict has been found (ask/server/client) (fixed #17820)
+* fixed deleting of configurations
+* added autoscroll for the status window (uwse the pause button to scroll up)
+* fixed bug in fixUpName that prevented calendar selection (fixed #17980)
+* added fix for multiple calendars as suggested by andreas
+* fixed problem with "completed" field when syncing tasks
+* rewrote parts of the calendar sync (now setting fields the way lightning does)
+* added option to set a timeframe for sync (this way old messages will be ignored) - only task and calendar
+* added loads of debug messages to help tracking problems
+* added timing to debug messages in order to help tackle performance problems
+* fixed various issues in the create dialog also save and restore problems fixed
+* fixed a problem when handling boundaries (now correctly checks for " and doesnt take it for granted)
+* fixed problem with calendar parsing (invalid recurrence tag)
+* fixed #18344 (birthday not included in compare with contacts)
+* fixed problems when creating a new profile
+* re-added human readable message - with notice information about incompatible clients
+</pre>
+</p>
 
 <h3>synckolab 0.5.2</h3>
 <p><pre>
