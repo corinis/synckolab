@@ -1432,8 +1432,10 @@ function loadConfig()
 				for (var j=2; j < cPref.length; j++)
 					value += "=" + cPref[j];
 					
-					
-				pref.setCharPref(name, value);				
+				if (value == "true" || value = "false")
+					pref.setBoolPref(value == ' true');
+				else
+					pref.setCharPref(name, value);				
 			}
 		}
 		else
@@ -1497,7 +1499,10 @@ function loadConfig()
 				for (var j=2; j < cPref.length; j++)
 					value += "=" + cPref[j];
 					
-				pref.setCharPref(name, value);				
+				if (value == "true" || value = "false")
+					pref.setBoolPref(value == ' true');
+				else
+					pref.setCharPref(name, value);				
 			}
 			
 		}
@@ -1646,10 +1651,10 @@ function writeConfig (config, file)
 	
 	// char prefs:
 	var fieldsArray = new Array(
-		"AddressBook","AddressBookFormat","syncContacts","saveToContactImap",
+		"AddressBook","AddressBookFormat","calSyncTimeframe","taskSyncTimeframe",
 		"ContactFolderPath","Calendar","CalendarFormat","Resolve",
-		"saveToCalendarImap","syncCalendar","CalendarFolderPath",
-		"Tasks","TaskFormat","saveToTaskImap","syncTasks","TaskFolderPath"
+		"CalendarFolderPath",
+		"Tasks","TaskFormat","TaskFolderPath"
 		);
 
 	for(var i=0 ; i < fieldsArray.length ; i++ ) {
@@ -1659,4 +1664,20 @@ function writeConfig (config, file)
 		}
 		catch (exw) {} // can be ignored savely
 	}	
+	
+	// bool prefs:
+	var fieldsArray = new Array(
+		"syncContacts","saveToContactImap",
+		"saveToCalendarImap","syncCalendar",
+		"saveToTaskImap","syncTasks"
+		);
+
+	for(var i=0 ; i < fieldsArray.length ; i++ ) {
+		try
+		{
+			writeLine(file, "SyncKolab."+config+"." + fieldsArray[i], pref.getBoolPref("SyncKolab."+config+"." + fieldsArray[i])?'true':'false');
+		}
+		catch (exw) {} // can be ignored savely
+	}	
+	
 }
