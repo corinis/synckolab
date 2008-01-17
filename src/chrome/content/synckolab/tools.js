@@ -1410,7 +1410,7 @@ function logMessage (msg, level)
 	if (infostate != cstate && infostate != LOG_ALL)
 		return;
 
-	if (DEBUG_SYNCKOLAB || clvl = LOG_ERROR)
+	if (DEBUG_SYNCKOLAB || clvl == LOG_ERROR)
 	{
 		if (PERFLOG_SYNCKOLAB == true)
 		{
