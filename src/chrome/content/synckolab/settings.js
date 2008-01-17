@@ -1432,8 +1432,8 @@ function loadConfig()
 				for (var j=2; j < cPref.length; j++)
 					value += "=" + cPref[j];
 					
-				if (value == "true" || value = "false")
-					pref.setBoolPref(value == ' true');
+				if (value == "true" || value == "false")
+					pref.setBoolPref(value == 'true');
 				else
 					pref.setCharPref(name, value);				
 			}
