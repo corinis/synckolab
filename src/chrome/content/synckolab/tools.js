@@ -1367,10 +1367,10 @@ function generateMail (cid, mail, adsubject, mime, part, content, hr)
 		if (hr != null)
 		{
 			msg += hr;
-			msg += '\nNotice:\nThe information above is only valid, if no other client than synckolab updated this message. (ie. a client that updates the attachment but not the message)';
+			msg += '\nNotice:\nThe information above is only valid, if no other client than synckolab updated this message. (ie. a client that updates the attachment but not the message)\n';
 		}
 			
-		msg += '--Boundary-00='+bound+'\n'
+		msg += '\n--Boundary-00='+bound+'\n'
 		msg += 'Content-Type: '+mime+';\n name="kolab.xml"\n';
 		msg += 'Content-Transfer-Encoding: quoted-printable\n'
 		msg += 'Content-Disposition: attachment;\n filename="kolab.xml"\n\n';
