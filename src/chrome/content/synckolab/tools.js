@@ -1367,7 +1367,7 @@ function generateMail (cid, mail, adsubject, mime, part, content, hr)
 		if (hr != null)
 		{
 			msg += hr;
-			msg += '\nNotice:\nThe information above is only valid, if no other client than synckolab updated this message. (ie. a client that updates the attachment but not the message)";
+			msg += '\nNotice:\nThe information above is only valid, if no other client than synckolab updated this message. (ie. a client that updates the attachment but not the message)';
 		}
 			
 		msg += '--Boundary-00='+bound+'\n'
