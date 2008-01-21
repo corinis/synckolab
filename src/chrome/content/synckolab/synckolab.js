@@ -43,10 +43,10 @@ var ios = Components.classes["@mozilla.org/network/io-service;1"].getService(Com
 // folder data source
 var gFolderDatasource = Components.classes["@mozilla.org/rdf/datasource;1?name=mailnewsfolders"].createInstance(Components.interfaces.nsIRDFDataSource);
 // imap message service
-var gMessageService=Components.classes["@mozilla.org/messenger/messageservice;1?type=imap"].getService(Components.interfaces.nsIMsgMessageService); 
+var gSyncKolabMessageService=Components.classes["@mozilla.org/messenger/messageservice;1?type=imap"].getService(Components.interfaces.nsIMsgSyncKolabMessageService); 
 
 // save the Version of synckolab
-var gVersion = "0.5.4";
+var gSyncKolabVersion = "0.5.4";
 
 // holds required content
 
@@ -582,11 +582,20 @@ function getMessage ()
     	return;
 	}
 	
-	// check message flags
-	logMessage("Message " + cur.mime2DecodedSubject + " (dateInSeconds: " + cur.dateInSeconds + ") has flags: " + cur.flags, LOG_DEBUG);
+	// check message flags (based on mailnews\base\public\nsMsgMessageFlags.h -> deleted=0x200000
+	logMessage("Message " + cur.mime2DecodedSubject + " (dateInSeconds: " + cur.dateInSeconds + ") has flags: " + cur.flags + " flag imap_deleted? " + (cur.flags&0x200000), LOG_DEBUG);
+	var skipCMessage = false;
+	
+	if (cur.flags&0x200000)
+	{
+		logMessage("Message " + cur.mime2DecodedSubject + " has been DELETED on imap!", LOG_INFO);
+		// skip current and process next nessage	
+		skipCMessage = true;
+		
+	}
 	
 	// check if we can ignore this message because its too old (0=take all into accout)	
-	if(gSync.gSyncTimeFrame > 0)
+	if(gSync.gSyncTimeFrame > 0 && skipCMessage != true)
 	{
 		logMessage("Checking if message might be too old for now " + (new Date()).getTime(), LOG_DEBUG);
 
@@ -595,25 +604,31 @@ function getMessage ()
 		{
 			logMessage("Message " + cur.mime2DecodedSubject + " will be ignored (too old) Now: " + (new Date()).getTime(), LOG_INFO);
 			// skip current and process next nessage	
-			curMessage++;
-			if (curMessage <= totalMessages)
-			{
-				var curpointer = 5 + (55*(curMessage/totalMessages));
-				meter.setAttribute("value", curpointer + "%");
-				if (gWnd != null)
-					curCounter.setAttribute("value", curMessage + "/" + totalMessages);
-				else
-					curCounter.setAttribute("label", curMessage + "/" + totalMessages);
-				
-				// next message
-				window.setTimeout(getMessage, SWITCH_TIME);	
-			}
-			else
-			{
-				window.setTimeout(parseFolderToAddressFinish, SWITCH_TIME);	
-			}
-			return;
+			skipCMessage = true;
 		}
+	}
+	
+	
+	if (skipCMessage == true)
+	{
+		curMessage++;
+		if (curMessage <= totalMessages)
+		{
+			var curpointer = 5 + (55*(curMessage/totalMessages));
+			meter.setAttribute("value", curpointer + "%");
+			if (gWnd != null)
+				curCounter.setAttribute("value", curMessage + "/" + totalMessages);
+			else
+				curCounter.setAttribute("label", curMessage + "/" + totalMessages);
+			
+			// next message
+			window.setTimeout(getMessage, SWITCH_TIME);	
+		}
+		else
+		{
+			window.setTimeout(parseFolderToAddressFinish, SWITCH_TIME);	
+		}
+		return;
 	}
 //	PRTime?
 //	cur.date
@@ -676,7 +691,7 @@ function getMessage ()
 	fileContent = "";
 	gCurMessageKey = cur.messageKey;
 	var aurl = new Object();	
-	gMessageService.CopyMessage(
+	gSyncKolabMessageService.CopyMessage(
         gSync.folderMsgURI +"#"+gCurMessageKey,
         syncKolabStreamListener, false, null, msgWindow, aurl
         ); 
@@ -848,7 +863,7 @@ function updateContent()
 			for (var i = 0; i < updateMessages.length; i++)
 			{
 				logMessage("deleting [" + updateMessages[i] + "]");
-				var hdr = gMessageService.messageURIToMsgHdr(updateMessages[i]);
+				var hdr = gSyncKolabMessageService.messageURIToMsgHdr(updateMessages[i]);
 				list.AppendElement(hdr);		
 		    
 			}
