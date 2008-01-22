@@ -1345,7 +1345,7 @@ function generateMail (cid, mail, adsubject, mime, part, content, hr)
 	else
 		msg += 'Content-Type: Multipart/Mixed;boundary="Boundary-00='+bound+'"\n';
 	msg += 'Content-Transfer-Encoding: quoted-printable\n';
-	msg += "User-Agent: SyncKolab " + gVersion + "\n";
+	msg += "User-Agent: SyncKolab " + gSyncKolabVersion + "\n";
 	if (part)
 		msg += "X-Kolab-Type: "+mime+"\n";
 	msg += "\n"

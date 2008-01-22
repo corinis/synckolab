@@ -850,7 +850,7 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 	else
 		xml += "<event version=\"1.0\" >\n"
 		
-	xml += " <product-id>Synckolab " + gVersion + ", Calendar Sync</product-id>\n";
+	xml += " <product-id>Synckolab " + gSyncKolabVersion + ", Calendar Sync</product-id>\n";
 	xml += " <uid>" + event.id + "</uid>\n"
 	
 	if(syncTasks == true)
