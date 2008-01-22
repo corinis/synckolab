@@ -43,7 +43,7 @@ var ios = Components.classes["@mozilla.org/network/io-service;1"].getService(Com
 // folder data source
 var gFolderDatasource = Components.classes["@mozilla.org/rdf/datasource;1?name=mailnewsfolders"].createInstance(Components.interfaces.nsIRDFDataSource);
 // imap message service
-var gSyncKolabMessageService=Components.classes["@mozilla.org/messenger/messageservice;1?type=imap"].getService(Components.interfaces.nsIMsgSyncKolabMessageService); 
+var gSyncKolabMessageService=Components.classes["@mozilla.org/messenger/messageservice;1?type=imap"].getService(Components.interfaces.nsIMsgMessageService); 
 
 // save the Version of synckolab
 var gSyncKolabVersion = "0.5.4";
