@@ -442,6 +442,27 @@ function xml2Event (xml, extraFields, event)
 							setKolabItemProperty(event, "endDate", string2CalDateTime(s, true));
 					}
 					break;						
+
+				case "PRIORITY":
+					// only tasks 
+					if (syncTasks == false)
+						break;
+					if (cur.firstChild)
+						setKolabItemProperty(event, "priority", cur.firstChild.data);
+					break;
+
+				case "STATUS":
+					// only tasks 
+					if (syncTasks == false)
+						break;
+					if (!cur.firstChild)
+						break;
+						
+					var cStatus = cur.firstChild.data;
+					if (cStatus == "IN-PROCESS")
+						setKolabItemProperty(event, "status", cStatus);
+					
+					break;
 										
 				case "COMPLETED":
 					// only tasks have a completed field
@@ -841,14 +862,23 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 	var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 	if (syncTasks == true)
 	{
-		xml += "<task version=\"1.0\" >\n"
+		xml += '<task version="1.0" >\n'
 		if (event.isCompleted || event.percentComplete == 100)
+		{
 			xml += " <completed>100</completed>\n";	
+			xml += " <status>completed</status>\n";
+		}
 		else
+		{
+			if (event.percentComplete == 0)
+				xml += " <status>not-started</status>\n";
+			else
+				xml += " <status>started</status>\n";
 			xml += " <completed>" + event.percentComplete +"</completed>\n";	
+		}
 	}
 	else
-		xml += "<event version=\"1.0\" >\n"
+		xml += '<event version="1.0" >\n';
 		
 	xml += " <product-id>Synckolab " + gSyncKolabVersion + ", Calendar Sync</product-id>\n";
 	xml += " <uid>" + event.id + "</uid>\n"
@@ -893,7 +923,7 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 		xml += " <categories>" + event.getProperty("CATEGORIES") + "</categories>\n";
 
 	var recInfo = event.recurrenceInfo;
-	if (recInfo && recInfo.countRecurrenceItems() >= 1)
+	if (syncTasks != true && recInfo && recInfo.countRecurrenceItems() >= 1)
 	{
 		// read the first recurrence rule and process it
 		recRule = recInfo.getRecurrenceItemAt(0);
@@ -996,7 +1026,7 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 	}
 
 	var attendees = event.getAttendees({});
-	if (attendees && attendees.length > 0) 
+	if (syncTasks != true && attendees && attendees.length > 0) 
 	{
 		for each (var attendee in attendees) 
 		{
@@ -1055,7 +1085,7 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 		}
 	}
 
-	if (!hasOrganizer)
+	if (syncTasks != true && !hasOrganizer)
 	{
 		xml += " <organizer>\n";
 		xml += "  <display-name>" + email + "</display-name>\n";
@@ -1078,9 +1108,12 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 		xml += " </creator>\n";
 	}
 
-	xml += " <revision>0</revision>\n";
+	xml += " <revision>0</revision>\n";	
 	if (syncTasks == true)
+	{
+		xml += " <priority>" + event.priority + "</priority>\n";
 		xml += "</task>\n"
+	}
 	else
 		xml += "</event>\n"
 
