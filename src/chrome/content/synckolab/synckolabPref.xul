@@ -117,7 +117,7 @@
                             <checkbox id="hiddenWnd" label="&synckolab.settings.HiddenWindow;"/>
                             <hbox>
                                 <label value="&synckolab.settings.DefaultResolve;"/>
-                                <menulist id="DefaultResolve" oncommand="setResolve(this.value);">
+                                <menulist id="DefaultResolve">
                                     <menupopup>
                                         <menuitem label="&synckolab.settings.ResolveAsk;"
                                             value="ask"/>

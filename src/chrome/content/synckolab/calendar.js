@@ -58,6 +58,7 @@ var syncCalendar = {
 	gCalendarName: '', // the calendar name
 	gCalendar: '', // the calendar
 	gCalendarEvents: '', // all events from the calendar
+	gCalDB: '', // hashmap for all the events (faster than iterating on big numbers)
 	format: 'Xml', // the format iCal/Xml	
 	folderMessageUids: '',
 	
@@ -172,6 +173,12 @@ var syncCalendar = {
 			this.dbFile = getHashDataBaseFile (config + ".cal");
 			
 		this.gConfig = config;
+
+		// card hashmap
+		this.gCalDB = new SKMap();
+		// fill the hasmap
+		for (var i =0; i < this.gEvents.events.length; i++)
+			this.gCalDB.put(this.gEvents.events[i].id, this.gEvents.events[i]);
 	},
 	
 	init2: function (nextFunc, sync)	{
@@ -285,7 +292,7 @@ var syncCalendar = {
 		this.folderMessageUids.push(parsedEvent.id);
 		
 		// ok lets see if we have this one already 
-		var foundEvent = findEvent (this.gEvents, parsedEvent.id);
+		var foundEvent = findEvent (this.gCalDB, parsedEvent.id);
 		
 		// get the dbfile from the local disk
 		var idxEntry = getSyncDbFile(this.gConfig, this.getType(), parsedEvent.id);
@@ -312,6 +319,8 @@ var syncCalendar = {
 				
     			// add the new event
     			this.gCalendar.addItem(parsedEvent, this.gEvents);
+				// also add to the hash-database
+				this.gCalDB.put(parsedEvent.id, parsedEvent);
 
 				logMessage("added locally:" + parsedEvent.id, LOG_CAL + LOG_INFO);
 			}

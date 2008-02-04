@@ -89,7 +89,7 @@ var LOG_AB = 8;
 var LOG_ALL = 12;
 
 var DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + LOG_DEBUG;
-var SWITCH_TIME = 100;
+var SWITCH_TIME = 20; //wait 20ms
 
 // set this to true and on every error there will be a pause so you can check the logs
 var PAUSE_ON_ERROR = false;
@@ -102,7 +102,6 @@ var doHideWindow = false;
 
 function syncKolabTimer ()
 {
-	logMessage("SyncKolab Sync Event start....", LOG_DEBUG);
 	gSyncTimer++;
 	
 	// no valid configuration or not yet read... lets see
@@ -788,7 +787,19 @@ function parseMessageRunner ()
 			curCounter.setAttribute("value", curMessage + "/" + totalMessages);
 		else
 			curCounter.setAttribute("label", curMessage + "/" + totalMessages);
-		
+
+		if (curMessage%20 == 0)
+		{
+			// save the sync db file every 20 messages.. should speed up sync if canceled
+		    logMessage("Writing message sny-cdb", LOG_DEBUG);
+	    
+		    // write the db file back
+		    if (syncMessageDb == null)
+			    logMessage("syncMessageDB is null: " + gSync.dbFile, LOG_ERROR);
+		    else
+			    writeDataBase(gSync.dbFile, syncMessageDb);
+		}
+				
 		// next message
 		window.setTimeout(getMessage, SWITCH_TIME);	
 	}
@@ -807,13 +818,11 @@ function parseFolderToAddressFinish ()
 	// do step 5
 	curStep = 5;
 	writeDone = false;
-    logMessage("parseFolderToAddressFinish", LOG_DEBUG);
+    logMessage("parseFolderToAddressFinish (Writing message db)", LOG_DEBUG);
     
     // write the db file back
     if (syncMessageDb == null)
-    {
 	    logMessage("syncMessageDB is null: " + gSync.dbFile, LOG_ERROR);
-    }
     else
 	    writeDataBase(gSync.dbFile, syncMessageDb);
 

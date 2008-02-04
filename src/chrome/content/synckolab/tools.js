@@ -469,7 +469,7 @@ function writeDataBase(dbf, db)
 	logMessage("Writing database file: " + dbf.path, LOG_INFO);
 	if (dbf.exists()) 
 		dbf.remove(true);
-	dbf.create(dbf.NORMAL_FILE_TYPE, 0666);
+	dbf.create(dbf.NORMAL_FILE_TYPE, 0640);
  	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
  	stream.init(dbf, 2, 0x200, false); // open as "write only"
  	for (var i = 0; i < db.length; i++)
@@ -550,38 +550,10 @@ function copyToLocalFolder (fileName, folderUri)
  */
 function findCard (cards, vId, directory)
 {
-	// start from beginning
-	try
-	{
-		cards.first();
-	}
-	catch (ex)
-	{
-		return null;
-	}
-	
-	var card = null;
-	while ((card = cards.currentItem ()) != null)
-	{
-		// get the right interface
-		card = card.QueryInterface(Components.interfaces.nsIAbCard);
-		
-		if (card.custom4 == vId)
-		{
-			return card;
-		}
-			
-		// cycle
-		try
-		{
-			cards.next();
-		}
-		catch (ex)
-		{
-			return null;
-		}
-	}
 	// nothing found - try mailing lists
+	var card = cards.get(vId);
+	if (card != null)
+		return card;
 	
 	if (directory != null)
 	{
@@ -1582,3 +1554,84 @@ function JavaScriptBase64()
         return result;
     }
 }
+
+
+/**
+ * HashMap class to speed up searches
+ */ 
+function SKKeyValue( key, value )
+{
+    this.key = key;
+    this.value = value;
+}
+
+/**
+ * Initial pime number used as seed: 521
+ */
+function SKMap()
+{
+    this.len = 0;
+	this.seed = 521;
+    this.array = new Array(this.seed);    
+    // fill the array
+    for (var k = 0; k < this.seed; k++)
+    	this.array[k] = new Array();
+}
+
+SKMap.prototype.getIKey = function (key)
+{
+	var sum = 0;
+	for (var k = 0; k < key.length; k++)
+		sum += key.charCodeAt(k);
+	return sum;
+}
+
+SKMap.prototype.put = function( key, value )
+{
+    if( ( typeof key != "undefined" ) && ( typeof value != "undefined" ) )
+    {
+    	// get a key
+    	var ikey = this.getIKey(key) % this.seed;
+    	var car = this.array[ikey];
+        car[car.length] = new SKKeyValue( key, value );
+        this.len++;
+    }
+}
+
+SKMap.prototype.delete = function( key )
+{
+   	// get a key
+   	var ikey = this.getIKey(key) % this.seed;
+   	var car = this.array[ikey];
+   	
+    for( var k = 0 ; k < car.length ; k++ )
+    {
+        if( car[k].key == key ) {
+        	car[k].splice(k, 1);
+	        this.len--;
+            return true;
+        }
+    }
+    return false;
+}
+
+SKMap.prototype.get = function( key )
+{
+   	// get a key
+   	var ikey = this.getIKey(key) % this.seed;   	
+   	var car = this.array[ikey];
+   	
+    for( var k = 0 ; k < car.length ; k++ )
+    {
+        if( car[k].key == key ) {
+            return car[k].value;
+        }
+    }
+    return null;
+}
+
+SKMap.prototype.length = function()
+{
+    return this.len;
+}
+ 

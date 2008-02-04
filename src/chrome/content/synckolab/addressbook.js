@@ -50,7 +50,8 @@ var syncAddressBook = {
 	gCurUID: '', // save the last checked uid - for external use
 
 	gAddressBook: '', // the addressbook type nsIAbDirectory
-	gCards: '', // remember the current card list
+	gCards: '', // remember the current card list 
+	gCardDB: '', // hashmap for all the cards (faster than iterating on big numbers)
 	folder: '', // the contact folder type nsIMsgFolder
 	folderMsgURI: '', // the message uri
 	gSyncTimeFrame: 0, // time frame to take into account (for adress book always 0=all)
@@ -136,7 +137,34 @@ var syncAddressBook = {
 		this.dbFile = getHashDataBaseFile (config + ".ab");
 		
 		// get the sync config
-		this.gConfig = config;
+		this.gConfig = config;		
+		
+		// card hashmap
+		this.gCardDB = new SKMap();
+		
+		// fill the hashmap
+		var lCards = this.gAddressBook.childCards;	
+		var card = lCards.first();
+		while ((card = lCards.currentItem ()) != null)
+		{
+			// get the right interface
+			card = card.QueryInterface(Components.interfaces.nsIAbCard);
+			// only save the cards that do have a custom4
+			if (getUID(card) != null && getUID(card) != "" )
+			{
+				this.gCardDB.put(getUID(card), card);
+			}
+				
+			// cycle
+			try
+			{
+				lCards.next();
+			}
+			catch (ex)
+			{
+				break;
+			}
+		}		
 	},
 
 	/**
@@ -177,8 +205,6 @@ var syncAddressBook = {
 	 * new message content is returned otherwise null
 	 */	
 	parseMessage: function(fileContent) {
-		var cards = this.gAddressBook.childCards;
-		
 		// the new card might be a card OR a directory
 		var newItem = null; 
 		
@@ -209,7 +235,7 @@ var syncAddressBook = {
 		var messageFields = new Array();		
 		
 		// parse the new item
-		newItem = parseMessage(fileContent, messageFields, cards);
+		newItem = parseMessage(fileContent, messageFields, this.gCardDB);
 		
 		newCard = newItem;
 		/*
@@ -245,12 +271,14 @@ var syncAddressBook = {
 				this.curItemInListContent.setAttribute("label", newCard.firstName + " " + newCard.lastName + " <" + newCard.primaryEmail + ">");
 
 			// ok lets see if we have this one already (remember custom4=UID except for mailing list)
-			var aCard = findCard (cards, getUID(newCard), this.gAddressBook);
+			var aCard = this.gCardDB.get(getUID(newCard));
+			logMessage("findCard.. done " , LOG_DEBUG + LOG_AB);	
 
 			// get the dbfile from the local disk
 			var cEntry = getSyncDbFile	(this.gConfig, this.getType(), getUID(newCard));
 			// ... and the field file
 			var fEntry = getSyncFieldFile(this.gConfig, this.getType(), getUID(newCard));
+			logMessage("get snnc db and field file " , LOG_DEBUG + LOG_AB);	
 
 			// a new card or locally deleted 
 			if (aCard == null)
@@ -272,7 +300,12 @@ var syncAddressBook = {
 					if (newCard.isMailList)
 						this.gAddressBook.addMailList(newCard);
 					else					
+					{
 						this.gAddressBook.addCard (newCard);
+						// also add to the hash-database
+						this.gCardDB.put(getUID(newCard), newCard);
+					}
+						
 						
 					logMessage("card is new, add to address book: " + getUID(newCard), LOG_INFO + LOG_AB);	
 					
@@ -312,7 +345,7 @@ var syncAddressBook = {
 			// this card is already in the adress book
 			{
 				// make sure to ONLY read the info.. do not get the extra fields from there
-				var cCard = parseMessage(readSyncDBFile(cEntry), null, cards);
+				var cCard = parseMessage(readSyncDBFile(cEntry), null, this.gCardDB);
 				
 				// compare each card with each other
 				if (cEntry.exists() && !equalsContact(cCard, aCard) && !equalsContact(cCard, newCard) )

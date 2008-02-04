@@ -93,10 +93,7 @@ function isCalendarAvailable ()
  */
 function findEvent(events, uid)
 {
-	for (var i =0; i < events.events.length; i++)
-		if (events.events[i].id == uid)
-			return events.events[i];
-	return null;
+	return events.get(uid);
 }
 
 
