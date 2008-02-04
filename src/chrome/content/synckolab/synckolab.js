@@ -236,7 +236,7 @@ function startSync(event) {
 	   getService(Components.interfaces.nsIProperties).
 	   get("TmpD", Components.interfaces.nsIFile);
 	file.append("syncKolab.tmp");
-	file.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0664);
+	file.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0600);
 	gTmpFile = file.path;
 	
 	syncConfigs = new Array();
@@ -908,7 +908,7 @@ function updateContentWrite ()
 		{
 			// write the message in the temp file
 			var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
-			logMessage("adding [" + content + "] to messages", LOG_INFO);
+			logMessage("adding [" + content + "] to messages", LOG_DEBUG);
 			// temp path
 			sfile.initWithPath(gTmpFile);
 			if (sfile.exists()) 
