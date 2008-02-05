@@ -1361,7 +1361,7 @@ function saveSingleConfig()
 	 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
 	 	stream.init(thefile, 2, 0x200, false); // open as "write only"
 
-		var s = "# SyncKolab V0.5.0 Configuration File\n";
+		var s = "# SyncKolab V0.6.0 Configuration File\n";
 		stream.write(s, s.length);
 		writeLine(stream, "Configuration", configName);
 		
@@ -1588,7 +1588,7 @@ function saveAllConfig()
 	 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
 	 	stream.init(thefile, 2, 0x200, false); // open as "write only"
 
-		var s = "# SyncKolab V0.5.0 Configuration File\n";
+		var s = "# SyncKolab V0.6.0 Configuration File\n";
 		stream.write(s, s.length);
 
 		// generate the configuration in the tree control 	
