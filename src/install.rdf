@@ -14,7 +14,7 @@
     <!-- Front End MetaData -->
     <em:id>{571CFACF-0F7D-49b4-BD77-E6FC7B209ADC}</em:id>
     <em:name>Sync Kolab</em:name>
-    <em:version>0.5.4</em:version>
+    <em:version>0.6.0</em:version>
     <em:type>2</em:type>
     <em:description>Synchronize the address book and calendar with IMAP folder or Kolab1/2 server</em:description>
     <em:creator>Niko Berger</em:creator>
@@ -22,10 +22,11 @@
     <em:optionsURL>chrome://synckolab/content/synckolabPref.xul</em:optionsURL>
     <em:updateURL>http://www.gargan.org/extensions/update.rdf</em:updateURL>
 
-    <em:contributor>Andreas Gungl;a.gungl@gmx.de</em:contributor>    
-    <em:contributor>Steven D Miller (Copart);stevendm@rellims.com</em:contributor>
-    <em:contributor>Michele Petrazzo; michele.petrazzo@unipex.it; www.unipex.it</em:contributor>
+    <em:contributor>Andreas Gungl;a.gungl(at)gmx.de</em:contributor>    
+    <em:contributor>Steven D Miller (Copart);stevendm(at)rellims.com</em:contributor>
+    <em:contributor>Michele Petrazzo; michele.petrazzo(at)unipex.it; www.unipex.it</em:contributor>
     <em:contributor>Leona Okamura</em:contributor>
+    <em:contributor>Farkas Levente</em:contributor>
     <em:contributor>Hanus VAVRCIK aka Hank</em:contributor>
 
     <!-- Front End Integration Hooks (used by Extension Manager)-->
@@ -39,19 +40,10 @@
 		<em:locale>locale/it/</em:locale>
 		<em:locale>locale/ja-JP/</em:locale>
 		<em:locale>locale/cs-CZ/</em:locale>
+		<em:locale>locale/hu-HU/</em:locale>
         <em:skin>skin/classic/synckolab/</em:skin>
       </Description>
     </em:file>
-    <!--
-    no need for requirement - i hope :)
-    <em:requires>
-			<Description>
-				<em:id>{ba11627a-63c4-afc3-f89a-e1eab733051b}</em:id>
-				<em:minVersion>1.2</em:minVersion>
-				<em:maxVersion>1.2+</em:maxVersion>
-			</Description>
-		</em:requires>
-		-->
   <em:targetPlatform/><em:aboutURL/><em:iconURL/></Description>      
   
 </RDF>
