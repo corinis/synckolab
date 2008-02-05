@@ -144,27 +144,30 @@ var syncAddressBook = {
 		
 		// fill the hashmap
 		var lCards = this.gAddressBook.childCards;	
-		var card = lCards.first();
-		while ((card = lCards.currentItem ()) != null)
+		if (lCards != null)
 		{
-			// get the right interface
-			card = card.QueryInterface(Components.interfaces.nsIAbCard);
-			// only save the cards that do have a custom4
-			if (getUID(card) != null && getUID(card) != "" )
+			var card = lCards.first();
+			while ((card = lCards.currentItem ()) != null)
 			{
-				this.gCardDB.put(getUID(card), card);
-			}
-				
-			// cycle
-			try
-			{
-				lCards.next();
-			}
-			catch (ex)
-			{
-				break;
-			}
-		}		
+				// get the right interface
+				card = card.QueryInterface(Components.interfaces.nsIAbCard);
+				// only save the cards that do have a custom4
+				if (getUID(card) != null && getUID(card) != "" )
+				{
+					this.gCardDB.put(getUID(card), card);
+				}
+					
+				// cycle
+				try
+				{
+					lCards.next();
+				}
+				catch (ex)
+				{
+					break;
+				}
+			}		
+		}
 	},
 
 	/**
