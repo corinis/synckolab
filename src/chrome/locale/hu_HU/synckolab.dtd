@@ -1,0 +1,97 @@
+<!-- buttons -->
+<!ENTITY synckolab.syncMenu.label				"SyncKolab indítása">
+<!ENTITY synckolab.optionMenu.label				"SyncKolab beállítások">
+
+<!ENTITY synckolab.sync.label					"Sync Kolab">
+<!ENTITY synckolab.sync.tip						"Mappák szinkronizálása">
+
+<!ENTITY synckolab.contactConflict.dialogTitle		"Névjegy ütközés">
+<!ENTITY synckolab.contactConflict.dialogMessage	"Ütközést találtünk. Kérjük válassza ki melyik verziót használja az egyes mezőkre.">
+
+<!ENTITY synckolab.settings.Account		"Felhasználó">
+<!ENTITY synckolab.settings.abook		"Címjegyzék">
+<!ENTITY synckolab.settings.Contact		"Kapcsolat">
+<!ENTITY synckolab.settings.Calendar	"Naptár">
+<!ENTITY synckolab.settings.Tasks		"Feladatok">
+
+<!ENTITY synckolab.settings.ContactFolder	"Kapcsolat mappa">
+<!ENTITY synckolab.settings.ContactFormat	"Kapcsolat formátum">
+<!ENTITY synckolab.settings.SaveToImap		"Mentés Imap mappába">
+<!ENTITY synckolab.settings.Configuration	"Beállítások">
+<!ENTITY synckolab.settings.CalendarFormat	"Naptár formátum">
+<!ENTITY synckolab.settings.CalendarFolder	"Naptár mappa">
+<!ENTITY synckolab.settings.TaskFormat		"Fromátum">
+<!ENTITY synckolab.settings.TaskFolder		"Mappa">
+<!ENTITY synckolab.settings.SyncContacts	"Kapcsolatok szinkronizálása">
+<!ENTITY synckolab.settings.SyncCalendar	"Naptár szinkronizálása">
+<!ENTITY synckolab.settings.SyncTasks		"Feladatok szinkronizálása">
+<!ENTITY synckolab.settings.CloseWindow		"Szinkronizációs ablak bezárása mikor végzett">
+<!ENTITY synckolab.settings.add				"Új">
+<!ENTITY synckolab.settings.load			"Betölt">
+<!ENTITY synckolab.settings.saveSingle		"Export">
+<!ENTITY synckolab.settings.saveAll			"Export mindent">
+<!ENTITY synckolab.settings.del				"Töröl">
+<!ENTITY synckolab.settings.SyncCalendar	"Naptár szinkronizálása">
+<!ENTITY synckolab.settings.SyncCalendarTip	"válaszd ha szinkronizálni akarod a naptárat a beállításokkal">
+<!ENTITY synckolab.settings.SyncContacts	"Kapcsolatok szinkronizálása">
+<!ENTITY synckolab.settings.SyncContactsTip	"válaszd ha szinkronizálni akarod a címjegyzéket a beállításokkal">
+<!ENTITY synckolab.settings.SyncTasks		"Feladatok szinkronizálása">
+<!ENTITY synckolab.settings.SyncTasksTip	"válaszd ha szinkronizálni akarod a feladatokat a beállításokkal">
+<!ENTITY synckolab.settings.FormatTip		"Válaszd az XML formátumot, ha Kolab2 szervered van. Egyébént maradj a vcard/ical standardnál.">
+<!ENTITY synckolab.settings.DefaultResolve	"ütközés szinkronizáció közben: ">
+<!ENTITY synckolab.settings.ResolveAsk		"kérdezz">
+<!ENTITY synckolab.settings.ResolveServer	"használd a szerveren lévő verziót">
+<!ENTITY synckolab.settings.ResolveClient	"használd a helyi verziót">
+<!ENTITY synckolab.settings.ResolveSmart	"Automatikus összefésülés és feloldás">
+<!ENTITY synckolab.settings.CalSyncTimeframe	"Hagyd figyelmen kívül a régebbi elemeket mint ">
+<!ENTITY synckolab.settings.TimeframeSyncDays	" nap">
+
+<!ENTITY synckolab.settings.Updates			"Frissítésért nézd meg a:">
+
+<!ENTITY synckolab.settings.imapAcctTip 			"Csak imap fiókot támogatunk, más fiók típus nem lesz szinkronizálva.">
+<!ENTITY synckolab.settings.SyncKolabHeader			"SyncKolab">
+<!ENTITY synckolab.settings.SyncKolabDescription 	"SyncKolab segítségéval szinkronizálhatod a címjegyzékeidet és a naptáraidat több gépre egy imap szervert használva.">
+<!ENTITY synckolab.settings.DescKolabServer 		"Teljes csoportmunka támogatásához megnézheted a kolab szervert: ">
+<!ENTITY synckolab.settings.DescOtherClients 		"Más kliensek amivel a SyncKolab kompatibilis: ">
+
+<!-- Account Tab -->
+<!ENTITY synckolab.settings.AccountDescription	"Kérjük válasszon egy IMAP Fiókot a szinkronizációhoz">
+<!ENTITY synckolab.settings.SyncInterval 		"Sync-intervallum: ">
+<!ENTITY synckolab.settings.SyncIntervalDescription "Adja meg az intervallumot milyen gyakran a SyncKolab ellenörízze a frissítéseket. Használja a 0-t ha csak kézzel akar szinkronizálni.">
+<!ENTITY synckolab.settings.SyncIntervalMinutes "perc">
+<!ENTITY synckolab.settings.SaveToImapTip		"Ne válassza ki ezt, ha nem akar semmit sem írni az imap szerverre (csak olvasásra)">
+<!ENTITY synckolab.settings.HiddenWindow		"Sync ablak elrejtése mikor szinkronizál">
+
+<!-- New Config Wizard -->
+<!ENTITY synckolab.newwizard.title 		"SyncKolab Setup Wizard">
+<!ENTITY synckolab.wizard.LongDescription	"A következő oldalakon választhat minden típushoz (naptár, címjegyzék, feladatok) a mappát az imap szerveren amelyikkel szinkronizál. Azt is beállíthatja, hogy csak olvasási módban használja a szervert (semmit sem ír vissza az imap szerverre - a megosztott mappába) és a típust (xml Kolab2 szerverhez vagy vcard/ical).">
+<!ENTITY synckolab.newwizard.intro 		"SyncKolab segítségéval szinkronizálhatod a címjegyzékeidet és a naptáraidat több gépre egy imap szervert használva.">
+<!ENTITY synckolab.newwizard.selectAccount	"Kérjük válasszon egy IMAP Fiókot a szinkronizációhoz">
+<!ENTITY synckolab.newwizard.configName	"Megjelenítési név">
+<!ENTITY synckolab.newwizard.descName "A megjelenítési névnek nincs más feladata csak hogy tudd azonosítani az adott beállítást. Ezért ajánlott beszédes nevet választani ha több beállításod/mappád van (pl. Megosztott címek, Hivatali Naptár, Otthoni feladatok). Figyelj rá hogy ne legye ugyanolyan nevü beállítás és ne tartalmazzon speciális karaktereket mint: .-[]# ">
+<!ENTITY synckolab.wizard.AccountIntervalDescription "Válassz egy IMAP Fiókot és add meg az alap beállításokat">
+<!ENTITY synckolab.wizard.typePageDesc	"Válaszd ki hogy mely információkat kell szinkronizálni a kiválasztott IMAP Fiókkal">
+<!ENTITY synckolab.wizard.typePageLongDesc	"Minden egyes SyncKolab beállításhoz egy imap szerver egy mappáját használhatod, hogy szinkronizáld az egyes választható mappákat vagy a címjegyzék, a naptár és-vagy a feladatokat">
+<!ENTITY synckolab.wizard.typePageContact	"Válaszd ki ha szinkronizálni akarod a kapcsolatokat egy imap mappából a helyi thunderbird címjegyzékbe">
+<!ENTITY synckolab.wizard.typePageCalendar	"Válaszd ki ha szinkronizálni akarod az eseményeket egy imap mappából a helyi naptárba">
+<!ENTITY synckolab.wizard.typePageTasks		"Válaszd ki ha szinkronizálni akarod a feladatokat egy imap mappából a helyi naptárad feladataiba">
+<!ENTITY synckolab.wizard.conPageInfo	"Válaszd ki a szinkronizálandó címjegyzéket és a mappát. ">
+<!ENTITY synckolab.wizard.calPageInfo	"Válaszd ki a szinkronizálandó naptárat és mappát.">
+<!ENTITY synckolab.wizard.taskPageInfo	"Válaszd ki a szinkronizálandó naptárat a feladatokhoz és mappát.">
+<!ENTITY synckolab.newwizard.DoneText	"Sikeresen létrehoztál egy új beállítást a SyncKolabhoz. Most már elkezdheted a szinkonizációt 'Eszközök/Start SyncKolab'.">
+<!ENTITY synckolab.newwizard.DoneText2	"Ha valamilyen hiba történt (pl. a szinkronizáció hirtelen megakadt vagy valamely elemet nem tudott feldolgozni - légy szíves az 'Eszközök/Hibakonzol' tartalmával együtt) vagy ha bármi javaslatod van, bátran irjál a levelezési listára vagy hozz létre egy új bugzilla elemet">
+
+<!-- other -->
+<!ENTITY synckolab.with			"val">
+<!ENTITY synckolab.proprietary 	"védett">
+
+<!-- progress window -->
+<!ENTITY synckolab.progress.Pause			"Szünet">
+<!ENTITY synckolab.progress.UnPause			"Ujraindít">
+<!ENTITY synckolab.progress.Cancel			"Megszakít">
+<!ENTITY synckolab.progress.CurrentProgress	"Aktuális állapot">
+<!ENTITY synckolab.progress.status			"Státusz">
+<!ENTITY synckolab.progress.content			"Tartalom">
+<!ENTITY synckolab.progress.message			"Üzenet">
+<!ENTITY synckolab.progress.CurrentAction	"Aktuális esemény">
+<!ENTITY synckolab.progress.Processing		"Feldolgozás">
