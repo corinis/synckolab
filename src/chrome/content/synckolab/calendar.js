@@ -176,6 +176,7 @@ var syncCalendar = {
 
 		// card hashmap
 		this.gCalDB = new SKMap();
+
 		// fill the hasmap
 		for (var i =0; i < this.gEvents.events.length; i++)
 			this.gCalDB.put(this.gEvents.events[i].id, this.gEvents.events[i]);

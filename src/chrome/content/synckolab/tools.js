@@ -171,7 +171,7 @@ function getSyncDbFile (config, type, id)
 	if (!file.exists())
 		file.create(1, 0775);
 		
-	file.append("type");
+	file.append(type);
 	
 	if (!file.exists())
 		file.create(1, 0775);
@@ -1426,7 +1426,7 @@ function addField (a, name, value)
  * this also creates the required subdirectories if not yet existant
  * you can use the .exists() function to check if we go this one already
  */
-function getSyncFieldFile (config, cal, id)
+function getSyncFieldFile (config, type, id)
 {
 	id = id.replace(/[ :.;$\\\/]/g, "_");
 	var file = Components.classes["@mozilla.org/file/directory_service;1"].
@@ -1435,10 +1435,7 @@ function getSyncFieldFile (config, cal, id)
 	file.append("synckolab");
 	if (!file.exists())
 		file.create(1, 0775);
-	if (cal)
-		file.append("calendar");
-	else
-		file.append("contact");
+	file.append(type);
 	if (!file.exists())
 		file.create(1, 0775);
 
