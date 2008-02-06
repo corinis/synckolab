@@ -255,7 +255,6 @@ var syncAddressBook = {
 	 * new message content is returned otherwise null
 	 */	
 	parseMessage: function(fileContent) {
-	   	logMessage("AB: parsing message... ", LOG_DEBUG);
 		// the new card might be a card OR a directory
 		var newItem = null; 
 		

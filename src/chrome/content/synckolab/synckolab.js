@@ -546,6 +546,7 @@ function getContent ()
 	window.setTimeout(getMessage, SWITCH_TIME);	
 }
 
+var gLastMessageDBHdr; // save last message header
 
 // Get the current message into a string and then go to parseMessageRunner
 function getMessage ()
@@ -646,6 +647,7 @@ function getMessage ()
 	 cur.messageSize 
 	 cur.date (PRTime) ?
 	*/
+	gLastMessageDBHdr = cur;
 	gSyncFileKey = getDbEntryIdx(cur.mime2DecodedSubject, syncMessageDb);
 
 	gSyncKeyInfo = cur.mime2DecodedSubject;
@@ -761,10 +763,11 @@ function parseMessageRunner ()
 	if (content != null)
 	{
 		if (content == "DELETEME")
-			logMessage("updating and deleting [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]", LOG_INFO);
+			logMessage("updating and/or deleting [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]", LOG_INFO);
 		else
 			logMessage("updating [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]", LOG_INFO);
-		updateMessages.push(gSync.folderMsgURI +"#"+gCurMessageKey); 
+		// adding message to list of to-delete messages - gSync.folderMsgURI +"#"+
+		updateMessages.push(gLastMessageDBHdr); 
 		updateMessagesContent.push(content); 
 		logMessage("changed msg #" + updateMessages.length, LOG_INFO);
 	}
@@ -872,8 +875,8 @@ function updateContent()
 			for (var i = 0; i < updateMessages.length; i++)
 			{
 				logMessage("deleting [" + updateMessages[i] + "]");
-				var hdr = gSyncKolabMessageService.messageURIToMsgHdr(updateMessages[i]);
-				list.AppendElement(hdr);		
+				//var hdr = gSyncKolabMessageService.messageURIToMsgHdr(updateMessages[i]);
+				list.AppendElement(updateMessages[i]);	
 		    
 			}
 			gSync.folder.deleteMessages (list, msgWindow, true, false, null, true);		
