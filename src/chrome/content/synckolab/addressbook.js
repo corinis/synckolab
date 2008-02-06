@@ -175,26 +175,32 @@ var syncAddressBook = {
 			else
 			//tbird 2
 			{
-				card = lCards.first();
-				while ((card = lCards.currentItem ()) != null)				
+				try {
+					card = lCards.first();
+					while ((card = lCards.currentItem ()) != null)				
+					{
+						// get the right interface
+						card = card.QueryInterface(Components.interfaces.nsIAbCard);
+						// only save the cards that do have a custom4
+						if (getUID(card) != null && getUID(card) != "" )
+						{
+							this.gCardDB.put(getUID(card), card);
+						}
+							
+						// cycle
+						try
+						{
+							lCards.next();
+						}
+						catch (ex)
+						{
+							break;
+						}		
+					}
+				}
+				catch (ex)
 				{
-					// get the right interface
-					card = card.QueryInterface(Components.interfaces.nsIAbCard);
-					// only save the cards that do have a custom4
-					if (getUID(card) != null && getUID(card) != "" )
-					{
-						this.gCardDB.put(getUID(card), card);
-					}
-						
-					// cycle
-					try
-					{
-						lCards.next();
-					}
-					catch (ex)
-					{
-						break;
-					}		
+				   	logMessage("AB: Empty address book (exception on first)... ", LOG_DEBUG);				
 				}
 			}
 		}
