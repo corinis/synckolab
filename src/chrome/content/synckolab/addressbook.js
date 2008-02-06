@@ -124,7 +124,17 @@ var syncAddressBook = {
 		while (ABook != null)
 		{
 			var cur = ABook.QueryInterface(Components.interfaces.nsIAbDirectory);
-			if (cur.directoryProperties.fileName == addressBookName)
+			// tbird < 3: use directoryProperties			
+			if (cur.directoryProperties)
+			{
+				if (cur.directoryProperties.fileName == addressBookName)
+				{
+					this.gAddressBook = cur;
+					break;
+				}
+			}
+			else
+			if (cur.dirName == addressBookName)
 			{
 				this.gAddressBook = cur;
 				break;
@@ -143,30 +153,50 @@ var syncAddressBook = {
 		this.gCardDB = new SKMap();
 		
 		// fill the hashmap
-		var lCards = this.gAddressBook.childCards;	
+		var lCards = this.gAddressBook.childCards;
+		// tbird 2 has nsIAbDirectory.Cards
+		if (lCards == null)
+			lCards = this.gAddressBook.Cards;
 		if (lCards != null)
 		{
-			var card = lCards.first();
-			while ((card = lCards.currentItem ()) != null)
+			var card = null;
+			// tbird 3 method:
+			if (lCards.hasMoreElements)
+				while (lCards.hasMoreElements() && (card = lCards.getNext ()) != null)
+				{
+					// get the right interface
+					card = card.QueryInterface(Components.interfaces.nsIAbCard);
+					// only save the cards that do have a custom4
+					if (getUID(card) != null && getUID(card) != "" )
+					{
+						this.gCardDB.put(getUID(card), card);
+					}
+				}		
+			else
+			//tbird 2
 			{
-				// get the right interface
-				card = card.QueryInterface(Components.interfaces.nsIAbCard);
-				// only save the cards that do have a custom4
-				if (getUID(card) != null && getUID(card) != "" )
+				card = lCards.first();
+				while ((card = lCards.currentItem ()) != null)				
 				{
-					this.gCardDB.put(getUID(card), card);
+					// get the right interface
+					card = card.QueryInterface(Components.interfaces.nsIAbCard);
+					// only save the cards that do have a custom4
+					if (getUID(card) != null && getUID(card) != "" )
+					{
+						this.gCardDB.put(getUID(card), card);
+					}
+						
+					// cycle
+					try
+					{
+						lCards.next();
+					}
+					catch (ex)
+					{
+						break;
+					}		
 				}
-					
-				// cycle
-				try
-				{
-					lCards.next();
-				}
-				catch (ex)
-				{
-					break;
-				}
-			}		
+			}
 		}
 	},
 
@@ -175,31 +205,42 @@ var syncAddressBook = {
 	 */
 	itemCount: function() {
 		var cards = this.gAddressBook.childCards;
+		// tbird 2
+		if (cards == null)
+			cards = this.gAddressBook.Cards;
+		
 		var i = 0;
-		
-		try
+		if (cards.hasMoreElements)
+			while (cards.hasMoreElements() && cards.getNext())
+				i++;
+		// tbird 2
+		else
 		{
-			cards.first();
-		}
-		catch (ex)
-		{
-			return 0;
-		}
-		
-		while (cards.currentItem () != null)
-		{
-			i++;
-				
-			// cycle
 			try
 			{
-				cards.next();
+				cards.first();
 			}
 			catch (ex)
 			{
-				return i;
+				return 0;
+			}
+			
+			while (cards.currentItem () != null)
+			{
+				i++;
+					
+				// cycle
+				try
+				{
+					cards.next();
+				}
+				catch (ex)
+				{
+					return i;
+				}
 			}
 		}
+		
 		return i;
 	},
 	
@@ -208,6 +249,7 @@ var syncAddressBook = {
 	 * new message content is returned otherwise null
 	 */	
 	parseMessage: function(fileContent) {
+	   	logMessage("AB: parsing message... ", LOG_DEBUG);
 		// the new card might be a card OR a directory
 		var newItem = null; 
 		
@@ -217,20 +259,27 @@ var syncAddressBook = {
 		this.curItemInListStatus = document.createElement("listcell");
 		this.curItemInListContent = document.createElement("listcell");
 		this.curItemInListId.setAttribute("label", strBundle.getString("unknown"));
+		this.curItemInListId.setAttribute("value", "-");
 		this.curItemInListStatus.setAttribute("label", strBundle.getString("parsing"));
+		this.curItemInListStatus.setAttribute("value", "-");
 		this.curItemInListContent.setAttribute("label", strBundle.getString("unknown"));
+		this.curItemInListContent.setAttribute("value", "-");
 		
-
 		this.curItemInList.appendChild(this.curItemInListId);
 		this.curItemInList.appendChild(this.curItemInListStatus);
 		this.curItemInList.appendChild(this.curItemInListContent);
 		
 		if (this.itemList != null)
 		{
+			// tbird 3: STOPS here!!!
+		   	logMessage("AB: appendline... (TBIRD 3: this will be the last you see...)", LOG_DEBUG);
 			this.itemList.appendChild(this.curItemInList);
+		   	logMessage("AB: after appendline... ", LOG_DEBUG);
 			scrollToBottom();
 		}
 		
+	   	logMessage("AB: strip mail header... ", LOG_DEBUG);
+
 		// get the content in a nice format
 		fileContent = stripMailHeader(fileContent);
 		
@@ -514,14 +563,20 @@ var syncAddressBook = {
 		this.gCards = this.gAddressBook.childCards;
 		this.deleteList = Components.classes["@mozilla.org/supports-array;1"]
 							.createInstance(Components.interfaces.nsISupportsArray);		
-		try
+
+		// tbird 2
+		if (!this.gCards.hasMoreElements)
 		{
-			this.gCards.first();
+			try
+			{
+				this.gCards.first();
+			}
+			catch (ex)
+			{
+				return false;
+			}
 		}
-		catch (ex)
-		{
-			return false;
-		}
+							
 		return true;
 	},
 	
@@ -531,17 +586,40 @@ var syncAddressBook = {
 	nextUpdate: function () {
 		var cur;
 		// if there happens an exception, we are done
-		try
+		if (this.gCards.hasMoreElements)
 		{
-			cur = this.gCards.currentItem().QueryInterface(Components.interfaces.nsIAbCard);
+			if (!this.gCards.hasMoreElements())
+			{
+				// we are done
+				logMessage("Finished syncing adress book", LOG_INFO);
+				return "done";
+			}
+			
+			try
+			{
+				cur = this.gCards.getNext().QueryInterface(Components.interfaces.nsIAbCard);
+			}
+			catch (ext)
+			{
+				// we are done
+				logMessage("Bad - Finished syncing adress book", LOG_INFO);
+				return "done";
+			}
 		}
-		catch (ext)
+		// tbird 2
+		else
 		{
-			// we are done
-			logMessage("Finished syncing adress book", LOG_INFO);
-			return "done";
-		}
-		
+			try
+			{
+				cur = this.gCards.currentItem().QueryInterface(Components.interfaces.nsIAbCard);
+			}
+			catch (ext)
+			{
+				// we are done
+				logMessage("Finished syncing adress book", LOG_INFO);
+				return "done";
+			}
+		}		
 		var content = null;
 		
 		curItem = cur;
@@ -732,16 +810,20 @@ var syncAddressBook = {
 			}
 		}
 	
-		try
+		// tbird 2
+		if (this.gCards.next)
 		{
-			// select the next card
-			this.gCards.next();
+			try
+			{
+				// select the next card
+				this.gCards.next();
+			}
+			catch (ext)
+			{
+				// no next.. but we find that out early enough
+			}
 		}
-		catch (ext)
-		{
-			// no next.. but we find that out early enough
-		}
-		
+				
 		// return the cards content
 		return content;			
 	},

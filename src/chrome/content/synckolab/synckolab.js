@@ -293,7 +293,7 @@ function nextSync()
 			syncAddressBook.folderMsgURI = syncAddressBook.folder.baseMessageURI;
 			syncAddressBook.email = getAccountEMail(syncAddressBook.serverKey);
 			syncAddressBook.name = getAccountName(syncAddressBook.serverKey);
-			
+						
 			// display stuff
 			syncAddressBook.itemList = itemList;
 			

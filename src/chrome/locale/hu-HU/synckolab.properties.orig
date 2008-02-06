@@ -1,0 +1,34 @@
+contacts=Címjegyzék
+calendar=Naptár
+tasks=Feladatok
+aboutSyncKolab=SyncKolab névjegye
+saveConfig=Beállítások mentése
+configFiles=Konfigurációs fájlok
+loadConfig=Beállítások betöltése
+configReplaceAll=Biztos benne, hogy le akarja cserélni a jelenlegi beállításokat?
+configInvalid=Helytelen konfigurációs fájl
+configOverwrite=Biztos, hogy felül akarja írni: 
+
+# status messages
+checking=ellenürzés
+parsing=értelmezés
+unparseable=értelmezhetetlen
+unknown=ismeretlen
+addToServer=hozzáadás a szerverhez
+deleteOnServer=törlés a szerveren
+updateOnServer=frissítés a szerveren
+localAdd=hozzáadás helyben
+localDelete=törlés helyben
+localUpdate=frissítés helyben
+noChange=nincs változás
+conflict=ütközés
+
+# status: contacts only
+mailingList=lista
+
+close=Bezárás
+syncfinished=Kész. Most már becsukhatja ezt az ablakot!
+syncEntries=Elemek szinkronizálása...
+writeChangedEntries=Módosított elemek kiírása...
+writeNewEntries=Új elemek kiírása...
+getContent=Tartalom lekérése...

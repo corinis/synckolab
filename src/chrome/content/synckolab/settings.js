@@ -380,15 +380,33 @@ function prefillFields() {
 		var cur = ABook.QueryInterface(Components.interfaces.nsIAbDirectory);
 		var abchild = document.createElement("menuitem");
 		abpopup.appendChild(abchild);
-		abchild.setAttribute("label", cur.directoryProperties.description);
-		abchild.setAttribute("value", cur.directoryProperties.fileName);
+		// tbird < 3: use directoryProperties
+		if (cur.directoryProperties)
+		{
+			abchild.setAttribute("label", cur.directoryProperties.description);
+			abchild.setAttribute("value", cur.directoryProperties.fileName);
+		}
+		else
+		{
+			abchild.setAttribute("label", cur.dirName);
+			abchild.setAttribute("value", cur.dirName);
+		}
 		// default select the first item
 		
 		if (isFirst)
 		{
 			abchild.setAttribute("selected", "true");
-			abList.setAttribute("label", cur.directoryProperties.description);
-			abList.setAttribute("value", cur.directoryProperties.fileName);
+			// tbird < 3: use directoryProperties
+			if (cur.directoryProperties)
+			{
+				abList.setAttribute("label", cur.directoryProperties.description);
+				abList.setAttribute("value", cur.directoryProperties.fileName);
+			}
+			else
+			{
+				abList.setAttribute("label", cur.dirName);
+				abList.setAttribute("value", cur.dirName);
+			}
 			isFirst = false;
 		}
 		

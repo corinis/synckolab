@@ -9,13 +9,6 @@
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
   <script type="application/x-javascript" src="synckolab.js"/>
 
-<style type="text/css">
-  progressmeter { color: blue; }
-  progressmeter[mode="undetermined"] {
-  	color: blue;
-   -moz-binding:url("chrome://global/content/bindings/progressmeter.xml#progressmeter-undetermined");
-	}
-</style>
 <script>
 var gPauseSync = false;
 var gStopSync = false;

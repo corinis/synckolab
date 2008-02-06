@@ -1595,7 +1595,7 @@ SKMap.prototype.put = function( key, value )
     }
 }
 
-SKMap.prototype.delete = function( key )
+SKMap.prototype.remove = function( key )
 {
    	// get a key
    	var ikey = this.getIKey(key) % this.seed;

@@ -48,3 +48,11 @@ toolbar[iconsize="small"] #SyncKolab-button[disabled] {
 #delConfig {
 	list-style-image: url(chrome://synckolab/skin/trash.png);
 }
+
+/* Progress window */
+progressmeter#progress { color: blue; }
+progressmeter#progress[mode="undetermined"] {
+  	color: blue;
+   -moz-binding:url("chrome://global/content/bindings/progressmeter.xml#progressmeter-undetermined");
+}
+
