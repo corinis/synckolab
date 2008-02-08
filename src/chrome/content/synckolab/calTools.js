@@ -180,9 +180,9 @@ function getDayIndex (name)
  * TODO: make sure that event2xml does not create undesired ebhaviour when
  *   comparing iCal vs. XML
  */
-function equalsEvent (a, b, syncTasks)
+function equalsEvent (a, b, syncTasks, email)
 {
-	return cnv_event2xml(a, true, syncTasks, 'sync') == cnv_event2xml(b, true, syncTasks, 'sync');
+	return cnv_event2xml(a, true, syncTasks, email) == cnv_event2xml(b, true, syncTasks, email);
 /*
 	//Fields to look for
 	var fieldsArray = new Array(
@@ -811,7 +811,7 @@ function xml2Event (xml, extraFields, event)
 		cur = cur.nextSibling;
 	} // end while
 	
-	logMessage("Parsed event in ICAL:\n" + event.icalString, LOG_CAL + LOG_DEBUG);
+	logMessage("Parsed event in XML", LOG_CAL + LOG_DEBUG);
 	return true;
 }
 
@@ -859,7 +859,7 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 	var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 	if (syncTasks == true)
 	{
-		xml += '<task version="1.0" >\n'
+		xml += "<task version=\"1.0\" >\n"
 		if (event.isCompleted || event.percentComplete == 100)
 		{
 			xml += " <completed>100</completed>\n";	
@@ -875,9 +875,10 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 		}
 	}
 	else
-		xml += '<event version="1.0" >\n';
-		
-	xml += " <product-id>Synckolab " + gSyncKolabVersion + ", Calendar Sync</product-id>\n";
+		xml += "<event version=\"1.0\" >\n";
+	if (skipVolatiles != true)
+		xml += " <product-id>Synckolab " + gSyncKolabVersion + ", Calendar Sync</product-id>\n";
+
 	xml += " <uid>" + event.id + "</uid>\n"
 	
 	if(syncTasks == true)
@@ -897,7 +898,7 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 		
 	xml += " <summary>" + encode4XML(event.title) +"</summary>\n";
 
-	if (!skipVolatiles)
+	if (skipVolatiles != true)
 	{
 		xml += " <creation-date>" + calDateTime2String(event.getProperty("CREATED"), false) + "</creation-date>\n";
 		xml += " <last-modification-date>" + calDateTime2String(event.getProperty("LAST-MODIFIED"), false) + "</last-modification-date>\n";
@@ -1114,8 +1115,7 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 	else
 		xml += "</event>\n"
 
-	logMessage("Event in ICAL:\n=============\n" + event.icalString + "\n" 
-		+ "Created XML event structure:\n=============================\n" + xml, LOG_CAL + LOG_DEBUG);
+	logMessage("Created XML event structure:\n=============================\n" + xml, LOG_CAL + LOG_DEBUG);
 	return xml;
 }
 

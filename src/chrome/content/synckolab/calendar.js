@@ -356,8 +356,11 @@ var syncCalendar = {
 			
 			var hasEntry = idxEntry.exists() && (cEvent != null);
 			// make sure cEvent is not null, else the comparision will fail
-			var equal2parsed = hasEntry && equalsEvent(cEvent, parsedEvent, this.syncTasks);
-			var equal2found = hasEntry && equalsEvent(cEvent, foundEvent, this.syncTasks);
+			logMessage("Start comparing events....", LOG_CAL + LOG_DEBUG);
+			var equal2parsed = hasEntry && equalsEvent(cEvent, parsedEvent, this.syncTasks, this.email);
+			var equal2found = hasEntry && equalsEvent(cEvent, foundEvent, this.syncTasks, this.email);
+			logMessage ("cEvent==parsedEvent: " + equal2parsed + "\ncEvent==foundEvent: " + equal2found,  LOG_CAL + LOG_DEBUG);
+			
 
 			if (hasEntry && !equal2parsed && !equal2found)
  			{
