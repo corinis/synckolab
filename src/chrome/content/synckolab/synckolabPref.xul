@@ -7,7 +7,7 @@
 
 <dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" onload="init();"
     buttons="accept,cancel" ondialogaccept="savePrefs();" persist="screenX screenY"
-    title="SyncKolab 0.6.0">
+    title="SyncKolab 0.6.1">
 
     <script type="application/x-javascript" src="chrome://synckolab/content/settings.js"/>
     <script type="application/x-javascript" src="chrome://synckolab/content/calTools.js"/>
@@ -54,7 +54,7 @@
                             <hbox>
                                 <label value="&synckolab.settings.SyncKolabHeader;"
                                     style="font-size: 16pt;"/>
-                                <label value=" 0.6.0"/>
+                                <label value=" 0.6.1"/>
                             </hbox>
                             <description style="width: 300px">
                                 &synckolab.settings.SyncKolabDescription; </description>

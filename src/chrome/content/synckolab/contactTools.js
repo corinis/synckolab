@@ -100,6 +100,30 @@ function xml2Card (xml, extraFields, cards)
 					card.displayName = getXmlResult(cur, "FULL-NAME", "");
 					found = true;
 				break;
+				
+				// set the prefer mail format (this is not covered by kolab itself)
+				case "PREFER-MAIL-FORMAT":
+					// 0: unknown
+					// 1: plaintext
+					// 2: html
+					var format = decode4XML(cur.firstChild.data).toUpperCase();
+					card.preferMailFormat = 0; 
+					switch(format)
+					{
+						case 'PLAINTEXT':
+						case 'TEXT':
+						case 'TXT':
+						case 'PLAIN': 
+						case '1':
+							card.preferMailFormat = 1;
+							break;
+						case 'HTML':
+						case 'RICHTEXT':
+						case 'RICH':
+						case '2':
+							card.preferMailFormat = 2;
+					}
+				break;
 
 				case "JOB-TITLE":
 			  		if (cur.firstChild == null)
@@ -632,6 +656,19 @@ function card2Xml (card, fields)
 		xml += "  <display-name>"+encode4XML(displayName)+"</display-name>\n";
 		xml += "  <smtp-address>"+encode4XML(card.secondEmail)+"</smtp-address>\n";
 		xml += " </email>\n";
+	}
+
+	// if the mail format is set... 
+	if (card.preferMailFormat != 0)
+	{
+		if (card.preferMailFormat == 1)
+		{
+			xml += nodeWithContent("prefer-mail-format", "text", false);
+		}
+		else
+		{
+			xml += nodeWithContent("prefer-mail-format", "html", false);
+		}
 	}
 
 	if (checkExist(card.homeAddress) || checkExist(card.homeAddress2) ||
