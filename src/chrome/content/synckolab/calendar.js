@@ -176,10 +176,8 @@ var syncCalendar = {
 
 		// card hashmap
 		this.gCalDB = new SKMap();
+		this.gCalDB.clear();
 
-		// fill the hasmap
-		for (var i =0; i < this.gEvents.events.length; i++)
-			this.gCalDB.put(this.gEvents.events[i].id, this.gEvents.events[i]);
 	},
 	
 	init2: function (nextFunc, sync)	{
@@ -196,6 +194,12 @@ var syncCalendar = {
 				this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_TODO | this.gCalendar.ITEM_FILTER_COMPLETED_ALL, 0, null, null, this.gEvents);
 			else
 				this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_EVENT, 0, null, null, this.gEvents);
+
+			// fill the hashmap
+			for (var i =0; i < this.gEvents.events.length; i++)
+			{
+				this.gCalDB.put(this.gEvents.events[i].id, this.gEvents.events[i]);
+			}
 				
 			logMessage("Getting items for " + (this.syncTasks == true?"tasks":"calendar"), LOG_CAL + LOG_DEBUG);
 			
@@ -277,7 +281,7 @@ var syncCalendar = {
 		}
 
 		// remember current uid
-		this.gCurUID = getUID(parsedEvent.id);
+		this.gCurUID = parsedEvent.id;
 
 		// update list item
 		this.curItemInListId.setAttribute("label", parsedEvent.id);

@@ -1595,6 +1595,13 @@ SKMap.prototype.put = function( key, value )
     }
 }
 
+SKMap.prototype.clear = function ()
+{
+    for (var k = 0; k < this.seed; k++)
+    	this.array[k] = new Array();
+    this.len = 0;		
+}
+
 SKMap.prototype.remove = function( key )
 {
    	// get a key

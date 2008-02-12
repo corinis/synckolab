@@ -1327,7 +1327,11 @@ function card2Human (card)
 	var msg = "";
 
  	if (checkExist (card.firstName) || checkExist (card.lastName))
-		msg += "Name: " + card.lastName + " " + card.firstName + "\n"
+		msg += "Name: " + card.lastName + " " + card.firstName + "\n";
+	else
+	if (checkExist (card.displayName))
+		msg += "Name: " + card.displayName;
+		
  	if (checkExist (card.jobTitle))
 		msg += "Title: " + card.jobTitle + "\n";
 	if (checkExist (card.company))

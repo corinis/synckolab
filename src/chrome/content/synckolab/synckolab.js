@@ -658,7 +658,7 @@ function getMessage ()
 		if (cur.messageSize == syncMessageDb[gSyncFileKey][1] && cur.date == syncMessageDb[gSyncFileKey][2])
 		{
 			// get the content from the cached file and ignore the imap
-			logMessage("taking content from: " + syncMessageDb[gSyncFileKey][3] + syncMessageDb[gSyncFileKey][4], LOG_INFO);
+			logMessage("taking content from: " + syncMessageDb[gSyncFileKey][3] + "/" + syncMessageDb[gSyncFileKey][4], LOG_INFO);
 			fileContent = readSyncDBFile(getSyncDbFile(syncMessageDb[gSyncFileKey][3], gSync.getType(), syncMessageDb[gSyncFileKey][4]));
 
 			// make sure we dont read an empty file
