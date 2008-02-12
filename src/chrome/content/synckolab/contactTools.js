@@ -792,7 +792,7 @@ function equalsContact (a, b)
 	//Fields to look for
 	var fieldsArray = new Array(
 		"firstName","lastName","displayName","nickName",
-		"primaryEmail","secondEmail","aimScreenName",
+		"primaryEmail","secondEmail","aimScreenName","preferMailFormat",
 		"workPhone","homePhone","faxNumber","pagerNumber","cellularNumber",
 		"homeAddress","homeAddress2","homeCity","homeState","homeZipCode","homeCountry","webPage2",
 		"jobTitle","department","company","workAddress","workAddress2","workCity","workState","workZipCode","workCountry","webPage1",
@@ -1169,7 +1169,6 @@ function message2Card (lines, card, extraFields, startI, endI)
 					case "HTML":
 						card.preferMailFormat = 2;
 				}
-	    	found = true;
     		break;
 			case "X-AIM": // not standard vcard spec, therefore, prepended with an X
 				card.aimScreenName = tok[1];
