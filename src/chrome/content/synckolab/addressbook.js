@@ -39,7 +39,7 @@
  *  
  */
 var syncAddressBook = {
-
+	isTbird2: true, // default: tbird 2 
 	gConflictResolve : "ask", // conflict resolution (default: ask what to do)
 
 	folderPath: '', // String - the path for the contacts
@@ -61,6 +61,7 @@ var syncAddressBook = {
 	email: '', // holds the account email
 	name: '', // holds the account name
 	
+	doc: '', // this is the owning document
 	itemList: '', // display the currently processed item with status
 	curItemInList: '', // the current item in the list (for updating the status)
 	curItemInListId: '',
@@ -127,19 +128,31 @@ var syncAddressBook = {
 			// tbird < 3: use directoryProperties			
 			if (cur.directoryProperties)
 			{
+				this.isTbird2 = true;
 				if (cur.directoryProperties.fileName == addressBookName)
 				{
 					this.gAddressBook = cur;
 					break;
 				}
+				if (cn.hasMoreElements())
+					ABook = cn.getNext();
+				else
+					alert("Unable to find adress book.. please reconfigure!");
+				continue;
 			}
 			else
-			if (cur.dirName == addressBookName)
 			{
-				this.gAddressBook = cur;
-				break;
+				this.isTbird2 = false;
+				if (cur.dirName == addressBookName)
+				{
+					this.gAddressBook = cur;
+					break;
+				}
+				if (cn.hasMoreElements())
+					ABook = cn.getNext();
+				else
+					alert("Unable to find adress book.. please reconfigure!");
 			}
-			ABook = cn.getNext();
 		}
 		
 		// we got the address book in gAddressBook
@@ -259,10 +272,10 @@ var syncAddressBook = {
 		var newItem = null; 
 		
 		// create a new item in the itemList for display
-		this.curItemInList = document.createElement("listitem");
-		this.curItemInListId = document.createElement("listcell");
-		this.curItemInListStatus = document.createElement("listcell");
-		this.curItemInListContent = document.createElement("listcell");
+		this.curItemInList = this.doc.createElement("listitem");
+		this.curItemInListId = this.doc.createElement("listcell");
+		this.curItemInListStatus = this.doc.createElement("listcell");
+		this.curItemInListContent = this.doc.createElement("listcell");
 		this.curItemInListId.setAttribute("label", strBundle.getString("unknown"));
 		this.curItemInListId.setAttribute("value", "-");
 		this.curItemInListStatus.setAttribute("label", strBundle.getString("parsing"));
@@ -276,14 +289,11 @@ var syncAddressBook = {
 		
 		if (this.itemList != null)
 		{
-			// tbird 3: STOPS here!!!
-		   	logMessage("AB: appendline... (TBIRD 3: this will be the last you see...)", LOG_DEBUG);
 			this.itemList.appendChild(this.curItemInList);
-		   	logMessage("AB: after appendline... ", LOG_DEBUG);
 			scrollToBottom();
 		}
 		
-	   	logMessage("AB: strip mail header... ", LOG_DEBUG);
+	   	logMessage("AB: strip mail header... ", LOG_DEBUG + LOG_AB);
 
 		// get the content in a nice format
 		fileContent = stripMailHeader(fileContent);
@@ -338,7 +348,7 @@ var syncAddressBook = {
 			var cEntry = getSyncDbFile	(this.gConfig, this.getType(), getUID(newCard));
 			// ... and the field file
 			var fEntry = getSyncFieldFile(this.gConfig, this.getType(), getUID(newCard));
-			logMessage("get snnc db and field file " , LOG_DEBUG + LOG_AB);	
+			logMessage("get sync db and field file " , LOG_DEBUG + LOG_AB);	
 
 			// a new card or locally deleted 
 			if (aCard == null)
@@ -472,8 +482,18 @@ var syncAddressBook = {
 						// Update local entry						
 						
 						// first delete the card 
-						var list = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);
-						list.AppendElement(aCard);
+						if (this.isTbird2 == true)
+						{
+							list = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);
+							list.AppendElement(aCard);
+						}
+						else
+						// tbird 3
+						{
+							list = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
+							list.appendElement(aCard, false);
+						}
+
 						this.gAddressBook.deleteCards(list);
 						
 						// add the new one
@@ -514,11 +534,25 @@ var syncAddressBook = {
 					}
 					else
 					{
-						var list = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);
-						list.AppendElement(aCard);
+						var list = null;
+					    logMessage("create list: " + getUID(aCard), LOG_INFO + LOG_AB);
+						// first delete the card 
+						if (this.isTbird2 == true)
+						{
+							list = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);
+							list.AppendElement(aCard);
+						}
+						else
+						// tbird 3
+						{
+							list = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
+							list.appendElement(aCard, false);
+						}
 						this.gAddressBook.deleteCards(list);
 						this.gAddressBook.addCard (newCard);
 					}
+
+				    logMessage("updated local" + getUID(aCard), LOG_INFO + LOG_AB);
 										
 					// write the current content in the sync-db file
 					writeSyncDBFile (cEntry, stripMailHeader(card2Message(newCard, this.email, this.format)));
@@ -531,7 +565,9 @@ var syncAddressBook = {
 						fEntry.remove(false);
 					
 					// update list item
+				    logMessage("befoire label" + getUID(aCard), LOG_INFO + LOG_AB);
 					this.curItemInListStatus.setAttribute("label", strBundle.getString("localUpdate"));
+				    logMessage("after label" + getUID(aCard), LOG_INFO + LOG_AB);
 					return null;
 				}
 				else
@@ -569,8 +605,19 @@ var syncAddressBook = {
 
 	initUpdate: function () {
 		this.gCards = this.gAddressBook.childCards;
-		this.deleteList = Components.classes["@mozilla.org/supports-array;1"]
+
+		if (this.isTbird2 == true)
+		{
+			this.deleteList = Components.classes["@mozilla.org/supports-array;1"]
 							.createInstance(Components.interfaces.nsISupportsArray);		
+		}
+		else
+		// tbird 3
+		{
+			this.deleteList = Components.classes["@mozilla.org/array;1"].
+					createInstance(Components.interfaces.nsIMutableArray);
+		}
+
 
 		// tbird 2
 		if (!this.gCards.hasMoreElements)
@@ -690,10 +737,10 @@ var syncAddressBook = {
 			cur.editCardToDatabase ("moz-abmdbdirectory://"+this.gAddressBook);
 			
 			// create a new item in the itemList for display
-			this.curItemInList = document.createElement("listitem");
-			this.curItemInListId = document.createElement("listcell");
-			this.curItemInListStatus = document.createElement("listcell");
-			this.curItemInListContent = document.createElement("listcell");
+			this.curItemInList = this.doc.createElement("listitem");
+			this.curItemInListId = this.doc.createElement("listcell");
+			this.curItemInListStatus = this.doc.createElement("listcell");
+			this.curItemInListContent = this.doc.createElement("listcell");
 			this.curItemInListId.setAttribute("label", getUID(curItem));
 			this.curItemInListStatus.setAttribute("label", strBundle.getString("addToServer"));
 			if (curItem.isMailList)
@@ -751,13 +798,17 @@ var syncAddressBook = {
 				
 				if (cEntry.exists() && !this.forceServerCopy)
 				{
-					this.deleteList.AppendElement(curItem);
+					if (this.isTbird2 == true)
+						this.deleteList.AppendElement(curItem);
+					else
+					// tbird 3
+						this.deleteList.appendElement(curItem, false);
 					
 					// create a new item in the itemList for display
-					this.curItemInList = document.createElement("listitem");
-					this.curItemInListId = document.createElement("listcell");
-					this.curItemInListStatus = document.createElement("listcell");
-					this.curItemInListContent = document.createElement("listcell");
+					this.curItemInList = this.doc.createElement("listitem");
+					this.curItemInListId = this.doc.createElement("listcell");
+					this.curItemInListStatus = this.doc.createElement("listcell");
+					this.curItemInListContent = this.doc.createElement("listcell");
 					this.curItemInListId.setAttribute("label", getUID(curItem));
 					this.curItemInListStatus.setAttribute("label", strBundle.getString("localDelete"));
 					if (curItem.isMailList)
@@ -785,10 +836,10 @@ var syncAddressBook = {
 				{
 					
 					// create a new item in the itemList for display
-					this.curItemInList = document.createElement("listitem");
-					this.curItemInListId = document.createElement("listcell");
-					this.curItemInListStatus = document.createElement("listcell");
-					this.curItemInListContent = document.createElement("listcell");
+					this.curItemInList = this.doc.createElement("listitem");
+					this.curItemInListId = this.doc.createElement("listcell");
+					this.curItemInListStatus = this.doc.createElement("listcell");
+					this.curItemInListContent = this.doc.createElement("listcell");
 					this.curItemInListId.setAttribute("label", getUID(curItem));
 					this.curItemInListStatus.setAttribute("label", strBundle.getString("addToServer"));
 					if (curItem.isMailList)

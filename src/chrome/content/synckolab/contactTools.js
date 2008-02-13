@@ -140,10 +140,14 @@ function xml2Card (xml, extraFields, cards)
 					break;
 
 				case "EMAIL":
+					logMessage("email: " + email + " - " + getXmlResult(cur, "SMTP-ADDRESS", ""), LOG_ERROR + LOG_AB);
 					switch (email)
 					{
 						case 0:
-							card.primaryEmail = card.defaultEmail = getXmlResult(cur, "SMTP-ADDRESS", "");
+							card.primaryEmail = getXmlResult(cur, "SMTP-ADDRESS", "");
+							// only applies to tbird < 3
+							if (card.defaultEmail)
+								card.defaultEmail = card.primaryEmail;
 							break;
 						case 1:
 							card.secondEmail = getXmlResult(cur, "SMTP-ADDRESS", "");

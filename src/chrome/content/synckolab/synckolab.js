@@ -295,7 +295,17 @@ function nextSync()
 			syncAddressBook.name = getAccountName(syncAddressBook.serverKey);
 						
 			// display stuff
-			syncAddressBook.itemList = itemList;
+			if (gWnd != null)
+			{
+				syncAddressBook.itemList = itemList;
+				syncAddressBook.doc = gWnd.document;
+			}
+			else
+			{
+				syncAddressBook.itemList = null;
+				syncAddressBook.doc = document;
+			}
+			
 			
 			logMessage("Contacts: got folder: " + syncAddressBook.folder.URI + 
 				"\nMessage Folder: " + syncAddressBook.folderMsgURI, LOG_DEBUG);
@@ -345,7 +355,16 @@ function nextSync()
 				
 		
 				// display stuff
-				syncCalendar.itemList = itemList;
+				if (gWnd != null)
+				{
+					syncCalendar.itemList = itemList;
+					syncCalendar.doc = gWnd.document;
+				}
+				else
+				{
+					syncCalendar.itemList = null;
+					syncCalendar.doc = document;
+				}
 		
 				logMessage("Calendar: got calendar: " + syncCalendar.gCalendar.name + 
 					"\nMessage Folder: " + syncCalendar.folderMsgURI, LOG_DEBUG);
@@ -407,7 +426,16 @@ function nextSync()
 				
 		
 				// display stuff
-				syncCalendar.itemList = itemList;
+				if (gWnd != null)
+				{
+					syncCalendar.itemList = itemList;
+					syncCalendar.doc = gWnd.document;
+				}
+				else
+				{
+					syncCalendar.itemList = null;
+					syncCalendar.doc = document;
+				}
 		
 				logMessage("Calendar: got calendar: " + syncCalendar.gCalendar.name + 
 					"\nMessage Folder: " + syncCalendar.folderMsgURI, LOG_DEBUG);

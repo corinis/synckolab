@@ -42,6 +42,7 @@
  *   - 0=take all messages
  */
 var syncCalendar = {
+	isTbird2: true, // default: tbird 2 
 	gConflictResolve : "ask", // conflict resolution (default: ask what to do)
 
 	folderPath: '', // String - the path for the entries
@@ -67,6 +68,7 @@ var syncCalendar = {
 
 	dbFile: '', // the current sync database filen (a file with uid:size:date:localfile)
 
+	doc: '', // this is the owning document
 	itemList: '', // display the currently processed item with status
 	curItemInList: '', // the current item in the list (for updating the status)
 	curItemInListId: '',
@@ -245,10 +247,10 @@ var syncCalendar = {
 	parseMessage: function(fileContent) {
 		
 		// create a new item in the itemList for display
-		this.curItemInList = document.createElement("listitem");
-		this.curItemInListId = document.createElement("listcell");
-		this.curItemInListStatus = document.createElement("listcell");
-		this.curItemInListContent = document.createElement("listcell");
+		this.curItemInList = this.doc.createElement("listitem");
+		this.curItemInListId = this.doc.createElement("listcell");
+		this.curItemInListStatus = this.doc.createElement("listcell");
+		this.curItemInListContent = this.doc.createElement("listcell");
 		this.curItemInListId.setAttribute("label", strBundle.getString("unknown"));
 		this.curItemInListStatus.setAttribute("label", strBundle.getString("parsing"));
 		this.curItemInListContent.setAttribute("label", strBundle.getString("unknown"));
@@ -621,10 +623,10 @@ var syncCalendar = {
 						cEntry.remove(false);
 					
 					// create a new item in the itemList for display
-					this.curItemInList = document.createElement("listitem");
-					this.curItemInListId = document.createElement("listcell");
-					this.curItemInListStatus = document.createElement("listcell");
-					this.curItemInListContent = document.createElement("listcell");
+					this.curItemInList = this.doc.createElement("listitem");
+					this.curItemInListId = this.doc.createElement("listcell");
+					this.curItemInListStatus = this.doc.createElement("listcell");
+					this.curItemInListContent = this.doc.createElement("listcell");
 					this.curItemInListId.setAttribute("label", cur.id);
 					this.curItemInListStatus.setAttribute("label", strBundle.getString("localDelete"));
 					this.curItemInListContent.setAttribute("label", cur.title);
@@ -644,10 +646,10 @@ var syncCalendar = {
 				else
 				{
 					// create a new item in the itemList for display
-					this.curItemInList = document.createElement("listitem");
-					this.curItemInListId = document.createElement("listcell");
-					this.curItemInListStatus = document.createElement("listcell");
-					this.curItemInListContent = document.createElement("listcell");
+					this.curItemInList = this.doc.createElement("listitem");
+					this.curItemInListId = this.doc.createElement("listcell");
+					this.curItemInListStatus = this.doc.createElement("listcell");
+					this.curItemInListContent = this.doc.createElement("listcell");
 					this.curItemInListId.setAttribute("label", cur.id);
 					this.curItemInListStatus.setAttribute("label", strBundle.getString("addToServer"));
 					this.curItemInListContent.setAttribute("label", cur.title);
