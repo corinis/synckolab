@@ -111,7 +111,6 @@ function syncKolabTimer ()
 		    var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 			gAutoRun = pref.getCharPref("SyncKolab.autoSync");
 			gAutoHideWindow = pref.getBoolPref("SyncKolab.hiddenWindow");
-			logMessage("Automatically running syncKolab every " + gAutoRun + " minutes....", LOG_INFO);
 		} catch(e) {
 		}
 	}
