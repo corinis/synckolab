@@ -187,6 +187,7 @@ function xml2Card (xml, extraFields, cards)
 			  			card.homePhone  = num;
 			  			break;
 			  		case "FAX":
+			  		case "BUSINESSFAX":
 			  			card.faxNumber = num;
 			  			break;
 			  		case "BUSINESS":

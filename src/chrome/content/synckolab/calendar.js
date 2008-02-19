@@ -300,11 +300,14 @@ var syncCalendar = {
 		
 		// ok lets see if we have this one already 
 		var foundEvent = findEvent (this.gCalDB, parsedEvent.id);
-		
+	    logMessage("findevent returned :" + foundEvent + "(" + (foundEvent == null?'null':foundEvent.id) + ") for " + parsedEvent.id + " caching " + this.gCalDB.length() + " events", LOG_CAL + LOG_DEBUG);
+				
 		// get the dbfile from the local disk
 		var idxEntry = getSyncDbFile(this.gConfig, this.getType(), parsedEvent.id);
 		// ... and the field file
 		var fEntry = getSyncFieldFile(this.gConfig, this.getType(), parsedEvent.id);
+
+	    logMessage("idxEntry:" + idxEntry, LOG_CAL + LOG_DEBUG);
 		
 		// always add if the forceLocalCopy flag is set (happens when you change the configuration)
 		if (foundEvent == null || this.forceLocalCopy)
