@@ -55,7 +55,7 @@ var syncCalendar = {
 	gCurEvent: 0,
 	folder: '', // the contact folder type nsIMsgFolder
 	folderMsgURI: '', // the message uri
-	gSyncTimeFrame: 180, // time frame to take into account (all older than X days will be ignored completely)
+	gSyncTimeFrame: 180, // time frame to take into account (all older than X days will be ignored completely) -1 just take all
 	gCalendarName: '', // the calendar name
 	gCalendar: '', // the calendar
 	gCalendarEvents: '', // all events from the calendar
@@ -126,6 +126,8 @@ var syncCalendar = {
 				}
 				catch (ignore) {
 					logMessage("Sync Time frame is not specified", LOG_WARNING);
+					// per default take all
+					this.gSyncTimeFrame = -1;
 				}
 			}
 			else
@@ -145,6 +147,8 @@ var syncCalendar = {
 				}
 				catch (ignore) {
 					logMessage("Sync Time frame is not specified", LOG_WARNING);
+					// per default take all
+					this.gSyncTimeFrame = -1;
 				}			 
 			}			
 		} catch(e) {
@@ -583,7 +587,7 @@ var syncCalendar = {
 			
 			// check if we can skip this entry
 			var endDate = (this.syncTasks==true)?(cur.dueDate?cur.dueDate.jsDate:null):cur.endDate.jsDate;
-			if (endDate != null && endDate.getTime() + (this.gSyncTimeFrame * 86400000) < (new Date()).getTime() )
+			if (endDate != null && ((endDate.getTime() + (this.gSyncTimeFrame * 86400000) < (new Date()).getTime()) || this.gSyncTimeFrame <= 0))
 			{
 					logMessage("skipping event because its too old: " + cur.id, LOG_CAL + LOG_INFO);
 					return null;

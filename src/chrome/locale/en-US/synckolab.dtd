@@ -44,7 +44,7 @@
 <!ENTITY synckolab.settings.ResolveClient	"use local version">
 <!ENTITY synckolab.settings.ResolveSmart	"Automatic merge and resolve">
 <!ENTITY synckolab.settings.CalSyncTimeframe	"Ignore entries older than ">
-<!ENTITY synckolab.settings.TimeframeSyncDays	" days">
+<!ENTITY synckolab.settings.TimeframeSyncDays	" days (-1: none)">
 
 <!ENTITY synckolab.settings.Updates			"For updates please check out:">
 

@@ -46,7 +46,7 @@
 <!ENTITY synckolab.settings.ResolveClient	"Lokale Version verwenden">
 <!ENTITY synckolab.settings.ResolveSmart	"Automatisch entscheiden">
 <!ENTITY synckolab.settings.CalSyncTimeframe	"Einträge alter als ">
-<!ENTITY synckolab.settings.TimeframeSyncDays	" Tage ignorieren.">
+<!ENTITY synckolab.settings.TimeframeSyncDays	" Tage ignorieren (-1: alle).">
 
 <!ENTITY synckolab.settings.Updates			"Für Updates besuchen Sie:">
 
@@ -61,7 +61,7 @@
 <!ENTITY synckolab.settings.SyncInterval 		"Abgleichintervall: ">
 <!ENTITY synckolab.settings.SyncIntervalMinutes "Minuten">
 <!ENTITY synckolab.settings.SyncIntervalDescription "Spezifizieren Sie einen Intervall in dem SyncKolab nach neuen Einträgen suchen soll. 0 bedeuted dass nur manuell synchronisiert wird.">
-<!ENTITY synckolab.settings.SaveToImapTip		"Diese option abwählen, wenn nichts auf dem Server geschrieben werden soll">
+<!ENTITY synckolab.settings.SaveToImapTip		"Diese Option abwählen, wenn nichts auf dem Server geschrieben werden soll">
 <!ENTITY synckolab.settings.HiddenWindow		"Statusfenster beim automatischen Abgleich verstecken">
 
 <!-- New Config Wizard -->
