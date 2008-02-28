@@ -5,8 +5,8 @@
 <h5 class="infoHeader">What's New</h5>
 <ul>
 
-<li><a href="http://www.gargan.org/extensions/synckolab-NIGHTLY.xpi">synckolab NIGHTLY</a></li>
-<li><a href="http://www.gargan.org/extensions/synckolab-0.5.3.xpi">synckolab 0.5.3</a></li>
+<li><a href="http://www.gargan.org/extensions/synckolab-NIGHTLY.xpi">synckolab NIGHTLY (0.6.1)</a></li>
+<li><a href="http://www.gargan.org/extensions/synckolab-0.6.0.xpi">synckolab 0.6.0</a></li>
 </ul>
 </div>
 
@@ -82,14 +82,25 @@ You can get a nightly build at <a href="http://www.gargan.org/extensions/synckol
 </p>
 Beware that this may easily break all you contacts/calender entries, altough we try to create stable nighlies.<br/>
 So create a backup of your thunderbird profile folder before trying it out!
-
+<pre>
+* Added prefer-mail-format to contacts (XML Format)
+* contact now displays displayname if no name/surname is given
+* calendar now correctly writes/reads sync db file (speedup)
+* calendar finally syncs correctly (bad error in database file)
+* added seamonkey to the installable targets
+* mail format changes recognized
+* successfully tested calendar sync with thunderbird 3.0a1
+* added seamonkey target application
+* hu-HU translation added
+* added possibility to use -1 as sync time to sync ALL entries
+</pre>
 <h2>Status of the Kolab Extension</h2>
-<b>Synckolab is still beta and waits to be testet :P</b><br/>
+<b>Synckolab is a stable beta successfully syncing contacts, calendar entries, tasks and not yet fully functional support for mailing list</b><br/>
+It seems that there are still a few bugs in lightning concerning the database, but for most users it should work just fine.
+<br/>
 To V 1.0.0
 <ul>
-	<li>Fix deletion bug</li>
 	<li>better support for lightning (0.7 - especially free-busy and additional fields)</li>
-	<li>better task support</li>
 	<li>better mailing list support</li>
 	<li>support for notes (either through <a href="https://addons.mozilla.org/en-US/thunderbird/addon/759">Message Notes</a> or <a href="https://addons.mozilla.org/en-US/thunderbird/addon/979">Notary</a>)</li>
 	<li>TESTING TESTING TESTING</li>
@@ -103,6 +114,40 @@ Best thing you can do is get the most recent release, subscribe to the mailing l
 <p>
 You may aquire the current source code from the mozdev cvs, or get it directly from the xpi (simply unzip the latest xpi found on <a href="http://www.gargan.org">gargan.org</a> you will find all source files in there (js).
 </p>
+<h2>How does synckolab work?</h2>
+ For those interested here is a short explenation (pretty technical) on how Sync Kolab actually works.
+ <ol>
+<li>get a list of all messages in the imap folder (only headers, which are cached locally. Thunderbird also makes sure that new messages are included)</li>
+<li>check each message header with a local database of the previous sync for a change. Message size, date and subject are used there (subject is the key value)</li>
+<li>if something changed or the message is new, download the message and strip everything except the message body (xml/ical/vcard). Save this part in the local sync database (=the file system)</li>
+<li>parse the message body into a adress book card/calendar event/task (lets call it CUR)</li>
+<li>get the id from CUR and check the local address book/calendar if there is an entry with the same id (lets call it ENTRY)</li>
+<li>if we did not find an ENTRY, save CUR in the adress book/calendar and continue</li>
+<li>if we found an ENTRY, make a comparison between CUR, ENTRY and LOCALDB (the entry stored in the local sync database (file system) from a previous sync)
+<ul>
+	<li>if CUR=LOCALDB but ENTRY!=LOCALDB -> we know we changed something locally (ie. changed the name) so update ENTRY on the server (update=delete and readd), also update the LOCALDB on the filesystem</li>
+	<li>if CUR!=LOCALDB but ENTRY=LOCALDB -> we know the server entry changed, so we have to update ENTRY and LOCALDB</li>
+	<li>id CUR!=LOCALDB!=ENTRY -> we know we have a local change AND soemone changed the server entry -> ask what we should do</li>
+	<li>if CUR=LOCALDB but ENTRY is missing -> we know it has been deleted locally, so delete the entry on the server</li>
+</ul>
+</li>
+<li>remember all entries already processed (so we dont check it twice)</li>
+<li>now go through all local entries (ENTRY) (except the one we already processed) and check:
+<ul>
+<li>if ENTRY is in LOCALDB: delete it (means it has been deleted from the server since the last sync)</li>
+<li>if ENTRY is not in the LOCALDB: add it to the imap server</li>
+</ul>
+</li>
+<li>finish up (liek make all new messages unread, and run compact to make sure its all on the server)</li>
+</ol>
+ A few Remarks: 
+ <ul>
+<li>if you uncheck "write to IMAP", nothing will be written on the imap server. So whatever you change locally (delete/modify entries) will result in messages "update on server" or "delete on server", but that wont happen. Next sync you will get "delete locally" "update locally" messages (since nothing changed on the server, but locally you had changed). This is because the sync DB needs two syncs to be in sync again</li>
+<li>the "ignore entries older than XXX" applies for the timestamp on the messages AND for the calendar entries (enddate is used there). -1 will just sync all entires</li>
+<li>the sync interval set to 0 will still produce debug messages (like "starting sync...") which is only an indicator that the check for an interval is working (should happen once a minute) - nothing is syncd if this is the only message</li>
+<li>If you delete the snyc db from the filesystem (synckolab folder). Synckolab will try to resolve all differences automatically or ask you (will probably result in lots of "locally updated" messages)</li>
+<li>If you have  problem (especially entries which are not synced at all or wrong) make sure to check in the javascript Error-Console (Fehlerkonsole) for messages. Until 1.0 debug is FULLY enabled to help track problems. There is also a pause button available that helps you track problems.</li>
+</ul>
 <h2>In the wild...</h2>
 <p>I started a few threads around the globe on different sites during development. If you are interested in some insight you can check them out.
 </p>

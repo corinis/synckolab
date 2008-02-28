@@ -1,15 +1,44 @@
 <!-- MAIN CONTENT -->
 <h5 class="page-header"><a id="content" name="content">Download</a></h5>
 <h6>Latest stable</h6>
-<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.5.3.xpi">SyncKolab 0.5.3</a></p>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.6.0.xpi">SyncKolab 0.6.0</a></p>
 <h6>Latest Nightly</h6>
 <p><a href="http://www.gargan.org/extensions/synckolab-NIGHTLY.xpi">SyncKolab NIGHTLY</a></p>
 <h6>Previous Releases</h6>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.5.3.xpi">SyncKolab 0.5.3</a></p>
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.5.2.xpi">SyncKolab 0.5.2</a></p>
+
+<h5 class="page-header">Release Notes</h5>
+<h6>For updated release notes see <a href="http://www.gargan.org/extensions/synckolab.html">www.gargan.org</a></h6>
+
+<h3>synckolab 0.6.0</h3>
+<p><pre>
+In case you have problems during installation:
+- uninstall synckolab
+- remove all lines containing synckolab from your prefs.js (in your thunderbird profile folder)
+- remove all *.hdb files from your profile folder
+- install 0.6.0 and configure everything
+
+Changelog:
+* renamed global variables to remove side effect with other extensions
+* added check for the "imap-deleted" flag
+* huge speed increase by using hashmap instead of array for internal calendar/contact database (about 500 entries/minute)
+* reduced cpu usage and removed deadlocks (also due to hashmaps)
+* changed flags for temporaray files (now use 0600 instead of 0666) so they arent world readable
+* added priority flag for todo/agenda
+* fixed little bug that prevented additional info files to be written correctly
+* fixed location for cache folder (might result in a longer wait for first sync - again)
+* fixed delete
+* prepared code for 3.0a
+* fixed problems with calendar sync
+</pre></p>
+
+<a href="javascript:" onclick="document.getElementById('older').style.display='block';">display older releases</a>
+
+<div id="older" style="display:none">
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.34.xpi">SyncKolab 0.4.34</a></p>
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.33.xpi">SyncKolab 0.4.33</a></p>
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.32.xpi">SyncKolab 0.4.32</a></p>
-
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.31.xpi">SyncKolab 0.4.31 (do not use.. bugged)</a></p>
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.30.xpi">SyncKolab 0.4.30</a></p>
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.4.28.xpi">SyncKolab 0.4.28</a></p>
@@ -45,8 +74,6 @@
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.2.0.xpi">SyncKolab 0.2.0</a></p>
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.1.1.xpi">SyncKolab 0.1.1</a></p>
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.1.0.xpi">SyncKolab 0.1.0</a></p>
-
-<h5 class="page-header">Installation Instructions</h5>
 <h6>SyncKolab 0.4.34+</h6>
 <p>
 Step 1: Download the lightning plugin then the extension (use "rightclick/save as" otherwise firefox will try to install it)<br/>
@@ -57,6 +84,7 @@ Step 5: run Sync Kolab using Tools-&gt;Start SyncKolab<br/>
 
 See <a href="notes.html">Configuration</a> for detailed instructions
 </p>
+<h5 class="page-header">Installation Instructions</h5>
 
 <h6>SyncKolab 0.4.20+</h6>
 <p>
@@ -84,39 +112,8 @@ Step 1: from 0.3.0 to 0.4.19 <b>calendar is required</b>. <a href="http://www.mo
 <h5 class="page-header">Release Notes</h5>
 <h6>For updated release notes see <a href="http://www.gargan.org/extensions/synckolab.html">www.gargan.org</a></h6>
 
-
 <h3>synckolab 0.5.3</h3>
 <p><pre>
-* added selection for default behaviour when a conflict has been found (ask/server/client) (fixed #17820)
-* fixed deleting of configurations
-* added autoscroll for the status window (uwse the pause button to scroll up)
-* fixed bug in fixUpName that prevented calendar selection (fixed #17980)
-* added fix for multiple calendars as suggested by andreas
-* fixed problem with "completed" field when syncing tasks
-* rewrote parts of the calendar sync (now setting fields the way lightning does)
-* added option to set a timeframe for sync (this way old messages will be ignored) - only task and calendar
-* added loads of debug messages to help tracking problems
-* added timing to debug messages in order to help tackle performance problems
-* fixed various issues in the create dialog also save and restore problems fixed
-* fixed a problem when handling boundaries (now correctly checks for " and doesnt take it for granted)
-* fixed problem with calendar parsing (invalid recurrence tag)
-* fixed #18344 (birthday not included in compare with contacts)
-* fixed problems when creating a new profile
-* re-added human readable message - with notice information about incompatible clients
-</pre>
-</p>
-
-<h3>synckolab 0.5.2</h3>
-<p><pre>
-This is apretty big release since &lt; 0.4.34.
-
-In case you have problems:
-- uninstall synckolab
-- remove all lines containing synckolab from your prefs.js (in your thunderbird profile folder)
-- remove all *.hdb files from your profile folder
-- install 0.5.2 and configure everything
-
-Changelog:
 * when informaiton window is hidden the status bar holds the sync status
 * added an option to hide the information window on autosync
 * fixed problem with all-day calendar entries
@@ -139,6 +136,28 @@ Changelog:
 * added Czech translation
 * added fix for names of calendars
 </pre></p>
+
+<h3>synckolab 0.5.2</h3>
+<p><pre>
+* added selection for default behaviour when a conflict has been found (ask/server/client) (fixed #17820)
+* fixed deleting of configurations
+* added autoscroll for the status window (uwse the pause button to scroll up)
+* fixed bug in fixUpName that prevented calendar selection (fixed #17980)
+* added fix for multiple calendars as suggested by andreas
+* fixed problem with "completed" field when syncing tasks
+* rewrote parts of the calendar sync (now setting fields the way lightning does)
+* added option to set a timeframe for sync (this way old messages will be ignored) - only task and calendar
+* added loads of debug messages to help tracking problems
+* added timing to debug messages in order to help tackle performance problems
+* fixed various issues in the create dialog also save and restore problems fixed
+* fixed a problem when handling boundaries (now correctly checks for " and doesnt take it for granted)
+* fixed problem with calendar parsing (invalid recurrence tag)
+* fixed #18344 (birthday not included in compare with contacts)
+* fixed problems when creating a new profile
+* re-added human readable message - with notice information about incompatible clients
+</pre>
+</p>
+
 
 <h3>synckolab 0.4.34</h3>
 <pre>
@@ -543,7 +562,7 @@ This version works fine. I only tested it under windows with the contact folder 
 Fixed some nasty message bug. It should now download the online folders.
 Still a bad bug on Linux which I cannot figure out (under linux it wont find my contact folder's messages???).
 </p>
-<h6>synckolab 0.1.0 alpha</a></h6>
+<h6>synckolab 0.1.0 alpha</h6>
 <p>
 
 This is a testing release. Do not use it in productive enviroments!!!<br/>
@@ -554,5 +573,10 @@ downloaded (I added some code to download it, but it doesnt work yet... I guess)
 the folder you want, go to Offline, select "Select this folder for offline use" and press
 "Download Now". After that it should sync just fine.
 </p>
+
+</div>
+
+
+
 
 </p>
