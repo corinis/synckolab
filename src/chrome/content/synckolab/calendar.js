@@ -586,7 +586,7 @@ var syncCalendar = {
 			logMessage ("nextUpdate for "+ ((this.syncTasks==true)?"task":"event") +":" + cur.id, LOG_CAL + LOG_DEBUG);
 			
 			// check if we can skip this entry
-			var endDate = (this.syncTasks==true)?(cur.dueDate?cur.dueDate.jsDate:null):cur.endDate.jsDate;
+			var endDate = (this.syncTasks==true)?(cur.startDate!=null?(cur.dueDate?cur.dueDate.jsDate:null):null):cur.endDate.jsDate;
 			if (endDate != null && this.gSyncTimeFrame > 0 && (endDate.getTime() + (this.gSyncTimeFrame * 86400000) < (new Date()).getTime()))
 			{
 					logMessage("skipping event because its too old: " + cur.id, LOG_CAL + LOG_INFO);
