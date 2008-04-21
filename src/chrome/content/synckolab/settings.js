@@ -1551,7 +1551,7 @@ function saveAllConfig()
 	fp.defaultString = "SyncKolab.config";
 	fp.defaultExtension = "config";
 	var res = fp.show();
-	if (res == nsIFilePicker.returnOK){
+	if (res == nsIFilePicker.returnOK || res == nsIFilePicker.returnReplace){
 		var thefile = fp.file;
 
 	 	// write basics
@@ -1602,7 +1602,9 @@ function saveAllConfig()
 		}
 
 		// open the file
-		thefile.create(thefile.NORMAL_FILE_TYPE, 0666);
+		if(!thefile.exists()) {
+			thefile.create(thefile.NORMAL_FILE_TYPE, 0666);
+		}
 	 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
 	 	stream.init(thefile, 2, 0x200, false); // open as "write only"
 

@@ -11,8 +11,9 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Contributor(s): Niko Berger <niko.berger@corinis.com>
- *                 Andreas Gungl <a.gungl@gmx.de>
+ * Contributor(s):	Niko Berger <niko.berger@corinis.com>
+ *               	Andreas Gungl <a.gungl@gmx.de>
+ *					Arsen Stasic <arsen.stasic@wu-wien.ac.at>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
