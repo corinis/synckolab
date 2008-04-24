@@ -52,7 +52,19 @@ function accountNameFix (name)
 	return name.replace(/[ :@\%\'\"-\?\#+\*\.;$\\\/]/g, "");
 }
 
+/**
+ * Takes a string which should have an xml in there,
+ * and applies a few things to make sure its parseable
+ */
+function fixString4XmlParser (s)
+{
+	t = s.replace(/version=.0/g, "version=\"1.0");
+	return t.replace(/&/g, "&amp;").replace(/amp;amp;/g, "amp;")
+}
 
+/**
+ * remove possible problematic chars from a name
+ */
 function fixNameToMiniCharset (name)
 {
 	var ret = "";
@@ -1139,7 +1151,7 @@ function encode4XML(s)
 	if (!s.replace)
 		return s;
 	
-	return s.replace(/&/g, "&amp;").replace(/</g,
+	return s.replace(/\n\n/, "\\n").replace(/\n/, "\\n").replace(/&/g, "&amp;").replace(/</g,
         "&lt;").replace(/>/g, "&gt;").replace(/amp;amp;/g, "amp;");
 }
 

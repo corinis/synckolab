@@ -1547,7 +1547,7 @@ function card2Vcard (card, fields)
 		msg += "CUSTOM3:" + card.custom3.replace (/\n/g, "\\n") + "\n";
  	// yeap one than more line (or something like that :P)
  	if (checkExist (card.notes))
-		msg += "NOTE:" + card.notes.replace (/\n/g, "\\n") + "\n";
+		msg += "NOTE:" + card.notes.replace(/\n\n/g, "\\n").replace (/\n/g, "\\n") + "\n";
 	msg += "UID:" + card.custom4 + "\n";	
 	// add extra/missing fields
 	if (fields != null)
