@@ -40,7 +40,7 @@
 function xml2Card (xml, extraFields, cards)
 {
 	// until the boundary = end of xml
-	xml = decode_utf8(DecodeQuoted(xml)).replace(/&/g, "&amp;").replace(/amp;amp;/g, "amp;");
+	xml = fixString4XmlParser(decode_utf8(DecodeQuoted(xml)));
 
 	// convert the string to xml
 	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser); 	

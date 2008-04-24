@@ -293,8 +293,8 @@ var syncCalendar = {
 		this.curItemInListId.setAttribute("label", parsedEvent.id);
 		this.curItemInListStatus.setAttribute("label", strBundle.getString("checking"));
 		var info = parsedEvent.title;
-		alert("GOT HERE");
-		if (!this.syncTasks)
+
+		if (!this.syncTasks && parsedEvent.startDate)
 		{
 		    info += " (" + date2String(parsedEvent.startDate.jsDate) + ")";
 		}
@@ -313,7 +313,6 @@ var syncCalendar = {
 		var fEntry = getSyncFieldFile(this.gConfig, this.getType(), parsedEvent.id);
 
 	    logMessage("idxEntry:" + idxEntry, LOG_CAL + LOG_DEBUG);
-		alert("GOT HERE");
 		
 		// always add if the forceLocalCopy flag is set (happens when you change the configuration)
 		if (foundEvent == null || this.forceLocalCopy)

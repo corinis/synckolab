@@ -682,7 +682,10 @@ var syncAddressBook = {
 		// mailing lists are nsIABDirectory 
 		if (cur.isMailList)
 		{
-			logMessage("GOT A MAILING LIST!!!", LOG_INFO);
+			logMessage("GOT A MAILING LIST!!! - skipping", LOG_INFO);
+			this.gCards.next();
+			return null;
+			/* skip this
 			var cn = this.gAddressBook.childNodes;
 			var ABook = cn.getNext();
 			while (ABook != null)
@@ -703,6 +706,7 @@ var syncAddressBook = {
 					break;
 				}
 			}
+			*/
 			
 		}
 		
@@ -721,7 +725,7 @@ var syncAddressBook = {
 				{
 					// no next.. but we find that out early enough
 				}
-				// skip this one.. there simply ARE no valid mailng list without UID
+				// skip this one.. there simply ARE no valid mailing list without UID
 				return null;
 			}
 			

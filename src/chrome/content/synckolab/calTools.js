@@ -300,7 +300,7 @@ function xml2Event (xml, extraFields, event)
 	//		  - yearly recurrence
 	
 	// decode utf chars and make sure an & is an &amp; (otherwise this is unparseable)
-	xml = decode_utf8(DecodeQuoted(xml)).replace(/&/g, "&amp;").replace(/amp;amp;/g, "amp;");
+	xml = fixString4XmlParser(decode_utf8(DecodeQuoted(xml)));
 	
 	// convert the string to xml
 	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser); 
