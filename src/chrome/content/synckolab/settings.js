@@ -1526,7 +1526,7 @@ function loadConfig()
 					value += "=" + cPref[j];
 					
 				if (value == "true" || value == "false")
-					pref.setBoolPref(value == 'true');
+					pref.setBoolPref(name, value);
 				else
 					pref.setCharPref(name, value);				
 			}
