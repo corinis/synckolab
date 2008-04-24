@@ -293,6 +293,7 @@ var syncCalendar = {
 		this.curItemInListId.setAttribute("label", parsedEvent.id);
 		this.curItemInListStatus.setAttribute("label", strBundle.getString("checking"));
 		var info = parsedEvent.title;
+		alert("GOT HERE");
 		if (!this.syncTasks)
 		{
 		    info += " (" + date2String(parsedEvent.startDate.jsDate) + ")";
@@ -312,6 +313,7 @@ var syncCalendar = {
 		var fEntry = getSyncFieldFile(this.gConfig, this.getType(), parsedEvent.id);
 
 	    logMessage("idxEntry:" + idxEntry, LOG_CAL + LOG_DEBUG);
+		alert("GOT HERE");
 		
 		// always add if the forceLocalCopy flag is set (happens when you change the configuration)
 		if (foundEvent == null || this.forceLocalCopy)
@@ -584,9 +586,10 @@ var syncCalendar = {
 			var writeCur = true;
 		    
 			logMessage ("nextUpdate for "+ ((this.syncTasks==true)?"task":"event") +":" + cur.id, LOG_CAL + LOG_DEBUG);
-			
-			// check if we can skip this entry
-			var endDate = (this.syncTasks==true)?(cur.startDate!=null?(cur.dueDate?cur.dueDate.jsDate:null):null):cur.endDate.jsDate;
+
+			// check if we can skip this entry	(make sure we got a start and enddate.. otherwise it will fail)
+			var endDate = getEndDate(cur, this.syncTasks);		
+				
 			if (endDate != null && this.gSyncTimeFrame > 0 && (endDate.getTime() + (this.gSyncTimeFrame * 86400000) < (new Date()).getTime()))
 			{
 					logMessage("skipping event because its too old: " + cur.id, LOG_CAL + LOG_INFO);

@@ -46,7 +46,7 @@ var gFolderDatasource = Components.classes["@mozilla.org/rdf/datasource;1?name=m
 var gSyncKolabMessageService=Components.classes["@mozilla.org/messenger/messageservice;1?type=imap"].getService(Components.interfaces.nsIMsgMessageService); 
 
 // save the Version of synckolab
-var gSyncKolabVersion = "0.6.1";
+var gSyncKolabVersion = "0.6.2";
 
 // holds required content
 

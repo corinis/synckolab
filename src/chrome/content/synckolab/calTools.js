@@ -828,6 +828,22 @@ function event2xml (event, syncTasks, email)
 }
 
 /**
+ * returns the end date of an event.
+ * Because of changes in lightning 0.8 endDate requires startDate 
+ * to exist and is different for tasks/events
+ */
+function getEndDate (cur, tasks)
+{
+	if (tasks == true && cur.startDate !=null && cur.dueDate)
+		return cur.dueDate.jsDate
+
+	if (tasks == false && cur.startDate !=null && cur.endDate)
+		return cur.endDate.jsDate;
+		
+	return null;
+}
+
+/**
  * convert an ICAL event into a Kolab XML string representation,
  * allow to caller to skip fields which change frequently such as
  * "last-modification-date" because this can confuse the hash IDs.
@@ -841,17 +857,17 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 	
 	var hasOrganizer = false;
 	var isAllDay = (syncTasks==true)?false:(event.startDate?event.startDate.isDate:false);
-	var endDate = (syncTasks==true)?event.dueDate:event.endDate;
+	var endDate = getEndDate(event, syncTasks);
 
 	// correct the end date for all day events before writing the XML object
 	// Kolab uses for 1-day-event:
 	// startdate = day_x, enddate = day_x
 	// Sunbird uses for 1-day-event:
 	// startdate = day_x, enddate = day_x + 1
-	if (isAllDay)
+	if (isAllDay && endDate != null)
 	{
-		var tmp_date = event.endDate.jsDate;
-		tmp_date.setTime(tmp_date.getTime() - 24*60*60000);
+		var tmp_date = endDate;
+		tmp_date.setTime(tmp_date.getTime() - 24*60*60000);		
 		endDate = new CalDateTime();
 		endDate.jsDate = tmp_date;
 	}
@@ -1127,10 +1143,15 @@ function event2Human (event, syncTasks)
 	var txt = "Summary: " + event.title +"\n";
 	if(syncTasks == false)
 	{
-		var isAllDay = event.startDate.isDate;
-		var endDate = event.endDate;
-		txt += "Start date: " + calDateTime2String(event.startDate, isAllDay) + "\n";
-		txt += "End date: " + calDateTime2String(endDate, isAllDay) + "\n\n";
+		var isAllDay = event.startDate?event.startDate.isDate:false;
+		if (event.startDate)
+		{
+			txt += "Start date: " + calDateTime2String(event.startDate, isAllDay) + "\n";
+			alert("got here");
+			var endDate = event.endDate;
+			if (event.endDate)		
+				txt += "End date: " + calDateTime2String(endDate, isAllDay) + "\n\n";
+		}
 	}
 	if (event.getProperty("DESCRIPTION"))
 	   txt += event.getProperty("DESCRIPTION") + "\n\n";
