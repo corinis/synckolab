@@ -68,7 +68,7 @@
 <!ENTITY synckolab.newwizard.intro 		"SyncKolab allows you to synchronize your contacts and your calendar entries over multiple machines using only an imap server.">
 <!ENTITY synckolab.newwizard.selectAccount	"Please select an IMAP Account for the synchronization">
 <!ENTITY synckolab.newwizard.configName	"Display-name">
-<!ENTITY synckolab.newwizard.descName "The display-name has no function other than fou you to identify the configuration. It makes sense to have descriptive names if you have multiple configurations/folders to sync (i.e. SharedAddresses, Office Calendar, Home Tasks). Make sure you do not already have a configuration with that name and that it does not include special characters like .-[]# ">
+<!ENTITY synckolab.newwizard.descName "The display-name has no function other than for you to identify the configuration. It makes sense to have descriptive names if you have multiple configurations/folders to sync (i.e. SharedAddresses, Office Calendar, Home Tasks). Make sure you do not already have a configuration with that name and that it does not include special characters like .-[]# ">
 <!ENTITY synckolab.wizard.AccountIntervalDescription "Select an IMAP account and specify your basic sync settings">
 <!ENTITY synckolab.wizard.typePageDesc	"Specify which information should be synchronized with the selected IMAP account">
 <!ENTITY synckolab.wizard.typePageLongDesc	"For each SyncKolab configuration you can use the folders of one imap account to synchronize each a selectable folder with either an address book, a calendar and/or a task list">

@@ -1161,33 +1161,18 @@ function decode4XML(s)
 		return "";
 	if (!s.replace)
 		return s;
-	var thechrs = new Array(
-    ' ','!','"','#','$','%','&',"'",'(',')','*','+',',','-','.','/','0','1','2','3',
-    '4','5','6','7','8','9',':',';','<','=','>','?','@','A','B','C','D','E','F','G', 
-    'H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','[', 
-    '\\',']','^','_','`','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o',
-    'p','q','r','s','t','u','v','w','x','y','z','{','|','}','~',' ','c','u','e','a',
-    'a','a','a','c','e','e','e','i','i','i','a','a','e','ae','ae','o','o','o','u','u',
-    'y','u','u','o','l','0','x','f','a','i','o','u','n','n','*','O','?','r','_','?',
-    '?','!','<','>','_','_','_','|','|','a','a','a','c','|','|','+','+','c','y','+',
-    '+','-','-','+','-','+','a','a','+','+','-','-','|','-','+','.','.','d','e','e',
-    'e','i','i','i','i','+','+','_','_','|','i','_','o','o','o','o','o','o','u','p',
-    'p','u','u','u','y','y','_',"'",'-','?','_','?','?','S','÷','¸','°','¨','·','¹',
-    '³','²','_',' ');
-    //replace entities
-    t = s;
-    
-  var l = 32;
-  for (l = 32; l < 100; l++){
-    t = t.replace(new RegExp("&#" + l + ";","gim"),thechrs[l-32]);
-    t = t.replace(new RegExp("&#0" + l + ";","gim"),thechrs[l-32]);
-    t = t.replace(new RegExp("&#00" + l + ";","gim"),thechrs[l-32]);
-  }
-  var l = 100;
-  for (l = 100; l < 256; l++){
-    t = t.replace(new RegExp("&#" + l + ";","gim"),thechrs[l-32]);
-    t = t.replace(new RegExp("&#0" + l + ";","gim"),thechrs[l-32]);
-  }
+  // numeric replace
+  t = s.replace(/&#(\d+);/g,
+  function(wholematch, parenmatch1) {
+  return String.fromCharCode(+parenmatch1);
+  });
+  // same for hex
+  t = t.replace(/&#x([0-9a-fA-F]+);/g,
+  function(wholematch, parenmatch1) {
+  return String.fromCharCode(parseInt(parenmatch1,16));
+  });
+  
+  // final
 	return t.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
 }
 
