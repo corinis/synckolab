@@ -933,8 +933,8 @@ function calDateTime2String (val, allday)
 {
 	if (val == null)
 		return "";
-		
-    var datetime = val.jsDate
+	
+    var datetime = (val instanceof Date) ? val : val.jsDate;
     var string = date2String(datetime);
     if (!allday)
     {
