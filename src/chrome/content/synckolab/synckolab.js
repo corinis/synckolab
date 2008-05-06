@@ -755,6 +755,10 @@ var syncKolabStreamListener = {
  },
  onStopRequest: function(aRequest, aContext, aStatusCode) {
     logMessage("got Message [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]:\n" + fileContent, LOG_DEBUG);
+    
+    // remove the header of the content
+    fileContent = stripMailHeader(fileContent);
+    
     // stop here for testing
     parseMessageRunner ();
  }
@@ -821,7 +825,7 @@ function parseMessageRunner ()
 		if (curMessage%20 == 0)
 		{
 			// save the sync db file every 20 messages.. should speed up sync if canceled
-		    logMessage("Writing message sny-cdb", LOG_DEBUG);
+		    logMessage("Writing message snyc-db", LOG_DEBUG);
 	    
 		    // write the db file back
 		    if (syncMessageDb == null)

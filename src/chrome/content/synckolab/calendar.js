@@ -247,6 +247,7 @@ var syncCalendar = {
 	/**
 	 * parses the given content, if an update is required the 
 	 * new message content is returned otherwise null
+	 * The content is already parsed and stripped of any headers
 	 */	
 	parseMessage: function(fileContent) {
 		
@@ -270,10 +271,6 @@ var syncCalendar = {
 			scrollToBottom();
 		}
 		
-		
-		// get the content in a nice format
-		fileContent = stripMailHeader(fileContent);
-
 		// this is an array of arrays that hold fieldname+fielddata of until-now-unknown fields
 		var messageFields = new Array();		
 

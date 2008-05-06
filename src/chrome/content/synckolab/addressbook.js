@@ -292,12 +292,7 @@ var syncAddressBook = {
 			this.itemList.appendChild(this.curItemInList);
 			scrollToBottom();
 		}
-		
-	   	logMessage("AB: strip mail header... ", LOG_DEBUG + LOG_AB);
-
-		// get the content in a nice format
-		fileContent = stripMailHeader(fileContent);
-		
+				
 		// this is an array of arrays that hold fieldname+fielddata of until-now-unknown fields
 		var messageFields = new Array();		
 		

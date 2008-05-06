@@ -1153,7 +1153,7 @@ function encode4XML(s)
 	if (!s.replace)
 		return s;
 	
-	return s.replace(/\n\n/, "\\n").replace(/\n/, "\\n").replace(/&/g, "&amp;").replace(/</g,
+	return s.replace( /(\r?\n|\r){1,2}/g,'\\n' ).replace(/&/g, "&amp;").replace(/</g,
         "&lt;").replace(/>/g, "&gt;").replace(/amp;amp;/g, "amp;");
 }
 
