@@ -317,6 +317,11 @@ function stripMailHeader (content)
 	if (contTypeIdx != -1)
 	{
 		content = content.substring(contTypeIdx); // cut everything before this part
+		// there might be a second boundary... remove that as well
+		var endcontentIdx = content.indexOf(boundary);
+		if (endcontentIdx != -1)
+			content = content.substring(0, endcontentIdx);
+			
 		contentIdx = content.indexOf("<?xml")
 	}
 	else
@@ -329,6 +334,11 @@ function stripMailHeader (content)
 		if (contTypeIdx != -1)
 		{
 			content = content.substring(contTypeIdx); // cut everything before this part
+			// there might be a second boundary... remove that as well
+			var endcontentIdx = content.indexOf(boundary);
+			if (endcontentIdx != -1)
+				content = content.substring(0, endcontentIdx);
+			
 			contentIdx = content.indexOf("BEGIN:")
 		}
 	}

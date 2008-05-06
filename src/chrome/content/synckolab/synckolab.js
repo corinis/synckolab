@@ -785,7 +785,7 @@ function parseMessageRunner ()
    	logMessage("parsing message... ", LOG_DEBUG);
 	
 	// fix the message for line truncs (last char in line is =)
-	fileContent = fileContent.replace(/=\n/g, "");
+	fileContent = fileContent.replace(/=\n(\S)/g, "$1");
 	
 	var content = gSync.parseMessage(fileContent, updateMessagesContent);
 	
