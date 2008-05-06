@@ -835,7 +835,7 @@ function event2xml (event, syncTasks, email)
 function getEndDate (cur, tasks)
 {
 	if (tasks == true && cur.startDate !=null && cur.dueDate)
-		return cur.dueDate.jsDate
+		return cur.dueDate.jsDate;
 
 	if (tasks == false && cur.startDate !=null && cur.endDate)
 		return cur.endDate.jsDate;
@@ -866,7 +866,7 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 	// startdate = day_x, enddate = day_x + 1
 	if (isAllDay && endDate != null)
 	{
-		var tmp_date = endDate;
+		var tmp_date = endDate.jsDate;
 		tmp_date.setTime(tmp_date.getTime() - 24*60*60000);		
 		endDate = new CalDateTime();
 		endDate.jsDate = tmp_date;
@@ -1187,7 +1187,7 @@ function ical2event (content, todo)
 	var rootComp = null;
 	try
 	{
-		rootComp = icssrv.parseICS(content);
+		rootComp = icssrv.parseICS(content, null);
 	}
 	catch (ex)
 	{
@@ -1209,13 +1209,27 @@ function ical2event (content, todo)
 	}
 	
 	var subComp = event.getFirstSubcomponent("ANY");
+    while (subComp) {
+        if (subComp.componentType == "VEVENT") {
+            event = Components.classes["@mozilla.org/calendar/event;1"]
+                             .createInstance(Components.interfaces.calIEvent);
+            break;
+		} else if (subComp.componentType == "VTODO") {
+            event = Components.classes["@mozilla.org/calendar/todo;1"]
+                             .createInstance(Components.interfaces.calITodo);
+            break;
+		} else if (subComp.componentType != "VTIMEZONE") {
+			logMessage("unable to parse event 2: " + content, LOG_CAL + LOG_ERROR);
+			return null;
+        }
+        subComp = event.getNextSubcomponent("ANY");
+	}
 
-	if (todo)
-		event = Components.classes["@mozilla.org/calendar/todo;1"]
-					  .createInstance(Components.interfaces.calITodo);
-	else				 
-		event = Components.classes["@mozilla.org/calendar/event;1"]
-					  .createInstance(Components.interfaces.calIEvent);
+	if (!subComp ) {
+		logMessage("unable to parse event 3: " + content, LOG_CAL + LOG_ERROR);
+		return null;
+	}
+
 	
 	try
 	{
