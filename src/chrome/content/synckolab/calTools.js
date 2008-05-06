@@ -866,7 +866,7 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 	// startdate = day_x, enddate = day_x + 1
 	if (isAllDay && endDate != null)
 	{
-		var tmp_date = endDate.jsDate;
+		var tmp_date = endDate;
 		tmp_date.setTime(tmp_date.getTime() - 24*60*60000);		
 		endDate = new CalDateTime();
 		endDate.jsDate = tmp_date;
@@ -1153,7 +1153,7 @@ function event2Human (event, syncTasks)
 		}
 	}
 	if (event.getProperty("DESCRIPTION"))
-	   txt += event.getProperty("DESCRIPTION") + "\n\n";
+	   txt += event.getProperty("DESCRIPTION") + "\n";
 	if (event.getProperty("LOCATION"))
 	   txt += event.getProperty("LOCATION") +"\n";
 	return txt;
