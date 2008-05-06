@@ -917,6 +917,8 @@ function string2CalDateTime (val, useUTC)
 // produces: 2005-03-30
 function date2String (cdate)
 {
+	if (!cdate)
+		return '';
 	return cdate.getFullYear() + "-" + (cdate.getMonth()+1 < 10?"0":"") + (cdate.getMonth()+1) + "-" +
 		(cdate.getDate() < 10?"0":"") + cdate.getDate();
 }

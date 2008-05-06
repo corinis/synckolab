@@ -1147,7 +1147,6 @@ function event2Human (event, syncTasks)
 		if (event.startDate)
 		{
 			txt += "Start date: " + calDateTime2String(event.startDate, isAllDay) + "\n";
-			alert("got here");
 			var endDate = event.endDate;
 			if (event.endDate)		
 				txt += "End date: " + calDateTime2String(endDate, isAllDay) + "\n\n";
