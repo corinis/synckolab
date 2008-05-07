@@ -253,7 +253,7 @@ function readSyncDBFile (file)
 
 /**
  * Removes a possible mail header and extracts only the "real" content.
- * This also trims the message
+ * This also trims the message and removes some common problems (like -- at the end)
  */
 function stripMailHeader (content)
 {
@@ -261,7 +261,6 @@ function stripMailHeader (content)
 		return null;
 		
 	var isMultiPart = content.indexOf('boundary=') != -1;
-
 	
 	
  	// seems we go us a vcard/ical when no xml is found
@@ -321,6 +320,8 @@ function stripMailHeader (content)
 		var endcontentIdx = content.indexOf(boundary);
 		if (endcontentIdx != -1)
 			content = content.substring(0, endcontentIdx);
+		if ((new RegExp ("--$")).test(content))
+			content = content.substring(0, content.length - 2);
 			
 		contentIdx = content.indexOf("<?xml")
 	}
@@ -338,6 +339,8 @@ function stripMailHeader (content)
 			var endcontentIdx = content.indexOf(boundary);
 			if (endcontentIdx != -1)
 				content = content.substring(0, endcontentIdx);
+			if ((new RegExp ("--$")).test(content))
+				content = content.substring(0, content.length - 2);
 			
 			contentIdx = content.indexOf("BEGIN:")
 		}
