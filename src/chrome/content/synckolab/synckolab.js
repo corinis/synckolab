@@ -142,8 +142,17 @@ function syncKolab(event) {
 	try {
 	    var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 		gCloseWnd = pref.getBoolPref("SyncKolab.closeWindow");
+		
+		try {		
+			DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + parseInt(pref.getCharPref("SyncKolab.debugLevel"));
+		} catch (ex) {
+			DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + LOG_WARNING;
+		};				
 	} catch(e) {
 	}
+
+	logMessage("Debug Level set to: " + DEBUG_SYNCKOLAB_LEVEL, LOG_WARNING);
+
 	// wait until loaded
 	window.setTimeout(goWindow, SWITCH_TIME, gWnd);		 
 }

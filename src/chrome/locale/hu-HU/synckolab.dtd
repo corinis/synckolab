@@ -54,6 +54,13 @@
 <!ENTITY synckolab.settings.DescKolabServer 		"Teljes csoportmunka támogatásához megnézheted a kolab szervert: ">
 <!ENTITY synckolab.settings.DescOtherClients 		"Más kliensek amivel a SyncKolab kompatibilis: ">
 
+<!-- log level -->
+<!ENTITY synckolab.debugLevel						"Error Console Level" >
+<!ENTITY synckolab.logError							"Only Errors" >
+<!ENTITY synckolab.logWarning						"Warnings" >
+<!ENTITY synckolab.logInfo							"Information" >
+<!ENTITY synckolab.logDebug							"Everything (Debug)" >
+
 <!-- Account Tab -->
 <!ENTITY synckolab.settings.AccountDescription	"Kérjük válasszon egy IMAP Fiókot a szinkronizációhoz">
 <!ENTITY synckolab.settings.SyncInterval 		"Sync-intervallum: ">

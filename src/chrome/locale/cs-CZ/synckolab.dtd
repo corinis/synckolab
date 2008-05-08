@@ -54,6 +54,13 @@
 <!ENTITY synckolab.settings.DescKolabServer 		"Pro plnou podporu pracovních skupin vám doporučujeme seznámit se s kolab serverem: ">
 <!ENTITY synckolab.settings.DescOtherClients 		"Další klienti, se kterými je SyncKolab kompatibilní: ">
 
+<!-- log level -->
+<!ENTITY synckolab.debugLevel						"Error Console Level" >
+<!ENTITY synckolab.logError							"Only Errors" >
+<!ENTITY synckolab.logWarning						"Warnings" >
+<!ENTITY synckolab.logInfo							"Information" >
+<!ENTITY synckolab.logDebug							"Everything (Debug)" >
+
 <!-- Account Tab -->
 <!ENTITY synckolab.settings.AccountDescription	"Prosím, zvolte IMAP účet, který chcete synchronizovat">
 <!ENTITY synckolab.settings.SyncInterval 		"Synchronizační interval: ">

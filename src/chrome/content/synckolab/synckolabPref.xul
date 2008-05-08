@@ -84,6 +84,17 @@
                                 Outlook &synckolab.with; Bynari (&synckolab.proprietary;)</label>
 
                             <separator class="thin"/>
+                            <hbox>
+                            <label>&synckolab.debugLevel;</label>
+                            <menulist id="debugLvl">
+                            	<menupopup>
+                            		<menuitem id="debugLvl0" label="&synckolab.logError;" value="0"/>
+                            		<menuitem id="debugLvl1" label="&synckolab.logWarning;" value="1"/>
+                            		<menuitem id="debugLvl2" label="&synckolab.logInfo;" value="2"/>
+                            		<menuitem id="debugLvl3" label="&synckolab.logDebug;" value="3"/>
+                            	</menupopup>
+                            </menulist>
+                            </hbox>
                             <button label="&synckolab.settings.saveAll;"
                                 oncommand="saveAllConfig();"/>
                         </vbox>

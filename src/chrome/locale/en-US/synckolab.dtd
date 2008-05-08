@@ -54,6 +54,13 @@
 <!ENTITY synckolab.settings.DescKolabServer 		"For full groupware support you might want to take a look at the kolab server: ">
 <!ENTITY synckolab.settings.DescOtherClients 		"Other clients SyncKolab is compatible with: ">
 
+<!-- log level -->
+<!ENTITY synckolab.debugLevel						"Error Console Level" >
+<!ENTITY synckolab.logError							"Only Errors" >
+<!ENTITY synckolab.logWarning						"Warnings" >
+<!ENTITY synckolab.logInfo							"Information" >
+<!ENTITY synckolab.logDebug							"Everything (Debug)" >
+
 <!-- Account Tab -->
 <!ENTITY synckolab.settings.AccountDescription	"Please select an IMAP Account for the synchronization">
 <!ENTITY synckolab.settings.SyncInterval 		"Sync-interval: ">

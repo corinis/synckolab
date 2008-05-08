@@ -283,6 +283,16 @@ function init() {
 		document.getElementById ("hiddenWnd").checked = pref.getBoolPref("SyncKolab.hiddenWindow");
 	} catch (ex) {};
 	
+	// set the default debug level
+	var cfgDbgLevel = 1;
+	try {		
+		cfgDbgLevel = pref.getCharPref("SyncKolab.debugLevel");
+	} catch (ex) {};
+	var debugEle = document.getElementById("debugLvl");
+	debugEle.setAttribute("value", cfgDbgLevel);
+	// get the label
+	debugEle.setAttribute("label", document.getElementById("debugLvl"+cfgDbgLevel).getAttribute("label"));	
+	
 	return;	
 }
 
@@ -1147,6 +1157,7 @@ function savePrefs() {
 	pref.setBoolPref("SyncKolab.closeWindow", document.getElementById ("closeWnd").checked);
 	pref.setCharPref("SyncKolab.autoSync", document.getElementById ("syncInterval").value);
 	pref.setBoolPref("SyncKolab.hiddenWindow", document.getElementById ("hiddenWnd").checked);
+	pref.setCharPref("SyncKolab.debugLevel", document.getElementById ("debugLvl").value);
 
 	var tree = document.getElementById("configTree");
 	// get the treechildren item

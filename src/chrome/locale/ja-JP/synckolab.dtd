@@ -54,6 +54,13 @@
 <!ENTITY synckolab.settings.DescKolabServer 		"フリーソフトウェアによるグループウェア Kolab については，次のURLを参照してください．">
 <!ENTITY synckolab.settings.DescOtherClients 		"SyncKolabは次のソフトウェアと互換性があります．">
 
+<!-- log level -->
+<!ENTITY synckolab.debugLevel						"Error Console Level" >
+<!ENTITY synckolab.logError							"Only Errors" >
+<!ENTITY synckolab.logWarning						"Warnings" >
+<!ENTITY synckolab.logInfo							"Information" >
+<!ENTITY synckolab.logDebug							"Everything (Debug)" >
+
 <!-- Account Tab -->
 <!ENTITY synckolab.settings.AccountDescription	"同期に使う IMAPメールアカウントを選択してください．">
 <!ENTITY synckolab.settings.SyncInterval 		"自動同期の時間間隔: ">
