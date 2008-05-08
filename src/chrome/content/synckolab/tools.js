@@ -1167,7 +1167,7 @@ function encode4XML(s)
 		return s;
 	
 	return s.replace( /(\r?\n|\r){1,2}/g,'\\n' ).replace(/&/g, "&amp;").replace(/</g,
-        "&lt;").replace(/>/g, "&gt;").replace(/amp;amp;/g, "amp;");
+        "&lt;").replace(/>/g, "&gt;").replace(/amp;amp;/g, "amp;").replace(/=/g, "&#61;");
 }
 
 function decode4XML(s)

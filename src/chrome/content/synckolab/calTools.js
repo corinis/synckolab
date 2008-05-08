@@ -864,7 +864,7 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 	// startdate = day_x, enddate = day_x
 	// Sunbird uses for 1-day-event:
 	// startdate = day_x, enddate = day_x + 1
-	if (isAllDay && endDate != null)
+	if (isAllDay && endDate && endDate != null )
 	{
 		var tmp_date = endDate;
 		tmp_date.setTime(tmp_date.getTime() - 24*60*60000);		
@@ -927,14 +927,14 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 	else
 		xml += " <sensitivity>public</sensitivity>\n";
 	if (event.getProperty("LOCATION"))
-		xml += " <location>" + event.getProperty("LOCATION") +"</location>\n";
+		xml += " <location>" + encode4XML(event.getProperty("LOCATION")) +"</location>\n";
 	if (event.alarmOffset && event.alarmOffset.inSeconds != 0)
 	{
 		minutes = Math.floor(Math.abs(event.alarmOffset.inSeconds)/60);
 		xml += " <alarm>" + minutes + "</alarm>\n";
 	}
 	if (event.getProperty("CATEGORIES"))
-		xml += " <categories>" + event.getProperty("CATEGORIES") + "</categories>\n";
+		xml += " <categories>" + encode4XML(event.getProperty("CATEGORIES")) + "</categories>\n";
 
 	var recInfo = event.recurrenceInfo;
 	if (syncTasks != true && recInfo && recInfo.countRecurrenceItems() >= 1)
@@ -1050,8 +1050,8 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 			if (attendee.isOrganizer || (attendee.role == "CHAIR") || (attendees.length == 1))
 			{
 				xml += " <organizer>\n";
-				xml += "  <display-name>" + attendee.commonName + "</display-name>\n";
-				xml += "  <smtp-address>" + mail + "</smtp-address>\n";
+				xml += "  <display-name>" + encode4XML(attendee.commonName) + "</display-name>\n";
+				xml += "  <smtp-address>" + encode4XML(mail) + "</smtp-address>\n";
 				xml += " </organizer>\n";
 				hasOrganizer = true;
 				// FIXME indicator for workaround
@@ -1076,8 +1076,8 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 						break;
 				}
 				xml += " <attendee>\n";
-				xml += "  <display-name>" + attendee.commonName + "</display-name>\n";
-				xml += "  <smtp-address>" + mail + "</smtp-address>\n";
+				xml += "  <display-name>" + encode4XML(attendee.commonName) + "</display-name>\n";
+				xml += "  <smtp-address>" + encode4XML(mail) + "</smtp-address>\n";
 				xml += "  <status>" + status + "</status>\n";
 				xml += "  <request-response>" + (attendee.rsvp ? "true" : "false") + "</request-response>\n";
 				switch (attendee.role)
@@ -1102,8 +1102,8 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 	if (syncTasks != true && !hasOrganizer)
 	{
 		xml += " <organizer>\n";
-		xml += "  <display-name>" + email + "</display-name>\n";
-		xml += "  <smtp-address>" + email + "</smtp-address>\n";
+		xml += "  <display-name>" + encode4XML(email) + "</display-name>\n";
+		xml += "  <smtp-address>" + encode4XML(email) + "</smtp-address>\n";
 		xml += " </organizer>\n";
 	}
 
@@ -1113,19 +1113,19 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 		xml += " <show-time-as>busy</show-time-as>\n";
 		
 	if (event.getProperty("X-KOLAB-COLOR-LABEL"))
-		xml += " <color-label>" + event.getProperty("X-KOLAB-COLOR-LABEL") + "</color-label>\n";
+		xml += " <color-label>" + encode4XML(event.getProperty("X-KOLAB-COLOR-LABEL")) + "</color-label>\n";
 	if (event.getProperty("X-KOLAB-CREATOR-DISPLAY-NAME") && event.getProperty("X-KOLAB-CREATOR-SMTP-ADDRESS"))
 	{
 		xml += " <creator>\n";
-		xml += "  <display-name>" + event.getProperty("X-KOLAB-CREATOR-DISPLAY-NAME") + "</display-name>\n";
-		xml += "  <smtp-address>" + event.getProperty("X-KOLAB-CREATOR-SMTP-ADDRESS") + "</smtp-address>\n";
+		xml += "  <display-name>" + encode4XML(event.getProperty("X-KOLAB-CREATOR-DISPLAY-NAME")) + "</display-name>\n";
+		xml += "  <smtp-address>" + encode4XML(event.getProperty("X-KOLAB-CREATOR-SMTP-ADDRESS")) + "</smtp-address>\n";
 		xml += " </creator>\n";
 	}
 
 	xml += " <revision>0</revision>\n";	
 	if (syncTasks == true)
 	{
-		xml += " <priority>" + event.priority + "</priority>\n";
+		xml += " <priority>" + encode4XML(event.priority) + "</priority>\n";
 		xml += "</task>\n"
 	}
 	else

@@ -562,7 +562,7 @@ function card2Xml (card, fields)
 	var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 	xml += "<contact version=\"1.0\" >\n";
 	xml += " <product-id>SyncKolab, Kolab resource</product-id>\n";
-	xml += " <uid>"+card.custom4+"</uid>\n";
+	xml += " <uid>"+encode4XML(card.custom4)+"</uid>\n";
 	xml += nodeWithContent("categories", card.category, false);
 	xml += " <creation-date>"+date2String(new Date(card.lastModifiedDate*1000))+"T"+time2String(new Date(card.lastModifiedDate*1000))+"Z</creation-date>\n";
 	xml += " <last-modification-date>"+date2String(new Date(card.lastModifiedDate*1000))+"T"+time2String(new Date(card.lastModifiedDate*1000))+"Z</last-modification-date>\n";
