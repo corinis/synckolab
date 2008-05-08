@@ -810,8 +810,17 @@ function equalsContact (a, b)
 		fieldsArray = new Array("listNickName", "description");
 
 	for(var i=0 ; i < fieldsArray.length ; i++ ) {
-		if ( eval("a."+fieldsArray[i]) != eval("b."+fieldsArray[i]) )
+		var sa = eval("a."+fieldsArray[i]);
+		var sb = eval("b."+fieldsArray[i]);
+		// check if not equals
+		if ( sa != sb)
 		{
+			// if we got strings... maybe they only differ in whitespace
+			if (sa.replace)
+				// if they are equals without whitespace.. continue
+				if (sa.replace(/\s|(\\n)/g, "") == sb.replace(/\s|(\\n)/g, ""))
+					continue;
+		
 			logMessage ("not equals " + fieldsArray[i] + " " + eval("a."+fieldsArray[i]) + " vs. " + eval("b."+fieldsArray[i]), LOG_DEBUG + LOG_AB);
 			return false;
 		}

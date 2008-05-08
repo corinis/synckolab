@@ -323,7 +323,7 @@ function stripMailHeader (content)
 		if ((new RegExp ("--$")).test(content))
 			content = content.substring(0, content.length - 2);
 			
-		contentIdx = content.indexOf("<?xml")
+		contentIdx = content.indexOf("<?xml");
 	}
 	else
 	{
@@ -342,7 +342,7 @@ function stripMailHeader (content)
 			if ((new RegExp ("--$")).test(content))
 				content = content.substring(0, content.length - 2);
 			
-			contentIdx = content.indexOf("BEGIN:")
+			contentIdx = content.indexOf("BEGIN:");
 		}
 	}
 	 
@@ -353,16 +353,21 @@ function stripMailHeader (content)
 		if (content.indexOf("Content-Transfer-Encoding: base64") != -1)
 		{
 			logMessage("Base64 Decoding message. (Boundary: "+boundary+")", LOG_INFO);
-			logMessage("Base64 message: " + content, LOG_DEBUG);
 			// get rid of the header
 			content = content.substring(content.indexOf("Content-Transfer-Encoding: base64"), content.length);
 			var startPos = content.indexOf("\r\n\r\n");
 			var startPos2 = content.indexOf("\n\n");
 			if (startPos2 != -1 && (startPos2 < startPos || startPos == -1))
 				startPos = startPos2;
-			
+
 			var endPos = content.indexOf("--"); // we could check for "--"+boundary but its not necessary since base64 doesnt allow it anyways
-			content = trim(content.substring(startPos, endPos).replace(/\r\n/g, ""));
+			// we probably removed the -- already, but to make sure
+			if (endPos == -1)
+				endPos = content.length;
+				
+			content = trim(content.substring(startPos, endPos).replace(/[\r\n]/g, ""));
+
+			logMessage("Base64 message: " + content, LOG_DEBUG);
 			
 			// for base64 we use a two storied approach
 			// first: use atob 
@@ -377,6 +382,7 @@ function stripMailHeader (content)
 					var base64 = new JavaScriptBase64;
 				 	base64.JavaScriptBase64(content);					
 					content = base64.decode();
+					logMessage("decoded base64: " + content, LOG_DEBUG);
 				
 				}
 				else
