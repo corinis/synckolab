@@ -300,21 +300,16 @@ var syncAddressBook = {
 		newItem = parseMessage(fileContent, messageFields, this.gCardDB);
 		
 		newCard = newItem;
-		/*
-		if (newCard.isMailList)
+		
+		if (newCard && newCard.isMailList)
 		{
-			var cur = newCard;
-			alert("CUR INFO for " + getUID(newCard) +  "\n" + 
-				"custom4? " + cur.custom4 + "\n" +
-				"listNickName? " + cur.listNickName + "\n" +
-				"content? " + cur.lastName + "\n" +
-				"content? " + cur.nickName + "\n" +
-				"description? " + cur.description + "\n" +
-				"mailListURI? " + cur.mailListURI +
-				""
-				);
+			// skip mailing lists
+			this.curItemInListContent.setAttribute("label", strBundle.getString("mailingList") + " " + newCard.listNickName);
+			this.curItemInListId.setAttribute("label", strBundle.getString("noChange"));
+			logMessage("skipping mailing lists!", LOG_WARNING + LOG_AB);
+			return null;
 		}
-		*/
+		
 		if (newCard) //message2Card (fileContent, newCard, messageFields)
 		{
 			// remember current uid
@@ -327,7 +322,8 @@ var syncAddressBook = {
 			// update list item
 			this.curItemInListId.setAttribute("label", getUID(newCard));
 			this.curItemInListStatus.setAttribute("label", strBundle.getString("checking"));
-			if (newCard.isMailList)
+			// since we disabled mailing list - wont come here
+			if (newCard.isMailList)			
 				this.curItemInListContent.setAttribute("label", strBundle.getString("mailingList") + " " + newCard.listNickName);
 			else
 			if (newCard.displayName != "")
@@ -363,7 +359,10 @@ var syncAddressBook = {
 						writeDataBase(fEntry, messageFields);
 
 					if (newCard.isMailList)
+					{
+						// skip mailing lists
 						this.gAddressBook.addMailList(newCard);
+					}
 					else					
 					{
 						this.gAddressBook.addCard (newCard);
@@ -641,7 +640,7 @@ var syncAddressBook = {
 			if (!this.gCards.hasMoreElements())
 			{
 				// we are done
-				logMessage("Finished syncing adress book", LOG_INFO);
+				logMessage("Finished syncing adress book", LOG_INFO + LOG_AB);
 				return "done";
 			}
 			
@@ -652,7 +651,7 @@ var syncAddressBook = {
 			catch (ext)
 			{
 				// we are done
-				logMessage("Bad - Finished syncing adress book", LOG_INFO);
+				logMessage("Bad - Finished syncing adress book", LOG_INFO + LOG_AB);
 				return "done";
 			}
 		}
@@ -666,7 +665,7 @@ var syncAddressBook = {
 			catch (ext)
 			{
 				// we are done
-				logMessage("Finished syncing adress book", LOG_INFO);
+				logMessage("Finished syncing adress book", LOG_INFO + LOG_AB);
 				return "done";
 			}
 		}		
@@ -677,8 +676,20 @@ var syncAddressBook = {
 		// mailing lists are nsIABDirectory 
 		if (cur.isMailList)
 		{
-			logMessage("GOT A MAILING LIST!!! - skipping", LOG_INFO);
-			this.gCards.next();
+			logMessage("GOT A MAILING LIST!!! - skipping", LOG_INFO + LOG_AB);
+			// tbird 2
+			if (this.gCards.next)
+			{
+				try
+				{
+					// select the next card
+					this.gCards.next();
+				}
+				catch (ext)
+				{
+					// no next.. but we find that out early enough
+				}
+			}
 			return null;
 			/* skip this
 			var cn = this.gAddressBook.childNodes;
