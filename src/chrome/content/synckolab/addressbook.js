@@ -559,9 +559,7 @@ var syncAddressBook = {
 						fEntry.remove(false);
 					
 					// update list item
-				    logMessage("befoire label" + getUID(aCard), LOG_INFO + LOG_AB);
 					this.curItemInListStatus.setAttribute("label", strBundle.getString("localUpdate"));
-				    logMessage("after label" + getUID(aCard), LOG_INFO + LOG_AB);
 					return null;
 				}
 				else

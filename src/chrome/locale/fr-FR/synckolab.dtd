@@ -1,0 +1,104 @@
+<!-- buttons -->
+<!ENTITY synckolab.syncMenu.label				"Démarrer SyncKolab">
+<!ENTITY synckolab.optionMenu.label				"Options de SyncKolab">
+
+<!ENTITY synckolab.sync.label					"Sync Kolab">
+<!ENTITY synckolab.sync.tip						"Synchroniser les dossiers Kolab">
+
+<!ENTITY synckolab.contactConflict.dialogTitle		"Conflit dans les Contacts">
+<!ENTITY synckolab.contactConflict.dialogMessage	"Des conflits on été détectés. Veuillez sélectionner la version à utiliser.">
+
+<!ENTITY synckolab.settings.Account		"Compte">
+<!ENTITY synckolab.settings.abook		"Carnet d'adresse">
+<!ENTITY synckolab.settings.Contact		"Contacts">
+<!ENTITY synckolab.settings.Calendar	"Calendrier">
+<!ENTITY synckolab.settings.Tasks		"Tâches">
+
+<!ENTITY synckolab.settings.ContactFolder	"Dossier des Contacts">
+<!ENTITY synckolab.settings.ContactFormat	"Format des Contacts">
+<!ENTITY synckolab.settings.SaveToImap		"Sauver dans le dossier imap">
+<!ENTITY synckolab.settings.Configuration	"Configuration">
+<!ENTITY synckolab.settings.CalendarFormat	"Format du calendrier">
+<!ENTITY synckolab.settings.CalendarFolder	"Dossier du calendrier">
+<!ENTITY synckolab.settings.TaskFormat		"Format">
+<!ENTITY synckolab.settings.TaskFolder		"Dossier">
+<!ENTITY synckolab.settings.SyncContacts	"Synchroniser les contacts">
+<!ENTITY synckolab.settings.SyncCalendar	"Synchroniser le calendrier">
+<!ENTITY synckolab.settings.SyncTasks		"Synchroniser les tâches">
+<!ENTITY synckolab.settings.CloseWindow		"Fermer la fenêtre après la synchronisation">
+<!ENTITY synckolab.settings.add				"Nouveau">
+<!ENTITY synckolab.settings.load			"Charger">
+<!ENTITY synckolab.settings.saveSingle		"Exporter">
+<!ENTITY synckolab.settings.saveAll			"Tout Exporter">
+<!ENTITY synckolab.settings.del				"Effacer">
+<!ENTITY synckolab.settings.SyncCalendar	"Synchroniser le calendrier">
+<!ENTITY synckolab.settings.SyncCalendarTip	"activez ceci si vous désirez synchroniser le calendrier">
+<!ENTITY synckolab.settings.SyncContacts	"Synchroniser les contacts">
+<!ENTITY synckolab.settings.SyncContactsTip	"activez ceci si vous désirez synchroniser le carnet d'adresse">
+<!ENTITY synckolab.settings.SyncTasks		"Synchroniser les tâches">
+<!ENTITY synckolab.settings.SyncTasksTip	"activez ceci si vous désirez synchroniser les tâches">
+<!ENTITY synckolab.settings.FormatTip		"Choisissez le format XML format si vous avez un serveur Kolab2. Sinon utilisez le format vcard/ical.">
+<!ENTITY synckolab.settings.DefaultResolve	"Lors d'un conflit de synchronisation: ">
+<!ENTITY synckolab.settings.ResolveAsk		"demander">
+<!ENTITY synckolab.settings.ResolveServer	"utiliser la version du serveur">
+<!ENTITY synckolab.settings.ResolveClient	"utiliser la version du client">
+<!ENTITY synckolab.settings.ResolveSmart	"Gestion automatique du conflit">
+<!ENTITY synckolab.settings.CalSyncTimeframe	"Ignorer les entrées plus vieilles que">
+<!ENTITY synckolab.settings.TimeframeSyncDays	" jours (-1: ne rien faire)">
+
+<!ENTITY synckolab.settings.Updates			"Pour les mises à jour vérifier:">
+
+<!ENTITY synckolab.settings.imapAcctTip 			"Seul les comptes imap sont supportés les autres types de comptes ne seront pas synchronisés.">
+<!ENTITY synckolab.settings.SyncKolabHeader			"SyncKolab">
+<!ENTITY synckolab.settings.SyncKolabDescription 	"SyncKolab vous permet de synchroniser vos contacts et votre calendrier depuis plusieurs machines avec un serveur imap standard.">
+<!ENTITY synckolab.settings.DescKolabServer 		"Pour un solution de groupware complet vous pouvez regarder le serveur kolab: ">
+<!ENTITY synckolab.settings.DescOtherClients 		"SyncKolab est compatible avec ces clients: ">
+
+<!-- log level -->
+<!ENTITY synckolab.debugLevel						"Niveau de débogage de la console" >
+<!ENTITY synckolab.logError							"Seulement les erreurs" >
+<!ENTITY synckolab.logWarning						"Avertissements" >
+<!ENTITY synckolab.logInfo							"Information" >
+<!ENTITY synckolab.logDebug							"Tout (Debogage)" >
+
+<!-- Account Tab -->
+<!ENTITY synckolab.settings.AccountDescription	"Veuillez sélectionner un compte IMAP pour la synchronisation">
+<!ENTITY synckolab.settings.SyncInterval 		"Intervalle de synchronisation: ">
+<!ENTITY synckolab.settings.SyncIntervalDescription "Definissez l'interval de synchronisation de SyncKolab. Utilisez 0 pour la synchronisation manuelle.">
+<!ENTITY synckolab.settings.SyncIntervalMinutes "minutes">
+<!ENTITY synckolab.settings.SaveToImapTip		"Decochez ceci pour que rien ne soit écrit sur le serveur imap (lecture seule)">
+<!ENTITY synckolab.settings.HiddenWindow		"Cacher la fenêtre de status pendant la synchronisation automatique">
+
+<!-- New Config Wizard -->
+<!ENTITY synckolab.newwizard.title 		"SyncKolab Setup Wizard">
+<!ENTITY synckolab.wizard.LongDescription	"Dans les écran suivants vous pourrez choisir pour chaque type (calendrier, carnet d'adresse, tâches) le dossier à synchroniser sur le serveur imap. Vous pouvez aussi indiquer si vous voulez utiliser le mode lecture seule (rien n'est écrit sur le serveur imap - pour les dossiers partagés) et le type (xml pour Kolab2 ou vcard/ical).">
+<!ENTITY synckolab.newwizard.intro 		"SyncKolab vous permet de synchroniser vos contacts et votre calendrier depuis plusieurs machines avec un serveur imap standard.">
+<!ENTITY synckolab.newwizard.selectAccount	"Veuillez sélectionner un compte IMAP pour la synchronisation">
+<!ENTITY synckolab.newwizard.configName	"Nom descriptif">
+<!ENTITY synckolab.newwizard.descName "Le nom descriptif n'a pas d'autre utilité que d'identifier votre configuration. Avoir un nom descriptif permet de différencier vos différentes configuration de synchronisation et dossiers (i.e. Addresses partagées, Calendrier du bureau, Tâches personnelles). Assurez vous que vous n'avez pas déja une configurartion avec ce nom et qu'elle ne contient pas les caractères speciaux comme .-[]# ">
+<!ENTITY synckolab.wizard.AccountIntervalDescription "Selectionnez un compte IMAP et indiquez votre paramètres de base pour la synchronisation">
+<!ENTITY synckolab.wizard.typePageDesc	"Indiquez quelle information doit être synchronisée avec le compte IMAP sélectionné">
+<!ENTITY synckolab.wizard.typePageLongDesc	"Pour chaque configuration de SyncKolab vous pouvez utiliser les dossiers d'unc ompte imap pour synchroniser un dossier avec un carnet d'adresse, un calendrieret et/ou une liste des tâches">
+<!ENTITY synckolab.wizard.typePageContact	"Activez ceci si vous désirez synchroniser les contacts d'un dossier imap avec un carnet d'adresse local de thunderbird">
+<!ENTITY synckolab.wizard.typePageCalendar	"Activez ceci si vous désirez synchroniser le calendrier d'un dossier imap avec un calendrier local de thunderbird">
+<!ENTITY synckolab.wizard.typePageTasks		"Activez ceci si vous désirez synchroniser les tâches d'un dossier imap avec une liste de tâches locale de thunderbird">
+<!ENTITY synckolab.wizard.conPageInfo	"Selectionnez le carnet d'adresse et le dossier qui doit être synchroniser.">
+<!ENTITY synckolab.wizard.calPageInfo	"Selectionnez le calendrier et le dossier qui doit être synchroniser.">
+<!ENTITY synckolab.wizard.taskPageInfo	"Select the calendar for tasks and the folder to be synchronized.">
+<!ENTITY synckolab.newwizard.DoneText	"Vous avez configuré avec succès SyncKolab. Vous pouvez maintenant démarrer la synchronisation en choississant 'Tools-Start SyncKolab'.">
+<!ENTITY synckolab.newwizard.DoneText2	"- Si vous rencontrez une erreur (ex: la synchronisation s'arrête ou certaines entrées sont mail interprétées, veuillez décrire le problème - mais seulement avec les information de 'Tools-Error console') ou si vous avez des suggestions cotactez nous sur la mailing list ou entrez un bug report sur bugzilla">
+
+<!-- other -->
+<!ENTITY synckolab.with			"avec">
+<!ENTITY synckolab.proprietary 	"propriétaire">
+
+<!-- progress window -->
+<!ENTITY synckolab.progress.Pause			"Pause">
+<!ENTITY synckolab.progress.UnPause			"Resumer">
+<!ENTITY synckolab.progress.Cancel			"Annuler">
+<!ENTITY synckolab.progress.CurrentProgress	"Progression">
+<!ENTITY synckolab.progress.status			"Statut">
+<!ENTITY synckolab.progress.content			"Contenu">
+<!ENTITY synckolab.progress.message			"Message">
+<!ENTITY synckolab.progress.CurrentAction	"Action actuelle">
+<!ENTITY synckolab.progress.Processing		"En cours">

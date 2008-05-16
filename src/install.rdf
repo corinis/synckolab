@@ -36,6 +36,7 @@
     <em:contributor>Leona Okamura</em:contributor>
     <em:contributor>Farkas Levente</em:contributor>
     <em:contributor>Hanus VAVRCIK aka Hank</em:contributor>
+    <em:contributor>Benoit Mortier</em:contributor>
 
     <!-- Front End Integration Hooks (used by Extension Manager)-->
     
@@ -46,6 +47,7 @@
 		<em:locale>locale/en-US/</em:locale>
 		<em:locale>locale/de/</em:locale>
 		<em:locale>locale/it/</em:locale>
+		<em:locale>locale/fr-FR/</em:locale>
 		<em:locale>locale/ja-JP/</em:locale>
 		<em:locale>locale/cs-CZ/</em:locale>
 		<em:locale>locale/hu-HU/</em:locale>
