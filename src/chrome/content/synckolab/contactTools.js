@@ -1605,10 +1605,10 @@ function card2Message (card, email, format, fFile)
 	
 	if (card.isMailList)
 		return generateMail(card.custom4, email, "vCard", "application/x-vcard.list", 
-			false, encode_utf8(list2Vcard(card,fields)), null);
+			false, encodeQuoted(encode_utf8(list2Vcard(card,fields))), null);
 
 	return generateMail(card.custom4, email, "vCard", "text/vcard", 
-			false, encode_utf8(card2Vcard(card, fields)), null);
+			false, encodeQuoted(encode_utf8(card2Vcard(card, fields))), null);
 			
 		
 }
