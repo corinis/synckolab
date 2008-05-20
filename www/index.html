@@ -4,8 +4,8 @@
 <div class="infoTab" id="whats-new">
 <h5 class="infoHeader">What's New</h5>
 <ul>
-<li><a href="http://www.gargan.org/extensions/synckolab-NIGHTLY.xpi">synckolab NIGHTLY (0.6.2 -> 1.0.0)</a></li>
-<li><a href="http://www.gargan.org/extensions/synckolab-0.6.0.xpi">synckolab 0.6.0</a></li>
+<li><a href="http://www.gargan.org/extensions/synckolab-NIGHTLY.xpi">synckolab NIGHTLY 1.0.0</a></li>
+<li><a href="http://www.gargan.org/extensions/synckolab-1.0.0.xpi">synckolab 1.0.0</a></li>
 </ul>
 </div>
 
@@ -43,13 +43,16 @@
 <p>
 SyncKolab was written to add kolab functionality to thunderbird. It reads a selected Imap folder and synchronizes it with the local address book (and calendar in the future). It is currently under heavy development, so use with care!<br/>
 It has been tested under Thunderbird for Windows, Linux and MacOSX. <br/>
-For up-to-date information and most recent version, check out my regular homepage at <a href="http://www.gargan.org">www.gargan.org</a>
+For up-to-date information and most recent version, check out my regular homepage at <a href="http://www.gargan.org">www.gargan.org</a><br/>
+Version 1.0 had 61 prereleases and 83 nightly releases with over 100 bugs fixed and is known to work nicely with Thunderbird 2 and Lightning 0.8.<br/>
+Even with this extensive testing, there might still occur problems in combination with other extensions, operating systems, thunderbird versions and/or special characters in your contacts/tasks/calendar entries .<br/>
+Because of this, you should make a backup of all your relevant data (server side or your profile directory) before doing your first sync. If seomthing happens because of a bug you can then easily restore your data afterward.<br/>
 </p>
 <h2>What is Kolab?</h2>
 <p>
-What it does is, that it loads all your contacts (from a selected address book), and synchronizes them with a selected imap folder. Where every contact is stored as an vcard. In the next version I also want to include calendar Entries (vCal)... For more information http://kolab.org/<br/>
+It loads all your contacts (from a selected address book), and synchronizes them with a selected imap folder. Where every contact is stored as an vcard. In the next version I also want to include calendar Entries (vCal)... For more information http://kolab.org/<br/>
 
-The idea behind this is, that you can now have your contacts+calendar entries stored on the imap server. so you can actually have the same addresses on more than one computer. The kolab project has a  groupware server that uses imap to exchange calendar entries and vcards.
+The idea behind is, that you can now have your contacts+calendar entries stored on the imap server. so you can actually have the same addresses on more than one computer. The kolab project has a  groupware server that uses imap to exchange calendar entries and vcards.
 </p>
 
 
@@ -78,8 +81,6 @@ loads of other small thngs you would expect a kollaboration server to do :)
 <h2>SyncKolab Nightly</h2>
 <p>
 You can get a nightly build at <a href="http://www.gargan.org/extensions/synckolab-NIGHTLY.xpi">synckolab NIGHTLY</a> (rightclick).
-<br/>
-The current 0.6.2 nightlies are the last nightly before 1.0 - please check it out and test it
 </p>
 Beware that this may easily break all you contacts/calender entries, altough we try to create stable nighlies.<br/>
 So create a backup of your thunderbird profile folder before trying it out!
@@ -104,16 +105,15 @@ So create a backup of your thunderbird profile folder before trying it out!
 <b>Synckolab is a stable beta successfully syncing contacts, calendar entries, tasks and not yet fully functional support for mailing list</b><br/>
 It seems that there are still a few bugs in lightning concerning the database, but for most users it should work just fine.
 <br/>
-For V 1.0.0
-<ul>
-	<li>mailing list support has been disabled due to instability (will come with 2.0)</li>
-	<li>no notes support (no partner extension found yet)</li>
-</ul>
 
 To V 2.0.0
 <ul>
 	<li>mailing list support</li>
 	<li>speed increase (currently we are at around 300 entries/min)</li>
+	<li>Rewrite code to be more pluggable</li>
+	<li>Allow Sync with file system</li>
+	<li> Add support to new thunderbird adress book features (ie. mac adress book support)</li>
+	<li>Better support of lightning features (free/busy)</li>
 	<li>support for notes (either through <a href="https://addons.mozilla.org/en-US/thunderbird/addon/759">Message Notes</a> or <a href="https://addons.mozilla.org/en-US/thunderbird/addon/979">Notary</a>)</li>
 </ul>
 
