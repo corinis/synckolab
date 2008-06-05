@@ -1470,7 +1470,7 @@ function loadConfig()
 					value += "=" + cPref[j];
 					
 				if (value == "true" || value == "false")
-					pref.setBoolPref(value == 'true');
+					pref.setBoolPref(value, 'true');
 				else
 					pref.setCharPref(name, value);				
 			}
