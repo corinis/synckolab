@@ -625,7 +625,7 @@ function card2Xml (card, fields)
 		xml += "  <number>"+card.workPhone+"</number>\n";
 		xml += " </phone>\n";
 	}
-	if (checkExist(card.workPhone))
+	if (checkExist(card.faxNumber))
 	{	
 		xml += " <phone>\n";
 		xml += "  <type>fax</type>\n";
