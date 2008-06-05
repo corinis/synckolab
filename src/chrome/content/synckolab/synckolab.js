@@ -1109,9 +1109,9 @@ function writeContentAfterSave ()
 }
 
 function compact() {
-	// compact golder
+	// compact folder
 	try { 
-		gSync.folder.compact(null, null);  
+		//gSync.folder.compact(null, null);  
 	} catch(e) { }
 	
 	gSync.doneParsing();
