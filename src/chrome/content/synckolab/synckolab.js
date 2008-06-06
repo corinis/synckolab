@@ -1104,12 +1104,13 @@ function writeContentAfterSave ()
 	gMessages = null;
 	
 
-	logMessage("Running compact", LOG_INFO);
-	window.setTimeout(compact, 2000);  // wait for a second
+	logMessage("about to run compact...", LOG_INFO);
+	window.setTimeout(syncKolabCompact, 2000);  // wait for a second
 }
 
-function compact() {
+function syncKolabCompact() {
 	// compact folder
+	logMessage("Running compact", LOG_INFO);
 	try { 
 		//gSync.folder.compact(null, null);  
 	} catch(e) { }
