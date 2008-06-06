@@ -542,8 +542,17 @@ var syncAddressBook = {
 							list = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
 							list.appendElement(aCard, false);
 						}
-						this.gAddressBook.deleteCards(list);
-						this.gAddressBook.addCard (newCard);
+						
+						try
+						{
+							this.gAddressBook.deleteCards(list);
+							this.gAddressBook.addCard (newCard);
+						}
+						catch (de)
+						{
+						    logMessage("problem with local update for - skipping" + getUID(aCard), LOG_WARNING + LOG_AB);
+						}
+						
 					}
 
 				    logMessage("updated local" + getUID(aCard), LOG_INFO + LOG_AB);
