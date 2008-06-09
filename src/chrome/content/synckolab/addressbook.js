@@ -488,10 +488,16 @@ var syncAddressBook = {
 							list.appendElement(aCard, false);
 						}
 
-						this.gAddressBook.deleteCards(list);
-						
-						// add the new one
-						this.gAddressBook.addCard (newCard);
+						try
+						{
+							this.gAddressBook.deleteCards(list);
+							// add the new one
+							this.gAddressBook.addCard (newCard);
+						}
+						catch (de)
+						{
+						    logMessage("problem with local update for - skipping" + getUID(aCard), LOG_WARNING + LOG_AB);
+						}						
 						
 						// write the current content in the sync-db file
 						writeSyncDBFile (cEntry, fileContent);
