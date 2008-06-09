@@ -274,6 +274,13 @@ function xml2Card (xml, extraFields, cards)
 				  	card.webPage1 = decode4XML(cur.firstChild.data);
 					found = true;
 					break;
+					
+			  case "BUSINESS-WEB-PAGE":
+			  		if (cur.firstChild == null)
+			  			break;
+				  	card.webPage2 = decode4XML(cur.firstChild.data);
+					found = true;
+					break;
 
 			  case "UID":
 		  		if (cur.firstChild == null)
@@ -597,6 +604,8 @@ function card2Xml (card, fields)
 	}
 	xml += nodeWithContent("organization", card.company, false);
 	xml += nodeWithContent("web-page", card.webPage1, false);
+	// not really kolab.. but we need that somewhere
+	xml += nodeWithContent("business-web-page", card.webPage2, false);
 	xml += nodeWithContent("im-address", card.aimScreenName, false);
 	xml += nodeWithContent("department", card.department, false);
 //" <office-location>zuhaus</office-location>\n";
