@@ -482,7 +482,8 @@ function xml2Event (xml, extraFields, event)
 					break;
 					
 				case "SUMMARY":
-					setKolabItemProperty(event, "title", decode4XML(cur.firstChild.data));
+					if (!cur.firstChild)
+						setKolabItemProperty(event, "title", decode4XML(cur.firstChild.data));
 					break;
 
 				case "BODY":
