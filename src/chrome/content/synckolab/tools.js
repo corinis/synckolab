@@ -259,8 +259,15 @@ function stripMailHeader (content)
 {
 	if (content == null)
 		return null;
-		
+	
+	var capBoundary = false;
 	var isMultiPart = content.indexOf('boundary=') != -1;
+	// boundary might be uppercase
+	if (!isMultiPart && content.indexOf('BOUNDARY=') != -1)
+	{
+		capBoundary = true;
+		isMultiPart = true;
+	}
 	
 	
  	// seems we go us a vcard/ical when no xml is found
@@ -280,7 +287,7 @@ function stripMailHeader (content)
 
 	// XXXboundary="XXX" or XXXboundary=XXX\n
 	var boundary = null;
-	boundary = content.substring(content.indexOf('boundary=')+9);
+	boundary = content.substring(content.indexOf(capBoundary?'BOUNDARY=':'boundary=')+9);
 
 	// lets trim boundary (in case we have whitespace after the =
 	boundary = trim(boundary);
@@ -350,11 +357,18 @@ function stripMailHeader (content)
 	// if we did not find a decoded card, it might be base64
 	if (contentIdx == -1)
 	{
-		if (content.indexOf("Content-Transfer-Encoding: base64") != -1)
+		var capBase64 = false;
+		var isBase64 = content.indexOf("Content-Transfer-Encoding: base64") != -1;
+		if (!isBase64 && content.indexOf("Content-Transfer-Encoding: BASE64") != -1)
+		{
+			isBase64 = true;
+			capBase64 = true;
+		}
+		if (isBase64)
 		{
 			logMessage("Base64 Decoding message. (Boundary: "+boundary+")", LOG_INFO);
 			// get rid of the header
-			content = content.substring(content.indexOf("Content-Transfer-Encoding: base64"), content.length);
+			content = content.substring(content.indexOf("Content-Transfer-Encoding: "+ (capBase64?"BASE64":"base64")), content.length);
 			var startPos = content.indexOf("\r\n\r\n");
 			var startPos2 = content.indexOf("\n\n");
 			if (startPos2 != -1 && (startPos2 < startPos || startPos == -1))
