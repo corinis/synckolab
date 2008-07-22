@@ -878,10 +878,10 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 		endDate.jsDate = tmp_date;
 	}
 
-	var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+	var xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
 	if (syncTasks == true)
 	{
-		xml += "<task version=\"1.0\" >\n"
+		xml += '<task version="1.0" >\n'
 		if (event.isCompleted || event.percentComplete == 100)
 		{
 			xml += " <completed>100</completed>\n";	
@@ -897,7 +897,7 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 		}
 	}
 	else
-		xml += "<event version=\"1.0\" >\n";
+		xml += '<event version="1.0" >\n';
 	if (skipVolatiles != true)
 		xml += " <product-id>Synckolab " + gSyncKolabVersion + ", Calendar Sync</product-id>\n";
 
