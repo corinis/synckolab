@@ -466,6 +466,9 @@ function xml2Event (xml, extraFields, event)
 					if (syncTasks == false)
 						break;
 
+					if (!cur.firstChild)
+						break;
+
 					var iComplete = 0;
 					if (cur.firstChild)
 					{
@@ -482,7 +485,7 @@ function xml2Event (xml, extraFields, event)
 					break;
 					
 				case "SUMMARY":
-					if (!cur.firstChild)
+					if (cur.firstChild)
 						setKolabItemProperty(event, "title", decode4XML(cur.firstChild.data));
 					break;
 
@@ -527,15 +530,16 @@ function xml2Event (xml, extraFields, event)
 					
 				case "SENSITIVITY":
 					setKolabItemProperty(event, "CLASS", 'PUBLIC');
-					switch (decode4XML(cur.firstChild.data))
-					{
-						case "private":
-							setKolabItemProperty(event, "CLASS", 'PRIVATE');
-							break;
-						case "confidential":
-							setKolabItemProperty(event, "CLASS", 'CONFIDENTIAL');
-							break;
-					}
+					if (cur.firstChild)
+						switch (decode4XML(cur.firstChild.data))
+						{
+							case "private":
+								setKolabItemProperty(event, "CLASS", 'PRIVATE');
+								break;
+							case "confidential":
+								setKolabItemProperty(event, "CLASS", 'CONFIDENTIAL');
+								break;
+						}
 					break;
 
 				case "RECURRENCE":
