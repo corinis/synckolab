@@ -1200,6 +1200,7 @@ function message2Card (lines, card, extraFields, startI, endI)
 			case "TEL;TYPE=CELL;TYPE=VOICE":
 			case "TEL;TYPE=VOICE;TYPE=CELL":
 			case "TEL;TYPE=CELL":
+			case "TEL;CELL":
 				card.cellularNumber = tok[1];
 				found = true;
 				break;
@@ -1207,16 +1208,19 @@ function message2Card (lines, card, extraFields, startI, endI)
 			case "TEL;TYPE=HOME;TYPE=VOICE":
 			case "TEL;TYPE=VOICE":
 			case "TEL;TYPE=HOME":
+			case "TEL;HOME":
 				card.homePhone = tok[1];
 				found = true;
 				break;
 			case "TEL;TYPE=WORK;TYPE=VOICE":
 			case "TEL;TYPE=VOICE;TYPE=WORK":
 			case "TEL;TYPE=WORK":
+			case "TEL;WORK":
 				card.workPhone = tok[1];
 				found = true;
 				break;
 			case "TEL;TYPE=FAX":
+			case "TEL;FAX":
 				card.faxNumber = tok[1];	
  				found = true;
 				break;
@@ -1246,6 +1250,7 @@ function message2Card (lines, card, extraFields, startI, endI)
 		  	
 		  case "ADR;TYPE=HOME,POSTAL":
 		  case "ADR;TYPE=HOME":
+		  case "ADR":
 				// ADR:POBox;Ext. Address;Address;City;State;Zip Code;Country
 				var cur = tok[1].split(";");
 				card.homeAddress2 = cur[1];
