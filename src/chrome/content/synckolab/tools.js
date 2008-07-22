@@ -938,12 +938,11 @@ function string2CalDateTime (val, useUTC)
 	var cdate = both[0].split('-');
 	var ctime = both[1].split(':');
     var calDateTime = null;
-    // lightning 0.9pre fix
-	if (CalDateTime)
-		calDateTime = new CalDateTime();
-	else
+    // lightning 0.9pre fix (uses createDateTime)
 	if (createDateTime)
 		calDateTime = new createDateTime();
+	else
+		calDateTime = new CalDateTime();
   
     var jsDate = null;
     if (useUTC)
@@ -1006,12 +1005,11 @@ function string2CalDate (val)
 	var s = val.replace('T', '');
 	var cdate = s.split('-');
     var calDateTime = null;
-    // lightning 0.9pre fix
-	if (CalDateTime)
-		calDateTime = new CalDateTime();
-	else
+    // lightning 0.9pre fix (uses createDateTime)
 	if (createDateTime)
 		calDateTime = new createDateTime();
+	else
+		calDateTime = new CalDateTime();
 		
     calDateTime.jsDate = new Date(Date.UTC(cdate[0], cdate[1]-1, cdate[2], 0, 0, 0));
     calDateTime.isDate = true;

@@ -874,11 +874,11 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 		var tmp_date = endDate;
 		tmp_date.setTime(tmp_date.getTime() - 24*60*60000);
 		// lightning 0.9pre fix
-		if (CalDateTime)
-			endDate = new CalDateTime();
-		else
 		if (createDateTime)
 			endDate = new createDateTime();
+		else
+			endDate = new CalDateTime();
+
 		endDate.jsDate = tmp_date;
 	}
 
