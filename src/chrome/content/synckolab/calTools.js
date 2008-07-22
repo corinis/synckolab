@@ -868,8 +868,13 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 	if (isAllDay && endDate && endDate != null )
 	{
 		var tmp_date = endDate;
-		tmp_date.setTime(tmp_date.getTime() - 24*60*60000);		
-		endDate = new CalDateTime();
+		tmp_date.setTime(tmp_date.getTime() - 24*60*60000);
+		// lightning 0.9pre fix
+		if (CalDateTime)
+			endDate = new CalDateTime();
+		else
+		if (createDateTime)
+			endDate = new createDateTime();
 		endDate.jsDate = tmp_date;
 	}
 
