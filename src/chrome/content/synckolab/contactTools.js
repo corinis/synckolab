@@ -258,7 +258,8 @@ function xml2Card (xml, extraFields, cards)
 			  case "BODY":
 			  		if (cur.firstChild == null)
 			  			break;
-				  	card.notes = decode4XML(cur.firstChild.data);
+				  	var cnotes = decode4XML(cur.firstChild.data);
+				  	card.notes = cnotes.replace(/\\n/g, "\n");
 					found = true;
 			  	break;
 			  case "DEPARTMENT":

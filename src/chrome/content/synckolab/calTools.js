@@ -492,7 +492,10 @@ function xml2Event (xml, extraFields, event)
 				case "BODY":
 					// sometimes we have <body></body> in the XML
 					if (cur.firstChild)
-						setKolabItemProperty(event, "DESCRIPTION", decode4XML(cur.firstChild.data));
+					{
+					  	var cnotes = decode4XML(cur.firstChild.data);
+						setKolabItemProperty(event, "DESCRIPTION", cnotes);
+					}
 					break;
 		
 				case "CREATOR":
