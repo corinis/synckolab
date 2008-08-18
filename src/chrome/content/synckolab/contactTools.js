@@ -1591,6 +1591,10 @@ function card2Vcard (card, fields)
 	{
 		for (var i = 0; i < fields.length; i++)
 		{
+			// skipp fields[i] if not available
+			if (!fields[i])
+				continue;
+				
 			msg += fields[i][0] + ":" + fields[i][1] + "\n";
 		}
 	}
