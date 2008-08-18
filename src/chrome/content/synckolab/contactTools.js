@@ -1097,6 +1097,10 @@ function message2Card (lines, card, extraFields, startI, endI)
 		for (var j = 2; j < tok.length; j++)
 			tok[1] += ":" + tok[j];
 		
+		// check if we actually have data in the second token (skip it if it does not)
+		if (tok[1] == null || tok[1] == '' || tok[1] == ';' || tok[1] == ';;;;;;')
+			continue;
+			
 		switch (tok[0].toUpperCase())
 		{
 			case "DATE":
@@ -1206,14 +1210,20 @@ function message2Card (lines, card, extraFields, startI, endI)
 				break;
 			case "TEL;TYPE=VOICE;TYPE=HOME":
 			case "TEL;TYPE=HOME;TYPE=VOICE":
+			case "TEL;VOICE":
+			case "TEL;HOME;VOICE":
+			case "TEL;VOICE;HOME":
 			case "TEL;TYPE=VOICE":
 			case "TEL;TYPE=HOME":
 			case "TEL;HOME":
+			case "TEL":
 				card.homePhone = tok[1];
 				found = true;
 				break;
 			case "TEL;TYPE=WORK;TYPE=VOICE":
 			case "TEL;TYPE=VOICE;TYPE=WORK":
+			case "TEL;VOICE;WORK":
+			case "TEL;WORK;VOICE":
 			case "TEL;TYPE=WORK":
 			case "TEL;WORK":
 				card.workPhone = tok[1];
@@ -1226,6 +1236,8 @@ function message2Card (lines, card, extraFields, startI, endI)
 				break;
 			case "TEL;TYPE=PAGER":
 			case "TEL;TYPE=PAGE":
+			case "TEL;PAGER":
+			case "TEL;PAGE":
 				card.pagerNumber = tok[1];
 				found = true;
 				break;
@@ -1250,6 +1262,7 @@ function message2Card (lines, card, extraFields, startI, endI)
 		  	
 		  case "ADR;TYPE=HOME,POSTAL":
 		  case "ADR;TYPE=HOME":
+		  case "ADR;HOME":
 		  case "ADR":
 				// ADR:POBox;Ext. Address;Address;City;State;Zip Code;Country
 				var cur = tok[1].split(";");
@@ -1262,6 +1275,7 @@ function message2Card (lines, card, extraFields, startI, endI)
 				found = true;
 		  	break;
 		  case "ADR;TYPE=WORK,POSTAL":
+		  case "ADR;WORK":
 		  case "ADR;TYPE=WORK":
 				var cur = tok[1].split(";");
 				card.workAddress2 = cur[1];
