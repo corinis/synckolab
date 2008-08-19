@@ -302,7 +302,7 @@ function stripMailHeader (content)
 	}
 	else
 	{
-		// cur away at \n or \r or space.. whichever comes first
+		// cut away at \n or \r or space.. whichever comes first
 		var cutWS = boundary.indexOf(' ');		
 		var ws = boundary.indexOf('\n');
 		if (ws != -1 && ws < cutWS)
@@ -338,6 +338,8 @@ function stripMailHeader (content)
 		contTypeIdx = content.indexOf('Content-Type: text/x-vcard');
 		if (contTypeIdx == -1)
 			contTypeIdx = content.indexOf('Content-Type: text/x-ical');
+		if (contTypeIdx == -1)
+			contTypeIdx = content.indexOf('Content-Type: text/calendar');
 			
 		if (contTypeIdx != -1)
 		{
