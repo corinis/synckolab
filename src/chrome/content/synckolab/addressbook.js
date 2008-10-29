@@ -912,6 +912,13 @@ var syncAddressBook = {
 	
 	doneParsing: function ()
 	{
-		this.gAddressBook.deleteCards (this.deleteList);
+		try
+		{
+			this.gAddressBook.deleteCards (this.deleteList);
+		}
+		catch (Exception e)
+		{
+			// ignore
+		}
 	}
 }
