@@ -282,7 +282,8 @@ var syncCalendar = {
 			this.curItemInListId.setAttribute("label", strBundle.getString("unparseable"));
 			return null;
 		}
-
+		// set the calendar
+		parsedEvent.calendar = this.gCalendar;
 		// remember current uid
 		this.gCurUID = parsedEvent.id;
 
@@ -302,20 +303,20 @@ var syncCalendar = {
 		
 		// ok lets see if we have this one already 
 		var foundEvent = findEvent (this.gCalDB, parsedEvent.id);
-	    logMessage("findevent returned :" + foundEvent + "(" + (foundEvent == null?'null':foundEvent.id) + ") for " + parsedEvent.id + " caching " + this.gCalDB.length() + " events", LOG_CAL + LOG_DEBUG);
+		logMessage("findevent returned :" + foundEvent + "(" + (foundEvent == null?'null':foundEvent.id) + ") for " + parsedEvent.id + " caching " + this.gCalDB.length() + " events", LOG_CAL + LOG_DEBUG);
 				
 		// get the dbfile from the local disk
 		var idxEntry = getSyncDbFile(this.gConfig, this.getType(), parsedEvent.id);
 		// ... and the field file
 		var fEntry = getSyncFieldFile(this.gConfig, this.getType(), parsedEvent.id);
 
-	    logMessage("idxEntry:" + idxEntry, LOG_CAL + LOG_DEBUG);
+		logMessage("idxEntry:" + idxEntry, LOG_CAL + LOG_DEBUG);
 		
 		// always add if the forceLocalCopy flag is set (happens when you change the configuration)
 		if (foundEvent == null || this.forceLocalCopy)
 		{
-		    // a new event
-		    logMessage("a new event, locally unknown:" + parsedEvent.id, LOG_CAL + LOG_DEBUG);
+			// a new event
+			logMessage("a new event, locally unknown:" + parsedEvent.id, LOG_CAL + LOG_DEBUG);
 			if (!idxEntry.exists())
 			{
 				// use the original content to write the snyc file 
@@ -329,8 +330,8 @@ var syncCalendar = {
 				
 				this.curItemInListStatus.setAttribute("label", strBundle.getString("localAdd"));
 				
-    			// add the new event
-    			this.gCalendar.addItem(parsedEvent, this.gEvents);
+	    			// add the new event
+    				this.gCalendar.addItem(parsedEvent, this.gEvents);
 				// also add to the hash-database
 				this.gCalDB.put(parsedEvent.id, parsedEvent);
 
@@ -364,7 +365,7 @@ var syncCalendar = {
 			logMessage("Event exists local: " + parsedEvent.id, LOG_CAL + LOG_DEBUG);
 			
 			var cEvent = message2Event(readSyncDBFile(idxEntry), null, this.syncTasks);
-			
+
 			var hasEntry = idxEntry.exists() && (cEvent != null);
 			// make sure cEvent is not null, else the comparision will fail
 			logMessage("Start comparing events....", LOG_CAL + LOG_DEBUG);
@@ -372,10 +373,9 @@ var syncCalendar = {
 			var equal2found = hasEntry && equalsEvent(cEvent, foundEvent, this.syncTasks, this.email);
 			logMessage ("cEvent==parsedEvent: " + equal2parsed + "\ncEvent==foundEvent: " + equal2found,  LOG_CAL + LOG_DEBUG);
 			
-
 			if (hasEntry && !equal2parsed && !equal2found)
  			{
-			    // changed locally and on server side
+				// changed locally and on server side
 				logMessage("Changed on server and local: " + parsedEvent.id, LOG_CAL + LOG_DEBUG);
 
 				//Holds the users response, must be an object so that we can pass by reference
@@ -488,8 +488,8 @@ var syncCalendar = {
 						if (this.gEvents.events[i].id == parsedEvent.id)
 						{
 							try {
-							    // modify the item - catch exceptions due to triggered alarms
-							    // because they will break the sync process
+								// modify the item - catch exceptions due to triggered alarms
+								// because they will break the sync process
  								this.gCalendar.modifyItem(parsedEvent, foundEvent, this.gEvents);
 							} catch (e) {}
 	
