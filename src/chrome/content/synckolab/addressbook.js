@@ -916,7 +916,7 @@ var syncAddressBook = {
 		{
 			this.gAddressBook.deleteCards (this.deleteList);
 		}
-		catch (Exception e)
+		catch (e)
 		{
 			// ignore
 		}
