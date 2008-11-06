@@ -260,15 +260,7 @@ function stripMailHeader (content)
 	if (content == null)
 		return null;
 	
-	var capBoundary = false;
-	var isMultiPart = content.indexOf('boundary=') != -1;
-	// boundary might be uppercase
-	if (!isMultiPart && content.indexOf('BOUNDARY=') != -1)
-	{
-		capBoundary = true;
-		isMultiPart = true;
-	}
-	
+	var isMultiPart = content.search(/boundary=/i) != -1;
 	
  	// seems we go us a vcard/ical when no xml is found
 	if (!isMultiPart)
@@ -287,7 +279,7 @@ function stripMailHeader (content)
 
 	// XXXboundary="XXX" or XXXboundary=XXX\n
 	var boundary = null;
-	boundary = content.substring(content.indexOf(capBoundary?'BOUNDARY=':'boundary=')+9);
+	boundary = content.substring(content.search(/boundary=/)+9);
 
 	// lets trim boundary (in case we have whitespace after the =
 	boundary = trim(boundary);
@@ -319,7 +311,7 @@ function stripMailHeader (content)
 	
 	// check kolab XML first
 	var contentIdx = -1;
-	var contTypeIdx = content.indexOf('Content-Type: application/x-vnd.kolab.');
+	var contTypeIdx = content.search(/Content-Type:[ \t\r\n]+application/x-vnd.kolab./i);
 	if (contTypeIdx != -1)
 	{
 		content = content.substring(contTypeIdx); // cut everything before this part
@@ -335,11 +327,11 @@ function stripMailHeader (content)
 	else
 	{
 		// check for vcard | ical
-		contTypeIdx = content.indexOf('Content-Type: text/x-vcard');
+		contTypeIdx = content.search(/Content-Type:[ \t\r\n]+text/x-vcard/i);
 		if (contTypeIdx == -1)
-			contTypeIdx = content.indexOf('Content-Type: text/x-ical');
+			contTypeIdx = content.search(/Content-Type:[ \t\r\n]+text/x-ical/i);
 		if (contTypeIdx == -1)
-			contTypeIdx = content.indexOf('Content-Type: text/calendar');
+			contTypeIdx = content.search(/Content-Type:[ \t\r\n]+text/calendar/i);
 			
 		if (contTypeIdx != -1)
 		{
@@ -359,8 +351,8 @@ function stripMailHeader (content)
 	// if we did not find a decoded card, it might be base64
 	if (contentIdx == -1)
 	{
-		var isQP = content.search(/Content-Transfer-Encoding: quoted-printable/i);
-		var isBase64 = content.search(/Content-Transfer-Encoding: base64/i);
+		var isQP = content.search(/Content-Transfer-Encoding:[ \t\r\n]+quoted-printable/i);
+		var isBase64 = content.search(/Content-Transfer-Encoding:[ \t\r\n]+base64/i);
 		
 		if (isBase64 != -1)
 		{
