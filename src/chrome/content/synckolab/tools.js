@@ -359,18 +359,14 @@ function stripMailHeader (content)
 	// if we did not find a decoded card, it might be base64
 	if (contentIdx == -1)
 	{
-		var capBase64 = false;
-		var isBase64 = content.indexOf("Content-Transfer-Encoding: base64") != -1;
-		if (!isBase64 && content.indexOf("Content-Transfer-Encoding: BASE64") != -1)
-		{
-			isBase64 = true;
-			capBase64 = true;
-		}
-		if (isBase64)
+		var isQP = content.search(/Content-Transfer-Encoding: quoted-printable/i);
+		var isBase64 = content.indexOf(/Content-Transfer-Encoding: base64/i);
+		
+		if (isBase64 != -1)
 		{
 			logMessage("Base64 Decoding message. (Boundary: "+boundary+")", LOG_INFO);
 			// get rid of the header
-			content = content.substring(content.indexOf("Content-Transfer-Encoding: "+ (capBase64?"BASE64":"base64")), content.length);
+			content = content.substring(isBase64, content.length);
 			var startPos = content.indexOf("\r\n\r\n");
 			var startPos2 = content.indexOf("\n\n");
 			if (startPos2 != -1 && (startPos2 < startPos || startPos == -1))
@@ -409,6 +405,13 @@ function stripMailHeader (content)
 			}
 		}
 		else
+		if (isQP != -1)
+		{
+			content = content.substring(isQP, content.length);
+			content = content.replace(/=[\r\n]+/g, "").replace(/=[0-9A-F]{2}/gi,
+			                        function(v){ return String.fromCharCode(parseInt(v.substr(1),16)); });
+		}
+		else
 		{
 			// so this message has no <xml>something</xml> area
 			logMessage("Error parsing this message: no xml segment found\n" + content, LOG_ERROR);
@@ -422,11 +425,7 @@ function stripMailHeader (content)
 		if (content.indexOf(boundary) != -1)
 			content = content.substring(0, content.indexOf("--"+boundary));
 	}
-
 	
-	// decode quoted printable
-	content = content.replace(/=[\r\n]+/g, "").replace(/=[0-9A-F]{2}/gi,
-			function(v){ return String.fromCharCode(parseInt(v.substr(1),16)); });
 	return trim(content);
 }
 
