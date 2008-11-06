@@ -1144,6 +1144,8 @@ function message2Card (lines, card, extraFields, startI, endI)
 				break;
 			case "EMAIL;TYPE=PREF":
 			case "EMAIL;TYPE=INTERNET,PREF":
+			case "EMAIL;TYPE=PREF,HOME":
+			case "EMAIL;TYPE=INTERNET,PREF":
 				// the "preferred" email is the primary
 				if (!gotEmailPrimary)
 				{
@@ -1338,6 +1340,13 @@ function message2Card (lines, card, extraFields, startI, endI)
 		} // end switch
 	}
 		
+	// invalid VCARD: no uid:
+	if (card.custom4 == "")
+	{
+		// generate one
+		card.custom4 = "vc-" + get_randomVcardId(); 
+	}
+
 	return found;
 }
 function list2Human (card)
