@@ -1054,7 +1054,7 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 	{
 		for each (var attendee in attendees) 
 		{
-			mail = attendee.id.replace(/MAILTO:/, '');
+			mail = attendee.id.replace(/MAILTO:/i, '');
 			// FIXME the check for the array size == 1 is a hack to work around a Lightning bug
 			// where isOrganizer() doesn't get true
 			if (attendee.isOrganizer || (attendee.role == "CHAIR") || (attendees.length == 1))

@@ -421,8 +421,12 @@ function stripMailHeader (content)
 		// until the boundary = end of xml|vcard/ical
 		if (content.indexOf(boundary) != -1)
 			content = content.substring(0, content.indexOf("--"+boundary));
-	}		
+	}
 
+	
+	// decode quoted printable
+	content = content.replace(/=[\r\n]+/g, "").replace(/=[0-9A-F]{2}/gi,
+			function(v){ return String.fromCharCode(parseInt(v.substr(1),16)); });
 	return trim(content);
 }
 
