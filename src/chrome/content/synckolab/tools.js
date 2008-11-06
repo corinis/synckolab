@@ -311,7 +311,7 @@ function stripMailHeader (content)
 	
 	// check kolab XML first
 	var contentIdx = -1;
-	var contTypeIdx = content.search(/Content-Type:[ \t\r\n]+application/x-vnd.kolab./i);
+	var contTypeIdx = content.search(/Content-Type:[ \t\r\n]+application\/x-vnd.kolab./i);
 	if (contTypeIdx != -1)
 	{
 		content = content.substring(contTypeIdx); // cut everything before this part
@@ -327,11 +327,11 @@ function stripMailHeader (content)
 	else
 	{
 		// check for vcard | ical
-		contTypeIdx = content.search(/Content-Type:[ \t\r\n]+text/x-vcard/i);
+		contTypeIdx = content.search(/Content-Type:[ \t\r\n]+text\/x-vcard/i);
 		if (contTypeIdx == -1)
-			contTypeIdx = content.search(/Content-Type:[ \t\r\n]+text/x-ical/i);
+			contTypeIdx = content.search(/Content-Type:[ \t\r\n]+text\/x-ical/i);
 		if (contTypeIdx == -1)
-			contTypeIdx = content.search(/Content-Type:[ \t\r\n]+text/calendar/i);
+			contTypeIdx = content.search(/Content-Type:[ \t\r\n]+text\/calendar/i);
 			
 		if (contTypeIdx != -1)
 		{
