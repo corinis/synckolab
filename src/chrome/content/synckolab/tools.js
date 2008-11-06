@@ -360,7 +360,7 @@ function stripMailHeader (content)
 	if (contentIdx == -1)
 	{
 		var isQP = content.search(/Content-Transfer-Encoding: quoted-printable/i);
-		var isBase64 = content.indexOf(/Content-Transfer-Encoding: base64/i);
+		var isBase64 = content.search(/Content-Transfer-Encoding: base64/i);
 		
 		if (isBase64 != -1)
 		{
