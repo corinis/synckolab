@@ -40,7 +40,7 @@
 function xml2Card (xml, extraFields, cards)
 {
 	// until the boundary = end of xml
-	xml = fixString4XmlParser(decode_utf8(DecodeQuoted(xml)));
+	xml = fixString4XmlParser(decode_utf8(decodeQuoted(xml)));
 
 	// convert the string to xml
 	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser); 	
@@ -967,7 +967,7 @@ function parseMessage (message, extraFields, cards)
 		logMessage("VCARD/VLIST!", LOG_INFO + LOG_AB);	
 
 	// decode utf8
-	message = decode_utf8(DecodeQuoted(message));
+	message = decode_utf8(decodeQuoted(message));
 	
 	// make an array of all lines for easier parsing
 	var lines = message.split("\n");

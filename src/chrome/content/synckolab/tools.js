@@ -400,8 +400,7 @@ function stripMailHeader (content)
 		if (isQP != -1)
 		{
 			content = content.substring(isQP, content.length);
-			content = content.replace(/=[\r\n]+/g, "").replace(/=[0-9A-F]{2}/gi,
-			                        function(v){ return String.fromCharCode(parseInt(v.substr(1),16)); });
+			content = decodeQuoted(content);
 		}
 		else
 		{
@@ -1032,138 +1031,10 @@ var SKIP = 202;
 var NOSKIP = 'A';
 
 
-var hexmap = new Array(
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-      0 ,    1 ,    2 ,    3 ,    4 ,    5 ,    6 ,    7 ,
-      8 ,    9 ,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,    10,    11,    12,    13,    14,    15,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP
-);
-
-var QpEncodeMap = new Array(
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   NOSKIP,   SKIP,   SKIP,   NOSKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     NOSKIP,   SKIP,   SKIP,   SKIP,   SKIP,   NOSKIP,   NOSKIP,   NOSKIP,
-     NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
-     NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
-     NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   SKIP,   NOSKIP,   NOSKIP,
-     SKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
-     NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
-     NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
-     NOSKIP,   NOSKIP,   NOSKIP,   SKIP,   SKIP,   SKIP,   SKIP,   NOSKIP,
-     SKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
-     NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
-     NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
-     NOSKIP,   NOSKIP,   NOSKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,
-     SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP,   SKIP
-);
-
-
-function DecodeQuoted(s)
+function decodeQuoted(s)
 {
-	var p = 0, i;
-  var result = '';
-  while (p < s.length) //loop through the entire string...
-  {
-    if (s.charAt(p) == '=') //woops, needs to be decoded...
-    {
-      for (i = 0; i < 3; i++) //is s more than 3 chars long...
-      {
-        if (p+i == s.length)
-        {
-          //error in the decoding...
-          return result;
-        }
-      }
-      
-      var mid = "";
-      
-      p++; //move past the "="
-      //let's put the hex part into mid...
-      var ok = true;
-      for (i = 0; i < 2; i++)
-      {
-        if (hexmap[s.charCodeAt(p+i)] == SKIP)
-        {
-          //we have an error, or a linebreak, in the encoding...
-          ok = false;
-          if (s.charAt(p+i) == '\r' && s.charAt(p+i+1) == '\n')
-          {
-            p += 2;
-            break;
-          }
-          else
-          {
-            //we have an error in the encoding...
-            //s--;
-            result += "=";
-            break;
-          }
-        }
-        mid += s.charAt(p+i);
-      }
-      //now we just have to convert the hex string to an char...
-      if (ok)
-      {
-        p += 2;
-        var m = hexmap[mid.charCodeAt(0)];
-        m <<= 4;
-        m |= hexmap[mid.charCodeAt(1)];
-        result += String.fromCharCode(m);
-      }
-    }
-    else
-    {
-      result += s.charAt(p);
-      p++;
-    }
-  }
-
-  return result;
+	return s.replace(/=[\r\n]+/g, "").replace(/=[0-9A-F]{2}/gi,
+            function(v){ return String.fromCharCode(parseInt(v.substr(1),16)); });
 }
 
 
@@ -1196,7 +1067,7 @@ function encode4XML(s)
 		return s;
 	
 	return s.replace( /(\r?\n|\r){1,2}/g,'\\n' ).replace(/&/g, "&amp;").replace(/</g,
-        "&lt;").replace(/>/g, "&gt;").replace(/amp;amp;/g, "amp;").replace(/=/g, "&#61;");
+     	   "&lt;").replace(/>/g, "&gt;").replace(/amp;amp;/g, "amp;").replace(/=/g, "&#61;");
 }
 
 function decode4XML(s)
@@ -1291,52 +1162,19 @@ function encodeQuoted(s)
 		
 	var fresult = "";
 	var cur = 0;
-	var LineLen = 0;
 
   for (cur = 0; cur < s.length; cur++)
   {
-    //convert the signed char to an unsigned char...
     var mid = s.charCodeAt(cur);
-    //should we reset the linelength...
-    if (s.charCodeAt(cur) == '\n')
-      LineLen = 0; //we are starting on a new line...
-    if (QpEncodeMap[mid] == SKIP)
-    {
-      //we need to encode this char...
-      //is the line too long...
-      /*
-      if (LineLen >= MaxLineLength - 4)
-      {
-        //wrap the line...
-        finalresult = ExpandBuffer(finalresult, UsedSize, &BufSize, false);
-        *(fresult++) = '=';
-        *(fresult++) = '\r';
-        *(fresult++) = '\n';
-        UsedSize += 3;
-        LineLen = 0;
-      }
-      */
-      
-      //add the hex value for the char...
-      fresult += "=";
-			fresult += mid.toString(16).toUpperCase();
-    }
+	if (QpEncodeMap[mid] == SKIP)
+	{
+      		//add the hex value for the char...
+		fresult += "=";
+		fresult += mid.toString(16).toUpperCase();
+	}
     else
     {
       //just add the char...
-      //is the line too long...
-      /*
-      if (LineLen >= MaxLineLength - 4)
-      {
-        //wrap the line...
-        *(fresult++) = '=';
-        *(fresult++) = '\r';
-        *(fresult++) = '\n';
-        UsedSize += 3;
-        LineLen = 0;
-      }
-      */
-      //check buffersize...
       fresult += s.charAt(cur);
     }
   }

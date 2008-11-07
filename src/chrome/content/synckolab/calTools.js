@@ -273,7 +273,7 @@ function message2Event (fileContent, extraFields, syncTasks)
 	}
 	else
 	{
-		fileContent = decode_utf8(DecodeQuoted(fileContent));
+		fileContent = decode_utf8(decodeQuoted(fileContent));
 		 // this.format == 'iCal'
 		parsedEvent = ical2event(fileContent, syncTasks);
 	}
@@ -300,7 +300,7 @@ function xml2Event (xml, extraFields, event)
 	//		  - yearly recurrence
 	
 	// decode utf chars and make sure an & is an &amp; (otherwise this is unparseable)
-	xml = fixString4XmlParser(decode_utf8(DecodeQuoted(xml)));
+	xml = fixString4XmlParser(decode_utf8(decodeQuoted(xml)));
 	
 	// convert the string to xml
 	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser); 
