@@ -1178,7 +1178,7 @@ function event2kolabXmlMsg (event, email, syncTasks)
 {
 	var xml = event2xml(event, syncTasks, email);
 	var my_msg = generateMail(event.id, email, "", syncTasks?"application/x-vnd.kolab.task":"application/x-vnd.kolab.event", 
-			true, encode_utf8(xml), event2Human(event, syncTasks));
+			true, encode_utf8(encodeQuoted(xml)), event2Human(event, syncTasks));
 	return my_msg;
 }
 

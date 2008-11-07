@@ -697,7 +697,7 @@ var syncCalendar = {
 						calComp.addSubcomponent(cur.icalComponent);
 						
 						msg = generateMail(cur.id, this.email, "iCal", "text/todo", 
-							false, encodeQuoted(encode_utf8(calComp.serializeToICS())), null);
+							false, encode_utf8(encodeQuoted(calComp.serializeToICS())), null);
 					}
 					else
 					{
@@ -707,7 +707,7 @@ var syncCalendar = {
 	    				calComp.addSubcomponent(cur.icalComponent);
 	    				
 						msg = generateMail(cur.id, this.email, "iCal", "text/calendar", 
-							false, encodeQuoted(encode_utf8(calComp.serializeToICS())), null);
+							false, encode_utf8(encodeQuoted(calComp.serializeToICS())), null);
 					}					
 				}
 				
