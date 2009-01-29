@@ -299,6 +299,11 @@ function xml2Card (xml, extraFields, cards)
 		  			break;
 			  	card.custom2 = decode4XML(cur.firstChild.data);
 			  	break;
+			  case "CUSTOM3":
+			  		if (cur.firstChild == null)
+			  			break;
+				  	card.custom3 = decode4XML(cur.firstChild.data);
+				  	break;
 			  	
 			  case "IM-ADDRESS":
 		  		if (cur.firstChild == null)
@@ -811,7 +816,7 @@ function equalsContact (a, b)
 		"workPhone","homePhone","faxNumber","pagerNumber","cellularNumber",
 		"homeAddress","homeAddress2","homeCity","homeState","homeZipCode","homeCountry","webPage2",
 		"jobTitle","department","company","workAddress","workAddress2","workCity","workState","workZipCode","workCountry","webPage1",
-		"custom1","custom2","notes");
+		"custom1","custom2","custom3","notes");
 	
 	if (a.isMailList != b.isMailList)
 		return;
