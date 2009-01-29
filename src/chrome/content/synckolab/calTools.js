@@ -945,6 +945,9 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 	}
 	if (event.getProperty("CATEGORIES"))
 		xml += " <categories>" + encode4XML(event.getProperty("CATEGORIES")) + "</categories>\n";
+	else
+	if (event.getProperty("CATEGORY"))
+		xml += " <categories>" + encode4XML(event.getProperty("CATEGORY")) + "</categories>\n";
 
 	var recInfo = event.recurrenceInfo;
 	if (syncTasks != true && recInfo && recInfo.countRecurrenceItems() >= 1)

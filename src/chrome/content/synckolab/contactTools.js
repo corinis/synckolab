@@ -272,14 +272,14 @@ function xml2Card (xml, extraFields, cards)
 			  case "WEB-PAGE":
 			  		if (cur.firstChild == null)
 			  			break;
-				  	card.webPage2 = decode4XML(cur.firstChild.data);
+				  	card.webPage1 = decode4XML(cur.firstChild.data);
 					found = true;
 					break;
 					
 			  case "BUSINESS-WEB-PAGE":
 			  		if (cur.firstChild == null)
 			  			break;
-				  	card.webPage1 = decode4XML(cur.firstChild.data);
+				  	card.webPage2 = decode4XML(cur.firstChild.data);
 					found = true;
 					break;
 
