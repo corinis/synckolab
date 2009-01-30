@@ -49,7 +49,7 @@ function checkExist (value)
  */
 function accountNameFix (name)
 {
-	return name.replace(/[ :@\%\'\"-\?\#+\*\.;$\\\/]/g, "");
+	return name.replace(/[ :@\%\'\"-\?\#\+\*\.$\\\/]/g, "");
 }
 
 /**
