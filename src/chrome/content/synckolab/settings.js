@@ -362,12 +362,12 @@ function prefillFields() {
 		var actchild = document.createElement("menuitem");
 		actpopup.appendChild(actchild);
 		actchild.setAttribute("label", account.prettyName);
-		actchild.setAttribute("value", accountNameFix(account.rootMsgFolder.baseMessageURI));
+		actchild.setAttribute("value", accountNameFix(account.prettyName));
 		if (isFirst)
 		{
 			actchild.setAttribute("selected", "true");
 			actList.setAttribute("label", account.prettyName);
-			actList.setAttribute("value", accountNameFix(account.rootMsgFolder.baseMessageURI));
+			actList.setAttribute("value", accountNameFix(account.prettyName));
 			isFirst = false;
 		}
 		
@@ -843,7 +843,7 @@ function updateFolder (act)
 		try
 		{
 			var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-			if (account.rootMsgFolder.baseMessageURI == act || accountNameFix(account.rootMsgFolder.baseMessageURI) == act)
+			if (account.rootMsgFolder.baseMessageURI == act || accountNameFix(account.prettyName) == act)
 			{
 							
 				var cfold = document.getElementById ("conImapFolder");
@@ -1035,7 +1035,7 @@ function updateCalFolder (act)
 		try
 		{
 			var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-			if (account.rootMsgFolder.baseMessageURI == act || accountNameFix(account.rootMsgFolder.baseMessageURI) == act)
+			if (account.rootMsgFolder.baseMessageURI == act || accountNameFix(account.prettyName) == act)
 			{
 				var cfold = document.getElementById ("calImapFolder");
 				// delete the treechildren if exist
@@ -1074,7 +1074,7 @@ function updateTaskFolder (act)
 		try
 		{
 			var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-			if (account.rootMsgFolder.baseMessageURI == act || accountNameFix(account.rootMsgFolder.baseMessageURI) == act)
+			if (account.rootMsgFolder.baseMessageURI == act || accountNameFix(account.prettyName) == act)
 			{
 				var cfold = document.getElementById ("taskImapFolder");
 				// delete the treechildren if exist
