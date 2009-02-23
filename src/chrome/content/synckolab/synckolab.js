@@ -140,7 +140,7 @@ function syncKolab(event) {
 		gWnd = window.open("chrome://synckolab/content/progressWindow.xul", "bmarks", "chrome,width=350,height=350,resizable=1");
 	
 	try {
-	    var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+		var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 		gCloseWnd = pref.getBoolPref("SyncKolab.closeWindow");
 		
 		try {		

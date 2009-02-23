@@ -49,7 +49,7 @@ function checkExist (value)
  */
 function accountNameFix (name)
 {
-	return name.replace(/[ :@\%\'\"-\?\#\+\*\.$\\\/]/g, "");
+	return name.replace(/[ :@\%\'\"-\?\#\+\*\.\$\\\/]/g, "");
 }
 
 /**
@@ -716,7 +716,8 @@ function getAccountName (accountKey)
 	for (var i = 0; i < accountManager.allServers.Count(); i++)
 	{
 		var account = accountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-		if (account.rootMsgFolder.baseMessageURI == accountKey || accountNameFix(account.rootMsgFolder.baseMessageURI) == accountKey)
+		if (account.rootMsgFolder.baseMessageURI == accountKey || accountNameFix(account.rootMsgFolder.baseMessageURI) == accountKey ||
+			accountNameFix(account.prettyName) == accountKey)
 		{
 			return accountManager.getFirstIdentityForServer (account).fullName;
 		}
@@ -735,7 +736,8 @@ function getAccountEMail (accountKey)
 	for (var i = 0; i < accountManager.allServers.Count(); i++)
 	{
 		var account = accountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-		if (account.rootMsgFolder.baseMessageURI == accountKey || accountNameFix(account.rootMsgFolder.baseMessageURI) == accountKey)
+		if (account.rootMsgFolder.baseMessageURI == accountKey || accountNameFix(account.rootMsgFolder.baseMessageURI) == accountKey ||
+		                        accountNameFix(account.prettyName) == accountKey)
 		{
 			return accountManager.getFirstIdentityForServer (account).email;
 		}
@@ -758,7 +760,8 @@ function getMsgFolder (accountKey, path)
 	for (var i = 0; i < accountManager.allServers.Count(); i++)
 	{
 		var account = accountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-		if (account.rootMsgFolder.baseMessageURI == accountKey || accountNameFix(account.rootMsgFolder.baseMessageURI) == accountKey)
+		if (account.rootMsgFolder.baseMessageURI == accountKey || accountNameFix(account.rootMsgFolder.baseMessageURI) == accountKey||
+		                        accountNameFix(account.prettyName) == accountKey)
 		{
 			gInc = account;
 		}
