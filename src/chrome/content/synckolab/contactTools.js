@@ -1647,18 +1647,18 @@ function card2Message (card, email, format, fFile)
 		// mailing list
 		if (card.isMailList)
 			return generateMail(card.custom4, email, "", "application/x-vnd.kolab.contact.distlist", 
-				true, encode_utf8(encodeQuoted(list2Xml(card, fields))), list2Human(card));
+				true, encodeQuoted(encode_utf8(list2Xml(card, fields))), list2Human(card));
 		else
 			return generateMail(card.custom4, email, "", "application/x-vnd.kolab.contact", 
-				true, encode_utf8(encodeQuoted(card2Xml(card, fields))), card2Human(card));
+				true, encodeQuoted(encode_utf8(card2Xml(card, fields))), card2Human(card));
 	}
 	
 	if (card.isMailList)
 		return generateMail(card.custom4, email, "vCard", "application/x-vcard.list", 
-			false, encode_utf8(encodeQuoted(list2Vcard(card,fields))), null);
+			false, encodeQuoted(encode_utf8(list2Vcard(card,fields))), null);
 
 	return generateMail(card.custom4, email, "vCard", "text/vcard", 
-			false, encode_utf8(encodeQuoted(card2Vcard(card, fields))), null);
+			false, encodeQuoted(encode_utf8(card2Vcard(card, fields))), null);
 			
 		
 }
