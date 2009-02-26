@@ -311,9 +311,18 @@ function xml2Card (xml, extraFields, cards)
 			  	card.aimScreenName = decode4XML(cur.firstChild.data);
 			  	break;
 			  	
+			  case "ALLOW-REMOTE-CONTENT":
+		  		if (cur.firstChild == null)
+		  			break;
+		  		if (cur.firstChild.data.toUpperCase() == 'TRUE')
+		  			card.allowRemoteContent = true;
+		  		else
+		  			card.allowRemoteContent = false;
+		  		break;
 			default:
 		  		if (cur.firstChild == null)
 		  			break;
+				logMessage("XC FIELD not found: " + cur.nodeName + ":" + decode4XML(cur.firstChild.data), LOG_WARNING + LOG_AB);
 				// remember other fields
 		  		addField(extraFields, cur.nodeName, decode4XML(cur.firstChild.data));
   				break;
@@ -725,7 +734,11 @@ function card2Xml (card, fields)
 	xml += nodeWithContent("custom1", card.custom1, false);
 	xml += nodeWithContent("custom2", card.custom2, false);
 	xml += nodeWithContent("custom3", card.custom3, false);
-	
+ 	if (card.allowRemoteContent)
+ 		xml += nodeWithContent("allow-remote-content", "true", false);
+ 	else
+ 		xml += nodeWithContent("allow-remote-content", "false", false);
+		
 	// add extra/missing fields
 	if (fields != null)
 	{
@@ -798,6 +811,7 @@ function genConSha1 (card)
 	card.workPhone + ":" +
 	card.workPhoneType + ":" +
 	card.workState + ":" +
+ 	card.allowRemoteContent + ":" + 
 	card.workZipCode);
 }
 
@@ -932,7 +946,7 @@ function vList2Card (uids, lines, card, cards)
 		  	break;
 		  	
 		  default:
-			consoleService.logStringMessage("FIELD not found: " + tok[0] + ":" + tok[1]);
+			consoleService.logStringMessage("VL FIELD not found: " + tok[0] + ":" + tok[1]);
 		  	//addField(extraFields, tok[0], tok[1]);
 		  	break;
 		} // end switch
@@ -1209,6 +1223,10 @@ function message2Card (lines, card, extraFields, startI, endI)
 				card.aimScreenName = tok[1];
 				found = true;
 			break;
+			case "TEL;TYPE=MOBILE;TYPE=VOICE":
+			case "TEL;TYPE=VOICE;TYPE=MOBILE":
+			case "TEL;TYPE=MOBILE":
+			case "TEL;MOBILE":
 			case "TEL;TYPE=CELL;TYPE=VOICE":
 			case "TEL;TYPE=VOICE;TYPE=CELL":
 			case "TEL;TYPE=CELL":
@@ -1330,6 +1348,13 @@ function message2Card (lines, card, extraFields, startI, endI)
 		  case "UID":
 		  	card.custom4 = tok[1];
 		  	break;
+		  case "ALLOWREMOTECONTENT":
+			  if (tok[1].toUpperCase() == 'TRUE')
+				  card.allowRemoteContent = true;
+			  else
+				  card.allowRemoteContent = false;
+			 break;
+
 		  	
 	  	  // stuff we just do not parse :)
 	  	  case "":
@@ -1339,7 +1364,7 @@ function message2Card (lines, card, extraFields, startI, endI)
 		  	break;
 		  	
 		  default:
-			logMessage("FIELD not found: " + tok[0] + ":" + tok[1], LOG_WARNING + LOG_AB);
+			logMessage("VC FIELD not found: " + tok[0] + ":" + tok[1], LOG_WARNING + LOG_AB);
 		  	addField(extraFields, tok[0], tok[1]);
 		  	break;
 		} // end switch
