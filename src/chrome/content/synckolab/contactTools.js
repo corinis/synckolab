@@ -1623,8 +1623,9 @@ function card2Vcard (card, fields)
  	if (checkExist (card.custom3))
 		msg += "CUSTOM3:" + card.custom3.replace (/\n/g, "\\n") + "\n";
  	if (card.allowRemoteContent)
- 		msg += "ALLOWREMOTECONTENT:true";
- 	
+ 		msg += "ALLOWREMOTECONTENT:true\n";
+ 	else
+ 		msg += "ALLOWREMOTECONTENT:false\n";
  	// yeap one than more line (or something like that :P)
  	if (checkExist (card.notes))
 		msg += "NOTE:" + card.notes.replace(/\n\n/g, "\\n").replace (/\n/g, "\\n") + "\n";
