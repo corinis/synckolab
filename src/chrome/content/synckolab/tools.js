@@ -59,7 +59,7 @@ function accountNameFix (name)
 function fixString4XmlParser (s)
 {
 	t = s.replace(/version=.0/g, "version=\"1.0");
-	return t.replace(/&/g, "&amp;").replace(/amp;amp;/g, "amp;")
+	return t.replace(/&/g, "&amp;");
 }
 
 /**
@@ -1068,9 +1068,11 @@ function encode4XML(s)
 		return "";
 	if (!s.replace)
 		return s;
-	
-	return s.replace( /(\r?\n|\r){1,2}/g,'\\n' ).replace(/&/g, "&amp;").replace(/</g,
-     	   "&lt;").replace(/>/g, "&gt;").replace(/amp;amp;/g, "amp;").replace(/=/g, "&#61;");
+	var t = s.replace(/&/g, "&amp;");
+	t = t.replace(/\\/g, "&#92;");
+
+	return s.replace( /(\r?\n|\r){1,2}/g,'\n' ).replace(/&/g, "&amp;").replace(/</g,
+     	   "&lt;").replace(/>/g, "&gt;").replace(/=/g, "&#61;");
 }
 
 function decode4XML(s)
@@ -1089,8 +1091,9 @@ function decode4XML(s)
   function(wholematch, parenmatch1) {
   return String.fromCharCode(parseInt(parenmatch1,16));
   });
-  
-  // final
+
+
+	// final
 	return t.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
 }
 
