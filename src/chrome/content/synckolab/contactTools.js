@@ -1162,9 +1162,11 @@ function message2Card (lines, card, extraFields, startI, endI)
 				found = true;
 				break;
 			case "EMAIL;TYPE=PREF":
-			case "EMAIL;TYPE=INTERNET,PREF":
 			case "EMAIL;TYPE=PREF,HOME":
 			case "EMAIL;TYPE=INTERNET,PREF":
+			case "EMAIL;PREF;TYPE=INTERNET":
+			case "EMAIL;TYPE=PREF;HOME":
+			case "EMAIL;TYPE=INTERNET;PREF":
 				// the "preferred" email is the primary
 				if (!gotEmailPrimary)
 				{
@@ -1528,7 +1530,7 @@ function card2Vcard (card, fields)
 	if (checkExist (card.company))
 		msg += "ORG:" + card.company + "\n";
  	if (checkExist (card.primaryEmail)) 
-		msg += "EMAIL;TYPE=INTERNET,PREF:" + card.primaryEmail  + "\n";
+		msg += "EMAIL;TYPE=INTERNET;PREF:" + card.primaryEmail  + "\n";
  	if (checkExist (card.secondEmail)) 
 		msg += "EMAIL;TYPE=INTERNET:" + card.secondEmail + "\n";
  	if (checkExist (card.preferMailFormat)) { 
