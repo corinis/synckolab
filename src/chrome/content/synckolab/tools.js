@@ -1238,7 +1238,7 @@ function generateMail (cid, mail, adsubject, mime, part, content, hr)
 	if (part)
 	{
 		msg += '--Boundary-00='+bound+'\n';
-		msg += 'Content-Type: Text/Plain;\ncharset="us-ascii"\n';
+		msg += 'Content-Type: Text/Plain;\n charset="us-ascii"\n';
 		msg += 'Content-Transfer-Encoding: 7bit\n\n';
 
 		msg += 'This is a Kolab Groupware object.\n';
