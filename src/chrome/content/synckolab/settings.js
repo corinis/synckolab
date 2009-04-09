@@ -31,6 +31,23 @@
  * These are the functions for the configuration.
  */
 
+// Global debug setting (on)
+var DEBUG_SYNCKOLAB = true;
+// set this to true to also print timing information
+var PERFLOG_SYNCKOLAB = true;
+
+var LOG_ERROR = 0;
+var LOG_WARNING = 1;
+var LOG_INFO = 2;
+var LOG_DEBUG = 3;
+var LOG_CAL = 4;
+var LOG_AB = 8;
+var LOG_ALL = 12;
+
+//set this to true and on every error there will be a pause so you can check the logs
+var PAUSE_ON_ERROR = false;
+
+
 var isCalendar;
 var curConfig;
 
@@ -169,6 +186,13 @@ function init() {
 	var directory = rdf.GetResource("moz-abdirectory://").QueryInterface(Components.interfaces.nsIAbDirectory);
 	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 
+    // set the debug level
+	try {
+		DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + parseInt(pref.getCharPref("SyncKolab.debugLevel"));
+	} catch (ex) {
+		DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + LOG_WARNING;
+	};				
+
 	// get all available configurations
 	var configs = new Array();
 	var curConfig = null;
@@ -258,31 +282,10 @@ function init() {
 	prefillFields();
 		
 	// now some global settings
-	
-/*
-	try {
-		document.getElementById ("syncCon").checked = pref.getBoolPref("SyncKolab.syncContacts");
-	} catch (ex) {}
-	try {
-		document.getElementById ("syncCal").checked = pref.getBoolPref("SyncKolab.syncCalendar");
-	} catch (ex) {}
-*/	
 	try {
 		document.getElementById ("closeWnd").checked = pref.getBoolPref("SyncKolab.closeWindow");
 	} catch (ex) {}
-	
-	// default is 0
-	document.getElementById ("syncInterval").value = "0";
-	try {		
-		document.getElementById ("syncInterval").value = pref.getCharPref("SyncKolab.autoSync");
-	} catch (ex) {};
-	
-	// default do hide the window
-	document.getElementById ("hiddenWnd").checked = true;
-	try {		
-		document.getElementById ("hiddenWnd").checked = pref.getBoolPref("SyncKolab.hiddenWindow");
-	} catch (ex) {};
-	
+		
 	// set the default debug level
 	var cfgDbgLevel = 1;
 	try {		
@@ -357,8 +360,12 @@ function prefillFields() {
 	for (var i = 0; i < gAccountManager.allServers.Count(); i++)
 	{
 		var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
+		logMessage("Account found: " + account.rootMsgFolder.baseMessageURI, LOG_DEBUG);		
 		if (account.rootMsgFolder.baseMessageURI.toLowerCase().indexOf("imap") == -1)
+		{
+			logMessage("Account " + account.rootMsgFolder.baseMessageURI + " is not an imap account - skipping!", LOG_INFO);
 			continue;
+		}
 		var actchild = document.createElement("menuitem");
 		actpopup.appendChild(actchild);
 		actchild.setAttribute("label", account.prettyName);
@@ -534,6 +541,20 @@ function changeConfig (config)
 				break;
 			}
 			cur = cur.nextSibling;
+		}
+		// default is 0
+		document.getElementById ("syncInterval").value = "0";
+		// default do hide the window
+		document.getElementById ("hiddenWnd").checked = true;
+		try
+		{		
+			// update sync settings
+			document.getElementById ("syncInterval").value = pref.getCharPref("SyncKolab."+config+".autoSync");
+			document.getElementById ("hiddenWnd").checked = pref.getBoolPref("SyncKolab."+config+".hiddenWindow");
+		}
+		catch (ex)
+		{
+			// ignore
 		}
 
 		// update the resolve settings
@@ -1113,11 +1134,14 @@ function saveAllPrefs (configName) {
 		
 	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 	
+	// server side configuration
 	pref.setCharPref("SyncKolab."+config+".IncomingServer", document.getElementById ("ImapAcct").value);
 	if (document.getElementById("DefaultResolve"))
 		pref.setCharPref("SyncKolab."+config+".Resolve", document.getElementById ("DefaultResolve").value);
 	else
 		pref.setCharPref("SyncKolab."+config+".Resolve", "ask");
+	pref.setCharPref("SyncKolab."+config+".autoSync", document.getElementById ("syncInterval").value);
+	pref.setBoolPref("SyncKolab."+config+".hiddenWindow", document.getElementById ("hiddenWnd").checked);
 	
 	pref.setCharPref("SyncKolab."+config+".AddressBook", document.getElementById ("conURL").value);
 	pref.setCharPref("SyncKolab."+config+".AddressBookFormat", document.getElementById ("conFormat").value);
@@ -1152,11 +1176,7 @@ function saveAllPrefs (configName) {
 function savePrefs() {
 	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 
-//	pref.setBoolPref("SyncKolab.syncContacts", document.getElementById ("syncCon").checked);
-//	pref.setBoolPref("SyncKolab.syncCalendar", document.getElementById ("syncCal").checked);
 	pref.setBoolPref("SyncKolab.closeWindow", document.getElementById ("closeWnd").checked);
-	pref.setCharPref("SyncKolab.autoSync", document.getElementById ("syncInterval").value);
-	pref.setBoolPref("SyncKolab.hiddenWindow", document.getElementById ("hiddenWnd").checked);
 	pref.setCharPref("SyncKolab.debugLevel", document.getElementById ("debugLvl").value);
 
 	var tree = document.getElementById("configTree");
@@ -1619,7 +1639,7 @@ function saveAllConfig()
 	 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
 	 	stream.init(thefile, 2, 0x200, false); // open as "write only"
 
-		var s = "# SyncKolab V1.0.0 Configuration File\n";
+		var s = "# SyncKolab V1.0.1 Configuration File\n";
 		stream.write(s, s.length);
 
 		// generate the configuration in the tree control 	
@@ -1633,7 +1653,7 @@ function saveAllConfig()
 		
 		// char prefs:
 		var fieldsArray = new Array(
-			"closeWindow","autoSync","hiddenWindow"
+			"debugLevel"
 			);
 	
 		for(var i=0 ; i < fieldsArray.length ; i++ ) {
@@ -1693,7 +1713,8 @@ function writeConfig (config, file)
 		"AddressBook","AddressBookFormat","calSyncTimeframe","taskSyncTimeframe",
 		"ContactFolderPath","Calendar","CalendarFormat","Resolve",
 		"CalendarFolderPath",
-		"Tasks","TaskFormat","TaskFolderPath"
+		"Tasks","TaskFormat","TaskFolderPath",
+		"syncInterval"
 		);
 
 	for(var i=0 ; i < fieldsArray.length ; i++ ) {
@@ -1708,7 +1729,8 @@ function writeConfig (config, file)
 	var fieldsArray = new Array(
 		"syncContacts","saveToContactImap",
 		"saveToCalendarImap","syncCalendar",
-		"saveToTaskImap","syncTasks"
+		"saveToTaskImap","syncTasks",
+		"hiddenWindow"
 		);
 
 	for(var i=0 ; i < fieldsArray.length ; i++ ) {

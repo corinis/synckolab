@@ -95,36 +95,87 @@ var SWITCH_TIME = 20; //wait 20ms
 var PAUSE_ON_ERROR = false;
  
 // this is the timer function.. will call itself once a minute and check the configs
-var gSyncTimer = -1;
-var gAutoRun = -1;
-var gAutoHideWindow = false;
-var doHideWindow = false;
+var gForceConfig = null; // per default go through ALL configurations
+var syncConfigs = null;
+/*contains:
+{
+		gSyncTimer: 0,
+		gAutoRun: -1,
+		gAutoHideWindow: false,
+		configName: null
+};
+*/
 
 function syncKolabTimer ()
 {
-	gSyncTimer++;
-	
 	// no valid configuration or not yet read... lets see
-	if (gAutoRun == null || gAutoRun <= 0)
+	if (syncConfigs == null || syncConfigs.length == 0)
 	{
+	    var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+	    
+	    // set the debug level
 		try {
-		    var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
-			gAutoRun = pref.getCharPref("SyncKolab.autoSync");
-			gAutoHideWindow = pref.getBoolPref("SyncKolab.hiddenWindow");
-		} catch(e) {
+			DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + parseInt(pref.getCharPref("SyncKolab.debugLevel"));
+		} catch (ex) {
+			DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + LOG_WARNING;
+		};				
+
+		// create a thread for each configuration
+		var configs = new Array();
+		try {
+			var Config = pref.getCharPref("SyncKolab.Configs");
+			configs = Config.split(';');
+		} catch(ex) {}
+
+		if (configs.length == 0)
+		{
+			return;
+		}
+		syncConfigs = new Array();
+		
+		// fill the configs
+		for (var i=0; i < configs.length; i++)
+		{
+			// skip empty congis
+			if (configs[i] == '')
+				continue;
+			syncConfigs[i] = new Object;
+			syncConfigs[i].gSyncTimer = 0;
+			try
+			{
+				syncConfigs[i].gAutoRun = pref.getCharPref("SyncKolab."+configs[i]+".autoSync");
+				syncConfigs[i].gAutoHideWindow = pref.getBoolPref("SyncKolab."+configs[i]+".hiddenWindow");
+			}catch (ex)
+			{
+				syncConfigs[i].gAutoRun = 0;
+				syncConfigs[i].gAutoHideWindow = false;
+			}
+			syncConfigs[i].configName = configs[i];
 		}
 	}
 	else
-	// lets start
-	if (gSyncTimer >= gAutoRun)
 	{
-		logMessage("running syncKolab and resetting timer....", LOG_INFO);
-		gSyncTimer = -1;
-		// hide the window 
-		if (gAutoHideWindow)
-			doHideWindow = true;
-		syncKolab();		
-		doHideWindow = false;
+		// go through all configs
+		for (var i=0; i < syncConfigs.length; i++)
+		{
+			// skip all configurations which dont have autorun
+			if (syncConfigs[i].gAutoRun == 0)
+				continue;
+			
+			syncConfigs[i].gSyncTimer++;
+			// lets start (make sure no other auto config is running right now)
+			if (syncConfigs[i].gSyncTimer >= syncConfigs[i].gAutoRun && gForceConfig == null)
+			{
+				logMessage("running syncKolab configuration "+syncConfigs[i].configName+" and resetting timer....", LOG_INFO);
+				syncConfigs[i].gSyncTimer = -1;
+				// hide the window 
+				if (syncConfigs[i].gAutoHideWindow)
+					doHideWindow = true;
+				gForceConfig = syncConfigs[i].configName;
+				syncKolab();				
+			}
+			
+		}
 	}
 	// wait a minute
 	window.setTimeout(syncKolabTimer, 60000);		 
@@ -143,7 +194,7 @@ function syncKolab(event) {
 		var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 		gCloseWnd = pref.getBoolPref("SyncKolab.closeWindow");
 		
-		try {		
+		try {
 			DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + parseInt(pref.getCharPref("SyncKolab.debugLevel"));
 		} catch (ex) {
 			DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + LOG_WARNING;
@@ -257,6 +308,14 @@ function startSync(event) {
 	} catch(ex) 
 	{
 	}
+	
+	// called from timer - we force ONE configuration
+	if (gForceConfig != null)
+	{
+		syncConfigs = new Array();
+		syncConfigs.push(gForceConfig);
+	}
+
 	
 	// all initialized, lets run
 	window.setTimeout(nextSync, SWITCH_TIME);	
@@ -499,7 +558,13 @@ function nextSync()
 			sb.removeChild(statusMsg);
 			sb.removeChild(curCounter);
 		}
-			
+		
+		// done autorun
+		if (gForceConfig != null)
+		{
+			gForceConfig = null;
+			doHideWindow = false;
+		}
 		return;
 	}
 	
