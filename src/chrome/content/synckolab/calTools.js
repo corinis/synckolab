@@ -1265,33 +1265,39 @@ function ical2event (content, todo)
  */
 function setKolabItemProperty(item, propertyName, value)
 {
-	switch(propertyName) {
-    case "startDate":
-		item.startDate = value;
-        break;
-    case "endDate":
-		item.endDate = value;
-        break;
-
-    case "entryDate":
-        item.entryDate = value;
-        break;
-    case "dueDate":
-        item.dueDate = value;
-        break;
-    case "isCompleted":
-        item.isCompleted = value;
-        break;
-
-    case "title":
-        item.title = value;
-        break;
-
-    default:
-        if (!value || value == "")
-            item.deleteProperty(propertyName);
-        else if (item.getProperty(propertyName) != value)
-            item.setProperty(propertyName, value);
-        break;
-    }
+	 try
+	 {
+		switch(propertyName) {
+	    case "startDate":
+			item.startDate = value;
+	        break;
+	    case "endDate":
+			item.endDate = value;
+	        break;
+	
+	    case "entryDate":
+	        item.entryDate = value;
+	        break;
+	    case "dueDate":
+	        item.dueDate = value;
+	        break;
+	    case "isCompleted":
+	        item.isCompleted = value;
+	        break;
+	
+	    case "title":
+	        item.title = value;
+	        break;
+	
+	    default:
+	        if (!value || value == "")
+	            item.deleteProperty(propertyName);
+	        else if (item.getProperty(propertyName) != value)
+	            item.setProperty(propertyName, value);
+	        break;
+	    }
+	 }
+	 catch (ex){
+		 logMessage("unable set property: " + propertyName + " with value " + value, LOG_CAL + LOG_ERROR);
+	 }
 }

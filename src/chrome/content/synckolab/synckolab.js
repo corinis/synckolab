@@ -154,6 +154,8 @@ function syncKolabTimer ()
 		}
 	}
 	else
+	// only continue timer if nothing is running right now!
+	if (gForceConfig == null)
 	{
 		// go through all configs
 		for (var i=0; i < syncConfigs.length; i++)
@@ -164,9 +166,9 @@ function syncKolabTimer ()
 			
 			syncConfigs[i].gSyncTimer++;
 			// lets start (make sure no other auto config is running right now)
-			if (syncConfigs[i].gSyncTimer >= syncConfigs[i].gAutoRun && gForceConfig == null)
+			if (syncConfigs[i].gSyncTimer >= syncConfigs[i].gAutoRun)
 			{
-				logMessage("running syncKolab configuration "+syncConfigs[i].configName+" and resetting timer....", LOG_INFO);
+				logMessage("running syncKolab configuration "+syncConfigs[i].configName+" ("+syncConfigs[i].gAutoRun+")....", LOG_INFO);
 				syncConfigs[i].gSyncTimer = -1;
 				// hide the window 
 				if (syncConfigs[i].gAutoHideWindow)
@@ -177,6 +179,9 @@ function syncKolabTimer ()
 			
 		}
 	}
+	else
+		logMessage("sync with config "+gForceConfig +" is still running...", LOG_DEBUG);
+		
 	// wait a minute
 	window.setTimeout(syncKolabTimer, 60000);		 
 }
@@ -562,6 +567,7 @@ function nextSync()
 		// done autorun
 		if (gForceConfig != null)
 		{
+			logMessage("finished autorun of config " + gForceConfig, LOG_INFO);
 			gForceConfig = null;
 			doHideWindow = false;
 		}
