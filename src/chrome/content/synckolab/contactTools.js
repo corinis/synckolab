@@ -586,7 +586,7 @@ function card2Xml (card, fields)
 	xml += " <product-id>SyncKolab, Kolab resource</product-id>\n";
 	xml += " <uid>"+encode4XML(card.custom4)+"</uid>\n";
 	xml += nodeWithContent("categories", card.category, false);
-	xml += " <creation-date>"+date2String(new Date(card.lastModifiedDate*1000))+"T"+time2String(new Date(card.lastModifiedDate*1000))+"Z</creation-date>\n";
+	//xml += " <creation-date>"+date2String(new Date(card.lastModifiedDate*1000))+"T"+time2String(new Date(card.lastModifiedDate*1000))+"Z</creation-date>\n";
 	xml += " <last-modification-date>"+date2String(new Date(card.lastModifiedDate*1000))+"T"+time2String(new Date(card.lastModifiedDate*1000))+"Z</last-modification-date>\n";
 	// ??
 	xml += " <sensitivity>public</sensitivity>\n";
@@ -891,6 +891,8 @@ function vList2Card (uids, lines, card, cards)
 				// now we gotta check times... convert the message first
 				// save the date in microseconds
 				// Date: Fri, 17 Dec 2004 15:06:42 +0100
+				/*
+				 * have to ignore this because of abook doesnt support this
 				try
 				{
 					card.lastModifiedDate = (new Date(Date.parse(lines[i].substring(lines[i].indexOf(":")+1, lines[i].length)))).getTime() / 1000;
@@ -900,6 +902,7 @@ function vList2Card (uids, lines, card, cards)
 					consoleService.logStringMessage("unable to convert to date: " + lines[i]);
 					alert(("unable to convert to date: " + lines[i] + "\nPlease copy the date string in a bug report an submit!\n(Also available in the information)"));
 				}
+				*/
 				break;						
 		  // the all important unique list name! 				
 		  case "FN":
@@ -1060,7 +1063,7 @@ function message2Card (lines, card, extraFields, startI, endI)
 	card.homeState = "";
 	card.homeZipCode = "";
 	card.jobTitle = "";
-	card.lastModifiedDate = 0;
+	//card.lastModifiedDate = 0;
 	card.lastName = "";
 	card.nickName = "";
 	card.notes = "";
@@ -1127,6 +1130,8 @@ function message2Card (lines, card, extraFields, startI, endI)
 				// now we gotta check times... convert the message first
 				// save the date in microseconds
 				// Date: Fri, 17 Dec 2004 15:06:42 +0100
+				/* 
+				 * have to ignore this because of abook doesnt really support this
 				try
 				{
 					card.lastModifiedDate = (new Date(Date.parse(lines[i].substring(lines[i].indexOf(":")+1, lines[i].length)))).getTime() / 1000;
@@ -1136,6 +1141,7 @@ function message2Card (lines, card, extraFields, startI, endI)
 					consoleService.logStringMessage("unable to convert to date: " + lines[i]);
 					alert(("unable to convert to date: " + lines[i] + "\nPlease copy the date string in a bug report an submit!\n(Also available in the information)"));
 				}
+				*/
 				break;						
  				
 			case "N":
