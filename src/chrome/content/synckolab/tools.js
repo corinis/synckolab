@@ -74,62 +74,62 @@ function fixNameToMiniCharset (name)
 		switch (name.charAt(i))
 		{
 			// character replaces... better this way
-			case 'Ä':
-			case 'Â':
-			case 'À':
-			case 'Á':
+			case 'ï¿½':
+			case 'ï¿½':
+			case 'ï¿½':
+			case 'ï¿½':
 				placeHolder = false;
 				ret += 'A';
 				break;
 				
-			case 'ä':
-			case 'â':
-			case 'á':
-			case 'à':
+			case 'ï¿½':
+			case 'ï¿½':
+			case 'ï¿½':
+			case 'ï¿½':
 				placeHolder = false;
 				ret += 'a';
 				break;
-			case 'Ö':
-			case 'Ò':
-			case 'Ó':
-			case 'Ô':
+			case 'ï¿½':
+			case 'ï¿½':
+			case 'ï¿½':
+			case 'ï¿½':
 				placeHolder = false;
 				ret += 'O';
 				break;
-			case 'ö':
-			case 'ô':
-			case 'ó':
-			case 'ò':
+			case 'ï¿½':
+			case 'ï¿½':
+			case 'ï¿½':
+			case 'ï¿½':
 				placeHolder = false;
 				ret += 'o';
 				break;
-			case 'Ü':
-			case 'Û':
-			case 'Ú':
-			case 'Ù':
+			case 'ï¿½':
+			case 'ï¿½':
+			case 'ï¿½':
+			case 'ï¿½':
 				placeHolder = false;
 				ret += 'U';
 				break;
-			case 'ü':
-			case 'û':
-			case 'ú':
-			case 'ù':
+			case 'ï¿½':
+			case 'ï¿½':
+			case 'ï¿½':
+			case 'ï¿½':
 				placeHolder = false;
 				ret += 'u';
 				break;
-			case 'î':
-			case 'ì':
-			case 'í':
+			case 'ï¿½':
+			case 'ï¿½':
+			case 'ï¿½':
 				placeHolder = false;
 				ret += 'i';
 				break;
-			case 'Î':
-			case 'Í':
-			case 'Ì':
+			case 'ï¿½':
+			case 'ï¿½':
+			case 'ï¿½':
 				placeHolder = false;
 				ret += 'I';
 				break;
-			case 'ß':
+			case 'ï¿½':
 				placeHolder = false;
 				ret += 's';
 				break;
@@ -176,7 +176,7 @@ function getSyncDbFile (config, type, id)
 		return null;
 	}
 		
-	id = id.replace(/[ :.;$\\\/]/g, "_");
+	id = id.replace(/[ :.;$\\\/]\#\@/g, "_");
 	var file = Components.classes["@mozilla.org/file/directory_service;1"].
 	   getService(Components.interfaces.nsIProperties).
 	   get("ProfD", Components.interfaces.nsIFile);
@@ -466,7 +466,17 @@ function readDataBase (dbf)
 	for (var i = 0; i < lines.length; i++)
 		if (lines[i].indexOf(":") != -1)
 		{
-			db[i] = trim(lines[i]).split(":");
+			var fv = lines[i];
+			// replace the \: with something really weird
+			fv = fv.replace (/\\:/g, "#%%$");
+			fv = fv.replace (/\\\\/g, "\\");
+			// split now
+			fv = trim(fv).split(":");
+			for (var j =0; j < fv.length; j++)
+			{
+				fv[j] = fv[j].replace(/#%%\$/g, ":");
+			}
+			db[i] = fv;
 	    }
 	return db;
 }
@@ -520,7 +530,13 @@ function writeDataBase(dbf, db)
  		{
  			var s = db[i][0];
  			for (var j = 1; db[i][j]; j++)
- 				s += ":" + db[i][j];
+ 			{
+ 				var fv = db[i][j];
+ 				// encode
+ 				fv = fv.replace(/\\/g, "\\\\");
+ 				fv = fv.replace(/:/g, "\\:");
+ 				s += ":" + fv;
+ 			}
  			s += "\n";
 			stream.write(s, s.length);
 		}
@@ -1342,7 +1358,7 @@ function addField (a, name, value)
  */
 function getSyncFieldFile (config, type, id)
 {
-	id = id.replace(/[ :.;$\\\/]/g, "_");
+	id = id.replace(/[ :.;$\\\/]\#\@/g, "_");
 	var file = Components.classes["@mozilla.org/file/directory_service;1"].
 	   getService(Components.interfaces.nsIProperties).
 	   get("ProfD", Components.interfaces.nsIFile);
