@@ -168,12 +168,10 @@ function syncKolabTimer ()
 			// skip all configurations which dont have autorun
 			if (gSyncConfigs[i].gAutoRun == 0)
 			{
-				logMessage("synctimer: no autorun - next", LOG_DEBUG);
 				continue;
 			}
 			
 			gSyncConfigs[i].gSyncTimer++;
-			logMessage("synctimer: checking if config should run " + gSyncConfigs[i].gSyncTimer, LOG_DEBUG);
 			// lets start (make sure no other auto config is running right now)
 			if (gSyncConfigs[i].gSyncTimer >= gSyncConfigs[i].gAutoRun)
 			{
