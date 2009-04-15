@@ -258,8 +258,10 @@ function xml2Card (xml, extraFields, cards)
 			  case "BODY":
 			  		if (cur.firstChild == null)
 			  			break;
+			  		
 				  	var cnotes = decode4XML(cur.firstChild.data);
 				  	card.notes = cnotes.replace(/\\n/g, "\n");
+				  	logMessage("cur.firstchild.data.length="+cur.firstChild.data.length + " - cnotes=" + cnotes.length + " - card.notes=" + card.notes.length , LOG_DEBUG + LOG_AB);
 					found = true;
 			  	break;
 			  case "DEPARTMENT":
@@ -842,7 +844,7 @@ function equalsContact (a, b)
 		var sa = eval("a."+fieldsArray[i]);
 		var sb = eval("b."+fieldsArray[i]);
 		// check if not equals
-		if ( sa != sb)
+		if (sa.length != sb.length || sa != sb)
 		{
 			// if we got strings... maybe they only differ in whitespace
 			if (sa.replace)

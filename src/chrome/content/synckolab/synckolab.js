@@ -97,6 +97,7 @@ var PAUSE_ON_ERROR = false;
 // this is the timer function.. will call itself once a minute and check the configs
 var gForceConfig = null; // per default go through ALL configurations
 var gSyncConfigs = null;
+var doHideWindow = false;
 /*contains:
 {
 		gSyncTimer: 0,

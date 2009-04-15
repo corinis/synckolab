@@ -121,7 +121,7 @@
                                 &synckolab.settings.SyncIntervalDescription; </description>
                             <hbox>
                                 <label value="&synckolab.settings.SyncInterval;"/>
-                                <textbox id="syncInterval" maxlength="3" style="width: 30px"/>
+                                <textbox id="syncInterval" maxlength="5" style="width: 30px"/>
                                 <label value="&synckolab.settings.SyncIntervalMinutes;"/>
                             </hbox>
 
