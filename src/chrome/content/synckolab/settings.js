@@ -35,6 +35,7 @@
 var DEBUG_SYNCKOLAB = true;
 // set this to true to also print timing information
 var PERFLOG_SYNCKOLAB = true;
+var DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + LOG_DEBUG;
 
 var LOG_ERROR = 0;
 var LOG_WARNING = 1;
