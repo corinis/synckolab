@@ -468,13 +468,17 @@ function readDataBase (dbf)
 		{
 			var fv = lines[i];
 			// replace the \: with something really weird
-			fv = fv.replace (/\\:/g, "#%%$");
-			fv = fv.replace (/\\\\/g, "\\");
+			if (fv.replace)
+			{
+				fv = fv.replace (/\\:/g, "#%%$");
+				fv = fv.replace (/\\\\/g, "\\");
+			}
 			// split now
 			fv = trim(fv).split(":");
 			for (var j =0; j < fv.length; j++)
 			{
-				fv[j] = fv[j].replace(/#%%\$/g, ":");
+				if (fv[j].replace)
+					fv[j] = fv[j].replace(/#%%\$/g, ":");
 			}
 			db[i] = fv;
 	    }
@@ -533,8 +537,11 @@ function writeDataBase(dbf, db)
  			{
  				var fv = db[i][j];
  				// encode
- 				fv = fv.replace(/\\/g, "\\\\");
- 				fv = fv.replace(/:/g, "\\:");
+				if (fv.replace)
+				{
+	 				fv = fv.replace(/\\/g, "\\\\");
+ 					fv = fv.replace(/:/g, "\\:");
+				}
  				s += ":" + fv;
  			}
  			s += "\n";
