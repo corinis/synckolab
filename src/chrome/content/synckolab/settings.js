@@ -1145,7 +1145,11 @@ function saveAllPrefs (configName) {
 		pref.setCharPref("SyncKolab."+config+".autoSync", document.getElementById ("syncInterval").value);
 	else
 		pref.setCharPref("SyncKolab."+config+".autoSync", 0);
-	pref.setBoolPref("SyncKolab."+config+".hiddenWindow", document.getElementById ("hiddenWnd").checked);
+	
+	if (document.getElementById ("hiddenWnd"))
+		pref.setBoolPref("SyncKolab."+config+".hiddenWindow", document.getElementById ("hiddenWnd").checked);
+	else
+		pref.setBoolPref("SyncKolab."+config+".hiddenWindow", false);
 	
 	pref.setCharPref("SyncKolab."+config+".AddressBook", document.getElementById ("conURL").value);
 	pref.setCharPref("SyncKolab."+config+".AddressBookFormat", document.getElementById ("conFormat").value);
