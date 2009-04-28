@@ -181,7 +181,7 @@ function syncKolabTimer ()
 				// hide the window 
 				doHideWindow = gSyncConfigs[i].gAutoHideWindow;
 				gForceConfig = gSyncConfigs[i].configName;
-				syncKolab();				
+				syncKolab("timer");				
 			}
 			
 		}
@@ -196,6 +196,18 @@ function syncKolabTimer ()
   
 function syncKolab(event) {
 
+	// avoid race condition with manual switch
+	if (event != "timer" && gForceConfig != null)
+	{
+		logMessage("Ignoring run - there is already an instance!", LOG_WARNING);
+		return;
+	}
+	
+	if (event != null)
+	{
+		gForceConfig = "MANUAL-SYNC";
+	}
+	
 	strBundle = document.getElementById("synckolabBundle");
 
 	if (doHideWindow)
@@ -323,7 +335,7 @@ function startSync(event) {
 	}
 	
 	// called from timer - we force ONE configuration
-	if (gForceConfig != null)
+	if (gForceConfig != null && gForceConfig != "MANUAL-SYNC")
 	{
 		syncConfigs = new Array();
 		syncConfigs.push(gForceConfig);
