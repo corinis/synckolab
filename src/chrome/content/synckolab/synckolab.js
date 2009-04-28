@@ -196,14 +196,15 @@ function syncKolabTimer ()
   
 function syncKolab(event) {
 
-	// avoid race condition with manual switch
+	// avoid race condition with manual switch (only timer has a gForceConfig)
 	if (event != "timer" && gForceConfig != null)
 	{
 		logMessage("Ignoring run - there is already an instance!", LOG_WARNING);
 		return;
 	}
-	
-	if (event != null)
+
+	// in case this wasnt called via timer - its a manual sync
+	if (event != "timer")
 	{
 		gForceConfig = "MANUAL-SYNC";
 	}
