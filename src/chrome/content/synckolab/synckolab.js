@@ -657,7 +657,10 @@ function getContent ()
 	
 		
 	// get the message keys
-	gMessages = gSync.folder.getMessages(null);	 // dont need the msgWindow use null
+	if (gSync.folder.getMessages)	
+		gMessages = gSync.folder.getMessages(null);	 // dont need the msgWindow use null
+	else
+		gMessages = gSync.folder.messages; // tbird 3 uses an enumerator property instead of a function
 	
 	// get the message database (a file with uid:size:date:localfile)
 	syncMessageDb = readDataBase(gSync.dbFile);
@@ -1184,7 +1187,11 @@ function writeContentAfterSave ()
 
 	logMessage("Setting all messages to read...", LOG_INFO);
 	// before done, set all unread messages to read in the sync folder
-	gMessages = gSync.folder.getMessages(msgWindow);	
+	if (gSync.folder.getMessages)	
+		gMessages = gSync.folder.getMessages(msgWindow);
+	else
+		gMessages = gSync.folder.messages; // tbird 3 uses an enumerator property instead of a function
+
 	while (gMessages.hasMoreElements ())
 	{
 		cur = gMessages.getNext().QueryInterface(Components.interfaces.nsIMsgDBHdr);
@@ -1220,17 +1227,37 @@ function syncKolabCompact() {
  */
 function copyToFolder (fileName, folderUri)
 {
-	var mailFolder = folderUri; //RDF.GetResource(folderUri).QueryInterface(Components.interfaces.nsIMsgFolder);
-	var fileSpec = Components.classes["@mozilla.org/filespec;1"].createInstance(Components.interfaces.nsIFileSpec);	
-	fileSpec.nativePath = fileName;
+	var mailFolder = folderUri;
+	var fileSpec;
+	if (Components.interfaces.nsIFileSpec)
+	{
+		fileSpec = Components.classes["@mozilla.org/filespec;1"].createInstance(Components.interfaces.nsIFileSpec);	
+		fileSpec.nativePath = fileName;
 
-	// at this pont, check the content, we do not write a load of bogus messages in the imap folder
-	//alert ("File content:" + fileSpec.fileContents);
-	
-	copyservice = Components.classes["@mozilla.org/messenger/messagecopyservice;1"].getService(Components.interfaces.nsIMsgCopyService);
-	// in order to be able to REALLY copy the message setup a listener
-	// and mark as read
-	copyservice.CopyFileMessage(fileSpec, mailFolder, null, false, 0x000001, kolabCopyServiceListener, null); // dont need a msg window
+		// at this pont, check the content, we do not write a load of bogus messages in the imap folder
+		//alert ("File content:" + fileSpec.fileContents);
+		
+		copyservice = Components.classes["@mozilla.org/messenger/messagecopyservice;1"].getService(Components.interfaces.nsIMsgCopyService);
+		// in order to be able to REALLY copy the message setup a listener
+		// and mark as read
+		copyservice.CopyFileMessage(fileSpec, mailFolder, null, false, 0x000001, kolabCopyServiceListener, null); // dont need a msg window
+	}
+	else
+	//tbird 3
+	{
+		fileSpec = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
+		//alert("file: " + fileName);
+		fileSpec.initWithPath(fileName);
+
+		// at this pont, check the content, we do not write a load of bogus messages in the imap folder
+		//alert ("File content:" + fileSpec.fileContents);
+		
+		copyservice = Components.classes["@mozilla.org/messenger/messagecopyservice;1"].getService(Components.interfaces.nsIMsgCopyService);
+		// in order to be able to REALLY copy the message setup a listener
+		// and mark as read
+		copyservice.CopyFileMessage(fileSpec, mailFolder, null, false, 0x000001, null, kolabCopyServiceListener, null); // dont need a msg window
+	}
+
 }
 
 var kolabCopyServiceListener = {

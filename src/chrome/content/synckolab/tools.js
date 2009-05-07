@@ -800,20 +800,36 @@ function getMsgFolder (accountKey, path)
 	var cFolder = gInc.rootFolder;
 	while (cFolder != null)
 	{
-		var subfolders = cFolder.GetSubFolders ();
-		cFolder = null;
+		// tbird 3 uses subFolders enumerator instead of getsubfolders
+		var subfolders = cFolder.subFolders?cFolder.subFolders:cFolder.GetSubFolders ();
+
+		// this block is only for tbird < 3
 		try
 		{
-			subfolders.first ();
+			if (subfolders.first)
+				subfolders.first ();
 		}
 		catch (ex)
 		{
-			alert("NOTHING " +ex+ " : " + msgFolder.prettyName);
+			alert("NOTHING: " + ex + msgFolder.prettyName);
 			return;
 		}
+
+		cFolder = null;
 		while (subfolders != null)
 		{
-			var cur = subfolders.currentItem().QueryInterface(Components.interfaces.nsIMsgFolder);
+			var cur = null;
+			// tbird < 3
+			if (subfolders.currentItem)
+				cur = subfolders.currentItem();
+			else
+				cur = subfolders.getNext();
+			
+			if (cur == null)
+				break;
+			
+			cur = cur.QueryInterface(Components.interfaces.nsIMsgFolder);
+			
 			// we found it
 			if (path == cur.URI)
 			{
@@ -831,16 +847,24 @@ function getMsgFolder (accountKey, path)
 				cFolder = cur;
 				break;
 			}
+
+			// break condition tbird3
+			if (subfolders.hasMoreElements && !subfolders.hasMoreElements())
+				break;
 			
-			if (subfolders.isDone())
+			// tbird <3 break condition
+			if (subfolders.isDone && subfolders.isDone())
 				break;
-			try
+			if (subfolders.next)
 			{
-				subfolders.next();
-			}
-			catch (ex)
-			{
-				break;
+				try
+				{
+					subfolders.next();
+				}
+				catch (ex)
+				{
+					break;
+				}
 			}
 		}
 		// we didnt found the path somehow

@@ -302,6 +302,7 @@ function init() {
 
 function prefillFields() {
 
+
 	// the format selection boxes:
 	var abList = document.getElementById("conFormat");
 	var abpopup = document.createElement("menupopup");
@@ -858,7 +859,6 @@ function setFolders(act)
 function updateFolder (act)
 {
 	// dynamically read this...
-	
 	var gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
 	for (var i = 0; i < gAccountManager.allServers.Count(); i++)
 	{
@@ -881,7 +881,6 @@ function updateFolder (act)
 					cnode = cnode.nextSibling;
 				}
 				
-	
 				// ok show some folders:
 				var tChildren = document.createElement("treechildren");
 				cfold.appendChild(tChildren);
@@ -890,7 +889,10 @@ function updateFolder (act)
 				
 			}
 		}
-		catch (ex){}
+		catch (ex)
+		{
+			
+		}
 	}
 }
 
@@ -976,7 +978,6 @@ function setFolder(uri)
 function updateFolderElements (msgFolder, root, appendChar)
 {
 	var tItem = document.createElement("treeitem");
-	root.appendChild(tItem);
 	var tRow = document.createElement("treerow");
 	tItem.appendChild(tRow);
 	var tCell = document.createElement("treecell");
@@ -984,39 +985,63 @@ function updateFolderElements (msgFolder, root, appendChar)
 	tItem.setAttribute("id", msgFolder.URI + appendChar);
 	tCell.setAttribute("label", msgFolder.prettyName);
 	tCell.setAttribute("value", msgFolder.URI);
-	
+	root.appendChild(tItem);
 	if (msgFolder.hasSubFolders )
 	{
+
 		tItem.setAttribute("container", "true");
 		tItem.setAttribute("open", "true");
 		var tChildren = document.createElement("treechildren");
 		tItem.appendChild(tChildren);
 		
-		var subfolders = msgFolder.GetSubFolders ();
-		
+		// tbird 3 uses subFolders enumerator instead of getsubfolders
+		var subfolders = msgFolder.subFolders?msgFolder.subFolders:msgFolder.GetSubFolders ();
+
+		// this block is only for tbird < 3
 		try
 		{
-			subfolders.first ();
+			if (subfolders.first)
+				subfolders.first ();
 		}
 		catch (ex)
 		{
 			alert("NOTHING: " + msgFolder.prettyName);
 			return;
 		}
+		
 		while (subfolders != null)
 		{
-			var cur = subfolders.currentItem().QueryInterface(Components.interfaces.nsIMsgFolder);
-			//alert(cur.URI);
+			var cur = null;
+			// tbird < 3
+			if (subfolders.currentItem)
+				cur = subfolders.currentItem();
+			else
+				cur = subfolders.getNext();
+			
+			if (cur == null)
+				break;
+			
+			cur = cur.QueryInterface(Components.interfaces.nsIMsgFolder);
+			
 			updateFolderElements (cur, tChildren, appendChar);
-			if (subfolders.isDone())
+			
+			// break condition tbird3
+			if (subfolders.hasMoreElements && !subfolders.hasMoreElements())
 				break;
-			try
-			{
-				subfolders.next();
-			}
-			catch (ex)
-			{
+			
+			// tbird <3 break condition
+			if (subfolders.isDone && subfolders.isDone())
 				break;
+			if (subfolders.next)
+			{
+				try
+				{
+					subfolders.next();
+				}
+				catch (ex)
+				{
+					break;
+				}
 			}
 			
 		}
@@ -1081,7 +1106,9 @@ function updateCalFolder (act)
 				
 			}
 		}
-		catch (ex) {}
+		catch (ex) {
+			logMessage("Error: " + ex, LOG_ERROR);			
+		}
 	}
 }
 
@@ -1120,7 +1147,9 @@ function updateTaskFolder (act)
 				
 			}
 		}
-		catch (ex) {}
+		catch (ex) {
+			logMessage("Error: " + ex, LOG_ERROR);	
+		}
 	}
 }
 

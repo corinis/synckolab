@@ -732,18 +732,15 @@ function xml2Event (xml, extraFields, event)
 					
 					recInfo.insertRecurrenceItemAt(recRule, 0);
 					// read 0..n exclusions
-					var node = getXmlChildNode(cur, "EXCLUSION");
-					while ((node != null) && (node.nodeType == Node.ELEMENT_NODE) 
-					   && (node.nodeName.toUpperCase() == "EXCLUSION"))
+					var node = cur.firstChild;
+					while(node != null)
 					{
-					   date = string2CalDate(node.firstChild.data);
-					   recInfo.removeOccurrenceAt(date);
-					   node = node.nextSibling;
-					   // skip non-element nodes
-					   while ((node != null) && (node.nodeType != Node.ELEMENT_NODE))
-					   {
-						  node = node.nextSibling;
-					   }
+						if(node.nodeType == Node.ELEMENT_NODE && (node.nodeName.toUpperCase() == "EXCLUSION"))
+						{
+							   date = string2CalDate(node.firstChild.data);
+							   recInfo.removeOccurrenceAt(date);
+						}
+						node = node.nextSibling;
 					}
 					event.recurrenceInfo = recInfo;
 					break;
