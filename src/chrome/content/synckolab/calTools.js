@@ -509,7 +509,7 @@ function xml2Event (xml, extraFields, event)
 					organizer.rsvp = false;
 					organizer.role = "CHAIR";
 					organizer.isOrganizer = true;
-					event.addAttendee(organizer);
+					event.organizer = organizer;
 					break;
 					
 				case "LOCATION":
@@ -857,7 +857,6 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 	// TODO  not working ATM:
 	//	- yearly recurrence
 	
-	var hasOrganizer = false;
 	var isAllDay = (syncTasks==true)?false:(event.startDate?event.startDate.isDate:false);
 	var endDate = getEndDate(event, syncTasks);
 
@@ -1055,20 +1054,6 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 		for each (var attendee in attendees) 
 		{
 			mail = attendee.id.replace(/MAILTO:/i, '');
-			// FIXME the check for the array size == 1 is a hack to work around a Lightning bug
-			// where isOrganizer() doesn't get true
-			if (attendee.isOrganizer || (attendee.role == "CHAIR") || (attendees.length == 1))
-			{
-				xml += " <organizer>\n";
-				xml += "  <display-name>" + encode4XML(attendee.commonName) + "</display-name>\n";
-				xml += "  <smtp-address>" + encode4XML(mail) + "</smtp-address>\n";
-				xml += " </organizer>\n";
-				hasOrganizer = true;
-				// FIXME indicator for workaround
-				if (!attendee.isOrganizer) logMessage("Organizer status expected!!!", LOG_CAL + LOG_WARNING); 
-			}
-			else
-			{
 				var status = "none";
 				switch (attendee.participationStatus)
 				{
@@ -1105,15 +1090,14 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 						xml += "  <role>required</role>\n";
 				}
 				xml += " </attendee>\n";
-			}
 		}
 	}
 
-	if (syncTasks != true && !hasOrganizer)
+	if ( event.organizer )
 	{
 		xml += " <organizer>\n";
-		xml += "  <display-name>" + encode4XML(email) + "</display-name>\n";
-		xml += "  <smtp-address>" + encode4XML(email) + "</smtp-address>\n";
+		xml += "  <display-name>" + encode4XML(event.organizer.commonName) + "</display-name>\n";
+		xml += "  <smtp-address>" + encode4XML(event.organizer.id.replace(/MAILTO:/i, '')) + "</smtp-address>\n";
 		xml += " </organizer>\n";
 	}
 
