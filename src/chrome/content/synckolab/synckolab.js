@@ -164,6 +164,17 @@ function syncKolabTimer ()
 		// go through all configs
 		for (var i=0; i < gSyncConfigs.length; i++)
 		{
+			// re-read the settings
+			try
+			{
+				gSyncConfigs[i].gAutoRun = pref.getCharPref("SyncKolab."+gSyncConfigs[i].configName+".autoSync");
+				gSyncConfigs[i].gAutoHideWindow = pref.getBoolPref("SyncKolab."+gSyncConfigs[i].configName+".hiddenWindow");
+			}catch (ex)
+			{
+				gSyncConfigs[i].gAutoRun = 0;
+				gSyncConfigs[i].gAutoHideWindow = false;
+			}
+
 			logMessage("synctimer: checking: "+gSyncConfigs[i].configName+" ("+gSyncConfigs[i].gAutoRun+")....", LOG_DEBUG);
 
 			// skip all configurations which dont have autorun
@@ -176,12 +187,13 @@ function syncKolabTimer ()
 			// lets start (make sure no other auto config is running right now)
 			if (gSyncConfigs[i].gSyncTimer >= gSyncConfigs[i].gAutoRun)
 			{
+				
 				logMessage("running syncKolab configuration "+gSyncConfigs[i].configName+" ("+gSyncConfigs[i].gAutoRun+")....", LOG_INFO);
 				gSyncConfigs[i].gSyncTimer = 0;
 				// hide the window 
 				doHideWindow = gSyncConfigs[i].gAutoHideWindow;
 				gForceConfig = gSyncConfigs[i].configName;
-				syncKolab("timer");				
+				syncKolab("timer");
 			}
 			
 		}
