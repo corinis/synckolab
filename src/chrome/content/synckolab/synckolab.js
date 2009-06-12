@@ -194,6 +194,9 @@ function syncKolabTimer ()
 				doHideWindow = gSyncConfigs[i].gAutoHideWindow;
 				gForceConfig = gSyncConfigs[i].configName;
 				syncKolab("timer");
+				
+				// make sure, that we do not start another config right now
+				break;
 			}
 			
 		}
