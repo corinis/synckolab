@@ -962,7 +962,7 @@ function resetConfiguration(config)
 	if (!file.exists())
 		return;
 	
-	file.append("task");
+	file.append("tasks");
 	if (file.exists())
 	{
 		file.append(config);
