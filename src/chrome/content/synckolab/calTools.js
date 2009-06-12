@@ -939,11 +939,29 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 		minutes = Math.floor(Math.abs(event.alarmOffset.inSeconds)/60);
 		xml += " <alarm>" + minutes + "</alarm>\n";
 	}
-	if (event.getProperty("CATEGORIES"))
-		xml += " <categories>" + encode4XML(event.getProperty("CATEGORIES")) + "</categories>\n";
+	
+	// lighnting 0.9 (thanks to Pavlic)
+	if (event.getCategories)
+	{
+		var catarray = event.getCategories({});
+		if (catarray.length > 0 ) {
+			xml += " <categories>";
+			for (cnt = 0; cnt < catarray.length; cnt++) {
+				xml += encode4XML(catarray[cnt]) ;
+				if ( (cnt+1) < catarray.length)
+					xml += ",";
+				}
+			xml += "</categories>\n";
+			}
+	}
 	else
-	if (event.getProperty("CATEGORY"))
-		xml += " <categories>" + encode4XML(event.getProperty("CATEGORY")) + "</categories>\n";
+	{
+		if (event.getProperty("CATEGORIES"))
+			xml += " <categories>" + encode4XML(event.getProperty("CATEGORIES")) + "</categories>\n";
+		else
+		if (event.getProperty("CATEGORY"))
+			xml += " <categories>" + encode4XML(event.getProperty("CATEGORY")) + "</categories>\n";
+	}
 
 	var recInfo = event.recurrenceInfo;
 	if (syncTasks != true && recInfo && recInfo.countRecurrenceItems() >= 1)

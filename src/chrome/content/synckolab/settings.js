@@ -904,7 +904,21 @@ function resetConfiguration(config)
 	var file = Components.classes["@mozilla.org/file/directory_service;1"].
 	   getService(Components.interfaces.nsIProperties).
 	   get("ProfD", Components.interfaces.nsIFile);
-	file.append(config+".hdb");
+	file.append(config+".ab.hdb");
+	if (file.exists())
+		file.remove(true);
+
+	file = Components.classes["@mozilla.org/file/directory_service;1"].
+	   getService(Components.interfaces.nsIProperties).
+	   get("ProfD", Components.interfaces.nsIFile);
+	file.append(config+".cal.hdb");
+	if (file.exists())
+		file.remove(true);
+
+	file = Components.classes["@mozilla.org/file/directory_service;1"].
+	   getService(Components.interfaces.nsIProperties).
+	   get("ProfD", Components.interfaces.nsIFile);
+	file.append(config+".task.hdb");
 	if (file.exists())
 		file.remove(true);
 
@@ -924,7 +938,6 @@ function resetConfiguration(config)
 			file.remove (true);
 	}
 	
-
 	file = Components.classes["@mozilla.org/file/directory_service;1"].
 	   getService(Components.interfaces.nsIProperties).
 	   get("ProfD", Components.interfaces.nsIFile);
