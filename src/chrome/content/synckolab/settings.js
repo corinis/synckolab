@@ -663,11 +663,13 @@ function changeConfig (config)
 			{			
 				var treei = tree.view.getIndexOfItem(document.getElementById(sCurFolder));
 				if (treei < 0)
-					alert("Problem with treeview - unable to select " + treei)
-				//tree.view.selection.rangedSelect(treei,treei, true); 
-				tree.view.selection.select(treei); 
-				if (tree.boxObject)
-					tree.boxObject.scrollToRow(treei);
+					alert("Problem with treeview - unable to select " + treei);
+				else
+				{
+					tree.view.selection.select(treei); 
+					if (tree.boxObject)
+						tree.boxObject.scrollToRow(treei);
+				}
 			}
 		}
 		
@@ -752,9 +754,14 @@ function changeConfig (config)
 				if (document.getElementById(sCurFolder+"c") != null)
 				{			
 					var treei = tree.view.getIndexOfItem(document.getElementById(sCurFolder+"c"));
-					tree.view.selection.select(treei); 
-					if (tree.boxObject)
-						tree.boxObject.scrollToRow(treei);
+					if (treei < 0)
+						alert("Problem with treeview - unable to select " + treei);
+					else
+					{
+						tree.view.selection.select(treei); 
+						if (tree.boxObject)
+							tree.boxObject.scrollToRow(treei);
+					}
 				}
 			}
 			
@@ -837,9 +844,14 @@ function changeConfig (config)
 				if (document.getElementById(sCurFolder+"t") != null)
 				{			
 					var treei = tree.view.getIndexOfItem(document.getElementById(sCurFolder+"t"));
-					tree.view.selection.select(treei); 
-					if (tree.boxObject)
-						tree.boxObject.scrollToRow(treei);
+					if (treei < 0)
+						alert("Problem with treeview - unable to select " + treei);
+					else
+					{
+						tree.view.selection.select(treei); 
+						if (tree.boxObject)
+							tree.boxObject.scrollToRow(treei);
+					}
 				}
 			}
 		}
