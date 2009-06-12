@@ -1563,7 +1563,7 @@ function card2Vcard (card, fields)
  	if (checkExist (getCardProperty(card, "FaxNumber")))
 		msg += "TEL;TYPE=FAX:" + getCardProperty(card, "FaxNumber") + "\n";
  	if (checkExist (getCardProperty(card, "WorkPhone")))
-		msg += "TEL;TYPE=WORK:" + getCardProperty(card, "WorkPhone") + "\n";W
+		msg += "TEL;TYPE=WORK:" + getCardProperty(card, "WorkPhone") + "\n";
  	if (checkExist (getCardProperty(card, "PagerNumber")))
 		msg += "TEL;TYPE=PAGER:" + getCardProperty(card, "PagerNumber") + "\n";
  	if (checkExist (getCardProperty(card, "Department")))
