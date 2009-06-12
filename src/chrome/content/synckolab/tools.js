@@ -229,24 +229,31 @@ function readSyncDBFile (file)
 	if ((!file.exists()) || (!file.isReadable()))
 		return null;
 	
-	 // setup the input stream on the file
-	var istream = Components.classes["@mozilla.org/network/file-input-stream;1"]
-		.createInstance(Components.interfaces.nsIFileInputStream);
-	istream.init(file, 0x01, 4, null);
-	var fileScriptableIO = Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance(Components.interfaces.nsIScriptableInputStream); 
-	fileScriptableIO.init(istream);
-	// parse the xml into our internal document
-	istream.QueryInterface(Components.interfaces.nsILineInputStream); 
-	var fileContent = "";
-	var csize = 0; 
-	while ((csize = fileScriptableIO.available()) != 0)
+	try
 	{
-		fileContent += fileScriptableIO.read( csize );
+		 // setup the input stream on the file
+		var istream = Components.classes["@mozilla.org/network/file-input-stream;1"]
+			.createInstance(Components.interfaces.nsIFileInputStream);
+		istream.init(file, 0x01, 4, null);
+		var fileScriptableIO = Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance(Components.interfaces.nsIScriptableInputStream); 
+		fileScriptableIO.init(istream);
+		// parse the xml into our internal document
+		istream.QueryInterface(Components.interfaces.nsILineInputStream); 
+		var fileContent = "";
+		var csize = 0; 
+		while ((csize = fileScriptableIO.available()) != 0)
+		{
+			fileContent += fileScriptableIO.read( csize );
+		}
+		fileScriptableIO.close(); 	
+		istream.close();
+	
+		return trim(fileContent);
 	}
-	fileScriptableIO.close(); 	
-	istream.close();
-
-	return trim(fileContent);
+	catch (ex)
+	{
+		logMessage("readSyncDBFile ERROR while reading file" + ex);
+	}
 }
 
 
