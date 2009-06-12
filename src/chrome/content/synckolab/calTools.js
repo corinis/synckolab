@@ -739,6 +739,8 @@ function xml2Event (xml, extraFields, event)
 						{
 							   date = string2CalDate(node.firstChild.data);
 							   recInfo.removeOccurrenceAt(date);
+							   var exclusion = recInfo.getOccurrenceFor(date,true);
+							   recInfo.modifyException(exclusion, true);
 						}
 						node = node.nextSibling;
 					}
