@@ -1122,10 +1122,8 @@ function encode4XML(s)
 		return "";
 	if (!s.replace)
 		return s;
-	var t = s.replace(/&/g, "&amp;");
-	t = t.replace(/\\/g, "&#92;");
 
-	return s.replace( /(\r?\n|\r){1,2}/g,'\n' ).replace(/&/g, "&amp;").replace(/</g,
+	return s.replace( /(\r\n|\r)/g,'\n' ).replace(/&/g, "&amp;").replace(/</g,
      	   "&lt;").replace(/>/g, "&gt;").replace(/=/g, "&#61;");
 }
 
@@ -1146,9 +1144,8 @@ function decode4XML(s)
   return String.fromCharCode(parseInt(parenmatch1,16));
   });
 
-
 	// final
-	return t.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+	return t.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
 }
 
 function encode_utf8(rohtext) {
