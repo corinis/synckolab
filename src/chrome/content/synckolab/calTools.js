@@ -456,8 +456,7 @@ function xml2Event (xml, extraFields, event)
 						break;
 						
 					var cStatus = cur.firstChild.data;
-					if (cStatus == "IN-PROCESS")
-						setKolabItemProperty(event, "status", cStatus);
+					setKolabItemProperty(event, "status", cStatus);
 					
 					break;
 										
@@ -859,10 +858,35 @@ function getEndDate (cur, tasks)
 }
 
 /**
+ * task status mapping from Lightning to xml
+ * Kolabs "deferred" will be Lightning "CANCELLED"
+ */
+var arrstatus = new Array();
+arrstatus["IN-PROCESS"] = "in-progress";
+arrstatus["NEEDS-ACTION"]="waiting-on-someone-else";
+arrstatus["NONE"]="not-started";
+arrstatus["CANCELLED"]="deferred";
+arrstatus["COMPLETED"]="completed";
+
+/* return the task status */
+function getTaskStatus(tstatus, xmlvalue)
+{
+	if (xmlvalue)
+		return arrstatus[tstatus];
+	/* we want to return the Lightning value */
+	for (var icalval in arrstatus) {
+		if (arrstatus[icalval] == tstatus)
+			return icalval;
+	}
+	return (xmlvalue==true ? "not-started" : "NONE");
+}
+
+/**
  * convert an ICAL event into a Kolab XML string representation,
  * allow to caller to skip fields which change frequently such as
  * "last-modification-date" because this can confuse the hash IDs.
  *
+ * @param skipVolatiles skips problematic fields for hash creation
  * @return XML string in Kolab 2 format
  */
 function cnv_event2xml (event, skipVolatiles, syncTasks, email)
@@ -895,18 +919,15 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 	if (syncTasks == true)
 	{
 		xml += '<task version='+'"'+'1.0" >\n'
-		if (event.isCompleted || event.percentComplete == 100)
-		{
+		
+		// tasks have a status
+		if (event.isCompleted || event.percentComplete == 100) {
 			xml += " <completed>100</completed>\n";	
 			xml += " <status>completed</status>\n";
 		}
-		else
-		{
-			if (event.percentComplete == 0)
-				xml += " <status>not-started</status>\n";
-			else
-				xml += " <status>started</status>\n";
-			xml += " <completed>" + event.percentComplete +"</completed>\n";	
+		else	{
+			xml += " <status>" + getTaskStatus(event.status, true) + "</status>\n";
+			xml += " <completed>" + event.percentComplete +"</completed>\n";
 		}
 	}
 	else
@@ -939,12 +960,15 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 		xml += " <last-modification-date>" + calDateTime2String(event.getProperty("LAST-MODIFIED"), false) + "</last-modification-date>\n";
 	}
 
+	// description only for public events
 	if (event.getProperty("DESCRIPTION"))
 		xml += " <body>" + encode4XML(event.getProperty("DESCRIPTION")) + "</body>\n";
+	
 	if (event.getProperty("CLASS"))
 		xml += " <sensitivity>" + event.getProperty("CLASS").toLowerCase() + "</sensitivity>\n";
 	else
 		xml += " <sensitivity>public</sensitivity>\n";
+	
 	if (event.getProperty("LOCATION"))
 		xml += " <location>" + encode4XML(event.getProperty("LOCATION")) +"</location>\n";
 	if (event.alarmOffset && event.alarmOffset.inSeconds != 0)
@@ -1296,7 +1320,9 @@ function setKolabItemProperty(item, propertyName, value)
 	    case "isCompleted":
 	        item.isCompleted = value;
 	        break;
-	
+	    case "status":
+	    	item.status = getTaskStatus(value,false);
+	    	break;
 	    case "title":
 	        item.title = value;
 	        break;
