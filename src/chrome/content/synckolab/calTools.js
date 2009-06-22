@@ -1339,3 +1339,136 @@ function setKolabItemProperty(item, propertyName, value)
 		 logMessage("unable set property: " + propertyName + " with value " + value, LOG_CAL + LOG_ERROR);
 	 }
 }
+
+
+ function isPrivateEvent(levent)
+ {
+ 	return (levent && levent.getProperty("CLASS") == "PRIVATE");
+ }
+
+ function isConfidentialEvent(levent)
+ {
+ 	return (levent && levent.getProperty("CLASS") == "CONFIDENTIAL");
+ }
+
+ function isPublicEvent(levent)
+ {
+ 	return (levent && !isPrivateEvent(levent) && 
+ 		!isConfidentialEvent(levent));
+ }
+
+ /**
+  * insert an organizer if not existing and update  
+  */
+ function insertOrganizer(levent, lsyncCalendar) 
+ {
+ 	if (levent.organizer)
+ 		return levent;
+ 	var modevent = levent.clone();
+ 	organizer = Components.classes["@mozilla.org/calendar/attendee;1"].createInstance(Components.interfaces.calIAttendee);
+ 	organizer.id = "MAILTO:" + lsyncCalendar.email;
+ 	organizer.commonName = lsyncCalendar.name;
+ 	organizer.participationStatus = "ACCEPTED";
+ 	organizer.rsvp = false;
+ 	organizer.role = "CHAIR";
+ 	organizer.isOrganizer = true;
+ 	modevent.organizer = organizer;
+ 	lsyncCalendar.gCalendar.modifyItem(modevent, levent, lsyncCalendar.gEvents);
+ 	return modevent;
+ }
+
+ 
+/**
+ * only ORGANIZER is allowed to change non-public events
+ */
+function allowSyncEvent(levent, revent, lsyncCalendar)
+{
+	var lpublic = isPublicEvent(levent);
+	var rpublic = isPublicEvent(revent);
+	if (lpublic && rpublic)
+		return true;
+	/*previous behaviour*/
+	var rorgmail = lsyncCalendar.email;
+	if (revent.organizer)
+		rorgmail = revent.organizer.id.replace(/MAILTO:/i, '');
+	var org2mail = (lsyncCalendar.email == rorgmail);
+	logMessage("allowSyncEvent: " + org2mail + ":" + lpublic + ":" + rpublic, LOG_CAL + LOG_DEBUG );
+	return org2mail;
+}
+
+ /**
+  * sync local changes back to server version
+  */
+ function checkEventBeforeSync(fevent, revent, lsyncCalendar)
+ {
+ 	var rc = allowSyncEvent(fevent, revent, lsyncCalendar);
+ 	if (!rc) {
+ 		logMessage("Update local event with server one : " + revent.id, LOG_CAL + LOG_DEBUG );
+ 		lsyncCalendar.curItemInListStatus.setAttribute("label", strBundle.getString("localUpdate"));
+ 		lsyncCalendar.gCalendar.modifyItem(revent, fevent, lsyncCalendar.gEvents);
+ 	}
+ 	return rc;
+ }
+
+/**
+ * Event has changed from PUBLIC/CONFIDENTIAL to PRIVATE
+ */
+function checkEventServerDeletion(fevent, revent, lsyncCalendar)
+{
+	return (revent && 
+		allowSyncEvent(fevent, revent, lsyncCalendar) && 
+		isPrivateEvent(fevent));
+}
+
+/**
+ * delete event on Server and database but not in Thunderbird calendar
+ */
+function deleteEventOnServer(fevent, pevent, lsyncCalendar)
+{
+	if (!checkEventServerDeletion(fevent, pevent, lsyncCalendar))
+		return false;
+	var eventry = getSyncDbFile(lsyncCalendar.gConfig, lsyncCalendar.getType(), fevent.id);
+	var fentry = getSyncFieldFile(lsyncCalendar.gConfig, lsyncCalendar.getType(), fevent.id);
+	if (eventry.exists())
+		eventry.remove(false);
+	if (fentry.exists())
+		fentry.remove(false);
+	lsyncCalendar.curItemInListStatus.setAttribute("label", strBundle.getString("deleteOnServer"));
+	return true;
+}
+  
+ /**
+  * clear the description if event is confidential or private 
+  */
+ function modifyDescriptionOnExport(levent, syncTasks) 
+ {
+ 	var myclass = levent.getProperty("CLASS");
+ 	if (!isPublicEvent(levent)) {
+ 		levent = levent.clone();
+ 		tmpdesc = (syncTasks==true ? "Task" : "Event");
+ 		levent.setProperty("DESCRIPTION",tmpdesc + " is " + myclass + "!");
+ 	}
+ 	return levent;
+ }
+
+ /**
+  * prepare event for export 
+  */
+ function modifyEventOnExport(levent, lsyncCalendar)
+ {
+ 	levent = insertOrganizer(levent, lsyncCalendar);
+ 	levent = modifyDescriptionOnExport(levent, lsyncCalendar.syncTasks);
+ 	return levent;
+ }
+
+  /**
+   * check Events and Todos on privacy changes and modify appropriately
+   **/
+function checkEventOnDeletion(levent, pevent, lsyncCalendar) { 
+	
+	if (deleteEventOnServer(levent, pevent, lsyncCalendar)) 
+		return "DELETEME";
+	if (!checkEventBeforeSync(levent, pevent, lsyncCalendar)) 
+		return null;
+	return modifyDescriptionOnExport(levent, lsyncCalendar.syncTasks);
+}

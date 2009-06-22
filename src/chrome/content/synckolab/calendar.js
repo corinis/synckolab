@@ -317,7 +317,7 @@ var syncCalendar = {
 		{
 			// a new event
 			logMessage("a new event, locally unknown:" + parsedEvent.id, LOG_CAL + LOG_DEBUG);
-			if (!idxEntry.exists())
+			if (!idxEntry.exists() || !allowSyncEvent(foundEvent, parsedEvent, this))
 			{
 				// use the original content to write the snyc file 
 				// this makes it easier to compare later on and makes sure no info is 
@@ -429,13 +429,18 @@ var syncCalendar = {
 					// local change to server
 					logMessage ("put event on server: " + parsedEvent.id, LOG_CAL + LOG_INFO);
 					
-                    var msg = null;
-                    if (this.format == "Xml")
-                    {
-                        msg = event2kolabXmlMsg(foundEvent, this.email, this.syncTasks);
-                    } 
-                    else
-                    {
+					// first check privacy info
+					var foundEvent = checkEventOnDeletion(foundEvent, parsedEvent, this);
+					if (!foundEvent || foundEvent == "DELETEME")
+						return foundEvent;
+					
+					var msg = null;
+					if (this.format == "Xml")
+					{
+						msg = event2kolabXmlMsg(foundEvent, this.email, this.syncTasks);
+					} 
+					else
+					{
 						icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
 							.getService(Components.interfaces.calIICSService);
 							
@@ -505,6 +510,10 @@ var syncCalendar = {
 				{
 					logMessage("event on client changed: " + parsedEvent.id, LOG_CAL + LOG_INFO);
 	
+					var foundEvent = checkEventOnDeletion(foundEvent, parsedEvent, this);
+					if (!foundEvent || foundEvent == "DELETEME")
+						return foundEvent;
+					
 					var msg = null;
 					if (this.format == "Xml")
 					{
@@ -592,6 +601,12 @@ var syncCalendar = {
 					return null;
 			}
 			
+			/* skip if event is PRIVATE */
+			if (isPrivateEvent(cur)) {
+				logMessage("skipping event because it is marked as PRIVATE: " + cur.id, LOG_CAL + LOG_INFO);
+				return null;
+			}
+			
 			logMessage("processing event", LOG_CAL + LOG_DEBUG);
 
 			// check if we have this uid in the messages, skip it if it
@@ -677,14 +692,18 @@ var syncCalendar = {
 			{
 				logMessage("nextUpdate really writes event:" + cur.id, LOG_CAL + LOG_DEBUG);
 				// and now really write the message
-				
-                var msg = null;
-                if (this.format == "Xml")
-                {
+		
+				var msg = null;
+				if (this.format == "Xml")
+				{
 				    msg = event2kolabXmlMsg(cur, this.email, this.syncTasks);
                 } 
                 else
                 {
+    				var clonedEvent = cur;
+    				if (modifyEventOnExport)
+    					clonedEvent = modifyEventOnExport(cur, this);
+    				
     				icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
     					.getService(Components.interfaces.calIICSService);
     					
@@ -694,17 +713,17 @@ var syncCalendar = {
 						
 						calComp.version = "2.0";
 						calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
-						calComp.addSubcomponent(cur.icalComponent);
+						calComp.addSubcomponent(clonedEvent.icalComponent);
 						
 						msg = generateMail(cur.id, this.email, "iCal", "text/todo", 
 							false, encode_utf8(encodeQuoted(calComp.serializeToICS())), null);
 					}
 					else
 					{
-	    				var calComp = icssrv.createIcalComponent("VCALENDAR");
-	    				calComp.version = "2.0";
-	    				calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
-	    				calComp.addSubcomponent(cur.icalComponent);
+						var calComp = icssrv.createIcalComponent("VCALENDAR");
+						calComp.version = "2.0";
+						calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
+						calComp.addSubcomponent(clonedEvent.icalComponent);
 	    				
 						msg = generateMail(cur.id, this.email, "iCal", "text/calendar", 
 							false, encode_utf8(encodeQuoted(calComp.serializeToICS())), null);
@@ -715,8 +734,8 @@ var syncCalendar = {
 				logMessage("nextUpdate puts event into db (2):" + cur.id, LOG_CAL + LOG_INFO);
 				
 				// add the new event into the db
-				var cEntry = getSyncDbFile	(this.gConfig, this.getType(), cur.id);
-				writeSyncDBFile (cEntry, stripMailHeader(msg));
+				var cEntry = getSyncDbFile(this.gConfig, this.getType(), cur.id);
+				writeSyncDBFile(cEntry, stripMailHeader(msg));
 
 			}
 		}	
