@@ -520,7 +520,18 @@ function xml2Event (xml, extraFields, event)
 
 				case "CATEGORIES":
 					if (cur.firstChild)
-						setKolabItemProperty(event, "CATEGORIES", decode4XML(cur.firstChild.data));
+					{
+						if (!event.setCategories) {
+							setKolabItemProperty(event, "CATEGORIES", decode4XML(cur.firstChild.data));
+							break;
+						}
+						var cattxt = decode4XML(cur.firstChild.data);
+						if (cattxt) {
+							// from calUtils.js
+							var categories = categoriesStringToArray(cattxt);
+							event.setCategories(categories.length, categories);
+						}
+					}
 					break;
 
 				case "ALARM":
