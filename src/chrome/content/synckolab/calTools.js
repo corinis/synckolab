@@ -961,7 +961,8 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 	}
 
 	// description only for public events
-	if (event.getProperty("DESCRIPTION"))
+	if (event.getProperty("DESCRIPTION") &&
+			(isPublicEvent(event) || !skipVolatiles))
 		xml += " <body>" + encode4XML(event.getProperty("DESCRIPTION")) + "</body>\n";
 	
 	if (event.getProperty("CLASS"))
