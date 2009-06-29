@@ -444,24 +444,21 @@ var syncCalendar = {
 					{
 						icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
 							.getService(Components.interfaces.calIICSService);
-							
+
+						var calComp = icssrv.createIcalComponent("VCALENDAR");
+						
+						calComp.version = "2.0";
+						calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
+						calComp.addSubcomponent(foundEvent.icalComponent);
+						
 						if (this.syncTasks)
 						{
-							var calComp = icssrv.createIcalComponent("VTODO");
-							
-							calComp.version = "2.0";
-							calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
-							calComp.addSubcomponent(foundEvent.icalComponent);
 							
 							msg = generateMail(cur.id, this.email, "iCal", "text/todo", 
 								false, encodeQuoted(encode_utf8(calComp.serializeToICS())), null);
 						}
 						else
 						{
-							var calComp = icssrv.createIcalComponent("VCALENDAR");
-							calComp.version = "2.0";
-							calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
-							calComp.addSubcomponent(foundEvent.icalComponent);
 							
 							msg = generateMail(cur.id, this.email, "iCal", "text/calendar", 
 								false, encodeQuoted(encode_utf8(calComp.serializeToICS())), null);
@@ -526,24 +523,19 @@ var syncCalendar = {
 					{
 						icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
 							.getService(Components.interfaces.calIICSService);
+
+						var calComp = icssrv.createIcalComponent("VCALENDAR");
+						calComp.version = "2.0";
+						calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
+						calComp.addSubcomponent(foundEvent.icalComponent);
+						
 						if (this.syncTasks)
 						{
-							var calComp = icssrv.createIcalComponent("VTODO");
-							
-							calComp.version = "2.0";
-							calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
-							calComp.addSubcomponent(foundEvent.icalComponent);
-							
-							msg = generateMail(cur.id, this.email, "iCal", "text/todo", 
+							msg = generateMail(parsedEvent.id, this.email, "iCal", "text/todo", 
 								false, encodeQuoted(encode_utf8(calComp.serializeToICS())), null);
 						}
 						else
 						{
-							var calComp = icssrv.createIcalComponent("VCALENDAR");
-							calComp.version = "2.0";
-							calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
-							calComp.addSubcomponent(foundEvent.icalComponent);
-							
 							msg = generateMail(parsedEvent.id, this.email, "iCal", "text/calendar", 
 								false, encodeQuoted(encode_utf8(calComp.serializeToICS())), null);
 						}
@@ -709,24 +701,19 @@ var syncCalendar = {
     				
     				icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
     					.getService(Components.interfaces.calIICSService);
-    					
+
+					var calComp = icssrv.createIcalComponent("VCALENDAR");
+					calComp.version = "2.0";
+					calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
+					calComp.addSubcomponent(clonedEvent.icalComponent);
+
 					if (this.syncTasks)
 					{
-						var calComp = icssrv.createIcalComponent("VTODO");
-						
-						calComp.version = "2.0";
-						calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
-						calComp.addSubcomponent(clonedEvent.icalComponent);
-						
 						msg = generateMail(cur.id, this.email, "iCal", "text/todo", 
 							false, encode_utf8(encodeQuoted(calComp.serializeToICS())), null);
 					}
 					else
 					{
-						var calComp = icssrv.createIcalComponent("VCALENDAR");
-						calComp.version = "2.0";
-						calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
-						calComp.addSubcomponent(clonedEvent.icalComponent);
 	    				
 						msg = generateMail(cur.id, this.email, "iCal", "text/calendar", 
 							false, encode_utf8(encodeQuoted(calComp.serializeToICS())), null);
