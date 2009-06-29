@@ -1566,7 +1566,7 @@ function saveSingleConfig()
 	if (res == nsIFilePicker.returnOK){
 		var thefile = fp.file;
 		// open the file
-		thefile.create(thefile.NORMAL_FILE_TYPE, 0666);
+		thefile.create(thefile.NORMAL_FILE_TYPE, 0600);
 	 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
 	 	stream.init(thefile, 2, 0x200, false); // open as "write only"
 
@@ -1804,7 +1804,7 @@ function saveAllConfig()
 
 		// open the file
 		if(!thefile.exists()) {
-			thefile.create(thefile.NORMAL_FILE_TYPE, 0666);
+			thefile.create(thefile.NORMAL_FILE_TYPE, 0600);
 		}
 	 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
 	 	stream.init(thefile, 2, 0x200, false); // open as "write only"

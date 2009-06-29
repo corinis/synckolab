@@ -1098,7 +1098,7 @@ function updateContentWrite ()
 			sfile.initWithPath(gTmpFile);
 			if (sfile.exists()) 
 				sfile.remove(true);
-			sfile.create(sfile.NORMAL_FILE_TYPE, 0666);
+			sfile.create(sfile.NORMAL_FILE_TYPE, 0600);
 		  
 			// make the message rfc compatible (make sure all lines en with \r\n)
 			content = content.replace(/\r\n|\n|\r/g, "\r\n");
@@ -1187,7 +1187,7 @@ function writeContent ()
 		sfile.initWithPath(gTmpFile);
 		if (sfile.exists()) 
 			sfile.remove(true);
-		sfile.create(sfile.NORMAL_FILE_TYPE, 0666);
+		sfile.create(sfile.NORMAL_FILE_TYPE, 0600);
 	  
 		// make the message rfc compatible (make sure all lines en with \r\n)
     	content = content.replace(/\r\n|\n\r|\n|\r/g, "\r\n");
