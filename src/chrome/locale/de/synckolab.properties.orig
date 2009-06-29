@@ -8,6 +8,7 @@ loadConfig=Konfiguration Laden
 configReplaceAll=Möchten Sie die gesamte Konfiguration überschreiben?
 configInvalid=Die Konfigurationsdatei ist fehlerhaft!
 configOverwrite=Möchten Sie die Konfiguration überschreiben: 
+configDelete=Möchten Sie die Konfiguration %1$s löschen?
 
 # status messages
 checking=teste
@@ -32,3 +33,7 @@ syncEntries=Einträge abgleichen...
 writeChangedEntries=Geänderte Einträge schreiben...
 writeNewEntries=Neue Einträge schreiben...
 getContent=Lade Inhalte...
+syncCopyToServer=Auf dem Server wurden keine Einträge gefunden, lokal sind Einträge vorhanden.\nMöchten Sie alle lokalen Einträge zum Server kopieren?
+syncCopyToClient=Lokal wurden keine Einträge gefunden, auf dem Server sind Einträge vorhanden.\nMöchten Sie alle Einträge vom Server laden?
+
+calConflictUseServer=Ein Eintrag wurde sowohl auf dem Server als auch lokal verändert.\nKlicken Sie auf ok, um die Version vom Server zu wählen.\nLokaler Eintrag: %1$s<%2$s>\nEintrag auf dem Server: %3$s<%4$s>
