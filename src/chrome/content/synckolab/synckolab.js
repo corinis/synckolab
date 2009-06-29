@@ -110,12 +110,12 @@ var doHideWindow = false;
 function syncKolabTimer ()
 {
 	logMessage("sync timer: Checking for tasks", LOG_DEBUG);
+    var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 
 	// no valid configuration or not yet read... lets see
 	if (gSyncConfigs == null || gSyncConfigs.length == 0)
 	{
 		logMessage("sync timer: Reading configurations...", LOG_DEBUG);
-	    var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 	    
 	    // set the debug level
 		try {
