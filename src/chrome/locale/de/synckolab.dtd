@@ -34,9 +34,9 @@
 <!ENTITY synckolab.settings.saveAll			"alle Exportieren">
 <!ENTITY synckolab.settings.del				"Löschen">
 <!ENTITY synckolab.settings.SyncCalendar	"Kalender abgleichen">
-<!ENTITY synckolab.settings.SyncCalendarTip	"Aktivieren wenn in dieser Konfiguration der Kalender abgeglichen werden soll">
+<!ENTITY synckolab.settings.SyncCalendarTip	"Aktivieren wenn in dieser Konfiguration der Kalender abgeglichen werden sollen">
 <!ENTITY synckolab.settings.SyncContacts	"Kontakte abgleichen">
-<!ENTITY synckolab.settings.SyncContactsTip	"Aktivieren wenn in dieser Konfiguration das Adressbuch abgeglichen werden soll">
+<!ENTITY synckolab.settings.SyncContactsTip	"Aktivieren wenn in dieser Konfiguration das Adressbuch abgeglichen werden sollen">
 <!ENTITY synckolab.settings.SyncTasks		"Aufgaben abgleichen">
 <!ENTITY synckolab.settings.SyncTasksTip	"Aktivieren wenn in dieser Konfiguration die Aufgaben abgeglichen werden sollen">
 <!ENTITY synckolab.settings.FormatTip		"Nehmen Sie das XML Format wenn Sie einen Kolab2 Server haben, ansonsten bleiben Sie bei vCard/iCal.">
@@ -45,7 +45,7 @@
 <!ENTITY synckolab.settings.ResolveServer	"Server Version verwenden">
 <!ENTITY synckolab.settings.ResolveClient	"Lokale Version verwenden">
 <!ENTITY synckolab.settings.ResolveSmart	"Automatisch entscheiden">
-<!ENTITY synckolab.settings.CalSyncTimeframe	"Einträge alter als ">
+<!ENTITY synckolab.settings.CalSyncTimeframe	"Einträge älter als ">
 <!ENTITY synckolab.settings.TimeframeSyncDays	" Tage ignorieren (-1: alle).">
 
 <!ENTITY synckolab.settings.Updates			"Für Updates besuchen Sie:">
@@ -67,14 +67,15 @@
 <!ENTITY synckolab.settings.AccountDescription	"Bitte wählen Sie ein IMAP Konto für diese Konfiguration aus">
 <!ENTITY synckolab.settings.SyncInterval 		"Abgleichintervall: ">
 <!ENTITY synckolab.settings.SyncIntervalMinutes "Minuten">
-<!ENTITY synckolab.settings.SyncIntervalDescription "Spezifizieren Sie einen Intervall in dem SyncKolab nach neuen Einträgen suchen soll. 0 bedeuted dass nur manuell synchronisiert wird.">
+
+<!ENTITY synckolab.settings.SyncIntervalDescription "Spezifizieren Sie einen Intervall in dem SyncKolab nach neuen Einträgen suchen soll. 0 bedeuted, dass nur manuell synchronisiert wird.">
 <!ENTITY synckolab.settings.SaveToImapTip		"Diese Option abwählen, wenn nichts auf dem Server geschrieben werden soll">
 <!ENTITY synckolab.settings.HiddenWindow		"Statusfenster beim automatischen Abgleich verstecken">
 
 <!-- New Config Wizard -->
 <!ENTITY synckolab.newwizard.title "SyncKolab Einrichtungs-Wizard">
-<!ENTITY synckolab.wizard.LongDescription	"Auf den folgenden Seiten können Sie für jeden Abgleichtyp (Kalender, Adressbuch und Aufgaben) das IMAP-Verzeichnis zum abgleichen auswählen. Zusätzlich können Sie angeben, ob in dieser Konfiguration der nur-lese Modus (lokale änderungen werden nicht auf den Server übertragen) undw elcher Formattyp (XML oder vCard/iCal) verwendet wird.">
-<!ENTITY synckolab.newwizard.intro 		"Mithilfe von SyncKolab können Sie Ihre Kontakt- und Kalenderdaten zwischen mehreren Rechnern abgleichen. Die einzige Vorraussetzung ist ein IMAP Server">
+<!ENTITY synckolab.wizard.LongDescription	"Auf den folgenden Seiten können Sie für jeden Abgleichtyp (Kalender, Adressbuch und Aufgaben) das IMAP-Verzeichnis zum abgleichen auswählen. Zusätzlich können Sie angeben, ob in dieser Konfiguration der nur-lese Modus (lokale änderungen werden nicht auf den Server übertragen) und welcher Formattyp (XML oder vCard/iCal) verwendet wird.">
+<!ENTITY synckolab.newwizard.intro 		"ithilfe von SyncKolab können Sie Ihre Kontakt- und Kalenderdaten zwischen mehreren Rechnern abgleichen. Die einzige Voraussetzung ist ein IMAP Server.">
 <!ENTITY synckolab.newwizard.selectAccount	"bitte wählen Sie ein IMAP Konto zur Synchronisierung aus">
 <!ENTITY synckolab.newwizard.configName	"Anzeigename">
 <!ENTITY synckolab.newwizard.descName "Mithilfe des Anzeigenamens können Sie, vor allem wenn sie mehrere Konfigurationen haben, die verschiedenen Einstellungen leichter finden. Versuchen Sie einen beschreibenden Namen zu wählen (z.B. gemeinsame Adressen, Firmentermine, private Aufgaben).">
@@ -87,9 +88,8 @@
 <!ENTITY synckolab.wizard.conPageInfo	"Adressbuch und Verzeichnis auswählen">
 <!ENTITY synckolab.wizard.calPageInfo	"Kalender und Verzeichnis auswählen">
 <!ENTITY synckolab.wizard.taskPageInfo	"Kalender für Aufgaben und Verzeichnis auswählen">
-<!ENTITY synckolab.newwizard.DoneText	"Sie haben SyncKolab fertig eingestellt. Benutzen Sie den Menüpunkt 'Extras-Starte SyncKolab' zum starten der Synchronisation.">
-<!ENTITY synckolab.newwizard.DoneText2	"Sollte ein Fehler auftreten (z.b. die Synchronisation plötzlich aufhören oder ihre Einträge falsch synchronisiert werden - bitte nur mit Fehlermeldung von 'Extras-Javascript Konsole') oder wenn Sie Anregungen haben, wenden Sie sich bitte an die Mailingliste bzw. Bugzilla auf">
-
+<!ENTITY synckolab.newwizard.DoneText	"Sie haben SyncKolab fertig eingestellt. Benutzen Sie den Menüpunkt 'Extras-Starte SyncKolab' zum Starten der Synchronisation.">
+<!ENTITY synckolab.newwizard.DoneText2	"Sollte ein Fehler auftreten (z.B. die Synchronisation plötzlich aufhören oder ihre Einträge falsch synchronisiertwerden - bitte nur mit Fehlermeldung von 'Extras-Javascript Konsole') oder wenn Sie Anregungen haben, wenden Sie sich bitte an die Mailingliste bzw. Bugzilla auf">
 <!-- other -->
 <!ENTITY synckolab.with			"mit">
 <!ENTITY synckolab.proprietary 	"proprietär">
