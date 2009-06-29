@@ -390,8 +390,7 @@ var syncCalendar = {
 					conflictResolution.result = 2;
 				else
 				// display a dialog asking for whats going on
-				if (window.confirm("Changes were made on the server and local. Click ok to use the server version.\nClient Event: " + 
-					foundEvent.title + "<"+ foundEvent.id + ">\nServer Event: " + parsedEvent.title + "<"+ parsedEvent.id + ">"))
+				if (window.confirm(strBundle.getFormattedString("calConflictUseServer", [foundEvent.title, foundEvent.id, parsedEvent.title, parsedEvent.id])))
 					conflictResolution.result = 1;
 				else
 					conflictResolution.result = 2;

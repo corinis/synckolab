@@ -8,6 +8,7 @@ loadConfig=Beállítások betöltése
 configReplaceAll=Biztos benne, hogy le akarja cserélni a jelenlegi beállításokat?
 configInvalid=Helytelen konfigurációs fájl
 configOverwrite=Biztos, hogy felül akarja írni: 
+configDelete=Are you sure you want delete the configuration %1$s?
 
 # status messages
 checking=ellenürzés
@@ -32,3 +33,7 @@ syncEntries=Elemek szinkronizálása...
 writeChangedEntries=Módosított elemek kiírása...
 writeNewEntries=Új elemek kiírása...
 getContent=Tartalom lekérése...
+syncCopyToServer=No items have been found on the server, but there are local items.\nDo you want to copy all items to the server?
+syncCopyToClient=No items have been found locally, but there are items on the server.\nDo you want to copy all items from the server?
+
+calConflictUseServer=Changes were made on the server and local. Click ok to use the server version.\nClient Event: %1$s<%2$s>\nServer Event: %3$s<%4$s>

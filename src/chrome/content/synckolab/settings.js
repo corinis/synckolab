@@ -1430,7 +1430,7 @@ function addConfig()
 function delConfig()
 {
 	var config = curConfig;
-	if (confirm("Are you sure you want delete the configuration " + config + "?"))
+	if (confirm(strBundle.getFormattedString("configDelete", [config])))
 	{
 		// get the treechildren item
 		var tree = document.getElementById("configTree");

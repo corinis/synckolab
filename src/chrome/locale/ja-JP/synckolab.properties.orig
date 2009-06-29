@@ -1,6 +1,14 @@
 contacts=コンタクト
 calendar=カレンダー
 tasks=タスクリスト
+aboutSyncKolab=About SyncKolab
+saveConfig=Save Configuration
+configFiles=Config Files
+loadConfig=Load Configuration
+configReplaceAll=Are you sure you want to replace the current configuration?
+configInvalid=Invalid Configuration File
+configOverwrite=Are you sure you want to overwrite: 
+configDelete=Are you sure you want delete the configuration %1$s?
 
 # status messages
 checking=チェック中
@@ -21,3 +29,11 @@ mailingList=list
 
 close=Close
 syncfinished=同期完了．ウインドウを閉じてください．
+syncEntries=Synchronizing entries...
+writeChangedEntries=Writing changed entries...
+writeNewEntries=Writing new entries...
+getContent=Getting Content ...
+syncCopyToServer=No items have been found on the server, but there are local items.\nDo you want to copy all items to the server?
+syncCopyToClient=No items have been found locally, but there are items on the server.\nDo you want to copy all items from the server?
+
+calConflictUseServer=Changes were made on the server and local. Click ok to use the server version.\nClient Event: %1$s<%2$s>\nServer Event: %3$s<%4$s>

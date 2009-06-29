@@ -683,13 +683,13 @@ function getContent ()
 	// fix bug #16848 and ask before deleting everything :P
 	if (totalMessages == 0 && gSync.itemCount() > 0)
 	{
-		if (window.confirm("No items have been found on the server, but there are local items.\nDo you want to copy all items to the server?"))
+		if (window.confirm(strBundle.getString("syncCopyToServer")))
 			gSync.forceServerCopy = true;
 	}
 	else
 	if (totalMessages > 0 && gSync.itemCount() == 0)
 	{
-		if (window.confirm("No items have been found locally, but there are items on the server.\nDo you want to copy all items from the server?"))
+		if (window.confirm(strBundle.getString("syncCopyToClient")))
 			gSync.forceLocalCopy = true;
 	}
 	
