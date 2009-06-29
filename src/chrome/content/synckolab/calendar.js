@@ -122,7 +122,7 @@ var syncCalendar = {
 				this.gSaveImap = pref.getBoolPref("SyncKolab."+config+".saveToTaskImap");
 				// use default timeframe if not specified
 				try {
-					this.gSyncTimeFrame = parseInt(pref.getCharPref("SyncKolab."+config+".taskSyncTimeframe"));
+					this.gSyncTimeFrame = pref.getIntPref("SyncKolab."+config+".taskSyncTimeframe");
 				}
 				catch (ignore) {
 					logMessage("Sync Time frame is not specified", LOG_WARNING);
@@ -143,7 +143,7 @@ var syncCalendar = {
 				// use default timeframe if not specified
 				try
 				{
-					this.gSyncTimeFrame = parseInt(pref.getCharPref("SyncKolab."+config+".calSyncTimeframe"));
+					this.gSyncTimeFrame = pref.getIntPref("SyncKolab."+config+".calSyncTimeframe");
 				}
 				catch (ignore) {
 					logMessage("Sync Time frame is not specified", LOG_WARNING);

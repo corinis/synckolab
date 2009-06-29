@@ -48,6 +48,40 @@ var LOG_ALL = 12;
 //set this to true and on every error there will be a pause so you can check the logs
 var PAUSE_ON_ERROR = false;
 
+// sub-fields of configuration array
+var FIELD_NAME = 0;
+var FIELD_TYPE = 1;
+
+// types of configuration fields
+var FIELD_TYPE_BOOL = 0;
+var FIELD_TYPE_CHAR = 1;
+var FIELD_TYPE_INT = 2;
+
+var CONFIG_FIELD_TYPES = new Array();
+CONFIG_FIELD_TYPES["AddressBook"] = FIELD_TYPE_CHAR;
+CONFIG_FIELD_TYPES["AddressBookFormat"] = FIELD_TYPE_CHAR;
+CONFIG_FIELD_TYPES["calSyncTimeframe"] = FIELD_TYPE_INT;
+CONFIG_FIELD_TYPES["taskSyncTimeframe"] = FIELD_TYPE_INT;
+CONFIG_FIELD_TYPES["ContactFolderPath"] = FIELD_TYPE_CHAR;
+CONFIG_FIELD_TYPES["Calendar"] = FIELD_TYPE_CHAR;
+CONFIG_FIELD_TYPES["CalendarFormat"] = FIELD_TYPE_CHAR;
+CONFIG_FIELD_TYPES["CalendarFolderPath"] = FIELD_TYPE_CHAR;
+CONFIG_FIELD_TYPES["Resolve"] = FIELD_TYPE_CHAR;
+CONFIG_FIELD_TYPES["Tasks"] = FIELD_TYPE_CHAR;
+CONFIG_FIELD_TYPES["TaskFormat"] = FIELD_TYPE_CHAR;
+CONFIG_FIELD_TYPES["TaskFolderPath"] = FIELD_TYPE_CHAR;
+CONFIG_FIELD_TYPES["autoSync"] = FIELD_TYPE_INT;
+CONFIG_FIELD_TYPES["syncContacts"] = FIELD_TYPE_BOOL;
+CONFIG_FIELD_TYPES["syncTasks"] = FIELD_TYPE_BOOL;
+CONFIG_FIELD_TYPES["syncCalendar"] = FIELD_TYPE_BOOL;
+CONFIG_FIELD_TYPES["saveToContactImap"] = FIELD_TYPE_BOOL;
+CONFIG_FIELD_TYPES["saveToCalendarImap"] = FIELD_TYPE_BOOL;
+CONFIG_FIELD_TYPES["saveToTaskImap"] = FIELD_TYPE_BOOL;
+CONFIG_FIELD_TYPES["hiddenWindow"] = FIELD_TYPE_BOOL;
+CONFIG_FIELD_TYPES["IncomingServer"] = FIELD_TYPE_CHAR;
+CONFIG_FIELD_TYPES["ContactIncomingServer"] = FIELD_TYPE_CHAR;
+CONFIG_FIELD_TYPES["CalendarIncomingServer"] = FIELD_TYPE_CHAR;
+CONFIG_FIELD_TYPES["debugLevel"] = FIELD_TYPE_INT;
 
 var isCalendar;
 var curConfig;
@@ -189,7 +223,7 @@ function init() {
 
     // set the debug level
 	try {
-		DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + parseInt(pref.getCharPref("SyncKolab.debugLevel"));
+		DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + pref.getIntPref("SyncKolab.debugLevel");
 	} catch (ex) {
 		DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + LOG_WARNING;
 		logMessage("WARNING: Reading 'SyncKolab.debugLevel' failed: " + ex, LOG_WARNING);
@@ -297,9 +331,9 @@ function init() {
 	}
 		
 	// set the default debug level
-	var cfgDbgLevel = 1;
+	var cfgDbgLevel = LOG_WARNING;
 	try {		
-		cfgDbgLevel = pref.getCharPref("SyncKolab.debugLevel");
+		cfgDbgLevel = pref.getIntPref("SyncKolab.debugLevel");
 	} catch (ex) {
 		logMessage("WARNING: failed to read SyncKolab.debugLevel: " + ex, LOG_WARNING);
 	}
@@ -560,18 +594,26 @@ function changeConfig (config)
 			cur = cur.nextSibling;
 		}
 		// default is 0
-		document.getElementById ("syncInterval").value = "0";
+		document.getElementById ("syncInterval").setAttribute("value", 0);
+		try
+		{
+			// update sync settings
+			document.getElementById ("syncInterval").setAttribute("value", pref.getIntPref("SyncKolab."+config+".autoSync"));
+		}
+		catch (ex)
+		{
+			logMessage("WARNING: Reading 'SyncKolab."+config+".autoSync' failed: " + ex, LOG_WARNING);
+		}
+
 		// default do hide the window
 		document.getElementById ("hiddenWnd").checked = true;
 		try
 		{		
-			// update sync settings
-			document.getElementById ("syncInterval").value = pref.getCharPref("SyncKolab."+config+".autoSync");
 			document.getElementById ("hiddenWnd").checked = pref.getBoolPref("SyncKolab."+config+".hiddenWindow");
 		}
 		catch (ex)
 		{
-			// ignore
+			logMessage("WARNING: Reading 'SyncKolab."+config+".hiddenWindow' failed: " + ex, LOG_WARNING);
 		}
 
 		// update the resolve settings
@@ -750,31 +792,39 @@ function changeConfig (config)
 			}
 			
 			// per default: sync last 6 monts (~180 days)
-			document.getElementById ("calSyncTimeframe").value = "180";
+			document.getElementById ("calSyncTimeframe").setAttribute("value", 180);
 			try
 			{
-				document.getElementById ("calSyncTimeframe").value = pref.getCharPref("SyncKolab."+config+".calSyncTimeframe");
+				document.getElementById ("calSyncTimeframe").setAttribute("value", pref.getIntPref("SyncKolab."+config+".calSyncTimeframe"));
+			}
+			catch (ex) {
+				logMessage("WARNING: Reading 'SyncKolab."+config+".calSyncTimeframe' failed: " + ex, LOG_WARNING);
 			}	
-			catch (ex) {}
 			
 			document.getElementById ("saveToCalendarImap").checked = true;
 			try
 			{
 				document.getElementById ("saveToCalendarImap").checked = pref.getBoolPref("SyncKolab."+config+".saveToCalendarImap");
 			}
-			catch (ex) {}
+			catch (ex) {
+				logMessage("WARNING: Reading 'SyncKolab."+config+".saveToCalendarImap' failed: " + ex, LOG_WARNING);
+			}
 			
 			document.getElementById ("syncCalendar").checked = false;
 			try {
 				document.getElementById ("syncCalendar").checked = pref.getBoolPref("SyncKolab."+config+".syncCalendar");
-			} catch (ex) {}
+			} catch (ex) {
+				logMessage("WARNING: Reading 'SyncKolab."+config+".syncCalendar' failed: " + ex, LOG_WARNING);
+			}
 			setControlStateCalendar(document.getElementById ("syncCalendar").checked);
 			
 			var sCurFolder = null;
 			try
 			{
 				sCurFolder = pref.getCharPref("SyncKolab."+config+".CalendarFolderPath");
-			} catch (ex) {}
+			} catch (ex) {
+				logMessage("WARNING: Reading 'SyncKolab."+config+".CalendarFolderPath' failed: " + ex, LOG_WARNING);
+			}
 			updateCalFolder (act);
 			updateCalFolder (act);
 			if (sCurFolder != null)
@@ -844,31 +894,39 @@ function changeConfig (config)
 			}
 	
 			// per default: sync last 6 monts (~180 days)
-			document.getElementById ("taskSyncTimeframe").value = "180";
+			document.getElementById ("taskSyncTimeframe").setAttribute("value", 180);
 			try
 			{
-				document.getElementById ("taskSyncTimeframe").value = pref.getCharPref("SyncKolab."+config+".taskSyncTimeframe");
+				document.getElementById ("taskSyncTimeframe").setAttribute("value", pref.getIntPref("SyncKolab."+config+".taskSyncTimeframe"));
+			}
+			catch (ex) {
+				logMessage("WARNING: Reading 'SyncKolab."+config+".taskSyncTimeframe' failed: " + ex, LOG_WARNING);
 			}	
-			catch (ex) {}
 	
 			document.getElementById ("saveToTaskImap").checked = true;
 			try
 			{
 				document.getElementById ("saveToTaskImap").checked = pref.getBoolPref("SyncKolab."+config+".saveToTaskImap");
 			}
-			catch (ex) {}
+			catch (ex) {
+				logMessage("WARNING: Reading 'SyncKolab."+config+".saveToTaskImap' failed: " + ex, LOG_WARNING);
+			}
 			
 			document.getElementById ("syncTasks").checked = false;
 			try {
 				document.getElementById ("syncTasks").checked = pref.getBoolPref("SyncKolab."+config+".syncTasks");
-			} catch (ex) {}
+			} catch (ex) {
+				logMessage("WARNING: Reading 'SyncKolab."+config+".syncTask' failed: " + ex, LOG_WARNING);
+			}
 			setControlStateTasks(document.getElementById ("syncTasks").checked);
 			
 			var sCurFolder = null;
 			try
 			{
 				sCurFolder = pref.getCharPref("SyncKolab."+config+".TaskFolderPath");
-			} catch (ex) {}
+			} catch (ex) {
+				logMessage("WARNING: Reading 'SyncKolab."+config+".TaskFolderPath' failed: " + ex, LOG_WARNING);
+			}
 			updateTaskFolder (act);
 			updateTaskFolder (act);
 			if (sCurFolder != null)
@@ -1232,9 +1290,9 @@ function saveAllPrefs (configName) {
 	else
 		pref.setCharPref("SyncKolab."+config+".Resolve", "ask");
 	if (document.getElementById ("syncInterval"))
-		pref.setCharPref("SyncKolab."+config+".autoSync", document.getElementById ("syncInterval").value);
+		pref.setIntPref("SyncKolab."+config+".autoSync", document.getElementById ("syncInterval").value);
 	else
-		pref.setCharPref("SyncKolab."+config+".autoSync", 0);
+		pref.setIntPref("SyncKolab."+config+".autoSync", 0);
 	
 	if (document.getElementById ("hiddenWnd"))
 		pref.setBoolPref("SyncKolab."+config+".hiddenWindow", document.getElementById ("hiddenWnd").checked);
@@ -1254,18 +1312,18 @@ function saveAllPrefs (configName) {
 		pref.setBoolPref("SyncKolab."+config+".saveToCalendarImap", document.getElementById ("saveToCalendarImap").checked);
 		pref.setBoolPref("SyncKolab."+config+".syncCalendar", document.getElementById ("syncCalendar").checked);
 		if (document.getElementById("calSyncTimeframe") != null)
-			pref.setCharPref("SyncKolab."+config+".calSyncTimeframe", document.getElementById("calSyncTimeframe").value);
+			pref.setIntPref("SyncKolab."+config+".calSyncTimeframe", document.getElementById("calSyncTimeframe").value);
 		else
-			pref.setCharPref("SyncKolab."+config+".calSyncTimeframe", "180");
+			pref.setIntPref("SyncKolab."+config+".calSyncTimeframe", 180);
 			
 		pref.setCharPref("SyncKolab."+config+".Tasks", document.getElementById ("taskURL").value);
 		pref.setCharPref("SyncKolab."+config+".TaskFormat", document.getElementById ("taskFormat").value);
 		pref.setBoolPref("SyncKolab."+config+".saveToTaskImap", document.getElementById ("saveToTaskImap").checked);
 		pref.setBoolPref("SyncKolab."+config+".syncTasks", document.getElementById ("syncTasks").checked);
 		if (document.getElementById("taskSyncTimeframe"))
-			pref.setCharPref("SyncKolab."+config+".taskSyncTimeframe", document.getElementById("taskSyncTimeframe").value);
+			pref.setIntPref("SyncKolab."+config+".taskSyncTimeframe", document.getElementById("taskSyncTimeframe").value);
 		else
-			pref.setCharPref("SyncKolab."+config+".taskSyncTimeframe", "180");
+			pref.setIntPref("SyncKolab."+config+".taskSyncTimeframe", 180);
 	}
 }
 
@@ -1274,8 +1332,12 @@ function saveAllPrefs (configName) {
 function savePrefs() {
 	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 
+	try {
 	pref.setBoolPref("SyncKolab.closeWindow", document.getElementById ("closeWnd").checked);
-	pref.setCharPref("SyncKolab.debugLevel", document.getElementById ("debugLvl").value);
+		pref.setIntPref("SyncKolab.debugLevel", document.getElementById ("debugLvl").value);
+	} catch ( ex ) {
+		logMessage("Error: failed to set prefs value: " + ex, LOG_ERROR);
+	};
 
 	var tree = document.getElementById("configTree");
 	// get the treechildren item
@@ -1656,10 +1718,12 @@ function loadConfig()
 				for (var j=2; j < cPref.length; j++)
 					value += "=" + cPref[j];
 					
-				if (value == "true" || value == "false")
-					pref.setBoolPref(name, value);
-				else
-					pref.setCharPref(name, value);				
+				try {
+					loadConfigItem(pref, name, value);
+				}
+				catch (ex) {
+					logMessage("WARNING: Unable to set pref-value of '" + name + "':" + ex, LOG_WARNING);
+				}
 			}
 			
 		}
@@ -1757,7 +1821,7 @@ function saveAllConfig()
 		}
 		writeLine(stream, "SyncKolab.Configs", s);
 		
-		// char prefs:
+		// global prefs items:
 		var fieldsArray = new Array(
 			"debugLevel"
 			);
@@ -1765,15 +1829,70 @@ function saveAllConfig()
 		for(var i=0 ; i < fieldsArray.length ; i++ ) {
 			try
 			{
-				writeLine(stream, "SyncKolab." + fieldsArray[i], pref.getCharPref("SyncKolab." + fieldsArray[i]));
+				writeConfigItem(stream, pref, "SyncKolab", fieldsArray[i]);
 			}
-			catch (exw) {} // can be ignored savely
+			catch (exw) {
+				logMessage("WARNING: Writing 'SyncKolab." + fieldsArray[i] + "' failed: " + exw, LOG_WARNING);
+			} // can be ignored savely
 		}	
 		
 		s = "\n\n";
 		stream.write(s, s.length);
 		stream.close();
 	}
+}
+
+function loadConfigItem(config, paramName, paramValue)
+{
+	var paramParts = new Array();
+	paramParts = paramName.split('.');
+	var keyName = "";
+
+	if (paramParts.length > 0) {
+		keyName = paramParts[ paramParts.length - 1 ];
+	}
+	else {
+		keyName = paramName;
+	}
+
+	var keyType = CONFIG_FIELD_TYPES[keyName];
+	switch (keyType)
+	{
+		case FIELD_TYPE_BOOL:
+			config.setBoolPref(keyName, paramValue)
+			break;
+		case FIELD_TYPE_CHAR:
+			config.setCharPref(keyName, paramValue);
+			break;
+		case FIELD_TYPE_INT:
+			config.setIntPref(keyName, paramValue);
+			break;
+		default:
+			logMessage("ERROR: Unknown field/type '" + keyName + "/" + keyType + "'", LOG_ERROR);
+			break;
+	}
+}
+
+function writeConfigItem(file, config, keyPrefix, keyName)
+{
+	var keyValue = null;
+	var keyType = CONFIG_FIELD_TYPES[keyName];
+	switch (keyType)
+	{
+		case FIELD_TYPE_BOOL:
+			keyValue = config.getBoolPref(keyPrefix+"."+keyName)?'true':'false';
+			break;
+		case FIELD_TYPE_CHAR:
+			keyValue = config.getCharPref(keyPrefix+"."+keyName);
+			break;
+		case FIELD_TYPE_INT:
+			keyValue = config.getIntPref(keyPrefix+"."+keyName);
+			break;
+		default:
+			logMessage("ERROR: Unknown field/type '"+keyName+"/"+keyType+"'", LOG_ERROR);
+			break;
+	}
+	writeLine(file, keyPrefix+"."+keyName, keyValue);
 }
 
 function writeLine (file, key, value)
@@ -1805,47 +1924,51 @@ function writeConfig (config, file)
 		}
 		catch (ex2) 
 		{
+			logMessage("WARNING: Reading 'SyncKolab."+config+".ContactIncomingServer' failed: " + ex2, LOG_WARNING);
 			try
 			{
 				act = pref.getCharPref("SyncKolab."+config+".CalendarIncomingServer");
 			}
-			catch (ex3) {}
+			catch (ex3) {
+				logMessage("WARNING: Reading 'SyncKolab."+config+".CalendarIncomingServer' failed: " + ex3, LOG_WARNING);
+			}
 		}
 	}
 	
 	writeLine(file, "SyncKolab."+config+".IncomingServer", act);
 	
-	// char prefs:
-	var fieldsArray = new Array(
-		"AddressBook","AddressBookFormat","calSyncTimeframe","taskSyncTimeframe",
-		"ContactFolderPath","Calendar","CalendarFormat","Resolve",
-		"CalendarFolderPath",
-		"Tasks","TaskFormat","TaskFolderPath",
-		"syncInterval"
-		);
-
-	for(var i=0 ; i < fieldsArray.length ; i++ ) {
-		try
-		{
-			writeLine(file, "SyncKolab."+config+"." + fieldsArray[i], pref.getCharPref("SyncKolab."+config+"." + fieldsArray[i]));
-		}
-		catch (exw) {} // can be ignored savely
-	}	
 	
-	// bool prefs:
+	// prefs items (type will be looked up later):
 	var fieldsArray = new Array(
-		"syncContacts","saveToContactImap",
-		"saveToCalendarImap","syncCalendar",
-		"saveToTaskImap","syncTasks",
+		"AddressBook",
+		"AddressBookFormat",
+		"calSyncTimeframe",
+		"taskSyncTimeframe",
+		"ContactFolderPath",
+		"Calendar",
+		"CalendarFormat",
+		"Resolve",
+		"CalendarFolderPath",
+		"Tasks",
+		"TaskFormat",
+		"TaskFolderPath",
+		"autoSync",
+		"syncContacts",
+		"saveToContactImap",
+		"saveToCalendarImap",
+		"syncCalendar",
+		"saveToTaskImap",
+		"syncTasks",
 		"hiddenWindow"
 		);
 
 	for(var i=0 ; i < fieldsArray.length ; i++ ) {
 		try
 		{
-			writeLine(file, "SyncKolab."+config+"." + fieldsArray[i], pref.getBoolPref("SyncKolab."+config+"." + fieldsArray[i])?'true':'false');
+			writeConfigItem(file, pref, "SyncKolab."+config, fieldsArray[i]);
 		}
-		catch (exw) {} // can be ignored savely
+		catch (exw) {
+			logMessage("WARNING: Writing of configuration item 'SyncKolab."+config+"."+fieldsArray[i]+" failed" , LOG_WARNING);
+		} // can be ignored savely
 	}	
-	
 }

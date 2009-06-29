@@ -119,8 +119,9 @@ function syncKolabTimer ()
 	    
 	    // set the debug level
 		try {
-			DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + parseInt(pref.getCharPref("SyncKolab.debugLevel"));
+			DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + pref.getIntPref("SyncKolab.debugLevel");
 		} catch (ex) {
+			logMessage("WARNING: Reading 'SyncKolab.debugLevel' failed: " + ex, LOG_WARNING);
 			DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + LOG_WARNING;
 		};				
 
@@ -149,13 +150,22 @@ function syncKolabTimer ()
 			gSyncConfigs[i].gSyncTimer = 0;
 			try
 			{
-				gSyncConfigs[i].gAutoRun = pref.getCharPref("SyncKolab."+configs[i]+".autoSync");
+				gSyncConfigs[i].gAutoRun = pref.getIntPref("SyncKolab."+configs[i]+".autoSync");
+			}catch (ex)
+			{
+				logMessage("WARNING: Reading 'SyncKolab."+configs[i]+".autoSync' failed: " + ex, LOG_WARNING);
+				gSyncConfigs[i].gAutoRun = 0;
+			}
+
+			try
+			{
 				gSyncConfigs[i].gAutoHideWindow = pref.getBoolPref("SyncKolab."+configs[i]+".hiddenWindow");
 			}catch (ex)
 			{
-				gSyncConfigs[i].gAutoRun = 0;
+				logMessage("WARNING: Reading 'SyncKolab."+configs[i]+".hiddenWindow' failed: " + ex, LOG_WARNING);
 				gSyncConfigs[i].gAutoHideWindow = false;
 			}
+
 			gSyncConfigs[i].configName = configs[i];
 		}
 	}
@@ -169,11 +179,19 @@ function syncKolabTimer ()
 			// re-read the settings
 			try
 			{
-				gSyncConfigs[i].gAutoRun = pref.getCharPref("SyncKolab."+gSyncConfigs[i].configName+".autoSync");
+				gSyncConfigs[i].gAutoRun = pref.getIntPref("SyncKolab."+gSyncConfigs[i].configName+".autoSync");
+			}catch (ex)
+			{
+				logMessage("WARNING: Reading 'SyncKolab."+gSyncConfigs[i].configName+".autoSync' failed: " + ex, LOG_WARNING);
+				gSyncConfigs[i].gAutoRun = 0;
+			}
+
+			try
+			{
 				gSyncConfigs[i].gAutoHideWindow = pref.getBoolPref("SyncKolab."+gSyncConfigs[i].configName+".hiddenWindow");
 			}catch (ex)
 			{
-				gSyncConfigs[i].gAutoRun = 0;
+				logMessage("WARNING: Reading 'SyncKolab."+gSyncConfigs[i].configName+".hiddenWindow' failed: " + ex, LOG_WARNING);
 				gSyncConfigs[i].gAutoHideWindow = false;
 			}
 
@@ -238,11 +256,13 @@ function syncKolab(event) {
 		gCloseWnd = pref.getBoolPref("SyncKolab.closeWindow");
 		
 		try {
-			DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + parseInt(pref.getCharPref("SyncKolab.debugLevel"));
+			DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + pref.getIntPref("SyncKolab.debugLevel");
 		} catch (ex) {
+			logMessage("WARNING: Reading 'SyncKolab.debugLevel' failed: " + ex, LOG_WARNING);
 			DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + LOG_WARNING;
 		};				
 	} catch(e) {
+		logMessage("WARNING: Reading 'SyncKolab.closeWindow' failed: " + e, LOG_WARNING);
 	}
 
 	logMessage("Debug Level set to: " + DEBUG_SYNCKOLAB_LEVEL, LOG_WARNING);
