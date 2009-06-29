@@ -231,7 +231,6 @@ function init() {
 
 	// get all available configurations
 	var configs = new Array();
-	var curConfig = null;
 	
 	try {
 		var Config = pref.getCharPref("SyncKolab.Configs");
@@ -320,7 +319,6 @@ function init() {
 	curConfig = null;
 		
 	// now prefill all fields we have to prefill
-	
 	prefillFields();
 		
 	// now some global settings
