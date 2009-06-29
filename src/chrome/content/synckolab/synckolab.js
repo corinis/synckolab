@@ -129,7 +129,9 @@ function syncKolabTimer ()
 		try {
 			var Config = pref.getCharPref("SyncKolab.Configs");
 			configs = Config.split(';');
-		} catch(ex) {}
+		} catch(ex) {
+			logMessage("ERROR: Reading 'SyncKolab.Configs' failed: " + ex, LOG_ERROR);
+		}
 
 		if (configs.length == 0)
 		{
@@ -348,6 +350,7 @@ function startSync(event) {
 		syncConfigs = syncConfig.split(';');
 	} catch(ex) 
 	{
+		logMessage("ERROR: Reading 'SyncKolab.Configs' failed: " + ex, LOG_ERROR);
 	}
 	
 	// called from timer - we force ONE configuration
@@ -561,7 +564,7 @@ function nextSync()
 	    catch (ex)
 	    {
 	    	// if an exception is found print it and continue
-			dump("Error setting task config: " + ex + "\n");
+			logMessage("Error setting task config: " + ex, LOG_ERROR);
 			curTaskConfig++;
 			window.setTimeout(nextSync, SWITCH_TIME);	
 			return;
@@ -1033,7 +1036,7 @@ function updateContent()
 		}
 		catch (ex)
 		{
-		    logMessage("Exception while deleting - skipping", LOG_ERROR);
+			logMessage("Exception while deleting - skipping: " + ex, LOG_ERROR);
 		}
 	}
 	curMessage = -1;
@@ -1226,7 +1229,9 @@ function syncKolabCompact() {
 	// compact folder
 	try { 
 		gSync.folder.compact(null, null);  
-	} catch(e) { }
+	} catch(e) {
+		logMessage("ERROR: Running compact: " + e, LOG_ERROR);
+	}
 	
 	gSync.doneParsing();
 	logMessage("nextSync", LOG_INFO);

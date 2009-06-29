@@ -1029,19 +1029,19 @@ function calDateTime2String (val, allday)
 		return "";
 	
     var datetime = (val instanceof Date) ? val : val.jsDate;
-    var string = date2String(datetime);
+	var resultstring = date2String(datetime);
     if (!allday)
     {
-        string = datetime.getUTCFullYear() + "-" + 
+		resultstring = datetime.getUTCFullYear() + "-" +
                 (datetime.getUTCMonth()+1 < 10 ? "0" : "") + (datetime.getUTCMonth()+1) + "-" +
                 (datetime.getUTCDate() < 10 ? "0" : "") + datetime.getUTCDate();
-        string += 'T';
-        string += (datetime.getUTCHours() < 10 ? "0" : "") + datetime.getUTCHours() + ":" + 
+		resultstring += 'T';
+		resultstring += (datetime.getUTCHours() < 10 ? "0" : "") + datetime.getUTCHours() + ":" +
                   (datetime.getUTCMinutes() < 10 ? "0" : "") + datetime.getUTCMinutes() + ":" +
                   (datetime.getUTCSeconds() < 10 ? "0" : "") + datetime.getUTCSeconds();
-        string += 'Z';
+		resultstring += 'Z';
     }
-	return string;
+	return resultstring;
 }
 
 // takes: 2005-03-30
@@ -1367,7 +1367,11 @@ function logMessage (msg, level)
 				lastmsg = cTime;
 			}
 		}
-		consoleService.logStringMessage(msg);		
+		// report errors as error
+		if (clvl == LOG_ERROR && Components.utils.reportError)
+			Components.utils.reportError(msg);
+		else
+			consoleService.logStringMessage(msg);		
 	}
 	
 	// pause the sync on error if defined by globals

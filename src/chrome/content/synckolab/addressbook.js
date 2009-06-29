@@ -40,7 +40,7 @@
  */
 var syncAddressBook = {
 	isTbird2: true, // default: tbird 2 
-	gConflictResolve : "ask", // conflict resolution (default: ask what to do)
+	gConflictResolve : "ask", // conflict resolution (default: ask what to do; other values: server, client)
 
 	folderPath: '', // String - the path for the contacts
 	serverKey: '', // the incoming server
@@ -93,7 +93,7 @@ var syncAddressBook = {
 		}
 		catch (e) 
 		{
-			// ignore
+			logMessage("WARNING: Reading 'SyncKolab."+config+".Resolve' failed: " + e, LOG_WARNING);
 		}
 		
 		// initialize the configuration
@@ -349,7 +349,7 @@ var syncAddressBook = {
 				// also do so if the forceLocalCopy flag is set (happens when you change the configuration)
 				if (!cEntry.exists() || this.forceLocalCopy)
 				{
-					// use the original content to write the snyc file 
+					// use the original content to write the sync file 
 					// this makes it easier to compare later on and makes sure no info is 
 					// lost/changed
 					writeSyncDBFile (cEntry, fileContent);
@@ -406,7 +406,7 @@ var syncAddressBook = {
 				}				
 			}
 			else
-			// this card is already in the adress book
+			// this card is already in the address book
 			{
 				// make sure to ONLY read the info.. do not get the extra fields from there
 				var cCard = parseMessage(readSyncDBFile(cEntry), null, this.gCardDB);
@@ -704,29 +704,6 @@ var syncAddressBook = {
 				}
 			}
 			return null;
-			/* skip this
-			var cn = this.gAddressBook.childNodes;
-			var ABook = cn.getNext();
-			while (ABook != null)
-			{
-				var ccur = ABook.QueryInterface(Components.interfaces.nsIAbDirectory);
-				if (ccur.listNickName == cur.displayName)
-				{
-					curItem = ccur;
-					break;
-				}
-				try
-				{
-					ABook = cn.getNext();
-				}
-				catch (ex)
-				{
-					// break out if we have a problem here
-					break;
-				}
-			}
-			*/
-			
 		}
 		
 		
@@ -808,8 +785,8 @@ var syncAddressBook = {
 			}
 
 			// ok we should have this card in our db (since it has a custom4)
-			// but not on the imap acct. if we got this entry in our internal db
-			// it has been deleted on the server, and we dont know about it yet
+			// but not on the imap account. if we got this entry in our internal db
+			// it has been deleted on the server, and we don't know about it yet
 			if (!alreadyProcessed)
 			{
 				// get the dbfile from the local disk

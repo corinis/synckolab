@@ -28,6 +28,10 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+var MAIL_FORMAT_UNKNOWN = 0;
+var MAIL_FORMAT_PLAINTEXT = 1;
+var MAIL_FORMAT_HTML = 2;
+
 /**
  * Tools to work with the address book. Parsing functions for vcard, Kolab xml
  * to and from contact plus some utility functions. 
@@ -107,7 +111,7 @@ function xml2Card (xml, extraFields, cards)
 					// 1: plaintext
 					// 2: html
 					var format = decode4XML(cur.firstChild.data).toUpperCase();
-					setCardProperty(card, "PreferMailFormat", 0); 
+					setCardProperty(card, "PreferMailFormat", MAIL_FORMAT_UNKNOWN);
 					switch(format)
 					{
 						case 'PLAINTEXT':
@@ -115,13 +119,13 @@ function xml2Card (xml, extraFields, cards)
 						case 'TXT':
 						case 'PLAIN': 
 						case '1':
-							setCardProperty(card, "PreferMailFormat", 1);
+							setCardProperty(card, "PreferMailFormat", MAIL_FORMAT_PLAINTEXT);
 							break;
 						case 'HTML':
 						case 'RICHTEXT':
 						case 'RICH':
 						case '2':
-							setCardProperty(card, "PreferMailFormat", 2);
+							setCardProperty(card, "PreferMailFormat", MAIL_FORMAT_HTML);
 					}
 				break;
 
@@ -434,11 +438,11 @@ function list2Vcard (card, fields)
 		msg += "EMAIL;TYPE=INTERNET:" + getCardProperty(card, "SecondEmail") + "\n";
  	if (checkExist (getCardProperty(card, "PreferMailFormat"))) { 
 		switch(getCardProperty(card, "PreferMailFormat")) {
-			case 0:
+			case MAIL_FORMAT_UNKNOWN:
 				msg += "X-EMAILFORMAT:Unknown\n";break;
-			case 1:
+			case MAIL_FORMAT_PLAINTEXT:
 				msg += "X-EMAILFORMAT:Plain Text\n";break;
-			case 2:
+			case MAIL_FORMAT_HTML:
 				msg += "X-EMAILFORMAT:HTML\n";break;
 		}
 	}
@@ -690,9 +694,9 @@ function card2Xml (card, fields)
 	}
 
 	// if the mail format is set... 
-	if (getCardProperty(card, "PreferMailFormat") != 0)
+	if (getCardProperty(card, "PreferMailFormat") != MAIL_FORMAT_UNKNOWN)
 	{
-		if (getCardProperty(card, "PreferMailFormat") == 1)
+		if (getCardProperty(card, "PreferMailFormat") == MAIL_FORMAT_PLAINTEXT)
 		{
 			xml += nodeWithContent("prefer-mail-format", "text", false);
 		}
@@ -860,7 +864,7 @@ function equalsContact (a, b)
 				if (sa.replace(/\s|(\\n)/g, "") == sb.replace(/\s|(\\n)/g, ""))
 					continue;
 		
-			logMessage ("not equals " + fieldsArray[i] + " " + eval("a."+fieldsArray[i]) + " vs. " + eval("b."+fieldsArray[i]), LOG_DEBUG + LOG_AB);
+			logMessage ("not equals " + fieldsArray[i] + " '" + sa + "' vs. '" + sb + "'", LOG_DEBUG + LOG_AB);
 			return false;
 		}
 	}
@@ -1225,11 +1229,11 @@ function message2Card (lines, card, extraFields, startI, endI)
 			// This will set the Email format to vCard, not part of vCard 3.0 spec, so the X- is there, I assume a Kolab server would just ignore this field
 				switch(tok[1]) {
 					case "Unknown":
-						setCardProperty(card, "PreferMailFormat", 0);
+						setCardProperty(card, "PreferMailFormat", MAIL_FORMAT_UNKNOWN);
 					case "Plain Text":
-						setCardProperty(card, "PreferMailFormat", 1);
+						setCardProperty(card, "PreferMailFormat", MAIL_FORMAT_PLAINTEXT);
 					case "HTML":
-						setCardProperty(card, "PreferMailFormat", 2);
+						setCardProperty(card, "PreferMailFormat", MAIL_FORMAT_HTML);
 				}
     		break;
 			case "X-AIM": // not standard vcard spec, therefore, prepended with an X
@@ -1546,11 +1550,11 @@ function card2Vcard (card, fields)
 		msg += "EMAIL;TYPE=INTERNET:" + getCardProperty(card, "SecondEmail") + "\n";
  	if (checkExist (getCardProperty(card, "PreferMailFormat"))) { 
 		switch(getCardProperty(card, "PreferMailFormat")) {
-			case 0:
+			case MAIL_FORMAT_UNKNOWN:
 				msg += "X-EMAILFORMAT:Unknown\n";break;
-			case 1:
+			case MAIL_FORMAT_PLAINTEXT:
 				msg += "X-EMAILFORMAT:Plain Text\n";break;
-			case 2:
+			case MAIL_FORMAT_HTML:
 				msg += "X-EMAILFORMAT:HTML\n";break;
 		}
 	}

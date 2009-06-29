@@ -192,7 +192,8 @@ function init() {
 		DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + parseInt(pref.getCharPref("SyncKolab.debugLevel"));
 	} catch (ex) {
 		DEBUG_SYNCKOLAB_LEVEL = LOG_ALL + LOG_WARNING;
-	};				
+		logMessage("WARNING: Reading 'SyncKolab.debugLevel' failed: " + ex, LOG_WARNING);
+	}
 
 	// get all available configurations
 	var configs = new Array();
@@ -201,7 +202,9 @@ function init() {
 	try {
 		var Config = pref.getCharPref("SyncKolab.Configs");
 		configs = Config.split(';');
-	} catch(ex) {}
+	} catch(ex) {
+		logMessage("ERROR: Reading 'SyncKolab.Configs' failed: " + ex, LOG_ERROR);
+	}
 	
 	// in case we did not find anything - check if there are "old" configurations
 	// and use them (like an importer)
@@ -211,13 +214,17 @@ function init() {
 		try {
 			var conConfig = pref.getCharPref("SyncKolab.AddressBookConfigs");
 			oldConfigs = conConfig.split(';');
-		} catch(ex) {}
+		} catch(ex) {
+			logMessage("ERROR: Reading 'SyncKolab.AddressBookConfigs' failed: " + ex, LOG_ERROR);
+		}
 		
 		try {
 			var calConfig = pref.getCharPref("SyncKolab.CalendarConfigs");
 			oldConfigs = oldConfigs.concat(calConfig.split(';'));
 		}
-		catch(ex) {}
+		catch(ex) {
+			logMessage("ERROR: Reading 'SyncKolab.CalendarConfigs' failed: " + ex, LOG_ERROR);
+		}
 		
 		// now add each and make sure no doublenames are added:
 		for (var i=0; i < oldConfigs.length; i++)
@@ -285,13 +292,17 @@ function init() {
 	// now some global settings
 	try {
 		document.getElementById ("closeWnd").checked = pref.getBoolPref("SyncKolab.closeWindow");
-	} catch (ex) {}
+	} catch (ex) {
+		logMessage("WARNING: failed to read SyncKolab.closeWindow: " + ex, LOG_WARNING);
+	}
 		
 	// set the default debug level
 	var cfgDbgLevel = 1;
 	try {		
 		cfgDbgLevel = pref.getCharPref("SyncKolab.debugLevel");
-	} catch (ex) {};
+	} catch (ex) {
+		logMessage("WARNING: failed to read SyncKolab.debugLevel: " + ex, LOG_WARNING);
+	}
 	var debugEle = document.getElementById("debugLvl");
 	debugEle.setAttribute("value", cfgDbgLevel);
 	// get the label
@@ -508,6 +519,7 @@ function changeConfig (config)
 		}
 		catch (ex)
 		{
+			logMessage("WARNING: Reading 'SyncKolab."+config+".IncomingServer' failed (trying old style): " + ex, LOG_WARNING);
 			// get the contact incoming (old style)
 			try
 			{
@@ -515,11 +527,14 @@ function changeConfig (config)
 			}
 			catch (ex2) 
 			{
+				logMessage("WARNING: Reading 'SyncKolab."+config+".ContactIncomingServer' failed: " + ex2, LOG_WARNING);
 				try
 				{
 					act = pref.getCharPref("SyncKolab."+config+".CalendarIncomingServer");
 				}
-				catch (ex3) {}
+				catch (ex3) {
+					logMessage("WARNING: Reading 'SyncKolab."+config+".CalendarIncomingServer' failed: " + ex3, LOG_WARNING);
+				}
 			}
 		}
 
@@ -568,6 +583,7 @@ function changeConfig (config)
 		catch (ex)
 		{
 			// ignore (use ask)
+			logMessage("WARNING: Reading 'SyncKolab."+config+".Resolve' failed: " + ex, LOG_WARNING);
 		}
 		
 		actList = document.getElementById("DefaultResolve");
@@ -593,7 +609,9 @@ function changeConfig (config)
 			ab = pref.getCharPref("SyncKolab."+config+".AddressBook");
 		}
 		catch (ex)
-		{}
+		{
+			logMessage("WARNING: Reading 'SyncKolab."+config+".AddressBook' failed: " + ex, LOG_WARNING);
+		}
 
 		actList = document.getElementById("conURL");
 		// go through the items
@@ -616,7 +634,9 @@ function changeConfig (config)
 		var abFormat = null;
 		try {
 			abFormat = pref.getCharPref("SyncKolab."+config+".AddressBookFormat");
-		} catch (ex) {};
+		} catch (ex) {
+			logMessage("WARNING: Reading 'SyncKolab."+config+".AddressBookFormat' failed: " + ex, LOG_WARNING);
+		}
 		
 		actList = document.getElementById("conFormat");
 		// go through the items
@@ -636,19 +656,25 @@ function changeConfig (config)
 		document.getElementById ("saveToContactImap").checked = true;
 		try {
 			document.getElementById ("saveToContactImap").checked = pref.getBoolPref("SyncKolab."+config+".saveToContactImap");
-		} catch (ex) {}
+		} catch (ex) {
+			logMessage("WARNING: Reading 'SyncKolab."+config+".saveToContactImap' failed: " + ex, LOG_WARNING);
+		}
 
 		document.getElementById ("syncContacts").checked = false;
 		try {
 			document.getElementById ("syncContacts").checked = pref.getBoolPref("SyncKolab."+config+".syncContacts");
-		} catch (ex) {}
+		} catch (ex) {
+			logMessage("WARNING: Reading 'SyncKolab."+config+".syncContacts' failed: " + ex, LOG_WARNING);
+		}
 		setControlStateContacts(document.getElementById ("syncContacts").checked);
 		
 		var sCurFolder = null;
 		try
 		{
 			sCurFolder = pref.getCharPref("SyncKolab."+config+".ContactFolderPath");
-		} catch (ex) {}
+		} catch (ex) {
+			logMessage("WARNING: Reading 'SyncKolab."+config+".ContactFolderPath' failed: " + ex, LOG_WARNING);
+		}
 		
 
 		updateFolder (act);
@@ -681,7 +707,9 @@ function changeConfig (config)
 			try
 			{
 				ab = pref.getCharPref("SyncKolab."+config+".Calendar");
-			} catch (ex) {}
+			} catch (ex) {
+				logMessage("WARNING: Reading 'SyncKolab."+config+".Calendar' failed: " + ex, LOG_WARNING);
+			}
 			
 			actList = document.getElementById("calURL");
 			// go through the items
@@ -702,7 +730,9 @@ function changeConfig (config)
 			try
 			{
 				calFormat = pref.getCharPref("SyncKolab."+config+".CalendarFormat");
-			} catch (ex) {}
+			} catch (ex) {
+				logMessage("WARNING: Reading 'SyncKolab."+config+".CalendarFormat' failed: " + ex, LOG_WARNING);
+			}
 			
 			actList = document.getElementById("calFormat");
 			// go through the items
@@ -771,7 +801,9 @@ function changeConfig (config)
 			try
 			{
 				ab = pref.getCharPref("SyncKolab."+config+".Tasks");
-			} catch (ex) {}
+			} catch (ex) {
+				logMessage("WARNING: Reading 'SyncKolab."+config+".Tasks' failed: " + ex, LOG_WARNING);
+			}
 			
 			actList = document.getElementById("taskURL");
 			// go through the items
@@ -792,7 +824,9 @@ function changeConfig (config)
 			try
 			{
 				calFormat = pref.getCharPref("SyncKolab."+config+".TaskFormat");
-			} catch (ex) {}
+			} catch (ex) {
+				logMessage("WARNING: Reading 'SyncKolab."+config+".TaskFormat' failed: " + ex, LOG_WARNING);
+			}
 			
 			actList = document.getElementById("taskFormat");
 			// go through the items
@@ -1581,7 +1615,9 @@ function loadConfig()
 			try {
 				var Config = pref.getCharPref("SyncKolab.Configs");
 				configs = Config.split(';');
-			} catch(ex) {}
+			} catch(ex) {
+				logMessage("ERROR: Reading 'SyncKolab.Configs' failed: " + ex, LOG_ERROR);
+			}
 
 			var haveConfig = false;			
 			for (var i=0; i < configs.length; i++)
@@ -1658,7 +1694,9 @@ function saveAllConfig()
 		try {
 			var Config = pref.getCharPref("SyncKolab.Configs");
 			configs = Config.split(';');
-		} catch(ex) {}
+		} catch(ex) {
+			logMessage("ERROR: Reading 'SyncKolab.Configs' failed: " + ex, LOG_ERROR);
+		}
 	
 		// in case we did not find anything - check if there are "old" configurations
 		// and use them (like an importer)
@@ -1668,13 +1706,17 @@ function saveAllConfig()
 			try {
 				var conConfig = pref.getCharPref("SyncKolab.AddressBookConfigs");
 				oldConfigs = conConfig.split(';');
-			} catch(ex) {}
+			} catch(ex) {
+				logMessage("ERROR: Reading 'SyncKolab.AddressBookConfigs' failed: " + ex, LOG_ERROR);
+			}
 			
 			try {
 				var calConfig = pref.getCharPref("SyncKolab.CalendarConfigs");
 				oldConfigs = oldConfigs.concat(calConfig.split(';'));
 			}
-			catch(ex) {}
+			catch(ex) {
+				logMessage("ERROR: Reading 'SyncKolab.CalendarConfigs' failed: " + ex, LOG_ERROR);
+			}
 			
 			// now add each and make sure no doublenames are added:
 			for (var i=0; i < oldConfigs.length; i++)
@@ -1755,6 +1797,7 @@ function writeConfig (config, file)
 	}
 	catch (ex)
 	{
+		logMessage("WARNING: Reading 'SyncKolab."+config+".IncomingServer' failed (trying old style): " + ex, LOG_WARNING);
 		// get the contact incoming (old style)
 		try
 		{

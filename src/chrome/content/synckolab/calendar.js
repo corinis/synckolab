@@ -39,7 +39,7 @@
  * Notice:
  *   - all events/tasks older then today-gSyncTimeFrame(in days) will be ignored completely (not deleted, modified, added,...)
  *   - all email messages with a date-header older than today-gSyncTimeFrame(in days) will also be ignored!
- *   - 0=take all messages
+ *   - -1=take all messages
  */
 var syncCalendar = {
 	isTbird2: true, // default: tbird 2 
@@ -107,7 +107,7 @@ var syncCalendar = {
 			}
 			catch (e) 
 			{
-				// ignore
+				logMessage("WARNING: Reading 'SyncKolab."+config+".Resolve' failed: " + e, LOG_WARNING);
 			}
 
 			if (this.syncTasks == true)
@@ -120,7 +120,7 @@ var syncCalendar = {
 				this.gCalendarName = pref.getCharPref("SyncKolab."+config+".Tasks");
 				this.format = pref.getCharPref("SyncKolab."+config+".TaskFormat");
 				this.gSaveImap = pref.getBoolPref("SyncKolab."+config+".saveToTaskImap");
-				// use defualt timeframe if not specified
+				// use default timeframe if not specified
 				try {
 					this.gSyncTimeFrame = parseInt(pref.getCharPref("SyncKolab."+config+".taskSyncTimeframe"));
 				}
@@ -140,7 +140,7 @@ var syncCalendar = {
 				this.gCalendarName = pref.getCharPref("SyncKolab."+config+".Calendar");
 				this.format = pref.getCharPref("SyncKolab."+config+".CalendarFormat");			
 				this.gSaveImap = pref.getBoolPref("SyncKolab."+config+".saveToCalendarImap");
-				// use defualt timeframe if not specified
+				// use default timeframe if not specified
 				try
 				{
 					this.gSyncTimeFrame = parseInt(pref.getCharPref("SyncKolab."+config+".calSyncTimeframe"));
@@ -415,7 +415,9 @@ var syncCalendar = {
 							    // modify the item - catch exceptions due to triggered alarms
 							    // because they will break the sync process
 								this.gCalendar.modifyItem(parsedEvent, foundEvent, this.gEvents);
-							} catch (e) {}
+							} catch (e) {
+								logMessage("gCalendar.modifyItem() failed: " + e, LOG_CAL + LOG_WARNING);
+							}
 							
 							//update list item
 							this.curItemInListStatus.setAttribute("label", strBundle.getString("localUpdate"));
@@ -496,7 +498,9 @@ var syncCalendar = {
 								// modify the item - catch exceptions due to triggered alarms
 								// because they will break the sync process
  								this.gCalendar.modifyItem(parsedEvent, foundEvent, this.gEvents);
-							} catch (e) {}
+							} catch (e) {
+								logMessage("gCalendar.modifyItem() failed: " + e, LOG_CAL + LOG_WARNING);
+							}
 	
 							// update list item
 							this.curItemInListStatus.setAttribute("label", strBundle.getString("localUpdate"));

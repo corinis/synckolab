@@ -71,8 +71,9 @@ function getSynckolabCalendars()
 	 	 if (syncCalManager == null || !syncCalManager)
 	 	 	return null;
 		 return syncCalManager.getCalendars({});
-	 } catch (e) {
-		 dump ("Error getting calendars: " + e + "\n");
+	}
+	catch (e) {
+		logMessage("Error getting calendars: " + e, LOG_ERROR);
 		 return null;
 	}
 }
