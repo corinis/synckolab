@@ -1378,51 +1378,6 @@ function addConfig()
 {
 	window.open('chrome://synckolab/content/newWizard.xul', 'newWizard', 'chrome,resizable=0');
 	this.close();
-	/*
-	var newconfig = prompt("Insert the name of the new Configuration");
-	if (newconfig != null && newconfig != "")
-	{
-		if (newconfig.indexOf(" ") != -1)
-		{
-			alert("You can not have a space in the configuration name!");
-			return;
-		}
-		
-		var tree = document.getElementById("configTree");
-		// get the treechildren item
-		var ctree;
-		var cnode = tree.firstChild;
-		while (cnode != null)
-		{
-			if (cnode.nodeName == "treechildren")
-			{
-				ctree = cnode;
-				break;
-			}
-			cnode = cnode.nextSibling;
-		}
-		
-		if (ctree == null)
-			return null;
-
-		// first menuitem
-		var cur = ctree.firstChild;
-		var configs = "";
-		while (cur != null)
-		{
-			if (cur.nodeName == "treeitem")
-			{
-				configs += cur.firstChild.firstChild.getAttribute("label") + ";";
-			}
-			cur = cur.nextSibling;
-		}
-		
-		var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
-		pref.setCharPref("SyncKolab.Configs", configs  + curConfig + ";");
-		// add the tree element
-		generateConfigTree(newconfig);
-	}
-	*/
 }
 
 function delConfig()
@@ -1568,9 +1523,9 @@ function saveSingleConfig()
 	 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
 	 	stream.init(thefile, 2, 0x200, false); // open as "write only"
 
-		var s = "# SyncKolab V1.0.0 Configuration File\n";
+		var s = "# SyncKolab V1.0.4 Configuration File\n";
 		stream.write(s, s.length);
-		writeLine(stream, "Configuration", configName);
+		writeLine(stream, "SyncKolab.Configs", configName+";");
 		
 		writeConfig(configName, stream);
 		
