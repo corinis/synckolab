@@ -689,18 +689,18 @@ var syncCalendar = {
 				// and now really write the message
 		
 				var msg = null;
+				var clonedEvent = cur;
+				if (modifyEventOnExport)
+					clonedEvent = modifyEventOnExport(cur, this);
+
 				if (this.format == "Xml")
 				{
-				    msg = event2kolabXmlMsg(cur, this.email, this.syncTasks);
-                } 
-                else
-                {
-    				var clonedEvent = cur;
-    				if (modifyEventOnExport)
-    					clonedEvent = modifyEventOnExport(cur, this);
-    				
-    				icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
-    					.getService(Components.interfaces.calIICSService);
+					msg = event2kolabXmlMsg(clonedEvent, this.email, this.syncTasks);
+				} 
+				else
+				{
+					icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
+						.getService(Components.interfaces.calIICSService);
 
 					var calComp = icssrv.createIcalComponent("VCALENDAR");
 					calComp.version = "2.0";

@@ -536,7 +536,14 @@ function xml2Event (xml, extraFields, event)
 
 				case "ALARM":
 					if (cur.firstChild)
-						event.alarmOffset = createDuration(decode4XML(cur.firstChild.data));
+					{
+						var cData = decode4XML(cur.firstChild.data);
+						// fix up the cdata if not in the right format
+						if (cData.indexOf("-PT") != 0)
+							cData = "-PT" + cData + "M";
+						
+						event.alarmOffset = createDuration(cData);
+					}
 					break;
 					
 				case "SENSITIVITY":
@@ -919,7 +926,7 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 	var xml = '<?xml version='+'"'+'1.0" encoding='+'"UTF-8"?>\n';
 	if (syncTasks == true)
 	{
-		xml += '<task version='+'"'+'1.0" >\n'
+		xml += '<task version='+'"'+'1.0" >\n';
 		
 		// tasks have a status
 		if (event.isCompleted || event.percentComplete == 100) {
@@ -936,7 +943,7 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 	if (skipVolatiles != true)
 		xml += " <product-id>Synckolab " + gSyncKolabVersion + ", Calendar Sync</product-id>\n";
 
-	xml += " <uid>" + event.id + "</uid>\n"
+	xml += " <uid>" + event.id + "</uid>\n";
 	
 	if(syncTasks == true)
 	{
@@ -1034,8 +1041,8 @@ function cnv_event2xml (event, skipVolatiles, syncTasks, email)
 					days = recRule.getComponent("BYDAY", {});
 					if (days && days.length > 0 && days[0] > 0)
 					{
-						dayindex = days[0] % 8
-						daynumber = (days[0] - dayindex) / 8
+						dayindex = days[0] % 8;
+						daynumber = (days[0] - dayindex) / 8;
 						xml += "  <daynumber>" + daynumber + "</daynumber>\n";
 						xml += "  <day>" + getKolabXmlDayName(dayindex) + "</day>\n";
 					}
@@ -1375,6 +1382,9 @@ function setKolabItemProperty(item, propertyName, value)
  	organizer.role = "CHAIR";
  	organizer.isOrganizer = true;
  	modevent.organizer = organizer;
+	/* set task status to NONE if it is NULL */
+	if (lsyncCalendar.syncTasks && !levent.status)
+		modevent.status="NONE";
  	lsyncCalendar.gCalendar.modifyItem(modevent, levent, lsyncCalendar.gEvents);
  	return modevent;
  }
