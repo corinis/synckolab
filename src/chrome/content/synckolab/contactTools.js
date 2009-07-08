@@ -1084,7 +1084,7 @@ function message2Card (lines, card, extraFields, startI, endI)
 	setCardProperty(card, "PagerNumberType", "");
 	setCardProperty(card, "PhoneticFirstName", "");
 	setCardProperty(card, "PhoneticLastName", "");
-	setCardProperty(card, "PreferMailFormat", ""); //Added by Copart
+	setCardProperty(card, "PreferMailFormat", MAIL_FORMAT_UNKNOWN); 
 	//PRUint32 preferMailFormat = "";
 	setCardProperty(card, "PrimaryEmail", "");
 	setCardProperty(card, "SecondEmail", "");
@@ -1226,16 +1226,20 @@ function message2Card (lines, card, extraFields, startI, endI)
 				found = true;
 		    break;
 			case "X-EMAILFORMAT": 
-			// This will set the Email format to vCard, not part of vCard 3.0 spec, so the X- is there, I assume a Kolab server would just ignore this field
+				// This will set the Email format to vCard, not part of vCard 3.0 spec, so the X- is there, I assume a Kolab server would just ignore this field
 				switch(tok[1]) {
-					case "Unknown":
-						setCardProperty(card, "PreferMailFormat", MAIL_FORMAT_UNKNOWN);
 					case "Plain Text":
 						setCardProperty(card, "PreferMailFormat", MAIL_FORMAT_PLAINTEXT);
+						break;
 					case "HTML":
 						setCardProperty(card, "PreferMailFormat", MAIL_FORMAT_HTML);
+						break;
+					// Unknown or misspeelled!
+					default:
+						setCardProperty(card, "PreferMailFormat", MAIL_FORMAT_UNKNOWN);
 				}
-    		break;
+				break;
+
 			case "X-AIM": // not standard vcard spec, therefore, prepended with an X
 				setCardProperty(card, "AimScreenName", tok[1]);
 				found = true;
