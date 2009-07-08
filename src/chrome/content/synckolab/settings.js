@@ -231,12 +231,19 @@ function init() {
 
 	// get all available configurations
 	var configs = new Array();
-	
+	var configStateLocked = false;
+
 	try {
 		var Config = pref.getCharPref("SyncKolab.Configs");
 		configs = Config.split(';');
 	} catch(ex) {
 		logMessage("ERROR: Reading 'SyncKolab.Configs' failed: " + ex, LOG_ERROR);
+	}
+
+	try {
+		configStateLocked = pref.prefIsLocked("SyncKolab.Configs");
+	} catch(ex) {
+		logMessage("WARNING: failed to read state of SyncKolab.Configs: " + ex, LOG_WARNING);
 	}
 	
 	// in case we did not find anything - check if there are "old" configurations
@@ -250,7 +257,12 @@ function init() {
 		} catch(ex) {
 			logMessage("ERROR: Reading 'SyncKolab.AddressBookConfigs' failed: " + ex, LOG_ERROR);
 		}
-		
+		try {
+			configStateLocked = pref.prefIsLocked("SyncKolab.AddressBookConfigs");
+		} catch(ex) {
+			logMessage("WARNING: failed to read state of SyncKolab.AddressBookConfigs: " + ex, LOG_WARNING);
+		}
+
 		try {
 			var calConfig = pref.getCharPref("SyncKolab.CalendarConfigs");
 			oldConfigs = oldConfigs.concat(calConfig.split(';'));
@@ -258,7 +270,12 @@ function init() {
 		catch(ex) {
 			logMessage("ERROR: Reading 'SyncKolab.CalendarConfigs' failed: " + ex, LOG_ERROR);
 		}
-		
+		try {
+			configStateLocked = pref.prefIsLocked("SyncKolab.CalendarConfigs");
+		} catch(ex) {
+			logMessage("WARNING: failed to read state of SyncKolab.CalendarConfigs: " + ex, LOG_WARNING);
+		}
+
 		// now add each and make sure no doublenames are added:
 		for (var i=0; i < oldConfigs.length; i++)
 		{
@@ -273,6 +290,11 @@ function init() {
 				configs.push(oldConfigs[i]);
 		}
 	}
+
+	// set state of config-admin-buttons
+	document.getElementById("newConfig").setAttribute("disabled", configStateLocked);
+	document.getElementById("loadConfig").setAttribute("disabled", configStateLocked);
+	document.getElementById("delConfig").setAttribute("disabled", configStateLocked);
 	
 	if (configs.length == 0)
 	{
@@ -327,7 +349,13 @@ function init() {
 	} catch (ex) {
 		logMessage("WARNING: failed to read SyncKolab.closeWindow: " + ex, LOG_WARNING);
 	}
-		
+	// set the state
+	try {
+		document.getElementById("closeWnd").setAttribute("disabled", pref.prefIsLocked("SyncKolab.closeWindow"));
+	} catch (ex) {
+		logMessage("WARNING: failed to read state of SyncKolab.closeWindow: " + ex, LOG_WARNING);
+	}
+
 	// set the default debug level
 	var cfgDbgLevel = LOG_WARNING;
 	try {		
@@ -338,9 +366,16 @@ function init() {
 	var debugEle = document.getElementById("debugLvl");
 	debugEle.setAttribute("value", cfgDbgLevel);
 	// get the label
-	debugEle.setAttribute("label", document.getElementById("debugLvl"+cfgDbgLevel).getAttribute("label"));	
-	
-	return;	
+	debugEle.setAttribute("label", document.getElementById("debugLvl"+cfgDbgLevel).getAttribute("label"));
+
+	// set the state
+	try {
+		debugEle.setAttribute("disabled", pref.prefIsLocked("SyncKolab.debugLevel"));
+	} catch (ex) {
+		logMessage("WARNING: failed to read state of SyncKolab.debugLevel: " + ex, LOG_WARNING);
+	}
+
+	return;
 }
 
 function prefillFields() {
@@ -542,12 +577,14 @@ function changeConfig (config)
 //	try
 	{
 		var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
-		
+
 		var act = null;
-				
+		var actStateLocked = false;
+
 		try
 		{
 			act = pref.getCharPref("SyncKolab."+config+".IncomingServer");
+			actStateLocked = pref.prefIsLocked("SyncKolab."+config+".IncomingServer");
 		}
 		catch (ex)
 		{
@@ -556,6 +593,7 @@ function changeConfig (config)
 			try
 			{
 				act = pref.getCharPref("SyncKolab."+config+".ContactIncomingServer");
+				actStateLocked = pref.prefIsLocked("SyncKolab."+config+".ContactIncomingServer");
 			}
 			catch (ex2) 
 			{
@@ -563,6 +601,7 @@ function changeConfig (config)
 				try
 				{
 					act = pref.getCharPref("SyncKolab."+config+".CalendarIncomingServer");
+					actStateLocked = pref.prefIsLocked("SyncKolab."+config+".CalendarIncomingServer");
 				}
 				catch (ex3) {
 					logMessage("WARNING: Reading 'SyncKolab."+config+".CalendarIncomingServer' failed: " + ex3, LOG_WARNING);
@@ -591,6 +630,12 @@ function changeConfig (config)
 			}
 			cur = cur.nextSibling;
 		}
+		// set the state
+		try {
+			actList.setAttribute("disabled", actStateLocked);
+		} catch (ex) {
+			logMessage("WARNING: failed to set state of target-account: " + ex, LOG_WARNING);
+		}
 		// default is 0
 		document.getElementById ("syncInterval").setAttribute("value", 0);
 		try
@@ -602,6 +647,12 @@ function changeConfig (config)
 		{
 			logMessage("WARNING: Reading 'SyncKolab."+config+".autoSync' failed: " + ex, LOG_WARNING);
 		}
+		// set the state
+		try {
+			document.getElementById("syncInterval").setAttribute("disabled", pref.prefIsLocked("SyncKolab."+config+".autoSync"));
+		} catch (ex) {
+			logMessage("WARNING: failed to read state of SyncKolab."+config+".autoSync: " + ex, LOG_WARNING);
+		}
 
 		// default do hide the window
 		document.getElementById ("hiddenWnd").checked = true;
@@ -612,6 +663,12 @@ function changeConfig (config)
 		catch (ex)
 		{
 			logMessage("WARNING: Reading 'SyncKolab."+config+".hiddenWindow' failed: " + ex, LOG_WARNING);
+		}
+		// set the state
+		try {
+			document.getElementById("hiddenWnd").setAttribute("disabled", pref.prefIsLocked("SyncKolab."+config+".hiddenWindow"));
+		} catch (ex) {
+			logMessage("WARNING: failed to read state of SyncKolab."+config+".hiddenWindow: " + ex, LOG_WARNING);
 		}
 
 		// update the resolve settings
@@ -639,6 +696,12 @@ function changeConfig (config)
 				break;
 			}
 			cur = cur.nextSibling;
+		}
+		// set the state
+		try {
+			actList.setAttribute("disabled", pref.prefIsLocked("SyncKolab."+config+".Resolve"));
+		} catch (ex) {
+			logMessage("WARNING: failed to read state of SyncKolab."+config+".Resolve: " + ex, LOG_WARNING);
 		}
 
 		// update the folder selections
@@ -669,6 +732,12 @@ function changeConfig (config)
 				}
 				cur = cur.nextSibling;
 			}
+			// set the state of conURL
+			try {
+				actList.setAttribute("disabled", pref.prefIsLocked("SyncKolab."+config+".AddressBook"));
+			} catch (ex) {
+				logMessage("WARNING: failed to read state of SyncKolab."+config+".AddressBook: " + ex, LOG_WARNING);
+			}
 		}
 
 		var abFormat = null;
@@ -692,12 +761,24 @@ function changeConfig (config)
 			}
 			cur = cur.nextSibling;
 		}
+		// set the state of conFormat
+		try {
+			actList.setAttribute("disabled", pref.prefIsLocked("SyncKolab."+config+".AddressBookFormat"));
+		} catch (ex) {
+			logMessage("WARNING: failed to read state of SyncKolab."+config+".AddressBookFormat: " + ex, LOG_WARNING);
+		}
 
 		document.getElementById ("saveToContactImap").checked = true;
 		try {
 			document.getElementById ("saveToContactImap").checked = pref.getBoolPref("SyncKolab."+config+".saveToContactImap");
 		} catch (ex) {
 			logMessage("WARNING: Reading 'SyncKolab."+config+".saveToContactImap' failed: " + ex, LOG_WARNING);
+		}
+		// set the state
+		try {
+			document.getElementById("saveToContactImap").setAttribute("disabled", pref.prefIsLocked("SyncKolab."+config+".saveToContactImap"));
+		} catch (ex) {
+			logMessage("WARNING: failed to read state of SyncKolab."+config+".saveToContactImap: " + ex, LOG_WARNING);
 		}
 
 		document.getElementById ("syncContacts").checked = false;
@@ -706,8 +787,17 @@ function changeConfig (config)
 		} catch (ex) {
 			logMessage("WARNING: Reading 'SyncKolab."+config+".syncContacts' failed: " + ex, LOG_WARNING);
 		}
-		setControlStateContacts(document.getElementById ("syncContacts").checked);
-		
+		// set the state
+		var syncContactsStateLocked = false;
+		try {
+			syncContactsStateLocked = pref.prefIsLocked("SyncKolab."+config+".syncContacts");
+		} catch (ex) {
+			logMessage("WARNING: failed to read state of SyncKolab."+config+".syncContacts: " + ex, LOG_WARNING);
+		}
+		document.getElementById("syncContacts").setAttribute("disabled", syncContactsStateLocked);
+
+		setControlStateContacts( document.getElementById("syncContacts").checked && (!syncContactsStateLocked) );
+
 		var sCurFolder = null;
 		try
 		{
@@ -765,7 +855,13 @@ function changeConfig (config)
 				}
 				cur = cur.nextSibling;
 			}
-	
+			// set the state of calURL
+			try {
+				actList.setAttribute("disabled", pref.prefIsLocked("SyncKolab."+config+".Calendar"));
+			} catch (ex) {
+				logMessage("WARNING: failed to read state of SyncKolab."+config+".Calendar: " + ex, LOG_WARNING);
+			}
+
 			var calFormat = null;
 			try
 			{
@@ -788,7 +884,13 @@ function changeConfig (config)
 				}
 				cur = cur.nextSibling;
 			}
-			
+			// set the state of calFormat
+			try {
+				actList.setAttribute("disabled", pref.prefIsLocked("SyncKolab."+config+".CalendarFormat"));
+			} catch (ex) {
+				logMessage("WARNING: failed to read state of SyncKolab."+config+".CalendarFormat: " + ex, LOG_WARNING);
+			}
+
 			// per default: sync last 6 monts (~180 days)
 			document.getElementById ("calSyncTimeframe").setAttribute("value", 180);
 			try
@@ -797,8 +899,14 @@ function changeConfig (config)
 			}
 			catch (ex) {
 				logMessage("WARNING: Reading 'SyncKolab."+config+".calSyncTimeframe' failed: " + ex, LOG_WARNING);
-			}	
-			
+			}
+			// set the state of calSyncTimeframe
+			try {
+				document.getElementById("calSyncTimeframe").setAttribute("disabled", pref.prefIsLocked("SyncKolab."+config+".calSyncTimeframe"));
+			} catch (ex) {
+				logMessage("WARNING: failed to read state of SyncKolab."+config+".calSyncTimeframe: " + ex, LOG_WARNING);
+			}
+
 			document.getElementById ("saveToCalendarImap").checked = true;
 			try
 			{
@@ -814,8 +922,17 @@ function changeConfig (config)
 			} catch (ex) {
 				logMessage("WARNING: Reading 'SyncKolab."+config+".syncCalendar' failed: " + ex, LOG_WARNING);
 			}
-			setControlStateCalendar(document.getElementById ("syncCalendar").checked);
-			
+			// set the state of syncCalendar
+			var syncCalendarStateLocked = false;
+			try {
+				syncCalendarStateLocked = pref.prefIsLocked("SyncKolab."+config+".syncCalendar");
+			} catch (ex) {
+				logMessage("WARNING: failed to read state of SyncKolab."+config+".syncCalendar: " + ex, LOG_WARNING);
+			}
+			document.getElementById("syncCalendar").setAttribute("disabled", syncCalendarStateLocked);
+
+			setControlStateCalendar( document.getElementById("syncCalendar").checked && (!syncCalendarStateLocked) );
+
 			var sCurFolder = null;
 			try
 			{
@@ -841,8 +958,14 @@ function changeConfig (config)
 							tree.boxObject.scrollToRow(treei);
 					}
 				}
+				// set the state of calImapFolder
+				try {
+					document.getElementById("calImapFolder").setAttribute("disabled", pref.prefIsLocked("SyncKolab."+config+".CalendarFolderPath"));
+				} catch (ex) {
+					logMessage("WARNING: failed to read state of SyncKolab."+config+".CalendarFolderPath: " + ex, LOG_WARNING);
+				}
 			}
-			
+
 			// the tasks
 			// the calendar			
 			ab = null;
@@ -867,7 +990,13 @@ function changeConfig (config)
 				}
 				cur = cur.nextSibling;
 			}
-	
+			// set the state of taskURL
+			try {
+				actList.setAttribute("disabled", pref.prefIsLocked("SyncKolab."+config+".Tasks"));
+			} catch (ex) {
+				logMessage("WARNING: failed to read state of SyncKolab."+config+".Tasks: " + ex, LOG_WARNING);
+			}
+
 			calFormat = null;
 			try
 			{
@@ -890,7 +1019,13 @@ function changeConfig (config)
 				}
 				cur = cur.nextSibling;
 			}
-	
+			// set the state of taskFormat
+			try {
+				actList.setAttribute("disabled", pref.prefIsLocked("SyncKolab."+config+".TaskFormat"));
+			} catch (ex) {
+				logMessage("WARNING: failed to read state of SyncKolab."+config+".TaskFormat: " + ex, LOG_WARNING);
+			}
+
 			// per default: sync last 6 monts (~180 days)
 			document.getElementById ("taskSyncTimeframe").setAttribute("value", 180);
 			try
@@ -899,8 +1034,14 @@ function changeConfig (config)
 			}
 			catch (ex) {
 				logMessage("WARNING: Reading 'SyncKolab."+config+".taskSyncTimeframe' failed: " + ex, LOG_WARNING);
-			}	
-	
+			}
+			// set the state of taskSyncTimeframe
+			try {
+				document.getElementById("taskSyncTimeframe").setAttribute("disabled", pref.prefIsLocked("SyncKolab."+config+".taskSyncTimeframe"));
+			} catch (ex) {
+				logMessage("WARNING: failed to read state of SyncKolab."+config+".taskSyncTimeframe: " + ex, LOG_WARNING);
+			}
+
 			document.getElementById ("saveToTaskImap").checked = true;
 			try
 			{
@@ -909,15 +1050,30 @@ function changeConfig (config)
 			catch (ex) {
 				logMessage("WARNING: Reading 'SyncKolab."+config+".saveToTaskImap' failed: " + ex, LOG_WARNING);
 			}
-			
+			// set the state of saveToTaskImap
+			try {
+				document.getElementById("saveToTaskImap").setAttribute("disabled", pref.prefIsLocked("SyncKolab."+config+".saveToTaskImap"));
+			} catch (ex) {
+				logMessage("WARNING: failed to read state of SyncKolab."+config+".saveToTaskImap: " + ex, LOG_WARNING);
+			}
+
 			document.getElementById ("syncTasks").checked = false;
 			try {
 				document.getElementById ("syncTasks").checked = pref.getBoolPref("SyncKolab."+config+".syncTasks");
 			} catch (ex) {
 				logMessage("WARNING: Reading 'SyncKolab."+config+".syncTask' failed: " + ex, LOG_WARNING);
 			}
-			setControlStateTasks(document.getElementById ("syncTasks").checked);
-			
+			// set the state of syncTasks
+			var syncTasksStateLocked = false;
+			try {
+				syncTasksStateLocked = pref.prefIsLocked("SyncKolab."+config+".syncTasks");
+			} catch (ex) {
+				logMessage("WARNING: failed to read state of SyncKolab."+config+".syncTasks: " + ex, LOG_WARNING);
+			}
+			document.getElementById("syncTasks").setAttribute("disabled", syncTasksStateLocked);
+
+			setControlStateTasks( document.getElementById("syncTasks").checked && (!syncTasksStateLocked) );
+
 			var sCurFolder = null;
 			try
 			{
@@ -934,14 +1090,21 @@ function changeConfig (config)
 				if (document.getElementById(sCurFolder+"t") != null)
 				{			
 					var treei = tree.view.getIndexOfItem(document.getElementById(sCurFolder+"t"));
-					if (treei < 0)
+					if (treei < 0) {
 						alert("Problem with treeview - unable to select " + treei);
+					}
 					else
 					{
 						tree.view.selection.select(treei); 
 						if (tree.boxObject)
 							tree.boxObject.scrollToRow(treei);
 					}
+				}
+				// set the state of taskImapFolder
+				try {
+					document.getElementById("taskImapFolder").setAttribute("disabled", pref.prefIsLocked("SyncKolab."+config+".TaskFolderPath"));
+				} catch (ex) {
+					logMessage("WARNING: failed to read state of SyncKolab."+config+".TaskFolderPath: " + ex, LOG_WARNING);
 				}
 			}
 		}
