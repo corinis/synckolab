@@ -1450,12 +1450,13 @@ function saveAllPrefs (configName) {
 		pref.setCharPref("SyncKolab."+config+".Resolve", document.getElementById ("DefaultResolve").value);
 	else
 		pref.setCharPref("SyncKolab."+config+".Resolve", "ask");
-	if (document.getElementById ("syncInterval"))
-		pref.setIntPref("SyncKolab."+config+".autoSync", document.getElementById ("syncInterval").value);
+
+	if (document.getElementById("syncInterval") && parseInt(document.getElementById ("syncInterval").value) != 'NaN')
+		pref.setIntPref("SyncKolab."+config+".autoSync", parseInt(document.getElementById ("syncInterval").value));
 	else
 		pref.setIntPref("SyncKolab."+config+".autoSync", 0);
 	
-	if (document.getElementById ("hiddenWnd"))
+	if (document.getElementById("hiddenWnd"))
 		pref.setBoolPref("SyncKolab."+config+".hiddenWindow", document.getElementById ("hiddenWnd").checked);
 	else
 		pref.setBoolPref("SyncKolab."+config+".hiddenWindow", false);
@@ -1472,8 +1473,8 @@ function saveAllPrefs (configName) {
 		pref.setCharPref("SyncKolab."+config+".CalendarFormat", document.getElementById ("calFormat").value);
 		pref.setBoolPref("SyncKolab."+config+".saveToCalendarImap", document.getElementById ("saveToCalendarImap").checked);
 		pref.setBoolPref("SyncKolab."+config+".syncCalendar", document.getElementById ("syncCalendar").checked);
-		if (document.getElementById("calSyncTimeframe") != null)
-			pref.setIntPref("SyncKolab."+config+".calSyncTimeframe", document.getElementById("calSyncTimeframe").value);
+		if (document.getElementById("calSyncTimeframe") != null && parseInt(document.getElementById("calSyncTimeframe").value) != 'NaN')
+			pref.setIntPref("SyncKolab."+config+".calSyncTimeframe", parseInt(document.getElementById("calSyncTimeframe").value));
 		else
 			pref.setIntPref("SyncKolab."+config+".calSyncTimeframe", 180);
 			
@@ -1481,8 +1482,8 @@ function saveAllPrefs (configName) {
 		pref.setCharPref("SyncKolab."+config+".TaskFormat", document.getElementById ("taskFormat").value);
 		pref.setBoolPref("SyncKolab."+config+".saveToTaskImap", document.getElementById ("saveToTaskImap").checked);
 		pref.setBoolPref("SyncKolab."+config+".syncTasks", document.getElementById ("syncTasks").checked);
-		if (document.getElementById("taskSyncTimeframe"))
-			pref.setIntPref("SyncKolab."+config+".taskSyncTimeframe", document.getElementById("taskSyncTimeframe").value);
+		if (document.getElementById("taskSyncTimeframe") && parseInt(document.getElementById("taskSyncTimeframe").value) != 'NaN')
+			pref.setIntPref("SyncKolab."+config+".taskSyncTimeframe", parseInt(document.getElementById("taskSyncTimeframe").value));
 		else
 			pref.setIntPref("SyncKolab."+config+".taskSyncTimeframe", 180);
 	}
