@@ -112,18 +112,14 @@ RDF.prototype._rdf_init = function(src, flags) {
       var obs = {
         rdf: this, // backreference to ourselves
 
-        onBeginLoad: function(aSink)
-        {
+        onBeginLoad: function(aSink) {
         },
 
-        onInterrupt: function(aSink)
-        {},
+        onInterrupt: function(aSink) {},
 
-        onResume: function(aSink)
-        {},
+        onResume: function(aSink) {},
 
-        onEndLoad: function(aSink)
-        {
+        onEndLoad: function(aSink) {
            this.rdf.loaded = true;
            this.rdf.setValid(true);
         },

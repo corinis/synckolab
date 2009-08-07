@@ -91,7 +91,7 @@ var consoleService = Components.classes["@mozilla.org/consoleservice;1"].getServ
 // string bundle use: strBundle.getString("KEYNAME")
 var strBundle;
 
-String.prototype.trim = function() { return this.replace(/^\s+|\s+$/g, ''); }
+String.prototype.trim = function() { return this.replace(/^\s+|\s+$/g, ''); };
 
 /**
  * Generate the interface subtree for a new configuration 
@@ -1119,7 +1119,7 @@ function changeConfig (config)
 function setFolders(act)
 {
 	updateFolder(act);
-	updateCalFolder(act)
+	updateCalFolder(act);
 	updateTaskFolder(act);
 }
 
@@ -1976,7 +1976,7 @@ function loadConfigItem(config, paramName, paramValue)
 	switch (keyType)
 	{
 		case FIELD_TYPE_BOOL:
-			config.setBoolPref(keyName, paramValue)
+			config.setBoolPref(keyName, paramValue);
 			break;
 		case FIELD_TYPE_CHAR:
 			config.setCharPref(keyName, paramValue);

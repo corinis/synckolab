@@ -65,13 +65,11 @@ RDFBase.prototype = {
     return this.dsource;
   },
 
-  isValid : function()
-  {
+  isValid : function() {
     return this.valid;
   },
 
-  setValid : function(aTruth)
-  {
+  setValid : function(aTruth)  {
     if(typeof(aTruth)=='boolean') {
         this.valid = aTruth;
         return this.valid;

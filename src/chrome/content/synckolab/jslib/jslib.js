@@ -32,7 +32,7 @@ try {
 const JS_LIB_LOADED     = true;
 
 const JS_LIBRARY        = "jslib";
-const JS_LIB_FILE       = "jslib.js"
+const JS_LIB_FILE       = "jslib.js";
 const JS_LIB_PATH       = "chrome://synckolab/content/jslib/";
 const JS_LIB_VERSION    = "0.1.123";
 const JS_LIB_AUTHORS    = "\tPete Collins       <petejc@mozdevgroup.com>\n"     +
@@ -77,7 +77,7 @@ const jslib_help = "need to write some global help docs here\n";
 
 // io library modules
 const jslib_io         = JS_LIB_PATH+'io/io.js';
-const jslib_filesystem = JS_LIB_PATH+'io/filesystem.js'
+const jslib_filesystem = JS_LIB_PATH+'io/filesystem.js';
 const jslib_file       = JS_LIB_PATH+'io/file.js';
 const jslib_fileutils  = JS_LIB_PATH+'io/fileUtils.js';
 const jslib_dir        = JS_LIB_PATH+'io/dir.js';
@@ -345,7 +345,7 @@ function jslib_turnDumpOn () {
   include (jslib_prefs);
   // turn on dump
   var pref = new Prefs();
-  const prefStr = "browser.dom.window.dump.enabled"
+  const prefStr = "browser.dom.window.dump.enabled";
                                                                                                     
   // turn dump on if not enabled
   if (!pref.getBool(prefStr)) {
@@ -360,7 +360,7 @@ function jslib_turnDumpOff () {
   include (jslib_prefs);
   // turn off dump
   var pref = new Prefs();
-  const prefStr = "browser.dom.window.dump.enabled"
+  const prefStr = "browser.dom.window.dump.enabled";
                                                                                                     
   // turn dump off if enabled
   if (pref.getBool(prefStr)) {

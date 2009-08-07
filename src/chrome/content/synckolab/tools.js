@@ -385,7 +385,7 @@ function stripMailHeader (content)
 			// if that gives us an outofmemoryexception use the slow but working javascript
 			// engine
 			try {
-				content = atob(content)
+				content = atob(content);
 			} catch (e) {
 				// out of memory error... this can be handled :)
 				if (e.result == Components.results.NS_ERROR_OUT_OF_MEMORY)
@@ -671,7 +671,7 @@ function get_randomVcardId()
 	
 	var cid="";
 	for (i=0;i<16;i++){
-		cid = cid + hex[Math.round(Math.random()*14)]
+		cid = cid + hex[Math.round(Math.random()*14)];
 	}
 	return cid;
 }
@@ -695,7 +695,7 @@ function deleteTempFolders ()
 	try{
 	    sfile.initWithPath(np);
 	    if (sfile.exists()) sfile.remove(true);
-	    np = np + ".msf"
+	    np = np + ".msf";
 	    sfile.initWithPath(np);
 	    if (sfile.exists()) sfile.remove(true);
 	} catch(e) {
@@ -1002,7 +1002,7 @@ function string2CalDateTime (val, useUTC)
         jsDate = new Date(Date.UTC(cdate[0], cdate[1]-1, cdate[2], ctime[0], ctime[1], ctime[2]));
     else
         jsDate = new Date(cdate[0], cdate[1]-1, cdate[2], ctime[0], ctime[1], ctime[2]);
-    calDateTime.jsDate = jsDate
+    calDateTime.jsDate = jsDate;
 	return calDateTime;
 }
 
@@ -1285,7 +1285,7 @@ function generateMail (cid, mail, adsubject, mime, part, content, hr)
 	msg += "User-Agent: SyncKolab " + gSyncKolabVersion + "\n";
 	if (part)
 		msg += "X-Kolab-Type: "+mime+"\n";
-	msg += "\n"
+	msg += "\n";
 	if (part)
 	{
 		msg += '--Boundary-00='+bound+'\n';
@@ -1309,9 +1309,9 @@ function generateMail (cid, mail, adsubject, mime, part, content, hr)
 			msg += '\nNotice:\nThe information above is only valid, if no other client than synckolab updated this message. (ie. a client that updates the attachment but not the message)\n';
 		}
 			
-		msg += '\n--Boundary-00='+bound+'\n'
+		msg += '\n--Boundary-00='+bound+'\n';
 		msg += 'Content-Type: '+mime+';\n name="kolab.xml"\n';
-		msg += 'Content-Transfer-Encoding: quoted-printable\n'
+		msg += 'Content-Transfer-Encoding: quoted-printable\n';
 		msg += 'Content-Disposition: attachment;\n filename="kolab.xml"\n\n';
 	}
 	msg += content + '\n';
@@ -1458,7 +1458,7 @@ function JavaScriptBase64()
                                 'o','p','q','r','s','t','u','v',
                                 'w','x','y','z','0','1','2','3',
                                 '4','5','6','7','8','9','*','/');
-    }
+    };
     
     this.encode = function()
     {
@@ -1485,7 +1485,7 @@ function JavaScriptBase64()
             result += this.base64[number];
         }
         return result;
-    }
+    };
 
     this.decode = function()
     {
@@ -1518,7 +1518,7 @@ function JavaScriptBase64()
             result += String.fromCharCode(number);
         }
         return result;
-    }
+    };
 }
 
 
@@ -1550,7 +1550,7 @@ SKMap.prototype.getIKey = function (key)
 	for (var k = 0; k < key.length; k++)
 		sum += key.charCodeAt(k);
 	return sum;
-}
+};
 
 SKMap.prototype.put = function( key, value )
 {
@@ -1562,14 +1562,14 @@ SKMap.prototype.put = function( key, value )
         car[car.length] = new SKKeyValue( key, value );
         this.len++;
     }
-}
+};
 
 SKMap.prototype.clear = function ()
 {
     for (var k = 0; k < this.seed; k++)
     	this.array[k] = new Array();
     this.len = 0;		
-}
+};
 
 SKMap.prototype.remove = function( key )
 {
@@ -1586,7 +1586,7 @@ SKMap.prototype.remove = function( key )
         }
     }
     return false;
-}
+};
 
 SKMap.prototype.get = function( key )
 {
@@ -1601,10 +1601,10 @@ SKMap.prototype.get = function( key )
         }
     }
     return null;
-}
+};
 
 SKMap.prototype.length = function()
 {
     return this.len;
-}
+};
  

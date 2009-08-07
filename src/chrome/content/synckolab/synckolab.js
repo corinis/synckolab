@@ -732,7 +732,7 @@ function getMessage ()
 		return;
 	}
 		
- 	var cur = null
+ 	var cur = null;
  	try
  	{
  		if (gMessages.hasMoreElements ())
@@ -877,7 +877,7 @@ var syncKolabUrlListener = {
 		logMessage("Finished folder frefresh; ONSTOP="+exitCode+" : " + url, LOG_DEBUG );
 		getContent();
 	}
-}
+};
 
 // nsIStreamListener
 var syncKolabStreamListener = {
