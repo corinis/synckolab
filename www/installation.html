@@ -1,38 +1,43 @@
 <!-- MAIN CONTENT -->
 <h5 class="page-header"><a id="content" name="content">Download</a></h5>
 <h6>Latest stable</h6>
-<p><a href="http://downloads.mozdev.org/synckolab/synckolab-1.0.0.xpi">SyncKolab 1.0.0</a></p>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-1.0.3.xpi">SyncKolab 1.0.3</a></p>
 <h6>Latest Nightly</h6>
 <p><a href="http://www.gargan.org/extensions/synckolab-NIGHTLY.xpi">SyncKolab NIGHTLY</a></p>
 <h6>Previous Releases</h6>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-1.0.2.xpi">SyncKolab 1.0.2</a></p>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-1.0.1.xpi">SyncKolab 1.0.1</a></p>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-1.0.0.xpi">SyncKolab 1.0.0</a></p>
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.6.0.xpi">SyncKolab 0.6.0</a></p>
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.5.3.xpi">SyncKolab 0.5.3</a></p>
 <p><a href="http://downloads.mozdev.org/synckolab/synckolab-0.5.2.xpi">SyncKolab 0.5.2</a></p>
 
 <h5 class="page-header">Release Notes</h5>
 <h6>For updated release notes see <a href="http://www.gargan.org/extensions/synckolab.html">www.gargan.org</a></h6>
-
-<h3>synckolab 0.6.0</h3>
+<h3>synckolab 1.0.3</h3>
 <p><pre>
-In case you have problems during installation:
-- uninstall synckolab
-- remove all lines containing synckolab from your prefs.js (in your thunderbird profile folder)
-- remove all *.hdb files from your profile folder
-- install 0.6.0 and configure everything
+* changed it to use pretty Name instead of basemessageuri (<b>REQUIRED RECONFIGURATION OF ALL CONFIGS!!! backup before use!</b>)
+* finished sync of allowremotecontent field
+* updated messages
+* fixed bugs:
+ - <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=20084">#20084</a> Kerio Mail Server Incompatibility
+ - <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=20100">#20100</a> "mailto:" tag in <smtp-address> field failing event comparison
+ - <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=20102">#20102</a> Content-transfer-encoding on kolab.xml and incorrect parsing
+ - <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=20190">#20190</a> XML Contact parsing - Home Web Page and Business Web Page switched
+ - <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=20216">#20216</a> Usernames consisting of digits are ignored
+ - <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=20239">#20239</a> Custom 3 filed not controlled nor synced
+ - <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=20296">#20296</a> Encoding issues
+ - <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=20593">#20593</a> Notes not synced
+ - <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=20292">#20292</a> Images in email not syned
+ - <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=20046">#20046</a> config saved correctly
+ - <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=20596">#20596</a> added extra exception catch and debug output (wip)
+ - <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=20595">#20595</a> fix for problematic uuids (containing :)
+ - <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=20814">#20814</a> maximum number of minutes before next sync upped to 5 digits
+ - <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=20815">#20815</a> Setup does not work any more
+ - <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=20876">#20876</a> multiple syncs can be running in parallel
 
-Changelog:
-* renamed global variables to remove side effect with other extensions
-* added check for the "imap-deleted" flag
-* huge speed increase by using hashmap instead of array for internal calendar/contact database (about 500 entries/minute)
-* reduced cpu usage and removed deadlocks (also due to hashmaps)
-* changed flags for temporaray files (now use 0600 instead of 0666) so they arent world readable
-* added priority flag for todo/agenda
-* fixed little bug that prevented additional info files to be written correctly
-* fixed location for cache folder (might result in a longer wait for first sync - again)
-* fixed delete
-* prepared code for 3.0a
-* fixed problems with calendar sync
 </pre></p>
+
 
 <a href="javascript:" onclick="document.getElementById('older').style.display='block';">display older releases</a>
 
@@ -113,6 +118,87 @@ Step 1: from 0.3.0 to 0.4.19 <b>calendar is required</b>. <a href="http://www.mo
 <h5 class="page-header">Release Notes</h5>
 <h6>For updated release notes see <a href="http://www.gargan.org/extensions/synckolab.html">www.gargan.org</a></h6>
 
+	<h3>synckolab 1.0.2</h3>
+	<p><pre>
+* disable uri-encoding for vcards (should fix problems with other clients like citadel)
+* more citadel fixes
+* fixed bugs:
+  - <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=19412">#19412</a> (kolab.xml not well formed)
+  - <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=19483">#19483</a> (unparseable messages)
+  - <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=19597">#19597</a> (Synchronization stops and doesn�t continue)
+  - <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=19764">#19764</a> (sync fails for calendar - CallDateTime is not defined)
+  - <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=19779">#19779</a> (Sync fails on ADR;HOME:)
+  - <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=19335">#19335</a> (Only one imap account can be chosen)
+  - <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=19781">#19781</a> (Parsing empty BDAY: contactTools.  js fails at line 1237)
+  - <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=19559">#19559</a> (Compatibility between KAddressBook and SyncKolab)
+  - <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=19666">#19666</a> ("Custom 2" value forces update on server)
+  - <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=19464">#19464</a> (SyncKolab Fails During Sync)
+* should work with lightning 0.9pre
+* added fix from Nicolas Hatier to prevent weird lightning behaviour
+* fixed an syntax error (never work in more than one programming languages....)
+	</pre></p>
+	<h3>synckolab 1.0.1</h3>
+	<p><pre>
+In case you have problems:
+- uninstall synckolab
+- remove all lines containing synckolab from your prefs.js (in your thunderbird profile folder)
+- remove all *.hdb files from your profile folder and the synckolab subfolder
+- install 1.0.1 and configure everything
+
+Known Limitations:
+- no Mailing List support
+- untested on newest alpha/beta releases of lightning/thunderbird
+
+Changelog:
+* fixed <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=19184">#19104</a>
+* fixed <a href="https://www.mozdev.org/bugs/show_bug.cgi?id=19169">#19169</a>
+* fixed problem with compact (problematic function name)
+* added exception handling for deletecards
+
+	</pre></p>
+	<h3>synckolab 1.0.0</h3>
+	<p><pre>
+		
+* Added prefer-mail-format to contacts (XML Format)
+* contact now displays displayname if no name/surname is given
+* calendar now correctly writes/reads sync db file (speedup)
+* calendar finally syncs correctly (bad error in database file)
+* added seamonkey to the installable targets
+* mail format changes recognized
+* successfully tested calendar sync with thunderbird 3.0a1
+* added seamonkey target application
+* hu-HU translation added
+* added possibility to use -1 as sync time to sync ALL entries
+* fixed #1801: multiple attached cards/xmls are now handled correctly
+* fixed Problems with newlines on parsers (two newlines made the parser cut off the xml)
+* fixed a problem that sometimes prevented multipart messages from being parsed as xml correctly
+* base64 errors fixed (if the =NUM was in the text it was accidently used as base64)
+* added option to specify debug level (default:warning - set to DEBUG if you got a problem)
+* added French translation
+	</pre></p>
+	
+	<h3>synckolab 0.6.0</h3>
+	<p><pre>
+		In case you have problems during installation:
+		- uninstall synckolab
+		- remove all lines containing synckolab from your prefs.js (in your thunderbird profile folder)
+		- remove all *.hdb files from your profile folder
+		- install 0.6.0 and configure everything
+		
+		Changelog:
+		* renamed global variables to remove side effect with other extensions
+		* added check for the "imap-deleted" flag
+		* huge speed increase by using hashmap instead of array for internal calendar/contact database (about 500 entries/minute)
+		* reduced cpu usage and removed deadlocks (also due to hashmaps)
+		* changed flags for temporaray files (now use 0600 instead of 0666) so they arent world readable
+		* added priority flag for todo/agenda
+		* fixed little bug that prevented additional info files to be written correctly
+		* fixed location for cache folder (might result in a longer wait for first sync - again)
+		* fixed delete
+		* prepared code for 3.0a
+		* fixed problems with calendar sync
+	</pre></p>
+	
 <h3>synckolab 0.5.3</h3>
 <p><pre>
 * when informaiton window is hidden the status bar holds the sync status
