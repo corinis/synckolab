@@ -226,7 +226,7 @@
 			</menulist> 
 		</hbox>
 
-		<tree flex="7" id="conImapFolder" rows="7" height="100" width="350" hidecolumnpicker="true" seltype="single" onselect="setWizConFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
+		<tree class="syncKolab" flex="7" id="conImapFolder" rows="7" height="100" width="350" hidecolumnpicker="true" seltype="single" onselect="setWizConFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
       		<treecols>
 		      <treecol id="conFolder" label="&synckolab.settings.ContactFolder;" primary="true" flex="1"/>
   			</treecols>  			
@@ -259,7 +259,7 @@
 		</hbox>
     	<separator class="thin"/>
       
-      <tree flex="7" id="calImapFolder" rows="7" height="100" width="350" hidecolumnpicker="true" seltype="single" onselect="setWizCalFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
+      <tree class="synckolab" flex="7" id="calImapFolder" rows="7" height="100" width="350" hidecolumnpicker="true" seltype="single" onselect="setWizCalFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
       	<treecols>
 		      <treecol id="calFolder" label="&synckolab.settings.CalendarFolder;" primary="true" flex="1"/>
   			</treecols>
@@ -291,7 +291,7 @@
 			</menulist> 
 		</hbox>
 
-      <tree flex="7" id="taskImapFolder" rows="7" height="100" width="350" hidecolumnpicker="true" seltype="single" onselect="setWizTaskFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
+      <tree class="synckolab" flex="7" id="taskImapFolder" rows="7" height="100" width="350" hidecolumnpicker="true" seltype="single" onselect="setWizTaskFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
       	<treecols>
 		      <treecol id="taskFolder" label="&synckolab.settings.TaskFolder;" primary="true" flex="1"/>
   			</treecols>

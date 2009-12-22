@@ -28,7 +28,7 @@
         <hbox flex="1">
             <vbox flex="1">
                 <!--  Tree with all configurations -->
-                <tree hidecolumnpicker="true" id="configTree" flex="1"
+                <tree class="synckolab" hidecolumnpicker="true" id="configTree" flex="1"
                     onselect="setSyncPrefView(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));"
                     width="150">
                     <treecols>
@@ -157,7 +157,7 @@
                             <menulist id="conURL"> </menulist>
                             <separator class="thin"/>
 
-                            <tree flex="7" id="conImapFolder" rows="7" height="150" width="250"
+                            <tree class="synckolab" flex="7" id="conImapFolder" rows="7" height="150" width="250"
                                 hidecolumnpicker="true" seltype="single"
                                 onselect="setFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
                                 <treecols>
@@ -197,7 +197,7 @@
 
                             <separator class="thin"/>
 
-                            <tree flex="7" id="calImapFolder" rows="7" height="150" width="250"
+                            <tree class="synckolab" flex="7" id="calImapFolder" rows="7" height="150" width="250"
                                 hidecolumnpicker="true" seltype="single"
                                 onselect="setCalFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
                                 <treecols>
@@ -236,7 +236,7 @@
 
                             <separator class="thin"/>
 
-                            <tree flex="7" id="taskImapFolder" rows="7" height="150" width="250"
+                            <tree class="synckolab" flex="7" id="taskImapFolder" rows="7" height="150" width="250"
                                 hidecolumnpicker="true" seltype="single"
                                 onselect="setTaskFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
                                 <treecols>

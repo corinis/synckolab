@@ -734,7 +734,12 @@ var syncAddressBook = {
 		    	logMessage("adding unsaved card: " + getUID (curItem), LOG_INFO + LOG_AB);
 			
 			writeCur = true;
-			cur.editCardToDatabase ("moz-abmdbdirectory://"+this.gAddressBook);
+			// tbird<3
+			if (cur.editCardToDatabase)
+				cur.editCardToDatabase ("moz-abmdbdirectory://"+this.gAddressBook);
+			else
+				this.gAddressBook.modifyCard(cur);
+			
 			
 			// create a new item in the itemList for display
 			this.curItemInList = this.doc.createElement("listitem");
