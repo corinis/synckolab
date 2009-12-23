@@ -4,7 +4,7 @@
 
 <window
     id="progress-window"
-    title="Synchronizing with Kolab Folders "
+    title="Synchronizing with Imap Folders "
     orient="horizontal"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
   <script type="application/x-javascript" src="synckolab.js"/>
