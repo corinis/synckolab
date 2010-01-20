@@ -41,7 +41,16 @@
  *   - all email messages with a date-header older than today-gSyncTimeFrame(in days) will also be ignored!
  *   - -1=take all messages
  */
-var syncCalendar = {
+
+if(!com) var com={};
+if(!com.synckolab) com.synckolab={};
+
+com.synckolab.Calendar = {
+	// package shortcuts:
+	global: com.synckolab.global,
+	tools: com.synckolab.tools,
+	calTools: com.synckolab.calendarTools,
+	
 	isTbird2: true, // default: tbird 2 
 	gConflictResolve : "ask", // conflict resolution (default: ask what to do)
 
@@ -90,10 +99,10 @@ var syncCalendar = {
 	},
 
 	init: function(config) {
-		if (!isCalendarAvailable ())
+		if (!calTools.isCalendarAvailable ())
 			return;
 
-		logMessage("Initialising calendar...", LOG_INFO);
+		this.tools.logMessage("Initialising calendar...", this.global.LOG_INFO);
 			
 		this.forceServerCopy = false;
 		this.forceLocalCopy = false;
@@ -107,7 +116,7 @@ var syncCalendar = {
 			}
 			catch (e) 
 			{
-				logMessage("WARNING: Reading 'SyncKolab."+config+".Resolve' failed: " + e, LOG_WARNING);
+				this.tools.logMessage("WARNING: Reading 'SyncKolab."+config+".Resolve' failed: " + e, this.global.LOG_WARNING);
 			}
 
 			if (this.syncTasks == true)
@@ -125,7 +134,7 @@ var syncCalendar = {
 					this.gSyncTimeFrame = pref.getIntPref("SyncKolab."+config+".taskSyncTimeframe");
 				}
 				catch (ignore) {
-					logMessage("Sync Time frame is not specified", LOG_WARNING);
+					this.tools.logMessage("Sync Time frame is not specified", this.global.LOG_WARNING);
 					// per default take all
 					this.gSyncTimeFrame = -1;
 				}
@@ -146,18 +155,18 @@ var syncCalendar = {
 					this.gSyncTimeFrame = pref.getIntPref("SyncKolab."+config+".calSyncTimeframe");
 				}
 				catch (ignore) {
-					logMessage("Sync Time frame is not specified", LOG_WARNING);
+					this.tools.logMessage("Sync Time frame is not specified", this.global.LOG_WARNING);
 					// per default take all
 					this.gSyncTimeFrame = -1;
 				}			 
 			}			
 		} catch(e) {
-			logMessage("Error on reading config " + config + "\n" + e, LOG_ERROR);
+			this.tools.logMessage("Error on reading config " + config + "\n" + e, this.global.LOG_ERROR);
 			return;
 		}
 
 		// get the correct calendar instance
-		var calendars = getSynckolabCalendars();
+		var calendars = com.synckolab.cal.tools.getCalendars();
 		for( var i = 0; i < calendars.length; i++ )
 	    {
 	    	if (calendars[i].name == this.gCalendarName || 
@@ -188,7 +197,7 @@ var syncCalendar = {
 	
 	init2: function (nextFunc, sync)	{
 
-		logMessage("Init2 for " + (this.syncTasks == true?"tasks":"calendar"), LOG_DEBUG);
+		this.tools.logMessage("Init2 for " + (this.syncTasks == true?"tasks":"calendar"), this.global.LOG_DEBUG);
 		// get ALL the items from calendar - when done call nextfunc
 		this.gEvents.nextFunc = nextFunc;
 		this.gEvents.events = new Array();
@@ -207,7 +216,7 @@ var syncCalendar = {
 				this.gCalDB.put(this.gEvents.events[i].id, this.gEvents.events[i]);
 			}
 				
-			logMessage("Getting items for " + (this.syncTasks == true?"tasks":"calendar"), LOG_CAL + LOG_DEBUG);
+			this.tools.logMessage("Getting items for " + (this.syncTasks == true?"tasks":"calendar"), this.global.LOG_CAL + this.global.LOG_DEBUG);
 			
 			// if no item has been read, onGetResult has never been called 
 			// leaving us stuck in the events chain
@@ -227,10 +236,10 @@ var syncCalendar = {
 		events: new Array(),
 		sync: '',
 		onOperationComplete: function(aCalendar, aStatus, aOperator, aId, aDetail) {		
-			    logMessage("operation "+(this.syncTasks == true?"tasks":"calendar")+": status="+aStatus + " Op=" + aOperator + " Detail=" + aDetail, LOG_DEBUG + LOG_CAL);
+			    this.tools.logMessage("operation "+(this.syncTasks == true?"tasks":"calendar")+": status="+aStatus + " Op=" + aOperator + " Detail=" + aDetail, this.global.LOG_DEBUG + this.global.LOG_CAL);
 			},
 		onGetResult: function(aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {
-                logMessage("got results: " + aCount + " items", LOG_DEBUG + LOG_CAL);
+                this.tools.logMessage("got results: " + aCount + " items", this.global.LOG_DEBUG + this.global.LOG_CAL);
                 for (var i = 0; i < aCount; i++) {
                     this.events.push(aItems[i]);
                 }
@@ -303,20 +312,20 @@ var syncCalendar = {
 		
 		// ok lets see if we have this one already 
 		var foundEvent = findEvent (this.gCalDB, parsedEvent.id);
-		logMessage("findevent returned :" + foundEvent + "(" + (foundEvent == null?'null':foundEvent.id) + ") for " + parsedEvent.id + " caching " + this.gCalDB.length() + " events", LOG_CAL + LOG_DEBUG);
+		this.tools.logMessage("findevent returned :" + foundEvent + "(" + (foundEvent == null?'null':foundEvent.id) + ") for " + parsedEvent.id + " caching " + this.gCalDB.length() + " events", this.global.LOG_CAL + this.global.LOG_DEBUG);
 				
 		// get the dbfile from the local disk
 		var idxEntry = getSyncDbFile(this.gConfig, this.getType(), parsedEvent.id);
 		// ... and the field file
 		var fEntry = getSyncFieldFile(this.gConfig, this.getType(), parsedEvent.id);
 
-		logMessage("idxEntry:" + idxEntry, LOG_CAL + LOG_DEBUG);
+		this.tools.logMessage("idxEntry:" + idxEntry, this.global.LOG_CAL + this.global.LOG_DEBUG);
 		
 		// always add if the forceLocalCopy flag is set (happens when you change the configuration)
 		if (foundEvent == null || this.forceLocalCopy)
 		{
 			// a new event
-			logMessage("a new event, locally unknown:" + parsedEvent.id, LOG_CAL + LOG_DEBUG);
+			this.tools.logMessage("a new event, locally unknown:" + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_DEBUG);
 			if (!idxEntry.exists() || !allowSyncEvent(foundEvent, parsedEvent, this))
 			{
 				// use the original content to write the snyc file 
@@ -335,12 +344,12 @@ var syncCalendar = {
 				// also add to the hash-database
 				this.gCalDB.put(parsedEvent.id, parsedEvent);
 
-				logMessage("added locally:" + parsedEvent.id, LOG_CAL + LOG_INFO);
+				this.tools.logMessage("added locally:" + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
 			}
 			else
 			{
 				// now this should be deleted, since it was in the db already
-				logMessage("Delete event on server and in db: " + parsedEvent.id, LOG_CAL + LOG_INFO);
+				this.tools.logMessage("Delete event on server and in db: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
 				this.curItemInListStatus.setAttribute("label", strBundle.getString("deleteOnServer"));
 
 				// also remove the local db file since we deleted the contact
@@ -362,21 +371,21 @@ var syncCalendar = {
 		else
 		{
 		    // event exists in local calendar
-			logMessage("Event exists local: " + parsedEvent.id, LOG_CAL + LOG_DEBUG);
+			this.tools.logMessage("Event exists local: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_DEBUG);
 			
 			var cEvent = message2Event(readSyncDBFile(idxEntry), null, this.syncTasks);
 
 			var hasEntry = idxEntry.exists() && (cEvent != null);
 			// make sure cEvent is not null, else the comparision will fail
-			logMessage("Start comparing events....", LOG_CAL + LOG_DEBUG);
+			this.tools.logMessage("Start comparing events....", this.global.LOG_CAL + this.global.LOG_DEBUG);
 			var equal2parsed = hasEntry && equalsEvent(cEvent, parsedEvent, this.syncTasks, this.email);
 			var equal2found = hasEntry && equalsEvent(cEvent, foundEvent, this.syncTasks, this.email);
-			logMessage ("cEvent==parsedEvent: " + equal2parsed + "\ncEvent==foundEvent: " + equal2found,  LOG_CAL + LOG_DEBUG);
+			this.tools.logMessage ("cEvent==parsedEvent: " + equal2parsed + "\ncEvent==foundEvent: " + equal2found,  this.global.LOG_CAL + this.global.LOG_DEBUG);
 			
 			if (hasEntry && !equal2parsed && !equal2found)
  			{
 				// changed locally and on server side
-				logMessage("Changed on server and local: " + parsedEvent.id, LOG_CAL + LOG_DEBUG);
+				this.tools.logMessage("Changed on server and local: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_DEBUG);
 
 				//Holds the users response, must be an object so that we can pass by reference
 				conflictResolution = new Object();
@@ -398,7 +407,7 @@ var syncCalendar = {
 				if (conflictResolution.result == 1)
  				{
  					// take event from server
-					logMessage("Take event from server: " + parsedEvent.id, LOG_CAL + LOG_INFO);
+					this.tools.logMessage("Take event from server: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
 					
 					writeSyncDBFile (idxEntry, fileContent);
 	
@@ -415,7 +424,7 @@ var syncCalendar = {
 							    // because they will break the sync process
 								this.gCalendar.modifyItem(parsedEvent, foundEvent, this.gEvents);
 							} catch (e) {
-								logMessage("gCalendar.modifyItem() failed: " + e, LOG_CAL + LOG_WARNING);
+								this.tools.logMessage("gCalendar.modifyItem() failed: " + e, this.global.LOG_CAL + this.global.LOG_WARNING);
 							}
 							
 							//update list item
@@ -428,7 +437,7 @@ var syncCalendar = {
 				else
 				{
 					// local change to server
-					logMessage ("put event on server: " + parsedEvent.id, LOG_CAL + LOG_INFO);
+					this.tools.logMessage ("put event on server: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
 					
 					// first check privacy info
 					var foundEvent = checkEventOnDeletion(foundEvent, parsedEvent, this);
@@ -465,7 +474,7 @@ var syncCalendar = {
 						}
 					}
 
-					writeSyncDBFile (idxEntry, stripMailHeader(msg));
+					writeSyncDBFile (idxEntry, com.synckolab.tools.stripMailHeader(msg));
 
 					// update list item
 					this.curItemInListStatus.setAttribute("label", strBundle.getString("updateOnServer"));
@@ -476,13 +485,13 @@ var syncCalendar = {
 			}
 			else
 			{
-				logMessage("changed only on one side (if at all):" + parsedEvent.id, LOG_CAL + LOG_DEBUG);
+				this.tools.logMessage("changed only on one side (if at all):" + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_DEBUG);
 				
 				// we got that already, see which is newer and update the message or the event
 				// the sync database might be out-of-date, so we handle a non-existent entry as well
 				if (!hasEntry || (!equal2parsed && equal2found))
 				{
-					logMessage("event on server changed: " + parsedEvent.id, LOG_CAL + LOG_INFO);
+					this.tools.logMessage("event on server changed: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
 					
 					writeSyncDBFile (idxEntry, fileContent);
 	
@@ -495,7 +504,7 @@ var syncCalendar = {
 								// because they will break the sync process
  								this.gCalendar.modifyItem(parsedEvent, foundEvent, this.gEvents);
 							} catch (e) {
-								logMessage("gCalendar.modifyItem() failed: " + e, LOG_CAL + LOG_WARNING);
+								this.tools.logMessage("gCalendar.modifyItem() failed: " + e, this.global.LOG_CAL + this.global.LOG_WARNING);
 							}
 	
 							// update list item
@@ -508,7 +517,7 @@ var syncCalendar = {
 				else
 				if (equal2parsed && !equal2found)
 				{
-					logMessage("event on client changed: " + parsedEvent.id, LOG_CAL + LOG_INFO);
+					this.tools.logMessage("event on client changed: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
 	
 					var foundEvent = checkEventOnDeletion(foundEvent, parsedEvent, this);
 					if (!foundEvent || foundEvent == "DELETEME")
@@ -544,13 +553,13 @@ var syncCalendar = {
 					// update list item
 					this.curItemInListStatus.setAttribute("label", getLangString(strBundle, "updateOnServer"));
 
-					writeSyncDBFile (idxEntry, stripMailHeader(msg));
+					writeSyncDBFile (idxEntry, com.synckolab.tools.stripMailHeader(msg));
 					
 					// remember this message for update
 					return msg;
 				}
 				
-				logMessage("no change for event:" + parsedEvent.id, LOG_CAL + LOG_INFO);
+				this.tools.logMessage("no change for event:" + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
 				this.curItemInListStatus.setAttribute("label", getLangString(strBundle, "noChange"));
 			}
 		}
@@ -569,15 +578,15 @@ var syncCalendar = {
 	 * @return "done" to specify that the sync is finished
 	 */
 	nextUpdate: function () {
-		logMessage("next update...", LOG_CAL + LOG_DEBUG);
+		this.tools.logMessage("next update...", this.global.LOG_CAL + this.global.LOG_DEBUG);
 		// if there happens an exception, we are done
 		if ((this.gEvents == null || this.gCurEvent >= this.gEvents.events.length))
 		{
-			logMessage("done update...", LOG_CAL + LOG_INFO);
+			this.tools.logMessage("done update...", this.global.LOG_CAL + this.global.LOG_INFO);
 			// we are done
 			return "done";
 		}
-		logMessage("get event", LOG_CAL + LOG_DEBUG);
+		this.tools.logMessage("get event", this.global.LOG_CAL + this.global.LOG_DEBUG);
 		
 		if (this.gEvents != null && this.gCurEvent <= this.gEvents.events.length )
 		{
@@ -585,24 +594,24 @@ var syncCalendar = {
 			var msg = null;
 			var writeCur = true;
 		    
-			logMessage ("nextUpdate for "+ ((this.syncTasks==true)?"task":"event") +":" + cur.id, LOG_CAL + LOG_DEBUG);
+			this.tools.logMessage ("nextUpdate for "+ ((this.syncTasks==true)?"task":"event") +":" + cur.id, this.global.LOG_CAL + this.global.LOG_DEBUG);
 
 			// check if we can skip this entry	(make sure we got a start and enddate.. otherwise it will fail)
 			var endDate = getEndDate(cur, this.syncTasks);		
 				
 			if (endDate != null && this.gSyncTimeFrame > 0 && (endDate.getTime() + (this.gSyncTimeFrame * 86400000) < (new Date()).getTime()))
 			{
-					logMessage("skipping event because its too old: " + cur.id, LOG_CAL + LOG_INFO);
+					this.tools.logMessage("skipping event because its too old: " + cur.id, this.global.LOG_CAL + this.global.LOG_INFO);
 					return null;
 			}
 			
 			/* skip if event is PRIVATE */
 			if (isPrivateEvent(cur)) {
-				logMessage("skipping event because it is marked as PRIVATE: " + cur.id, LOG_CAL + LOG_INFO);
+				this.tools.logMessage("skipping event because it is marked as PRIVATE: " + cur.id, this.global.LOG_CAL + this.global.LOG_INFO);
 				return null;
 			}
 			
-			logMessage("processing event", LOG_CAL + LOG_DEBUG);
+			this.tools.logMessage("processing event", this.global.LOG_CAL + this.global.LOG_DEBUG);
 
 			// check if we have this uid in the messages, skip it if it
 			// has been processed already when reading the IMAP msgs
@@ -611,7 +620,7 @@ var syncCalendar = {
 			{
 				if (cur.id == this.folderMessageUids[i])
 				{
-					logMessage("event is known from IMAP lookup: " + cur.id, LOG_CAL + LOG_INFO);
+					this.tools.logMessage("event is known from IMAP lookup: " + cur.id, this.global.LOG_CAL + this.global.LOG_INFO);
 					writeCur = false;
 					break;
 				}
@@ -622,14 +631,14 @@ var syncCalendar = {
 			// it has been deleted on the server and we dont know about it yet
 			if (writeCur)
 			{
-				logMessage("nextUpdate decided to write event:" + cur.id, LOG_CAL + LOG_INFO);
+				this.tools.logMessage("nextUpdate decided to write event:" + cur.id, this.global.LOG_CAL + this.global.LOG_INFO);
 
 				var cEntry = getSyncDbFile	(this.gConfig, this.getType(), cur.id);
 				
 				if (cEntry.exists() && !this.forceServerCopy)
 				{
 					// we have it in our database - don't write back to server but delete locally
-					logMessage("nextUpdate assumes 'delete on server', better don't write event:" + cur.id, LOG_CAL + LOG_INFO);
+					this.tools.logMessage("nextUpdate assumes 'delete on server', better don't write event:" + cur.id, this.global.LOG_CAL + this.global.LOG_INFO);
 
 					writeCur = false;
 					this.gCalendar.deleteItem(cur, this.gEvents);
@@ -685,7 +694,7 @@ var syncCalendar = {
 		
 			if (writeCur)
 			{
-				logMessage("nextUpdate really writes event:" + cur.id, LOG_CAL + LOG_DEBUG);
+				this.tools.logMessage("nextUpdate really writes event:" + cur.id, this.global.LOG_CAL + this.global.LOG_DEBUG);
 				// and now really write the message
 		
 				var msg = null;
@@ -714,18 +723,18 @@ var syncCalendar = {
 					}
 					else
 					{
-	    				
+
 						msg = generateMail(cur.id, this.email, "iCal", "text/calendar", 
 							false, encode_utf8(encodeQuoted(calComp.serializeToICS())), null);
 					}					
 				}
 				
-		    	logMessage("New event:\n" + msg, LOG_CAL + LOG_DEBUG);
-				logMessage("nextUpdate puts event into db (2):" + cur.id, LOG_CAL + LOG_INFO);
+				this.tools.logMessage("New event:\n" + msg, this.global.LOG_CAL + this.global.LOG_DEBUG);
+				this.tools.logMessage("nextUpdate puts event into db (2):" + cur.id, this.global.LOG_CAL + this.global.LOG_INFO);
 				
 				// add the new event into the db
 				var cEntry = getSyncDbFile(this.gConfig, this.getType(), cur.id);
-				writeSyncDBFile(cEntry, stripMailHeader(msg));
+				writeSyncDBFile(cEntry, com.synckolab.tools.stripMailHeader(msg));
 
 			}
 		}	

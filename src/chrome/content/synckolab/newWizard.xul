@@ -5,15 +5,17 @@
 <wizard id="newConfigWizard"  title="&synckolab.newwizard.title;" xmlns:html="http://www.w3.org/1999/xhtml"
 		xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" onwizardfinish="saveNewConfig()" >
 
-	<script type="application/x-javascript" src="chrome://synckolab/content/settings.js"/>
-	<script type="application/x-javascript" src="chrome://synckolab/content/calTools.js"/>
 	<script type="application/x-javascript" src="chrome://synckolab/content/tools.js"/>
-	<script type="application/x-javascript" src="chrome://synckolab/content/sha1.js"/>
+	<script type="application/x-javascript" src="chrome://synckolab/content/calendarTools.js"/>
+	<script type="application/x-javascript" src="chrome://synckolab/content/contactTools.js"/>
+	<script type="application/x-javascript" src="chrome://synckolab/content/tools/sha1.js"/>
+	<script type="application/x-javascript" src="chrome://synckolab/content/tools/text.js"/>
 	<script type="application/x-javascript" src="chrome://synckolab/content/jslib/jslib.js"/>
 	
 	<script type="application/x-javascript" src="chrome://synckolab/content/jslib/io/io.js"/>
 	<script type="application/x-javascript" src="chrome://synckolab/content/jslib/rdf/rdf.js"/>
 	<script type="application/x-javascript" src="chrome://synckolab/content/jslib/rdf/rdfFile.js"/>
+	<script type="application/x-javascript" src="chrome://synckolab/content/settings.js"/>
 	
 	<script>
 		function noAdvance()
@@ -29,7 +31,7 @@
 			try {
 				configs = pref.getCharPref("SyncKolab.Configs");
 			} catch(ex) {}
-			var confName = trim(document.getElementById('configName').value);
+			var confName = com.synckolab.tools.text.trim(document.getElementById('configName').value);
 			try
 			{
 				// make sure the configuration is added multiple times
@@ -65,7 +67,7 @@
 			document.getElementById("introPage").next = "accountPageId";
 			
 			var isOk = true;
-			if (trim(name).length > 1 &amp;&amp; name.indexOf(" ") == - 1 &amp;&amp; name.indexOf("-") == -1 &amp;&amp; name.indexOf(".") == -1 &amp;&amp; name.indexOf("#") == -1 &amp;&amp; name.indexOf("[") == -1
+			if (com.synckolab.tools.text.trim(name).length > 1 &amp;&amp; name.indexOf(" ") == - 1 &amp;&amp; name.indexOf("-") == -1 &amp;&amp; name.indexOf(".") == -1 &amp;&amp; name.indexOf("#") == -1 &amp;&amp; name.indexOf("[") == -1
 				&amp;&amp; name.indexOf("]") == -1)
 			{
 				var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
@@ -76,7 +78,7 @@
 				
 				for (var i = 0; i &lt; configs.length; i++)
 				{
-					if (trim(name) == configs[i])
+					if (com.synckolab.tools.text.trim(name) == configs[i])
 					{
 						isOk = false;
 						break;
@@ -98,7 +100,7 @@
 			if (doneInit)
 				return;
 
-			isCalendar = isCalendarAvailable ();				
+			isCalendar = com.synckolab.calendarTools.isCalendarAvailable() ();
 			prefillFields();
 			doneInit = true;
 		}
