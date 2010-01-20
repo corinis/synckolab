@@ -50,6 +50,7 @@ toolbar[iconsize="small"] #SyncKolab-button[disabled] {
 }
 
 /* Progress window */
+/*
 progressmeter#progress { color: blue; }
 progressmeter#progress[mode="undetermined"] {
   	color: blue;
@@ -62,4 +63,4 @@ treechildren::-moz-tree-row(selected) {
 treechildren::-moz-tree-row(selected, focus) {
   background-color: #E8E8E8;
 }
-
+*/

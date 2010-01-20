@@ -40,7 +40,7 @@ com.synckolab.tools.kolab={
 	 * @param index The index of the day in the week starting with 1 => Sunday
 	 * @return a string with the name of the week day
 	 */
-	getKolabXmlDayName: function(index) {
+	getXmlDayName: function(index) {
 		var name = "sunday";
 		switch (index)
 		{

@@ -55,6 +55,13 @@ com.synckolab.tools.text = {
 		return name.replace(/[ :@\%\'\"-\?\#\+\*\.\$\\\/]/g, "");
 	},
 
+	nodeWithContent: function (nodeName, nodeValue, createNonExist) {
+		if (!createNonExist && !checkExist (nodeValue))
+			return "";
+		return "<"+nodeName+">" + (checkExist (nodeValue)?encode4XML(nodeValue):"") + "</"+nodeName+">\n";
+	},
+	
+	trim : function(s) { return s.replace(/^\s+|\s+$/g, ''); },
 
 	/**
 	 * remove possible problematic chars from a name

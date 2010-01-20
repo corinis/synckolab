@@ -22,13 +22,13 @@
     <!-- Front End MetaData -->
     <em:id>{571CFACF-0F7D-49b4-BD77-E6FC7B209ADC}</em:id>
     <em:name>Sync Kolab</em:name>
-    <em:version>2.0.0</em:version>
+    <em:version>1.5.0</em:version>
     <em:type>2</em:type>
     <em:description>Synchronize the address book and calendar with IMAP folder or Kolab1/2 server</em:description>
     <em:creator>Niko Berger</em:creator>
     <em:homepageURL>http://www.gargan.org/extensions/synckolab.html</em:homepageURL>
     <em:optionsURL>chrome://synckolab/content/synckolabPref.xul</em:optionsURL>
-    <em:updateURL>http://www.gargan.org/extensions/update.rdf</em:updateURL>
+    <em:updateURL>https://www.gargan.org/extensions/update.rdf</em:updateURL>
 
     <em:contributor>Andreas Gungl;a.gungl(at)gmx.de</em:contributor>    
     <em:contributor>Steven D Miller (Copart);stevendm(at)rellims.com</em:contributor>

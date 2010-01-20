@@ -10,7 +10,9 @@
 
 if(!com) var com={};
 if(!com.synckolab) com.synckolab={};
-if(!com.synckolab.tools) com.synckolab.tools={};
+if(!com.synckolab.tools) {com.synckolab.tools={};
+	alert ("dont have tools???");
+}
 
 com.synckolab.tools.sha1 = {
 	/*
