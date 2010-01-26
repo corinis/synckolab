@@ -39,14 +39,14 @@ if(!com.synckolab.tools) com.synckolab.tools={};
 
 com.synckolab.tools = {
 
-		logStart: -1,
-		lastmsg: -1,
+	logStart: -1,
+	lastmsg: -1,
 
-		/**
-		 * Prints out debug messages to the cosole if the global variable DEBUG_SYNCKOLAB is set to true
-		 * Also prints out performance related stuff
-		 */
-		logMessage: function (msg, level) {
+	/**
+	 * Prints out debug messages to the cosole if the global variable DEBUG_SYNCKOLAB is set to true
+	 * Also prints out performance related stuff
+	 */
+	logMessage: function (msg, level) {
 	if (!level)
 		level = com.synckolab.global.LOG_INFO;
 
@@ -381,8 +381,8 @@ getAccountName: function (accountKey) {
 	for (var i = 0; i < accountManager.allServers.Count(); i++)
 	{
 		var account = accountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-		if (account.rootMsgFolder.baseMessageURI == accountKey || accountNameFix(account.rootMsgFolder.baseMessageURI) == accountKey ||
-				accountNameFix(account.prettyName) == accountKey)
+		if (account.rootMsgFolder.baseMessageURI == accountKey || com.synckolab.tools.text.accountNameFix(account.rootMsgFolder.baseMessageURI) == accountKey ||
+				com.synckolab.tools.text.accountNameFix(account.prettyName) == accountKey)
 		{
 			return accountManager.getFirstIdentityForServer (account).fullName;
 		}
@@ -400,8 +400,8 @@ getAccountEMail: function (accountKey) {
 	for (var i = 0; i < accountManager.allServers.Count(); i++)
 	{
 		var account = accountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-		if (account.rootMsgFolder.baseMessageURI == accountKey || accountNameFix(account.rootMsgFolder.baseMessageURI) == accountKey ||
-				accountNameFix(account.prettyName) == accountKey)
+		if (account.rootMsgFolder.baseMessageURI == accountKey || com.synckolab.tools.text.accountNameFix(account.rootMsgFolder.baseMessageURI) == accountKey ||
+				com.synckolab.tools.text.accountNameFix(account.prettyName) == accountKey)
 		{
 			return accountManager.getFirstIdentityForServer (account).email;
 		}
@@ -424,8 +424,8 @@ getMsgFolder: function (accountKey, path)
 	for (var i = 0; i < accountManager.allServers.Count(); i++)
 	{
 		var account = accountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-		if (account.rootMsgFolder.baseMessageURI == accountKey || accountNameFix(account.rootMsgFolder.baseMessageURI) == accountKey||
-				accountNameFix(account.prettyName) == accountKey)
+		if (account.rootMsgFolder.baseMessageURI == accountKey || com.synckolab.tools.text.accountNameFix(account.rootMsgFolder.baseMessageURI) == accountKey||
+				com.synckolab.tools.text.accountNameFix(account.prettyName) == accountKey)
 		{
 			gInc = account;
 		}
@@ -524,163 +524,151 @@ getMsgFolder: function (accountKey, path)
 
 
 com.synckolab.tools.file = {
-		/**
-		 * Copies a local file into any mail folder.
-		 * In order to be displayed correct, make sure to create a complete message file!!!
-		 * fileName string - the file to copy(+path)
-		 * folderUri string - the Uri/Url of the folder we want this in
-		 */
-		copyToLocalFolder: function (fileName, folderUri)
-		{
-	var mailFolder = RDF.GetResource(folderUri).QueryInterface(Components.interfaces.nsIMsgFolder);
-	// ok give out the folder info
+	/**
+	 * Copies a local file into any mail folder.
+	 * In order to be displayed correct, make sure to create a complete message file!!!
+	 * fileName string - the file to copy(+path)
+	 * folderUri string - the Uri/Url of the folder we want this in
+	 */
+	copyToLocalFolder: function (fileName, folderUri)
+	{
+		var mailFolder = RDF.GetResource(folderUri).QueryInterface(Components.interfaces.nsIMsgFolder);
+		// ok give out the folder info
+	
+		// ok now get the filespec
+		var fileSpec = Components.classes["@mozilla.org/filespec;1"].createInstance(Components.interfaces.nsIFileSpec);
+	
+		fileSpec.nativePath = fileName;
+	
+		mailFolder.copyFileMessage (fileSpec, null, false, null, null);
+	},
 
-	// ok now get the filespec
-	var fileSpec = Components.classes["@mozilla.org/filespec;1"].createInstance(Components.interfaces.nsIFileSpec);
-
-	fileSpec.nativePath = fileName;
-
-	mailFolder.copyFileMessage (fileSpec, null, false, null, null);
-		},
-
-		deleteTempFolders: function ()
-		{
-			var tempFolderResource = com.synckolab.global.rdf.GetResource(tempFolderUri);
-			var tempFolder = tempFolderResource.QueryInterface(Components.interfaces.nsIMsgFolder);
-			var np = tempFolder.path.nativePath;
-			var deletedArray = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);        
-			var parentArray = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);
-			deletedArray.AppendElement(tempFolderResource);
-			var parFolderResource = com.synckolab.global.rdf.GetResource(trashFolderUri);
-			parentArray.AppendElement(parFolderResource);
-			try {
-				DoRDFCommand(gFolderDatasource, "http://home.netscape.com/NC-rdf#ReallyDelete", parentArray, deletedArray);  
-			} catch(e) {
-			}
-			// lets just make sure the temp folder files are gone
-			var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
-			try{
-				sfile.initWithPath(np);
-				if (sfile.exists()) sfile.remove(true);
-				np = np + ".msf";
-				sfile.initWithPath(np);
-				if (sfile.exists()) sfile.remove(true);
-			} catch(e) {
-				alert('error erasing the temp folder files >' + e);
-			}
-		},
-
-
-		/**
-		 * Returns a file class for the given sync db file
-		 * this also creates the required subdirectories if not yet existant
-		 * you can use the .exists() function to check if we go this one already
-		 */
-		getSyncDbFile: function (config, type, id)	{
-			if (id == null)
-			{
-				this.logMessage("Error: entry has no id (" +config + ": " + type + ")", com.synckolab.global.LOG_ERROR);	
-				return null;
-			}
-
-			id = id.replace(/[ :.;$\\\/]\#\@/g, "_");
-			var file = Components.classes["@mozilla.org/file/directory_service;1"].
-			getService(Components.interfaces.nsIProperties).
-			get("ProfD", Components.interfaces.nsIFile);
-			file.append("synckolab");
-			if (!file.exists())
-				file.create(1, 0775);
-
-			file.append(type);
-
-			if (!file.exists())
-				file.create(1, 0775);
-
-			file.append(config);
-			if (!file.exists())
-				file.create(1, 0775);
-			file.append(id);
-			return file;
+	deleteTempFolders: function ()
+	{
+		var tempFolderResource = com.synckolab.global.rdf.GetResource(tempFolderUri);
+		var tempFolder = tempFolderResource.QueryInterface(Components.interfaces.nsIMsgFolder);
+		var np = tempFolder.path.nativePath;
+		var deletedArray = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);        
+		var parentArray = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);
+		deletedArray.AppendElement(tempFolderResource);
+		var parFolderResource = com.synckolab.global.rdf.GetResource(trashFolderUri);
+		parentArray.AppendElement(parFolderResource);
+		try {
+			DoRDFCommand(gFolderDatasource, "http://home.netscape.com/NC-rdf#ReallyDelete", parentArray, deletedArray);  
+		} catch(e) {
 		}
+		// lets just make sure the temp folder files are gone
+		var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
+		try{
+			sfile.initWithPath(np);
+			if (sfile.exists()) sfile.remove(true);
+			np = np + ".msf";
+			sfile.initWithPath(np);
+			if (sfile.exists()) sfile.remove(true);
+		} catch(e) {
+			alert('error erasing the temp folder files >' + e);
+		}
+	},
+
+
+	/**
+	 * Returns a file class for the given sync db file
+	 * this also creates the required subdirectories if not yet existant
+	 * you can use the .exists() function to check if we go this one already
+	 */
+	getSyncDbFile: function (config, type, id)	{
+		if (id == null)
+		{
+			this.logMessage("Error: entry has no id (" +config + ": " + type + ")", com.synckolab.global.LOG_ERROR);	
+			return null;
+		}
+
+		id = id.replace(/[ :.;$\\\/]\#\@/g, "_");
+		var file = Components.classes["@mozilla.org/file/directory_service;1"].
+		getService(Components.interfaces.nsIProperties).
+		get("ProfD", Components.interfaces.nsIFile);
+		file.append("synckolab");
+		if (!file.exists())
+			file.create(1, 0775);
+
+		file.append(type);
+
+		if (!file.exists())
+			file.create(1, 0775);
+
+		file.append(config);
+		if (!file.exists())
+			file.create(1, 0775);
+		file.append(id);
+		return file;
+	}
 };
+
 
 /**
- * syncdb
+ * writes a sync file
  */
-com.synckolab.tools.syncDB = function(file) {
-	this.file = file;
-};
-
-com.synckolab.tools.syncDB.prototype = {
-		// package shortcuts:
-		global: com.synckolab.global,
-		tools: com.synckolab.tools,
-
-		/**
-		 * writes a sync file
-		 */
-		write:function (content)
-		{
+com.synckolab.tools.writeSyncDBFile = function (file, content)
+{
 	if (content == null)
 		return;
 
-	if (this.file.exists()) 
-		this.file.remove(true);
-	this.file.create(file.NORMAL_FILE_TYPE, 0666);
+	if (file.exists()) 
+		file.remove(true);
+	file.create(file.NORMAL_FILE_TYPE, 0666);
 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
-	stream.init(this.file, 2, 0x200, false); // open as "write only"
+	stream.init(file, 2, 0x200, false); // open as "write only"
 	stream.write(content, content.length);
 	stream.close();
-		},
+};
 
 
-		/**
-		 * reads a given sync file
-		 */
-		read:function  ()
-		{	
-			if (file == null)
-			{
-				tools.logMessage("readSyncDBFile ERROR: file is null");
-				return null;
-			}
+	/**
+	 * reads a given sync file
+	 */
+com.synckolab.tools.readSyncDBFile = function (file)
+{	
+	if (file == null)
+	{
+		com.synckolab.tools.logMessage("readSyncDBFile ERROR: file is null");
+		return null;
+	}
 
-			if ((!file.exists()) || (!file.isReadable()))
-				return null;
+	if ((!file.exists()) || (!file.isReadable()))
+		return null;
 
-			try
-			{
-				// setup the input stream on the file
-				var istream = Components.classes["@mozilla.org/network/file-input-stream;1"]
-				                                 .createInstance(Components.interfaces.nsIFileInputStream);
-				istream.init(this.file, 0x01, 4, null);
-				var fileScriptableIO = Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance(Components.interfaces.nsIScriptableInputStream); 
-				fileScriptableIO.init(istream);
-				// parse the xml into our internal document
-				istream.QueryInterface(Components.interfaces.nsILineInputStream); 
-				var fileContent = "";
-				var csize = 0; 
-				while ((csize = fileScriptableIO.available()) != 0)
-				{
-					fileContent += fileScriptableIO.read( csize );
-				}
-				fileScriptableIO.close(); 	
-				istream.close();
-
-				return tools.trim(fileContent);
-			}
-			catch (ex)
-			{
-				tools.logMessage("readSyncDBFile ERROR while reading file" + ex);
-			}
+	try
+	{
+		// setup the input stream on the file
+		var istream = Components.classes["@mozilla.org/network/file-input-stream;1"]
+		                                 .createInstance(Components.interfaces.nsIFileInputStream);
+		istream.init(this.file, 0x01, 4, null);
+		var fileScriptableIO = Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance(Components.interfaces.nsIScriptableInputStream); 
+		fileScriptableIO.init(istream);
+		// parse the xml into our internal document
+		istream.QueryInterface(Components.interfaces.nsILineInputStream); 
+		var fileContent = "";
+		var csize = 0; 
+		while ((csize = fileScriptableIO.available()) != 0)
+		{
+			fileContent += fileScriptableIO.read( csize );
 		}
+		fileScriptableIO.close(); 	
+		istream.close();
+
+		return com.synckolab.tools.text.trim(fileContent);
+	}
+	catch (ex)
+	{
+		com.synckolab.tools.logMessage("readSyncDBFile ERROR while reading file" + ex);
+	}
 };
 
 /**
  * Retrieves a file in the user profile dir which includes the config database
  * make sure to add .cal, .con or .task at the config so there are no duplicate names
  */
-function getHashDataBaseFile (config)
+com.synckolab.tools.getHashDataBaseFile = function (config)
 {
 	var file = Components.classes["@mozilla.org/file/directory_service;1"].
 	getService(Components.interfaces.nsIProperties).
@@ -688,22 +676,52 @@ function getHashDataBaseFile (config)
 
 	file.append(config+".hdb");
 	return file;
-}
+};
 
 /**
- * reads a database in a twodim array
+ * Returns a file class for the given sync field file
+ * this also creates the required subdirectories if not yet existant
+ * you can use the .exists() function to check if we go this one already
  */
-function readDataBase (dbf)
+com.synckolab.tools.getSyncFieldFile = function (config, type, id)
 {
-	var db = new Array();
+	id = id.replace(/[ :.;$\\\/]\#\@/g, "_");
+	var file = Components.classes["@mozilla.org/file/directory_service;1"].
+	getService(Components.interfaces.nsIProperties).
+	get("ProfD", Components.interfaces.nsIFile);
+	file.append("synckolab");
+	if (!file.exists())
+		file.create(1, 0775);
+	file.append(type);
+	if (!file.exists())
+		file.create(1, 0775);
 
-	if (dbf == null || !dbf.exists() || !dbf.isReadable())
-		return db;
+	file.append(config);
+	if (!file.exists())
+		file.create(1, 0775);
+	file.append(id + ".field");
+	return file;
+};
+
+
+
+/**
+ * Database class: read a file into a hashmap
+ * @param file the file to read/write the data to/from
+ */
+com.synckolab.dataBase = function (file) {
+	// the database file
+	this.dbf = file;
+	this.db = new com.synckolab.hashMap();
+	
+	// if the file is not readable - dont bother
+	if (this.dbf == null || !this.dbf.exists() || !this.dbf.isReadable())
+		return;
 
 	// setup the input stream on the file
 	var istream = Components.classes["@mozilla.org/network/file-input-stream;1"]
 	                                 .createInstance(Components.interfaces.nsIFileInputStream);
-	istream.init(dbf, 0x01, 4, null);
+	istream.init(this.dbf, 0x01, 4, null);
 	var fileScriptableIO = Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance(Components.interfaces.nsIScriptableInputStream); 
 	fileScriptableIO.init(istream);
 	// parse the xml into our internal document
@@ -735,99 +753,111 @@ function readDataBase (dbf)
 				if (fv[j].replace)
 					fv[j] = fv[j].replace(/#%%\$/g, ":");
 			}
-			db[i] = fv;
+			// add the hashmap
+			this.add(fv);
+			this.len++;
 		}
-	return db;
-}
+
+};
 
 
 /**
  * returns the position of this entry in the db
  */
-function getDbEntryIdx (key, db)
-{
-	for (var i = 0; db[i]; i++)
+com.synckolab.dataBase.prototype.get = function(key) {
+	for (var i = 0; this.db[i]; i++)
 	{
-		if (db[i] && key == db[i][0])
-			return i;
+		if (this.db[i] && key == this.db[i][0])
+			return this.db[i];
 	}
-	return -1;	
-}
+	return null;
+};
+
+com.synckolab.dataBase.prototype.remove = function(entry) {
+	this.db.remove(entry[0]);
+};
+
+com.synckolab.dataBase.prototype.add = function(entry) {
+	this.db.put(entry[0], entry);
+};
 
 /**
- * writes a database file (key:hashvalue:h2)
+ * convenience function to add a key/value pair (both strings)
+ * @param entry
+ * @return
  */
-function writeDataBase(dbf, db)
-{
-	this.logMessage("Writing database file: " + dbf.path, com.synckolab.global.LOG_INFO);
-	if (dbf.exists()) 
-		dbf.remove(true);
+com.synckolab.dataBase.prototype.addField = function(name, value) {
+	// ignore errornous fields!
+	if (name == null || value == null)
+		return;
+	var entry = new Array(name, value);
+	this.db.put(entry[0], entry);
+};
+
+com.synckolab.dataBase.prototype.length = function() {
+	return this.db.length();
+};
+
+com.synckolab.dataBase.prototype.toString = function() {
+	this.db.iterate();
+	var cur;
+	var str = "";
+	while ((cur = this.db.next()) != null)
+	{
+		str += cur[0] + ":" + cur[1] + "\n";
+	}
+	return str;
+};
+
+com.synckolab.dataBase.prototype.toXmlString = function() {
+	this.db.iterate();
+	var cur;
+	var str = "";
+	while ((cur = this.db.next()) != null)
+	{
+		str += com.synckolab.tools.text.nodeWithContent(cur[0], cur[1], false);
+	}
+	return str;
+};
+/**
+ * writes a database file (key:hashvalue:h2)
+ * @param file an optional new filename to write into
+ */
+com.synckolab.dataBase.prototype.write = function(file) {
+	if (file)
+		this.dbf = file;
+	// remove the old db
+	if (this.dbf.exists()) 
+		this.dbf.remove(true);
+	
 	dbf.create(dbf.NORMAL_FILE_TYPE, 0640);
 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
-	stream.init(dbf, 2, 0x200, false); // open as "write only"
-	for (var i = 0; i < db.length; i++)
+	stream.init(this.dbf, 2, 0x200, false); // open as "write only"
+	// start iteration
+	this.db.iterate();
+	var entry;
+	while ((entry = this.db.next()) != null)
 	{
-		if (db[i][0] != "" && db[i][0] != null)
+		// skip "empty" fields
+		var s = this.entry[0];
+		for (var j = 1; this.entry[j]; j++)
 		{
-			var s = db[i][0];
-			for (var j = 1; db[i][j]; j++)
+			var fv = this.entry[j];
+			// encode :
+			if (fv.replace)
 			{
-				var fv = db[i][j];
-				// encode
-				if (fv.replace)
-				{
-					fv = fv.replace(/\\/g, "\\\\");
-					fv = fv.replace(/:/g, "\\:");
-				}
-				s += ":" + fv;
+				fv = fv.replace(/\\/g, "\\\\");
+				fv = fv.replace(/:/g, "\\:");
 			}
-			s += "\n";
-			stream.write(s, s.length);
+			s += ":" + fv;
 		}
+		s += "\n";
+		stream.write(s, s.length);
 	}
 	s = "\n\n";
 	stream.write(s, s.length);
 	stream.close();
-
-}
-
-
-
-/**
- * Adds a new name/value to a given array
- */
-function addField (a, name, value)
-{
-	if (a != null)
-		a.push(new Array(name, value));
-}
-
-
-/**
- * Returns a file class for the given sync field file
- * this also creates the required subdirectories if not yet existant
- * you can use the .exists() function to check if we go this one already
- */
-function getSyncFieldFile  (config, type, id)
-{
-	id = id.replace(/[ :.;$\\\/]\#\@/g, "_");
-	var file = Components.classes["@mozilla.org/file/directory_service;1"].
-	getService(Components.interfaces.nsIProperties).
-	get("ProfD", Components.interfaces.nsIFile);
-	file.append("synckolab");
-	if (!file.exists())
-		file.create(1, 0775);
-	file.append(type);
-	if (!file.exists())
-		file.create(1, 0775);
-
-	file.append(config);
-	if (!file.exists())
-		file.create(1, 0775);
-	file.append(id + ".field");
-	return file;
-}
-
+};
 
 
 /**
@@ -837,11 +867,36 @@ com.synckolab.hashMap = function ()
 {
 	this.len = 0;
 	this.seed = 521;
-	this.array = new Array(this.seed);    
+	this.array = new Array(this.seed);
 	// fill the array
 	for (var k = 0; k < this.seed; k++)
 		this.array[k] = new Array();
 };
+
+// starts an iteration
+com.synckolab.hashMap.prototype.iterate = function() {
+	this.hashIdx = 0;
+	this.idx = 0;
+};
+
+/**
+ * gets the next element or null
+ */
+com.synckolab.hashMap.prototype.next = function() {
+	// check if we still have room in the current hash
+	this.idx++;
+	while (this.idx >= this.array[hashIdx].length)
+	{
+		this.hashIdx++;
+		this.idx = 0;
+	}
+	// finished
+	if (this.hashIdx > this.seed)
+		return null;
+	
+	return this.array[this.hashIdx][this.idx];
+};
+
 
 /**
  * HashMap class to speed up searches
@@ -850,6 +905,7 @@ com.synckolab.hashMap.entry = function ( key, value )
 {
 	this.key = key;
 	this.value = value;
+	
 };
 
 
@@ -857,7 +913,7 @@ com.synckolab.hashMap.prototype.getIKey = function (key)
 {
 	var sum = 0;
 	for (var k = 0; k < key.length; k++)
-		sum += key.charCodeAt(k);
+		sum += key.charCodeAt(k)*k;
 	return sum;
 };
 
@@ -900,7 +956,7 @@ com.synckolab.hashMap.prototype.remove = function( key )
 com.synckolab.hashMap.prototype.get = function( key )
 {
 	// get a key
-	var ikey = this.getIKey(key) % this.seed;   	
+	var ikey = this.getIKey(key) % this.seed;
 	var car = this.array[ikey];
 
 	for( var k = 0 ; k < car.length ; k++ )

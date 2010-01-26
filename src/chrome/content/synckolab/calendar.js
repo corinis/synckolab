@@ -178,21 +178,19 @@ com.synckolab.Calendar = {
 		}		
 		
 		
-    	this.folderMessageUids = new Array(); // the checked uids - for better sync
-    	
-    	// get the sync db
-    	
+		this.folderMessageUids = new Array(); // the checked uids - for better sync
+		
+		// get the sync db
+		
 		if (this.syncTasks)
-			this.dbFile = getHashDataBaseFile (config + ".task");
+			this.dbFile = com.synckolab.tools.getHashDataBaseFile (config + ".task");
 		else
-			this.dbFile = getHashDataBaseFile (config + ".cal");
+			this.dbFile = com.synckolab.tools.getHashDataBaseFile (config + ".cal");
 			
 		this.gConfig = config;
 
 		// card hashmap
-		this.gCalDB = new SKMap();
-		this.gCalDB.clear();
-
+		this.gCalDB = new com.synckolab.hashMap();
 	},
 	
 	init2: function (nextFunc, sync)	{

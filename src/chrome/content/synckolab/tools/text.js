@@ -58,7 +58,8 @@ com.synckolab.tools.text = {
 	nodeWithContent: function (nodeName, nodeValue, createNonExist) {
 		if (!createNonExist && !checkExist (nodeValue))
 			return "";
-		return "<"+nodeName+">" + (checkExist (nodeValue)?encode4XML(nodeValue):"") + "</"+nodeName+">\n";
+		
+		return "<"+nodeName+">" + (checkExist (nodeValue)?this.encode4XML(nodeValue):"") + "</"+nodeName+">\n";
 	},
 	
 	trim : function(s) { return s.replace(/^\s+|\s+$/g, ''); },

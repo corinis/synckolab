@@ -43,7 +43,9 @@ com.synckolab.main = {
 	doHideWindow: false,
 
 	syncKolabTimer: function ()	{
-		com.synckolab.tools.logMessage("sync timer: Checking for tasks", com.synckolab.global.LOG_DEBUG);
+		this.logMessage = com.synckolab.tools.logMessage;
+		
+		this.logMessage("sync timer: Checking for tasks", com.synckolab.global.LOG_DEBUG);
 		var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 
 		// no valid configuration or not yet read... lets see
@@ -332,6 +334,8 @@ var curCalConfig; // the current calendar config
 var curTaskConfig; // the current task config
 
 function startSync(event) {
+	
+	
 	meter.setAttribute("value", "0%");
 	if (gWnd != null)
 		totalMeter.setAttribute("value", "0%");
@@ -404,10 +408,10 @@ function nextSync()
 		else
 		{
 			// get and set the message folder
-			com.synckolab.AddressBook.folder = getMsgFolder(com.synckolab.AddressBook.serverKey, com.synckolab.AddressBook.folderPath);
+			com.synckolab.AddressBook.folder = com.synckolab.tools.getMsgFolder(com.synckolab.AddressBook.serverKey, com.synckolab.AddressBook.folderPath);
 			com.synckolab.AddressBook.folderMsgURI = com.synckolab.AddressBook.folder.baseMessageURI;
-			com.synckolab.AddressBook.email = getAccountEMail(com.synckolab.AddressBook.serverKey);
-			com.synckolab.AddressBook.name = getAccountName(com.synckolab.AddressBook.serverKey);
+			com.synckolab.AddressBook.email = com.synckolab.tools.getAccountEMail(com.synckolab.AddressBook.serverKey);
+			com.synckolab.AddressBook.name = com.synckolab.tools.getAccountName(com.synckolab.AddressBook.serverKey);
 						
 			// display stuff
 			if (gWnd != null)
@@ -492,16 +496,16 @@ function nextSync()
 
 				window.setTimeout(prepareContent, com.synckolab.config.SWITCH_TIME, com.synckolab.Calendar);
 				return;
-	        }
-	    }
-	    catch (ex)
-	    {
-	    	// if an exception is found print it and continue
+			}
+		}
+		catch (ex)
+		{
+			// if an exception is found print it and continue
 			com.synckolab.tools.logMessage("Error setting calendar config: " + ex, com.synckolab.global.LOG_DEBUG);
 			curCalConfig++;
 			window.setTimeout(nextSync, com.synckolab.config.SWITCH_TIME);	
 			return;
-	    }
+		}
 	}
 	else
 	if (com.synckolab.calendarTools.isCalendarAvailable() && curTaskConfig < syncConfigs.length)
@@ -685,7 +689,7 @@ function getContent ()
 		gMessages = gSync.folder.messages; // tbird 3 uses an enumerator property instead of a function
 	
 	// get the message database (a file with uid:size:date:localfile)
-	syncMessageDb = readDataBase(gSync.dbFile);
+	syncMessageDb = new com.synckolab.dataBase(gSync.dbFile);
 		
 	curMessage = 0;
 	updateMessages = new Array(); // saves the the message url to delete
@@ -725,14 +729,14 @@ function getMessage ()
 		{
 			// done with messages go on...
 			parseFolderToAddressFinish ();
-	    	return;
-		}					
+			return;
+		}
 	}
 	catch (ex)
 	{
-    	com.synckolab.tools.logMessage("skipping read of messages - since there are none :)", com.synckolab.global.LOG_INFO);
+		com.synckolab.tools.logMessage("skipping read of messages - since there are none :)", com.synckolab.global.LOG_INFO);
 		updateContentAfterSave ();
-    	return;
+		return;
 	}
 	
 	// check message flags (based on mailnews\base\public\nsMsgMessageFlags.h -> deleted=0x200000
@@ -783,8 +787,6 @@ function getMessage ()
 		}
 		return;
 	}
-//	PRTime?
-//	cur.date
 	
 	
 	// check if we actually have to process this message, or if this is already known
@@ -801,18 +803,18 @@ function getMessage ()
 	 cur.date (PRTime) ?
 	*/
 	gLastMessageDBHdr = cur;
-	gSyncFileKey = getDbEntryIdx(cur.mime2DecodedSubject, syncMessageDb);
+	gSyncFileKey = syncMessageDb.get(cur.mime2DecodedSubject);
 
 	gSyncKeyInfo = cur.mime2DecodedSubject;
-	if (gSyncFileKey > -1)
+	if (gSyncFileKey != null)
 	{
 		com.synckolab.tools.logMessage("we have " + cur.mime2DecodedSubject + " already locally...", com.synckolab.global.LOG_DEBUG);
 		// check if the message has changed
-		if (cur.messageSize == syncMessageDb[gSyncFileKey][1] && cur.date == syncMessageDb[gSyncFileKey][2])
+		if (cur.messageSize == gSyncFileKey[1] && cur.date == gSyncFileKey[2])
 		{
 			// get the content from the cached file and ignore the imap
-			com.synckolab.tools.logMessage("taking content from: " + syncMessageDb[gSyncFileKey][3] + "/" + syncMessageDb[gSyncFileKey][4], com.synckolab.global.LOG_INFO);
-			fileContent = readSyncDBFile(getSyncDbFile(syncMessageDb[gSyncFileKey][3], gSync.getType(), syncMessageDb[gSyncFileKey][4]));
+			com.synckolab.tools.logMessage("taking content from: " + gSyncFileKey[3] + "/" + gSyncFileKey[4], com.synckolab.global.LOG_DEBUG);
+			fileContent = com.synckolab.tools.readSyncDBFile(getSyncDbFile(gSyncFileKey[3], gSync.getType(), gSyncFileKey[4]));
 
 			// make sure we dont read an empty file
 			if (fileContent != null && fileContent != "")
@@ -824,19 +826,24 @@ function getMessage ()
 		else
 		{
 			// some change happened... remove this entry (+ some update :P )
-			syncMessageDb[gSyncFileKey][0] = '';
-			syncMessageDb[gSyncFileKey][1] = cur.messageSize;
-			syncMessageDb[gSyncFileKey][2] = cur.date;			
+			syncMessageDb.remove(gSyncFileKey);
+			
+			// new netry
+			// remember the info
+			gSyncFileKey = {}; // we not yet know the id
+			gSyncFileKey[0] = '';
+			gSyncFileKey[1] = cur.messageSize;
+			gSyncFileKey[2] = cur.date;			
+			
 		}
 	}
 	else
 	{
 		// remember the info
-		gSyncFileKey = syncMessageDb.length; 
-		syncMessageDb[gSyncFileKey] = {};
-		syncMessageDb[gSyncFileKey][0] = '';
-		syncMessageDb[gSyncFileKey][1] = cur.messageSize;
-		syncMessageDb[gSyncFileKey][2] = cur.date;			
+		gSyncFileKey = {}; // we not yet know the id
+		gSyncFileKey[0] = '';
+		gSyncFileKey[1] = cur.messageSize;
+		gSyncFileKey[2] = cur.date;			
 	}
 	
 	
@@ -883,7 +890,7 @@ var syncKolabStreamListener = {
     com.synckolab.tools.logMessage("got Message [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]:\n" + fileContent, com.synckolab.global.LOG_DEBUG);
     
     // remove the header of the content
-    fileContent = stripMailHeader(fileContent);
+    fileContent = com.synckolab.tools.stripMailHeader(fileContent);
     
     // stop here for testing
     parseMessageRunner ();
@@ -908,7 +915,7 @@ function parseMessageRunner ()
 	}
 
 	
-   	com.synckolab.tools.logMessage("parsing message... ", com.synckolab.global.LOG_DEBUG);
+	com.synckolab.tools.logMessage("parsing message... ", com.synckolab.global.LOG_DEBUG);
 	
 	// fix the message for line truncs (last char in line is =)
 	fileContent = fileContent.replace(/=\n(\S)/g, "$1");
@@ -931,10 +938,12 @@ function parseMessageRunner ()
 	// no change... remember that :)
 	else
 	{
-		// get the sync db file
-		syncMessageDb[gSyncFileKey][0] = gSyncKeyInfo;
-		syncMessageDb[gSyncFileKey][3] = gSync.gConfig;
-		syncMessageDb[gSyncFileKey][4] = gSync.gCurUID;
+		// fill info about the file and readd it 
+		gSyncFileKey[0] = gSyncKeyInfo;
+		gSyncFileKey[3] = gSync.gConfig;
+		gSyncFileKey[4] = gSync.gCurUID;
+		// Add the key
+		syncMessageDb.add(gSyncFileKey);
 	}
 
 	// process next nessage	
@@ -951,13 +960,10 @@ function parseMessageRunner ()
 		if (curMessage%20 == 0)
 		{
 			// save the sync db file every 20 messages.. should speed up sync if canceled
-		    com.synckolab.tools.logMessage("Writing message snyc-db", com.synckolab.global.LOG_DEBUG);
-	    
-		    // write the db file back
-		    if (syncMessageDb == null)
-			    com.synckolab.tools.logMessage("syncMessageDB is null: " + gSync.dbFile, com.synckolab.global.LOG_ERROR);
-		    else
-			    writeDataBase(gSync.dbFile, syncMessageDb);
+			com.synckolab.tools.logMessage("Writing message snyc-db", com.synckolab.global.LOG_DEBUG);
+			
+			// write the db file back
+			syncMessageDb.write();
 		}
 				
 		// next message
@@ -978,13 +984,10 @@ function parseFolderToAddressFinish ()
 	// do step 5
 	curStep = 5;
 	writeDone = false;
-    com.synckolab.tools.logMessage("parseFolderToAddressFinish (Writing message db)", com.synckolab.global.LOG_DEBUG);
-    
-    // write the db file back
-    if (syncMessageDb == null)
-	    com.synckolab.tools.logMessage("syncMessageDB is null: " + gSync.dbFile, com.synckolab.global.LOG_ERROR);
-    else
-	    writeDataBase(gSync.dbFile, syncMessageDb);
+	com.synckolab.tools.logMessage("parseFolderToAddressFinish (Writing message db)", com.synckolab.global.LOG_DEBUG);
+	
+	// write the db file back
+	syncMessageDb.write();
 
 	meter.setAttribute("value", "60%");
 	if (gWnd != null)
@@ -1021,7 +1024,7 @@ function updateContent()
 		return;
 	}
 
-    com.synckolab.tools.logMessage("updating content:", com.synckolab.global.LOG_DEBUG);
+	com.synckolab.tools.logMessage("updating content:", com.synckolab.global.LOG_DEBUG);
 	// first lets delete the old messages
 	if (gSync.gSaveImap && updateMessages.length > 0) 
 	{
@@ -1034,7 +1037,7 @@ function updateContent()
 				com.synckolab.tools.logMessage("deleting [" + updateMessages[i] + "]");
 				//var hdr = gSyncKolabMessageService.messageURIToMsgHdr(updateMessages[i]);
 				list.AppendElement(updateMessages[i]);	
-		    
+
 			}
 			gSync.folder.deleteMessages (list, msgWindow, true, false, null, true);		
 		}
@@ -1094,8 +1097,7 @@ function updateContentWrite ()
 			stream.close();
 			
 			// write the temp file back to the original directory
-			copyToFolder (gTmpFile, gSync.folder); 
-			//copyToFolder (gTmpFile, tempFolderUri); // to the temp folder for testing!!!
+			com.synckolab.tools.copyToFolder (gTmpFile, gSync.folder); 
 		}
 		else
 			updateContentWrite ();
@@ -1172,9 +1174,9 @@ function writeContent ()
 		if (sfile.exists()) 
 			sfile.remove(true);
 		sfile.create(sfile.NORMAL_FILE_TYPE, 0600);
-	  
+	
 		// make the message rfc compatible (make sure all lines en with \r\n)
-    	content = content.replace(/\r\n|\n\r|\n|\r/g, "\r\n");
+		content = content.replace(/\r\n|\n\r|\n|\r/g, "\r\n");
 
 		// create a new message in there
 	 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
@@ -1187,7 +1189,7 @@ function writeContent ()
 		copyToFolder (gTmpFile, gSync.folder); 
 	}
 	else
-			writeContentAfterSave ();
+		writeContentAfterSave ();
 
 }
 
@@ -1296,7 +1298,7 @@ var kolabCopyServiceListener = {
 			window.setTimeout(updateContentWrite, com.synckolab.config.SWITCH_TIME);	
 		if (curStep == 6)
 			window.setTimeout(writeContent, com.synckolab.config.SWITCH_TIME);	
-	}  
+	}
 };
 
 

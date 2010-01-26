@@ -1262,7 +1262,7 @@ com.synckolab.calendarTools.event2kolabXmlMsg = function (event, email, syncTask
 {
 	var xml = event2xml(event, syncTasks, email);
 	var my_msg = generateMail(event.id, email, "", syncTasks?"application/x-vnd.kolab.task":"application/x-vnd.kolab.event", 
-			true, encodeQuoted(encode_utf8(xml)), event2Human(event, syncTasks));
+			true, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(xml)), event2Human(event, syncTasks));
 	return my_msg;
 };
 

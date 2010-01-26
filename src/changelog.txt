@@ -1,0 +1,6 @@
+1.0.4 -> 1.5.0
+==============
+
+* change internalmessage db to use hashmap instead
+* change global functions to use namespace or encapsulate
+* change additional Fields to hashmap for better code reuse and readability

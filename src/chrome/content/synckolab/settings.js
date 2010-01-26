@@ -1146,8 +1146,10 @@ com.synckolab.settings = {
 		
 		/**
 		 * Delete all temp/cache - files/folders for this configuration
+		 * @param config the config name
+		 * @param type CALENDAR|TASK|CONTACT + FOLDER
 		 */
-		resetConfiguration: function(config)
+		resetConfiguration: function(config, type)
 		{
 			var file = Components.classes["@mozilla.org/file/directory_service;1"].
 			   getService(Components.interfaces.nsIProperties).
@@ -1229,7 +1231,7 @@ com.synckolab.settings = {
 			
 			var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 			pref.setCharPref("SyncKolab."+this.curConfig+".ContactFolderPath", uri);
-			resetConfiguration(this.curConfig);
+			this.resetConfiguration(this.curConfig, "CONTACTFOLDER");
 		},
 		
 		
@@ -1318,7 +1320,7 @@ com.synckolab.settings = {
 		
 			var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 			pref.setCharPref("SyncKolab."+this.curConfig+".CalendarFolderPath", uri);
-			resetConfiguration(this.curConfig);
+			this.resetConfiguration(this.curConfig, "CALENDARFOLDER");
 		},
 		
 		setTaskFolder: function(uri)
@@ -1330,7 +1332,7 @@ com.synckolab.settings = {
 		
 			var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 			pref.setCharPref("SyncKolab."+this.curConfig+".TaskFolderPath", uri);
-			resetConfiguration(this.curConfig);
+			this.resetConfiguration(this.curConfig, "TASKFOLDER");
 		},
 		
 		updateCalFolder: function (act)
