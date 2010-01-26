@@ -46,10 +46,6 @@ if(!com) var com={};
 if(!com.synckolab) com.synckolab={};
 
 com.synckolab.Calendar = {
-	// package shortcuts:
-	global: com.synckolab.global,
-	tools: com.synckolab.tools,
-	calTools: com.synckolab.calendarTools,
 	
 	isTbird2: true, // default: tbird 2 
 	gConflictResolve : "ask", // conflict resolution (default: ask what to do)
@@ -99,9 +95,14 @@ com.synckolab.Calendar = {
 	},
 
 	init: function(config) {
+		// package shortcuts:
+		this.global = com.synckolab.global;
+		this.tools = com.synckolab.tools;
+		this.calTools = com.synckolab.calendarTools;
+
 		if (!calTools.isCalendarAvailable ())
 			return;
-
+		
 		this.tools.logMessage("Initialising calendar...", this.global.LOG_INFO);
 			
 		this.forceServerCopy = false;
@@ -233,15 +234,15 @@ com.synckolab.Calendar = {
 		nextFunc: '',
 		events: new Array(),
 		sync: '',
-		onOperationComplete: function(aCalendar, aStatus, aOperator, aId, aDetail) {		
-			    this.tools.logMessage("operation "+(this.syncTasks == true?"tasks":"calendar")+": status="+aStatus + " Op=" + aOperator + " Detail=" + aDetail, this.global.LOG_DEBUG + this.global.LOG_CAL);
+		onOperationComplete: function(aCalendar, aStatus, aOperator, aId, aDetail) {
+			this.tools.logMessage("operation "+(this.syncTasks == true?"tasks":"calendar")+": status="+aStatus + " Op=" + aOperator + " Detail=" + aDetail, this.global.LOG_DEBUG + this.global.LOG_CAL);
 			},
 		onGetResult: function(aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {
-                this.tools.logMessage("got results: " + aCount + " items", this.global.LOG_DEBUG + this.global.LOG_CAL);
-                for (var i = 0; i < aCount; i++) {
-                    this.events.push(aItems[i]);
-                }
-            }
+				this.tools.logMessage("got results: " + aCount + " items", this.global.LOG_DEBUG + this.global.LOG_CAL);
+				for (var i = 0; i < aCount; i++) {
+					this.events.push(aItems[i]);
+				}
+			}
 	},
 
 	/**
@@ -263,9 +264,9 @@ com.synckolab.Calendar = {
 		this.curItemInListId = this.doc.createElement("listcell");
 		this.curItemInListStatus = this.doc.createElement("listcell");
 		this.curItemInListContent = this.doc.createElement("listcell");
-		this.curItemInListId.setAttribute("label", strBundle.getString("unknown"));
-		this.curItemInListStatus.setAttribute("label", strBundle.getString("parsing"));
-		this.curItemInListContent.setAttribute("label", strBundle.getString("unknown"));
+		this.curItemInListId.setAttribute("label", com.synckolab.global.strBundle.getString("unknown"));
+		this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("parsing"));
+		this.curItemInListContent.setAttribute("label", com.synckolab.global.strBundle.getString("unknown"));
 		
 
 		this.curItemInList.appendChild(this.curItemInListId);
@@ -286,7 +287,7 @@ com.synckolab.Calendar = {
 		
 		if (parsedEvent == null)
 		{
-			this.curItemInListId.setAttribute("label", strBundle.getString("unparseable"));
+			this.curItemInListId.setAttribute("label", com.synckolab.global.strBundle.getString("unparseable"));
 			return null;
 		}
 		// set the calendar
@@ -296,12 +297,12 @@ com.synckolab.Calendar = {
 
 		// update list item
 		this.curItemInListId.setAttribute("label", parsedEvent.id);
-		this.curItemInListStatus.setAttribute("label", strBundle.getString("checking"));
+		this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("checking"));
 		var info = parsedEvent.title;
 
 		if (!this.syncTasks && parsedEvent.startDate)
 		{
-		    info += " (" + date2String(parsedEvent.startDate.jsDate) + ")";
+			info += " (" + date2String(parsedEvent.startDate.jsDate) + ")";
 		}
 		this.curItemInListContent.setAttribute("label", info);
 		
@@ -329,16 +330,16 @@ com.synckolab.Calendar = {
 				// use the original content to write the snyc file 
 				// this makes it easier to compare later on and makes sure no info is 
 				// lost/changed
-				writeSyncDBFile (idxEntry, fileContent);
+				com.synckolab.tools.writeSyncDBFile (idxEntry, fileContent);
 				
 				// also write the extra fields in a file
 				if (messageFields.length > 0)
 					writeDataBase(fEntry, messageFields);
 				
-				this.curItemInListStatus.setAttribute("label", strBundle.getString("localAdd"));
+				this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localAdd"));
 				
-	    			// add the new event
-    				this.gCalendar.addItem(parsedEvent, this.gEvents);
+				// add the new event
+				this.gCalendar.addItem(parsedEvent, this.gEvents);
 				// also add to the hash-database
 				this.gCalDB.put(parsedEvent.id, parsedEvent);
 
@@ -348,7 +349,7 @@ com.synckolab.Calendar = {
 			{
 				// now this should be deleted, since it was in the db already
 				this.tools.logMessage("Delete event on server and in db: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
-				this.curItemInListStatus.setAttribute("label", strBundle.getString("deleteOnServer"));
+				this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("deleteOnServer"));
 
 				// also remove the local db file since we deleted the contact
 				if (idxEntry.exists())
@@ -407,7 +408,7 @@ com.synckolab.Calendar = {
  					// take event from server
 					this.tools.logMessage("Take event from server: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
 					
-					writeSyncDBFile (idxEntry, fileContent);
+					com.synckolab.tools.writeSyncDBFile (idxEntry, fileContent);
 	
 					// also write the extra fields in a file
 					if (messageFields.length > 0)
@@ -426,7 +427,7 @@ com.synckolab.Calendar = {
 							}
 							
 							//update list item
-							this.curItemInListStatus.setAttribute("label", strBundle.getString("localUpdate"));
+							this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localUpdate"));
 							
 							return null;
 						}
@@ -472,10 +473,10 @@ com.synckolab.Calendar = {
 						}
 					}
 
-					writeSyncDBFile (idxEntry, com.synckolab.tools.stripMailHeader(msg));
+					com.synckolab.tools.writeSyncDBFile (idxEntry, com.synckolab.tools.stripMailHeader(msg));
 
 					// update list item
-					this.curItemInListStatus.setAttribute("label", strBundle.getString("updateOnServer"));
+					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("updateOnServer"));
 					
 					// remember this message for update
 					return msg;
@@ -491,7 +492,7 @@ com.synckolab.Calendar = {
 				{
 					this.tools.logMessage("event on server changed: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
 					
-					writeSyncDBFile (idxEntry, fileContent);
+					com.synckolab.tools.writeSyncDBFile (idxEntry, fileContent);
 	
 					for (var i = 0; i < this.gEvents.events.length; i++)
 					{
@@ -506,7 +507,7 @@ com.synckolab.Calendar = {
 							}
 	
 							// update list item
-							this.curItemInListStatus.setAttribute("label", strBundle.getString("localUpdate"));
+							this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localUpdate"));
 							 
 							return null;
 						}
@@ -549,16 +550,16 @@ com.synckolab.Calendar = {
 					}
 					
 					// update list item
-					this.curItemInListStatus.setAttribute("label", getLangString(strBundle, "updateOnServer"));
+					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("updateOnServer"));
 
-					writeSyncDBFile (idxEntry, com.synckolab.tools.stripMailHeader(msg));
+					com.synckolab.tools.writeSyncDBFile (idxEntry, com.synckolab.tools.stripMailHeader(msg));
 					
 					// remember this message for update
 					return msg;
 				}
 				
 				this.tools.logMessage("no change for event:" + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
-				this.curItemInListStatus.setAttribute("label", getLangString(strBundle, "noChange"));
+				this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("noChange"));
 			}
 		}
 		return null;
@@ -651,7 +652,7 @@ com.synckolab.Calendar = {
 					this.curItemInListStatus = this.doc.createElement("listcell");
 					this.curItemInListContent = this.doc.createElement("listcell");
 					this.curItemInListId.setAttribute("label", cur.id);
-					this.curItemInListStatus.setAttribute("label", strBundle.getString("localDelete"));
+					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localDelete"));
 					this.curItemInListContent.setAttribute("label", cur.title);
 					
 			
@@ -674,7 +675,7 @@ com.synckolab.Calendar = {
 					this.curItemInListStatus = this.doc.createElement("listcell");
 					this.curItemInListContent = this.doc.createElement("listcell");
 					this.curItemInListId.setAttribute("label", cur.id);
-					this.curItemInListStatus.setAttribute("label", strBundle.getString("addToServer"));
+					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("addToServer"));
 					this.curItemInListContent.setAttribute("label", cur.title);
 					
 					this.curItemInList.appendChild(this.curItemInListId);
@@ -732,7 +733,7 @@ com.synckolab.Calendar = {
 				
 				// add the new event into the db
 				var cEntry = getSyncDbFile(this.gConfig, this.getType(), cur.id);
-				writeSyncDBFile(cEntry, com.synckolab.tools.stripMailHeader(msg));
+				com.synckolab.tools.writeSyncDBFile(cEntry, com.synckolab.tools.stripMailHeader(msg));
 
 			}
 		}	
@@ -746,4 +747,4 @@ com.synckolab.Calendar = {
 	{
 //		writeDataBase (this.dbFile, this.db);
 	}
-}
+};

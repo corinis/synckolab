@@ -209,7 +209,8 @@ com.synckolab.addressbookTools.findCard = function(cards, vId, directory) {
  */
 com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 	// until the boundary = end of xml
-	xml = fixString4XmlParser(decode_utf8(decodeQuoted(xml)));
+	xml = com.synckolab.tools.text.utf8.decode(com.synckolab.tools.text.quoted.decode(xml));
+	// potential fix: .replace(/&/g, "&amp;")
 
 	// convert the string to xml
 	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser); 	
@@ -231,7 +232,7 @@ com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 
 	var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
 	
-	var cur = doc.firstChild.firstChild;
+	var cur = new com.synckolab.Node(doc.firstChild.firstChild);
 	var found = false;
 	
 	var email = 0;
@@ -246,7 +247,7 @@ com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 				case "LAST-MODIFICATION-DATE":
 						/*
 						ignore this since thunderbird implementation just does not work
-						var s = decode4XML(cur.firstChild.data);
+						var s = cur.getFirstData();
 						// now we gotta check times... convert the message first
 						// save the date in microseconds
 						// 2005-03-30T15:28:52Z
@@ -264,9 +265,9 @@ com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 						break;						
 
 				case "NAME":
-					this.setCardProperty(card, "FirstName", getXmlResult(cur, "GIVEN-NAME", ""));
-					this.setCardProperty(card, "LastName", getXmlResult(cur, "LAST-NAME", ""));
-					this.setCardProperty(card, "DisplayName", getXmlResult(cur, "FULL-NAME", ""));
+					this.setCardProperty(card, "FirstName", cur.getXmlResult("GIVEN-NAME", ""));
+					this.setCardProperty(card, "LastName", cur.getXmlResult("LAST-NAME", ""));
+					this.setCardProperty(card, "DisplayName", cur.getXmlResult("FULL-NAME", ""));
 					found = true;
 				break;
 				
@@ -275,8 +276,8 @@ com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 					// 0: unknown
 					// 1: plaintext
 					// 2: html
-					var format = decode4XML(cur.firstChild.data).toUpperCase();
-					this.setCardProperty(card, "PreferMailFormat", MAIL_FORMAT_UNKNOWN);
+					var format = cur.getFirstData().toUpperCase();
+					this.setCardProperty(card, "PreferMailFormat", this.MAIL_FORMAT_UNKNOWN);
 					switch(format)
 					{
 						case 'PLAINTEXT':
@@ -284,46 +285,46 @@ com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 						case 'TXT':
 						case 'PLAIN': 
 						case '1':
-							this.setCardProperty(card, "PreferMailFormat", MAIL_FORMAT_PLAINTEXT);
+							this.setCardProperty(card, "PreferMailFormat", this.MAIL_FORMAT_PLAINTEXT);
 							break;
 						case 'HTML':
 						case 'RICHTEXT':
 						case 'RICH':
 						case '2':
-							this.setCardProperty(card, "PreferMailFormat", MAIL_FORMAT_HTML);
+							this.setCardProperty(card, "PreferMailFormat", this.MAIL_FORMAT_HTML);
 					}
 				break;
 
 				case "JOB-TITLE":
 					if (cur.firstChild == null)
 						break;
-					this.setCardProperty(card, "JobTitle", decode4XML(cur.firstChild.data));
+					this.setCardProperty(card, "JobTitle", cur.getFirstData());
 					found = true;
 					break;
 
 				case "NICK-NAME":
 					if (cur.firstChild == null)
 						break;
-					this.setCardProperty(card, "NickName", decode4XML(cur.firstChild.data));
+					this.setCardProperty(card, "NickName", cur.getFirstData());
 					found = true;
 					break;
 
 				case "EMAIL":
-					com.synckolab.tools.logMessage("email: " + email + " - " + getXmlResult(cur, "SMTP-ADDRESS", ""), this.global.LOG_ERROR + this.global.LOG_AB);
+					com.synckolab.tools.logMessage("email: " + email + " - " + cur.getXmlResult("SMTP-ADDRESS", ""), this.global.LOG_ERROR + this.global.LOG_AB);
 					switch (email)
 					{
 						case 0:
-							this.setCardProperty(card, "PrimaryEmail", getXmlResult(cur, "SMTP-ADDRESS", ""));
+							this.setCardProperty(card, "PrimaryEmail", cur.getXmlResult("SMTP-ADDRESS", ""));
 							// only applies to tbird < 3
 							if (card.defaultEmail)
 								card.defaultEmail = this.getCardProperty(card, "PrimaryEmail");
 							break;
 						case 1:
-							this.setCardProperty(card, "SecondEmail", getXmlResult(cur, "SMTP-ADDRESS", ""));
+							this.setCardProperty(card, "SecondEmail", cur.getXmlResult("SMTP-ADDRESS", ""));
 							break;
 						default:
 							// remember other emails
-							extraFields.addField("EMAIL", getXmlResult(cur, "SMTP-ADDRESS", ""));
+							extraFields.addField("EMAIL", cur.getXmlResult("SMTP-ADDRESS", ""));
 							break;
 							
 					}
@@ -333,19 +334,19 @@ com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 					
 				case "CATEGORIES":
 					if (cur.firstChild != null)
-						this.setCardProperty(card, "Category", decode4XML(cur.firstChild.data));
+						this.setCardProperty(card, "Category", cur.getFirstData());
 					break;
 
 			  case "ORGANIZATION":
 					if (cur.firstChild != null)
-						this.setCardProperty(card, "Company", decode4XML(cur.firstChild.data));
+						this.setCardProperty(card, "Company", cur.getFirstData());
 					found = true;
 				break;
 				
 				// these two are the same
 			  case "PHONE":
-				var num = getXmlResult(cur, "NUMBER", "");
-				switch (getXmlResult(cur, "TYPE", "CELLULAR").toUpperCase())
+				var num = cur.getXmlResult("NUMBER", "");
+				switch (cur.getXmlResult("TYPE", "CELLULAR").toUpperCase())
 				{
 					case "MOBILE":
 					case "CELLULAR":
@@ -368,7 +369,7 @@ com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 						break;
 					default:
 						// remember other emails
-						extraFields.addField("PHONE:" + getXmlResult(cur, "TYPE", "CELLULAR"), num);
+						extraFields.addField("PHONE:" + cur.getXmlResult("TYPE", "CELLULAR"), num);
 						break;
 				}
 				found = true;
@@ -377,7 +378,7 @@ com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 			  case "BIRTHDAY":
 					if (cur.firstChild == null)
 						break;
-					var tok = cur.firstChild.data.split("-");					
+					var tok = cur.firstChild.data.split("-");
 					this.setCardProperty(card, "BirthYear", tok[0]);
 					this.setCardProperty(card, "BirthMonth", tok[1]);
 					// BDAY: 1987-09-27
@@ -388,7 +389,7 @@ com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 			  case "ANNIVERSARY":
 					if (cur.firstChild == null)
 						break;
-					var tok = decode4XML(cur.firstChild.data).split("-");
+					var tok = cur.getFirstData().split("-");
 	
 					this.setCardProperty(card, "AnniversaryYear", tok[0]);
 					this.setCardProperty(card, "AnniversaryMonth", tok[1]);
@@ -399,27 +400,27 @@ com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 				/* @deprecated
 			  case "PREFERRED-ADDRESS":
 				if (cur.firstChild != null)
-					this.setCardProperty(card, "DefaultAddress", decode4XML(cur.firstChild.data));
+					this.setCardProperty(card, "DefaultAddress", cur.getFirstData());
 				break;
 				*/
 			  case "ADDRESS":
-				switch (getXmlResult(cur, "TYPE", "HOME").toUpperCase())
+				switch (cur.getXmlResult("TYPE", "HOME").toUpperCase())
 				{
 						case "HOME":
-								this.setCardProperty(card, "HomeAddress", getXmlResult(cur, "STREET", ""));
-								this.setCardProperty(card, "HomeAddress2", getXmlResult(cur, "STREET2", ""));
-								this.setCardProperty(card, "HomeCity", getXmlResult(cur, "LOCALITY", ""));
-								this.setCardProperty(card, "HomeState", getXmlResult(cur, "REGION", ""));
-								this.setCardProperty(card, "HomeZipCode", getXmlResult(cur, "POSTAL-CODE", ""));
-								this.setCardProperty(card, "HomeCountry", getXmlResult(cur, "COUNTRY", ""));
+								this.setCardProperty(card, "HomeAddress", cur.getXmlResult("STREET", ""));
+								this.setCardProperty(card, "HomeAddress2", cur.getXmlResult("STREET2", ""));
+								this.setCardProperty(card, "HomeCity", cur.getXmlResult("LOCALITY", ""));
+								this.setCardProperty(card, "HomeState", cur.getXmlResult("REGION", ""));
+								this.setCardProperty(card, "HomeZipCode", cur.getXmlResult("POSTAL-CODE", ""));
+								this.setCardProperty(card, "HomeCountry", cur.getXmlResult("COUNTRY", ""));
 								break;
 						case "BUSINESS":
-								this.setCardProperty(card, "WorkAddress", getXmlResult(cur, "STREET", ""));
-								this.setCardProperty(card, "WorkAddress2", getXmlResult(cur, "STREET2", ""));
-								this.setCardProperty(card, "WorkCity", getXmlResult(cur, "LOCALITY", ""));
-								this.setCardProperty(card, "WorkState", getXmlResult(cur, "REGION", ""));
-								this.setCardProperty(card, "WorkZipCode", getXmlResult(cur, "POSTAL-CODE", ""));
-								this.setCardProperty(card, "WorkCountry", getXmlResult(cur, "COUNTRY", ""));
+								this.setCardProperty(card, "WorkAddress", cur.getXmlResult("STREET", ""));
+								this.setCardProperty(card, "WorkAddress2", cur.getXmlResult("STREET2", ""));
+								this.setCardProperty(card, "WorkCity", cur.getXmlResult("LOCALITY", ""));
+								this.setCardProperty(card, "WorkState", cur.getXmlResult("REGION", ""));
+								this.setCardProperty(card, "WorkZipCode", cur.getXmlResult("POSTAL-CODE", ""));
+								this.setCardProperty(card, "WorkCountry", cur.getXmlResult("COUNTRY", ""));
 								break;
 					}
 					found = true;
@@ -428,7 +429,7 @@ com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 					if (cur.firstChild == null)
 						break;
 					
-					var cnotes = decode4XML(cur.firstChild.data);
+					var cnotes = cur.getFirstData();
 					this.setCardProperty(card, "Notes", cnotes.replace(/\\n/g, "\n"));
 					com.synckolab.tools.logMessage("cur.firstchild.data.length="+cur.firstChild.data.length + " - cnotes=" + cnotes.length + " - card.notes=" + this.getCardProperty(card, "Notes").length , this.global.LOG_DEBUG + this.global.LOG_AB);
 					found = true;
@@ -436,50 +437,50 @@ com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 			  case "DEPARTMENT":
 					if (cur.firstChild == null)
 						break;
-					this.setCardProperty(card, "Department", decode4XML(cur.firstChild.data));
+					this.setCardProperty(card, "Department", cur.getFirstData());
 					found = true;
 				break;
 	
 			  case "WEB-PAGE":
 					if (cur.firstChild == null)
 						break;
-					this.setCardProperty(card, "WebPage1", decode4XML(cur.firstChild.data));
+					this.setCardProperty(card, "WebPage1", cur.getFirstData());
 					found = true;
 					break;
 					
 			  case "BUSINESS-WEB-PAGE":
 					if (cur.firstChild == null)
 						break;
-					this.setCardProperty(card, "WebPage2", decode4XML(cur.firstChild.data));
+					this.setCardProperty(card, "WebPage2", cur.getFirstData());
 					found = true;
 					break;
 
 			  case "UID":
 				if (cur.firstChild == null)
 					break;
-				this.setCardProperty(card, "Custom4", decode4XML(cur.firstChild.data));
+				this.setCardProperty(card, "Custom4", cur.getFirstData());
 				break;
 
 			  case "CUSTOM1":
 				if (cur.firstChild == null)
 					break;
-				this.setCardProperty(card, "Custom1", decode4XML(cur.firstChild.data));
+				this.setCardProperty(card, "Custom1", cur.getFirstData());
 				break;
 			  case "CUSTOM2":
 				if (cur.firstChild == null)
 					break;
-				this.setCardProperty(card, "Custom2", decode4XML(cur.firstChild.data));
+				this.setCardProperty(card, "Custom2", cur.getFirstData());
 				break;
 			  case "CUSTOM3":
 					if (cur.firstChild == null)
 						break;
-					this.setCardProperty(card, "Custom3", decode4XML(cur.firstChild.data));
+					this.setCardProperty(card, "Custom3", cur.getFirstData());
 					break;
 				
 			  case "IM-ADDRESS":
 				if (cur.firstChild == null)
 					break;
-				this.setCardProperty(card, "AimScreenName", decode4XML(cur.firstChild.data));
+				this.setCardProperty(card, "AimScreenName", cur.getFirstData());
 				break;
 				
 			  case "ALLOW-REMOTE-CONTENT":
@@ -493,9 +494,9 @@ com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 			default:
 				if (cur.firstChild == null)
 					break;
-				com.synckolab.tools.logMessage("XC FIELD not found: " + cur.nodeName + ":" + decode4XML(cur.firstChild.data), this.global.LOG_WARNING + this.global.LOG_AB);
+				com.synckolab.tools.logMessage("XC FIELD not found: " + cur.nodeName + ":" + cur.getFirstData(), this.global.LOG_WARNING + this.global.LOG_AB);
 				// remember other fields
-				extraFields.addField(cur.nodeName, decode4XML(cur.firstChild.data));
+				extraFields.addField(cur.nodeName, cur.getFirstData());
 				break;
 				
 			} // end switch
@@ -527,9 +528,9 @@ com.synckolab.addressbookTools.list2Xml = function(card, fields) {
 	// ??
 	xml += " <sensitivity>public</sensitivity>\n";
 	if (com.synckolab.tools.checkExist(this.getCardProperty(card, "Description")))
-			xml +=" <body>"+encode4XML(this.getCardProperty(card, "Description"))+"</body>\n";
+			xml +=" <body>"+com.synckolab.tools.text.encode4XML(this.getCardProperty(card, "Description"))+"</body>\n";
 	if (com.synckolab.tools.checkExist(this.getCardProperty(card, "Notes")))
-			xml +=" <body>"+encode4XML(this.getCardProperty(card, "Notes"))+"</body>\n";
+			xml +=" <body>"+com.synckolab.tools.text.encode4XML(this.getCardProperty(card, "Notes"))+"</body>\n";
 	xml += com.synckolab.tools.text.nodeWithContent("display-name", this.getCardProperty(card, "ListNickName"), false);
 
 	var cList = card;
@@ -601,11 +602,11 @@ com.synckolab.addressbookTools.list2Vcard = function(card, fields) {
 		msg += "EMAIL;TYPE=INTERNET:" + this.getCardProperty(card, "SecondEmail") + "\n";
  	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "PreferMailFormat"))) { 
 		switch(this.getCardProperty(card, "PreferMailFormat")) {
-			case MAIL_FORMAT_UNKNOWN:
+			case this.MAIL_FORMAT_UNKNOWN:
 				msg += "X-EMAILFORMAT:Unknown\n";break;
-			case MAIL_FORMAT_PLAINTEXT:
+			case this.MAIL_FORMAT_PLAINTEXT:
 				msg += "X-EMAILFORMAT:Plain Text\n";break;
-			case MAIL_FORMAT_HTML:
+			case this.MAIL_FORMAT_HTML:
 				msg += "X-EMAILFORMAT:HTML\n";break;
 		}
 	}
@@ -749,27 +750,27 @@ com.synckolab.addressbookTools.card2Xml = function(card, fields) {
 	var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 	xml += "<contact version=\"1.0\" >\n";
 	xml += " <product-id>SyncKolab, Kolab resource</product-id>\n";
-	xml += " <uid>"+encode4XML(this.getCardProperty(card, "Custom4"))+"</uid>\n";
+	xml += " <uid>"+com.synckolab.tools.text.encode4XML(this.getCardProperty(card, "Custom4"))+"</uid>\n";
 	xml += com.synckolab.tools.text.nodeWithContent("categories", this.getCardProperty(card, "Category"), false);
 	//xml += " <creation-date>"+date2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000))+"T"+time2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000))+"Z</creation-date>\n";
 	xml += " <last-modification-date>"+date2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000))+"T"+time2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000))+"Z</last-modification-date>\n";
 	// ??
 	xml += " <sensitivity>public</sensitivity>\n";
 	if (com.synckolab.tools.checkExist(this.getCardProperty(card, "Notes")))
-			xml +=" <body>"+encode4XML(this.getCardProperty(card, "Notes"))+"</body>\n";
+			xml +=" <body>"+com.synckolab.tools.text.encode4XML(this.getCardProperty(card, "Notes"))+"</body>\n";
 
 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "FirstName")) || com.synckolab.tools.checkExist (this.getCardProperty(card, "LastName")) ||com.synckolab.tools.checkExist (this.getCardProperty(card, "DisplayName")) ||
 		com.synckolab.tools.checkExist (this.getCardProperty(card, "NickName")))
 	{
 		xml += " <name>\n";
 		if (com.synckolab.tools.checkExist (this.getCardProperty(card, "FirstName")))
-			xml += "  <given-name>"+encode4XML(this.getCardProperty(card, "FirstName"))+"</given-name>\n";
+			xml += "  <given-name>"+com.synckolab.tools.text.encode4XML(this.getCardProperty(card, "FirstName"))+"</given-name>\n";
 //			xml += "  <middle-names>"+this.getCardProperty(card, "NickName")+"</middle-names>\n"; // not really correct...
 		if (com.synckolab.tools.checkExist (this.getCardProperty(card, "LastName")))
-			xml += "  <last-name>"+encode4XML(this.getCardProperty(card, "LastName"))+"</last-name>\n";
+			xml += "  <last-name>"+com.synckolab.tools.text.encode4XML(this.getCardProperty(card, "LastName"))+"</last-name>\n";
 		if (com.synckolab.tools.checkExist (this.getCardProperty(card, "DisplayName")))		
 		{
-			xml += "  <full-name>"+encode4XML(this.getCardProperty(card, "DisplayName"))+"</full-name>\n";
+			xml += "  <full-name>"+com.synckolab.tools.text.encode4XML(this.getCardProperty(card, "DisplayName"))+"</full-name>\n";
 			displayName = this.getCardProperty(card, "DisplayName");
 		}
 		else
@@ -839,23 +840,23 @@ com.synckolab.addressbookTools.card2Xml = function(card, fields) {
 	if (com.synckolab.tools.checkExist(this.getCardProperty(card, "PrimaryEmail")))
 	{
 		xml += " <email type=\"primary\">\n";
-		xml += "  <display-name>"+encode4XML(displayName)+"</display-name>\n";
-		xml += "  <smtp-address>"+encode4XML(this.getCardProperty(card, "PrimaryEmail"))+"</smtp-address>\n";
+		xml += "  <display-name>"+com.synckolab.tools.text.encode4XML(displayName)+"</display-name>\n";
+		xml += "  <smtp-address>"+com.synckolab.tools.text.encode4XML(this.getCardProperty(card, "PrimaryEmail"))+"</smtp-address>\n";
 		xml += " </email>\n";
 	}
 	
 	if (com.synckolab.tools.checkExist(this.getCardProperty(card, "SecondEmail")))
 	{
 		xml += " <email>\n";
-		xml += "  <display-name>"+encode4XML(displayName)+"</display-name>\n";
-		xml += "  <smtp-address>"+encode4XML(this.getCardProperty(card, "SecondEmail"))+"</smtp-address>\n";
+		xml += "  <display-name>"+com.synckolab.tools.text.encode4XML(displayName)+"</display-name>\n";
+		xml += "  <smtp-address>"+com.synckolab.tools.text.encode4XML(this.getCardProperty(card, "SecondEmail"))+"</smtp-address>\n";
 		xml += " </email>\n";
 	}
 
 	// if the mail format is set... 
-	if (this.getCardProperty(card, "PreferMailFormat") != MAIL_FORMAT_UNKNOWN)
+	if (this.getCardProperty(card, "PreferMailFormat") != this.MAIL_FORMAT_UNKNOWN)
 	{
-		if (this.getCardProperty(card, "PreferMailFormat") == MAIL_FORMAT_PLAINTEXT)
+		if (this.getCardProperty(card, "PreferMailFormat") == this.MAIL_FORMAT_PLAINTEXT)
 		{
 			xml += com.synckolab.tools.text.nodeWithContent("prefer-mail-format", "text", false);
 		}
@@ -1148,13 +1149,13 @@ com.synckolab.addressbookTools.parseMessage = function(message, extraFields, car
 	if (message.indexOf("<?xml") != -1 || message.indexOf("<?XML") != -1)
 	{
 		com.synckolab.tools.logMessage("XML message!", this.global.LOG_INFO + this.global.LOG_AB);	
-		return xml2Card(message, extraFields, cards);
+		return this.xml2Card(message, extraFields, cards);
 	}
 	else
 		com.synckolab.tools.logMessage("VCARD/VLIST!", this.global.LOG_INFO + this.global.LOG_AB);	
 
 	// decode utf8
-	message = decode_utf8(decodeQuoted(message));
+	message = com.synckolab.tools.text.utf8.decode(com.synckolab.tools.text.quoted.decode(message));
 	
 	// make an array of all lines for easier parsing
 	var lines = message.split("\n");
@@ -1166,14 +1167,14 @@ com.synckolab.addressbookTools.parseMessage = function(message, extraFields, car
 		{
 			com.synckolab.tools.logMessage("parsing a list: " + message, this.global.LOG_DEBUG + this.global.LOG_AB);	
 			var mailList = Components.classes["@mozilla.org/addressbook/directoryproperty;1"].createInstance(Components.interfaces.nsIAbDirectory);
-			if (!vList2Card(lines[i], lines, mailList, cards))
+			if (!this.vList2Card(lines[i], lines, mailList, cards))
 				return null;
 			return mailList;
 		}
 	}	
 
 	var newCard = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
-	if (!message2Card(lines, newCard, extraFields, 0, lines.length))
+	if (!this.message2Card(lines, newCard, extraFields, 0, lines.length))
 	{
 		com.synckolab.tools.logMessage("unparseable: " + message, this.global.LOG_ERROR + this.global.LOG_AB);	
 		return null;
@@ -1234,7 +1235,7 @@ com.synckolab.addressbookTools.message2Card = function(lines, card, extraFields,
 	this.setCardProperty(card, "PagerNumberType", "");
 	this.setCardProperty(card, "PhoneticFirstName", "");
 	this.setCardProperty(card, "PhoneticLastName", "");
-	this.setCardProperty(card, "PreferMailFormat", MAIL_FORMAT_UNKNOWN); 
+	this.setCardProperty(card, "PreferMailFormat", this.MAIL_FORMAT_UNKNOWN); 
 	//PRUint32 preferMailFormat = "";
 	this.setCardProperty(card, "PrimaryEmail", "");
 	this.setCardProperty(card, "SecondEmail", "");
@@ -1301,7 +1302,7 @@ com.synckolab.addressbookTools.message2Card = function(lines, card, extraFields,
 					alert(("unable to convert to date: " + lines[i] + "\nPlease copy the date string in a bug report an submit!\n(Also available in the information)"));
 				}
 				*/
-				break;						
+				break;
  				
 			case "N":
 				// N:Lastname;Firstname;Other;Prexif;Suffix
@@ -1379,14 +1380,14 @@ com.synckolab.addressbookTools.message2Card = function(lines, card, extraFields,
 				// This will set the Email format to vCard, not part of vCard 3.0 spec, so the X- is there, I assume a Kolab server would just ignore this field
 				switch(tok[1]) {
 					case "Plain Text":
-						this.setCardProperty(card, "PreferMailFormat", MAIL_FORMAT_PLAINTEXT);
+						this.setCardProperty(card, "PreferMailFormat", this.MAIL_FORMAT_PLAINTEXT);
 						break;
 					case "HTML":
-						this.setCardProperty(card, "PreferMailFormat", MAIL_FORMAT_HTML);
+						this.setCardProperty(card, "PreferMailFormat", this.MAIL_FORMAT_HTML);
 						break;
 					// Unknown or misspeelled!
 					default:
-						this.setCardProperty(card, "PreferMailFormat", MAIL_FORMAT_UNKNOWN);
+						this.setCardProperty(card, "PreferMailFormat", this.MAIL_FORMAT_UNKNOWN);
 				}
 				break;
 
@@ -1702,11 +1703,11 @@ com.synckolab.addressbookTools.card2Vcard = function(card, fields) {
 		msg += "EMAIL;TYPE=INTERNET:" + this.getCardProperty(card, "SecondEmail") + "\n";
  	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "PreferMailFormat"))) { 
 		switch(this.getCardProperty(card, "PreferMailFormat")) {
-			case MAIL_FORMAT_UNKNOWN:
+			case this.MAIL_FORMAT_UNKNOWN:
 				msg += "X-EMAILFORMAT:Unknown\n";break;
-			case MAIL_FORMAT_PLAINTEXT:
+			case this.MAIL_FORMAT_PLAINTEXT:
 				msg += "X-EMAILFORMAT:Plain Text\n";break;
-			case MAIL_FORMAT_HTML:
+			case this.MAIL_FORMAT_HTML:
 				msg += "X-EMAILFORMAT:HTML\n";break;
 		}
 	}

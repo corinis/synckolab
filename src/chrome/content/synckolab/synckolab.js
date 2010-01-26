@@ -202,8 +202,6 @@ var gSyncKeyInfo;
 // progress variables 
 var curStep;
 
-// string bundle use: strBundle.getString("KEYNAME")
-var strBundle;
 
 
 /*contains:
@@ -230,12 +228,15 @@ var strBundle;
 		this.forceConfig = "MANUAL-SYNC";
 	}
 	
-	strBundle = document.getElementById("synckolabBundle");
+	com.synckolab.global.strBundle = document.getElementById("synckolabBundle");
 
 	if (this.doHideWindow)
 		gWnd = null;
 	else
 		gWnd = window.open("chrome://synckolab/content/progressWindow.xul", "bmarks", "chrome,width=350,height=350,resizable=1");
+	
+	// remember it global as well
+	com.synckolab.global.wnd = gWnd;
 	
 	try {
 		var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
@@ -585,12 +586,12 @@ function nextSync()
 		
 		meter.setAttribute("value", "100%");
 		if (gWnd != null)
-			statusMsg.value = strBundle.getString("syncfinished");
+			statusMsg.value = com.synckolab.global.strBundle.getString("syncfinished");
 		else
-			statusMsg.setAttribute("label", strBundle.getString("syncfinished"));
+			statusMsg.setAttribute("label", com.synckolab.global.strBundle.getString("syncfinished"));
 		
 		if (gWnd != null)
-			gWnd.document.getElementById('cancel-button').label = strBundle.getString("close"); 
+			gWnd.document.getElementById('cancel-button').label = com.synckolab.global.strBundle.getString("close"); 
 		// delete the temp file
 		var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
 		sfile.initWithPath(gTmpFile);
@@ -624,11 +625,11 @@ function nextSync()
 	// Step 3
 	if (gWnd != null)
 	{
-		statusMsg.value = strBundle.getString("getContent");
+		statusMsg.value = com.synckolab.global.strBundle.getString("getContent");
 	}
 	else
 	{
-		statusMsg.setAttribute("label", strBundle.getString("getContent"));
+		statusMsg.setAttribute("label", com.synckolab.global.strBundle.getString("getContent"));
 	}
 	
 	meter.setAttribute("value", "5%");
@@ -671,13 +672,13 @@ function getContent ()
 	// fix bug #16848 and ask before deleting everything :P
 	if (totalMessages == 0 && gSync.itemCount() > 0)
 	{
-		if (window.confirm(strBundle.getString("syncCopyToServer")))
+		if (window.confirm(com.synckolab.global.strBundle.getString("syncCopyToServer")))
 			gSync.forceServerCopy = true;
 	}
 	else
 	if (totalMessages > 0 && gSync.itemCount() == 0)
 	{
-		if (window.confirm(strBundle.getString("syncCopyToClient")))
+		if (window.confirm(com.synckolab.global.strBundle.getString("syncCopyToClient")))
 			gSync.forceLocalCopy = true;
 	}
 	
@@ -696,9 +697,9 @@ function getContent ()
 	updateMessagesContent = new Array(); // saves the card to use to update
 	
 	if (gWnd != null)
-		statusMsg.value = strBundle.getString("syncEntries");
+		statusMsg.value = com.synckolab.global.strBundle.getString("syncEntries");
 	else
-		statusMsg.setAttribute("label", strBundle.getString("syncEntries"));
+		statusMsg.setAttribute("label", com.synckolab.global.strBundle.getString("syncEntries"));
 	meter.setAttribute("value", "5%");
 	window.setTimeout(getMessage, com.synckolab.config.SWITCH_TIME);	
 }
@@ -852,10 +853,10 @@ function getMessage ()
 	fileContent = "";
 	gCurMessageKey = cur.messageKey;
 	var aurl = new Object();	
-	gSyncKolabMessageService.CopyMessage(
+	com.synckolab.global.messageService.CopyMessage(
         gSync.folderMsgURI +"#"+gCurMessageKey,
         syncKolabStreamListener, false, null, msgWindow, aurl
-        ); 
+        );
 }
 
 var syncKolabUrlListener = {
@@ -872,31 +873,31 @@ var syncKolabUrlListener = {
 
 // nsIStreamListener
 var syncKolabStreamListener = {
- onDataAvailable: function(request, context, inputStream, offset, count){
-    try
-    {
-        var sis=Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance(Components.interfaces.nsIScriptableInputStream);
-        sis.init(inputStream);
-        fileContent += sis.read(count);
-    }
-    catch(ex)
-    {
-        alert("exception caught: "+ex.message+"\n");
-    }
- },
- onStartRequest: function(request, context) {
- },
- onStopRequest: function(aRequest, aContext, aStatusCode) {
-    com.synckolab.tools.logMessage("got Message [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]:\n" + fileContent, com.synckolab.global.LOG_DEBUG);
-    
-    // remove the header of the content
-    fileContent = com.synckolab.tools.stripMailHeader(fileContent);
-    
-    // stop here for testing
-    parseMessageRunner ();
- }
+	onDataAvailable: function(request, context, inputStream, offset, count){
+		try
+		{
+			var sis=Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance(Components.interfaces.nsIScriptableInputStream);
+			sis.init(inputStream);
+			fileContent += sis.read(count);
+		}
+		catch(ex)
+		{
+			alert("exception caught: "+ex.message+"\n");
+		}
+	},
+	onStartRequest: function(request, context) {
+	},
+	onStopRequest: function(aRequest, aContext, aStatusCode) {
+		com.synckolab.tools.logMessage("got Message [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]:\n" + fileContent, com.synckolab.global.LOG_DEBUG);
+
+		// remove the header of the content
+		fileContent = com.synckolab.tools.stripMailHeader(fileContent);
+
+		// stop here for testing
+		parseMessageRunner ();
+	}
 };
-    
+
 /**
  * we now got the message content. this needs to parsed and checked 
  */
@@ -992,12 +993,12 @@ function parseFolderToAddressFinish ()
 	meter.setAttribute("value", "60%");
 	if (gWnd != null)
 	{
-		statusMsg.value = strBundle.getString("writeChangedEntries");
+		statusMsg.value = com.synckolab.global.strBundle.getString("writeChangedEntries");
 		curCounter.setAttribute("value", "0/0");
 	}
 	else
 	{
-		statusMsg.setAttribute("label", strBundle.getString("writeChangedEntries"));
+		statusMsg.setAttribute("label", com.synckolab.global.strBundle.getString("writeChangedEntries"));
 		curCounter.setAttribute("label", "0/0");
 	}
 	
@@ -1035,7 +1036,7 @@ function updateContent()
 			for (var i = 0; i < updateMessages.length; i++)
 			{
 				com.synckolab.tools.logMessage("deleting [" + updateMessages[i] + "]");
-				//var hdr = gSyncKolabMessageService.messageURIToMsgHdr(updateMessages[i]);
+				//var hdr = com.synckolab.global.messageService.messageURIToMsgHdr(updateMessages[i]);
 				list.AppendElement(updateMessages[i]);	
 
 			}
@@ -1122,12 +1123,12 @@ function updateContentAfterSave ()
 	meter.setAttribute("value", "80%");
 	if (gWnd != null)
 	{
-		statusMsg.value = strBundle.getString("writeNewEntries");
+		statusMsg.value = com.synckolab.global.strBundle.getString("writeNewEntries");
 		curCounter.setAttribute("value", "...");
 	}
 	else
 	{
-		statusMsg.setAttribute("label", strBundle.getString("writeNewEntries"));
+		statusMsg.setAttribute("label", com.synckolab.global.strBundle.getString("writeNewEntries"));
 		curCounter.setAttribute("label", "...");
 	}
 	
@@ -1302,18 +1303,5 @@ var kolabCopyServiceListener = {
 };
 
 
-function scrollToBottom ()
-{
-	if (gWnd != null)
-	{
-		// select and deselect the newly appended item (makes it scroll to the bottom)				
-		var lastItemPos = gWnd.document.getElementById('itemList').getRowCount() - 1;
-		if (lastItemPos > 0)
-		{
-			gWnd.document.getElementById('itemList').scrollToIndex(lastItemPos);
-			gWnd.document.getElementById('itemList').ensureIndexIsVisible(lastItemPos);
-		}
-	}
-}
 
 };

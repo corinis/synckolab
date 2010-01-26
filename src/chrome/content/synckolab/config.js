@@ -16,7 +16,7 @@ com.synckolab.config = {
 
 		//set this to true and on every error there will be a pause so you can check the logs
 		PAUSE_ON_ERROR: false
-}
+};
 
 com.synckolab.global = {
 		// log settings
@@ -27,6 +27,12 @@ com.synckolab.global = {
 		LOG_CAL: 4,
 		LOG_AB: 8,
 		LOG_ALL: 12,
+		
+		// pointer to the window
+		wnd : null, 
+
+		// string bundle use: strBundle.getString("KEYNAME") (init in synckolab.js)
+		strBundle: {},
 		
 		consoleService: Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService),
 		rdf: Components.classes["@mozilla.org/rdf/rdf-service;1"].getService(Components.interfaces.nsIRDFService),

@@ -282,11 +282,11 @@ com.synckolab.AddressBook = {
 		this.curItemInListId = this.doc.createElement("listcell");
 		this.curItemInListStatus = this.doc.createElement("listcell");
 		this.curItemInListContent = this.doc.createElement("listcell");
-		this.curItemInListId.setAttribute("label", strBundle.getString("unknown"));
+		this.curItemInListId.setAttribute("label", com.synckolab.global.strBundle.getString("unknown"));
 		this.curItemInListId.setAttribute("value", "-");
-		this.curItemInListStatus.setAttribute("label", strBundle.getString("parsing"));
+		this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("parsing"));
 		this.curItemInListStatus.setAttribute("value", "-");
-		this.curItemInListContent.setAttribute("label", strBundle.getString("unknown"));
+		this.curItemInListContent.setAttribute("label", com.synckolab.global.strBundle.getString("unknown"));
 		this.curItemInListContent.setAttribute("value", "-");
 		
 		this.curItemInList.appendChild(this.curItemInListId);
@@ -296,7 +296,7 @@ com.synckolab.AddressBook = {
 		if (this.itemList != null)
 		{
 			this.itemList.appendChild(this.curItemInList);
-			scrollToBottom();
+			com.synckolab.tools.scrollToBottom();
 		}
 				
 		// this is an array of arrays that hold fieldname+fielddata of until-now-unknown fields
@@ -310,8 +310,8 @@ com.synckolab.AddressBook = {
 		if (newCard && newCard.isMailList)
 		{
 			// skip mailing lists
-			this.curItemInListContent.setAttribute("label", strBundle.getString("mailingList") + " " + newCard.listNickName);
-			this.curItemInListId.setAttribute("label", strBundle.getString("noChange"));
+			this.curItemInListContent.setAttribute("label", com.synckolab.global.strBundle.getString("mailingList") + " " + newCard.listNickName);
+			this.curItemInListId.setAttribute("label", com.synckolab.global.strBundle.getString("noChange"));
 			com.synckolab.tools.logMessage("skipping mailing lists!", com.synckolab.global.LOG_WARNING + com.synckolab.global.LOG_AB);
 			return null;
 		}
@@ -327,10 +327,10 @@ com.synckolab.AddressBook = {
 
 			// update list item
 			this.curItemInListId.setAttribute("label", this.tools.getUID(newCard));
-			this.curItemInListStatus.setAttribute("label", strBundle.getString("checking"));
+			this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("checking"));
 			// since we disabled mailing list - wont come here
 			if (newCard.isMailList)			
-				this.curItemInListContent.setAttribute("label", strBundle.getString("mailingList") + " " + newCard.listNickName);
+				this.curItemInListContent.setAttribute("label", com.synckolab.global.strBundle.getString("mailingList") + " " + newCard.listNickName);
 			else
 			if (newCard.displayName != "")
 				this.curItemInListContent.setAttribute("label", newCard.displayName + " <" + newCard.primaryEmail + ">");
@@ -342,9 +342,9 @@ com.synckolab.AddressBook = {
 			com.synckolab.tools.logMessage("findCard.. done " , com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);	
 
 			// get the dbfile from the local disk
-			var cEntry = this.tools.getSyncDbFile(this.gConfig, this.getType(), this.tools.getUID(newCard));
+			var cEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, this.getType(), this.tools.getUID(newCard));
 			// ... and the field file
-			var fEntry = this.tools.getSyncFieldFile(this.gConfig, this.getType(), this.tools.getUID(newCard));
+			var fEntry = com.synckolab.tools.file.getSyncFieldFile(this.gConfig, this.getType(), this.tools.getUID(newCard));
 			com.synckolab.tools.logMessage("get sync db and field file " , com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);	
 
 			// a new card or locally deleted 
@@ -380,7 +380,7 @@ com.synckolab.AddressBook = {
 					com.synckolab.tools.logMessage("card is new, add to address book: " + this.tools.getUID(newCard), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);	
 					
 					//update list item
-					this.curItemInListStatus.setAttribute("label", getLangString(strBundle, "localAdd"));
+					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localAdd"));
 					
 				}
 				else
@@ -388,7 +388,7 @@ com.synckolab.AddressBook = {
 					com.synckolab.tools.logMessage("card deleted locally: " + this.tools.getUID(newCard), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);	
 					
 					//update list item
-					this.curItemInListStatus.setAttribute("label", getLangString(strBundle, "deleteOnServer"));
+					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("deleteOnServer"));
 	
 					try
 					{				
@@ -448,17 +448,17 @@ com.synckolab.AddressBook = {
 						switch ( conflictResolution.result ) {
 							case 0 :
 								//User clicked Cancel or X, we move to next record and user can deal with this issue on next sync
-								this.curItemInListStatus.setAttribute("label", strBundle.getString("conflict") + ": skipped");
+								this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("conflict") + ": skipped");
 								break;
 							case 1 :
 								//User chose to keep all server values
 								bUpdateLocal = true;
-								this.curItemInListStatus.setAttribute("label", strBundle.getString("conflict") + ": " + strBundle.getString("localUpdate"));
+								this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("conflict") + ": " + com.synckolab.global.strBundle.getString("localUpdate"));
 								break;
 							case 2 :
 								//User chose to keep all local values
 								bUpdateServer = true;
-								this.curItemInListStatus.setAttribute("label", getLangString(strBundle, "conflict") + ": " + strBundle.getString("updateOnServer"));
+								this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("conflict") + ": " + com.synckolab.global.strBundle.getString("updateOnServer"));
 								break;
 							case 3 :
 								//User chose a mix of values, therefore, both local and server need updating
@@ -466,7 +466,7 @@ com.synckolab.AddressBook = {
 								//newCard and aCard both already contain the new values
 								bUpdateLocal = true;
 								bUpdateServer = true;
-								this.curItemInListStatus.setAttribute("label", getLangString(strBundle, "conflict") + ": both updated");
+								this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("conflict") + ": both updated");
 								break;
 						}
 					
@@ -475,7 +475,7 @@ com.synckolab.AddressBook = {
 						//Changes to the way the SHA (code revisions) are calculated could cause this
 						com.synckolab.tools.logMessage("Contacts differ, however, assumed no change, update local" + this.tools.getUID(newCard), com.synckolab.global.LOG_WARNING + com.synckolab.global.LOG_AB);
 						bUpdateLocal = true;
-						this.curItemInListStatus.setAttribute("label", "Auto Conflict Resolved : " + getLangString(strBundle, "localUpdate"));
+						this.curItemInListStatus.setAttribute("label", "Auto Conflict Resolved : " + com.synckolab.global.strBundle.getString("localUpdate"));
 					}
 					
 					if ( bUpdateLocal ) {
@@ -506,7 +506,7 @@ com.synckolab.AddressBook = {
 						}						
 						
 						// write the current content in the sync-db file
-						writeSyncDBFile (cEntry, fileContent);
+						com.synckolab.tools.writeSyncDBFile (cEntry, fileContent);
 						// also write the extra fields in a file (or remove if nothing there)
 						if (messageFields.length() > 0)
 							messageFields.write(fEntry);
@@ -570,7 +570,7 @@ com.synckolab.AddressBook = {
 					com.synckolab.tools.logMessage("updated local" + this.tools.getUID(aCard), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 					
 					// write the current content in the sync-db file
-					writeSyncDBFile (cEntry, com.synckolab.tools.stripMailHeader(this.tools.card2Message(newCard, this.email, this.format)));
+					com.synckolab.tools.writeSyncDBFile (cEntry, com.synckolab.tools.stripMailHeader(this.tools.card2Message(newCard, this.email, this.format)));
 
 					// also write the extra fields in a file (or remove if nothing there)
 					if (messageFields.length() > 0)
@@ -580,7 +580,7 @@ com.synckolab.AddressBook = {
 						fEntry.remove(false);
 					
 					// update list item
-					this.curItemInListStatus.setAttribute("label", strBundle.getString("localUpdate"));
+					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localUpdate"));
 					return null;
 				}
 				else
@@ -590,7 +590,7 @@ com.synckolab.AddressBook = {
 					com.synckolab.tools.logMessage("client changed: " + this.tools.getUID(aCard) + cCard.primaryEmail, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 					
 					// update list item
-					this.curItemInListStatus.setAttribute("label", strBundle.getString("updateOnServer"));
+					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("updateOnServer"));
 					
 					// remember this message for update - generate mail message (incl. extra fields)
 					this.messageFields = new com.synckolab.database(fEntry);
@@ -602,13 +602,13 @@ com.synckolab.AddressBook = {
 					return cContent;
 				}
 				
-				this.curItemInListStatus.setAttribute("label", getLangString(strBundle, "noChange"));
+				this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("noChange"));
 				
 			}
 		}
 		else
 		{
-			this.curItemInListId.setAttribute("label", strBundle.getString("unparseable"));
+			this.curItemInListId.setAttribute("label", com.synckolab.global.strBundle.getString("unparseable"));
 			com.synckolab.tools.logMessage("unable to parse message, skipping", com.synckolab.global.LOG_WARNING + com.synckolab.global.LOG_AB);
 		}
 			
@@ -754,9 +754,9 @@ com.synckolab.AddressBook = {
 			this.curItemInListStatus = this.doc.createElement("listcell");
 			this.curItemInListContent = this.doc.createElement("listcell");
 			this.curItemInListId.setAttribute("label", this.tools.getUID(curItem));
-			this.curItemInListStatus.setAttribute("label", strBundle.getString("addToServer"));
+			this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("addToServer"));
 			if (curItem.isMailList)
-				this.curItemInListContent.setAttribute("label", strBundle.getString("mailingList") + " " + this.tools.getUID(curItem));
+				this.curItemInListContent.setAttribute("label", com.synckolab.global.strBundle.getString("mailingList") + " " + this.tools.getUID(curItem));
 			else
 				this.curItemInListContent.setAttribute("label", cur.firstName + " " + curItem.lastName + " <" + curItem.primaryEmail + ">");
 			
@@ -768,7 +768,7 @@ com.synckolab.AddressBook = {
 			if (this.itemList != null)
 			{
 				this.itemList.appendChild(this.curItemInList);
-				scrollToBottom();
+				com.synckolab.tools.scrollToBottom();
 			}
 			
 			// and write the message
@@ -778,9 +778,9 @@ com.synckolab.AddressBook = {
 			// get the dbfile from the local disk
 			var cEntry = getSyncDbFile	(this.gConfig, this.getType(), this.tools.getUID(curItem));
 			// write the current content in the sync-db file
-			writeSyncDBFile (cEntry, com.synckolab.tools.stripMailHeader(content));			
+			com.synckolab.tools.writeSyncDBFile (cEntry, com.synckolab.tools.stripMailHeader(content));
 			
-		}		
+		}
 		else
 		{
 			var alreadyProcessed = false;
@@ -822,9 +822,9 @@ com.synckolab.AddressBook = {
 					this.curItemInListStatus = this.doc.createElement("listcell");
 					this.curItemInListContent = this.doc.createElement("listcell");
 					this.curItemInListId.setAttribute("label", this.tools.getUID(curItem));
-					this.curItemInListStatus.setAttribute("label", strBundle.getString("localDelete"));
+					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localDelete"));
 					if (curItem.isMailList)
-						this.curItemInListContent.setAttribute("label", strBundle.getString("mailingList") + " " + this.tools.getUID(curItem));
+						this.curItemInListContent.setAttribute("label", com.synckolab.global.strBundle.getString("mailingList") + " " + this.tools.getUID(curItem));
 					else
 						this.curItemInListContent.setAttribute("label", curItem.firstName + " " + curItem.lastName + " <" + curItem.primaryEmail + ">");
 					
@@ -836,7 +836,7 @@ com.synckolab.AddressBook = {
 					if (this.itemList != null)
 					{
 						this.itemList.appendChild(this.curItemInList);
-						scrollToBottom();
+						com.synckolab.tools.scrollToBottom();
 					}
 					
 					// also remove the local db file since we deleted the contact on the server
@@ -853,9 +853,9 @@ com.synckolab.AddressBook = {
 					this.curItemInListStatus = this.doc.createElement("listcell");
 					this.curItemInListContent = this.doc.createElement("listcell");
 					this.curItemInListId.setAttribute("label", this.tools.getUID(curItem));
-					this.curItemInListStatus.setAttribute("label", strBundle.getString("addToServer"));
+					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("addToServer"));
 					if (curItem.isMailList)
-						this.curItemInListContent.setAttribute("label", strBundle.getString("mailingList") + " " + this.tools.getUID(curItem));
+						this.curItemInListContent.setAttribute("label", com.synckolab.global.strBundle.getString("mailingList") + " " + this.tools.getUID(curItem));
 					else
 						this.curItemInListContent.setAttribute("label", curItem.firstName + " " + curItem.lastName + " <" + curItem.primaryEmail + ">");
 					
@@ -866,7 +866,7 @@ com.synckolab.AddressBook = {
 					if (this.itemList != null)
 					{
 						this.itemList.appendChild(this.curItemInList);
-						scrollToBottom();
+						com.synckolab.tools.scrollToBottom();
 					}
 					
 					// and write the message
@@ -876,7 +876,7 @@ com.synckolab.AddressBook = {
 					// get the dbfile from the local disk
 					var cEntry = getSyncDbFile	(this.gConfig, this.getType(), this.tools.getUID(curItem));
 					// write the current content in the sync-db file
-					writeSyncDBFile (cEntry, com.synckolab.tools.stripMailHeader(content));
+					com.synckolab.tools.writeSyncDBFile (cEntry, com.synckolab.tools.stripMailHeader(content));
 				}				
 			}
 		}
@@ -896,7 +896,7 @@ com.synckolab.AddressBook = {
 		}
 				
 		// return the cards content
-		return content;			
+		return content;
 	},
 	
 	doneParsing: function ()

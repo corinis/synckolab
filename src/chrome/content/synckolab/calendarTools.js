@@ -120,170 +120,170 @@ com.synckolab.calendarTools = {
 	 * This is taken from the lightning extension (calendar-event-dialog.js#938ff setItemProperty)
 	 */
 	setKolabItemProperty: function(item, propertyName, value) {
-		 try
-		 {
+		try
+		{
 			switch(propertyName) {
-		    case "startDate":
+			case "startDate":
 				item.startDate = value;
-		        break;
-		    case "endDate":
+				break;
+			case "endDate":
 				item.endDate = value;
-		        break;
-		
-		    case "entryDate":
-		        item.entryDate = value;
-		        break;
-		    case "dueDate":
-		        item.dueDate = value;
-		        break;
-		    case "isCompleted":
-		        item.isCompleted = value;
-		        break;
-		    case "status":
-		    	item.status = getTaskStatus(value,false);
-		    	break;
-		    case "title":
-		        item.title = value;
-		        break;
-		
-		    default:
-		        if (!value || value == "")
-		            item.deleteProperty(propertyName);
-		        else if (item.getProperty(propertyName) != value)
-		            item.setProperty(propertyName, value);
-		        break;
-		    }
-		 }
-		 catch (ex){
-			 com.synckolab.tools.logMessage("unable set property: " + propertyName + " with value " + value, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_ERROR);
-		 }
+				break;
+
+			case "entryDate":
+				item.entryDate = value;
+				break;
+			case "dueDate":
+				item.dueDate = value;
+				break;
+			case "isCompleted":
+				item.isCompleted = value;
+				break;
+			case "status":
+				item.status = getTaskStatus(value,false);
+				break;
+			case "title":
+				item.title = value;
+				break;
+
+			default:
+				if (!value || value == "")
+					item.deleteProperty(propertyName);
+				else if (item.getProperty(propertyName) != value)
+					item.setProperty(propertyName, value);
+			break;
+			}
+		}
+		catch (ex){
+			com.synckolab.tools.logMessage("unable set property: " + propertyName + " with value " + value, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_ERROR);
+		}
 	},
 
 
-	 isPrivateEvent: function (levent) {
-	 	return (levent && levent.getProperty("CLASS") == "PRIVATE");
-	 },
+	isPrivateEvent: function (levent) {
+		return (levent && levent.getProperty("CLASS") == "PRIVATE");
+	},
 
-	 isConfidentialEvent: function(levent) {
-	 	return (levent && levent.getProperty("CLASS") == "CONFIDENTIAL");
-	 },
+	isConfidentialEvent: function(levent) {
+		return (levent && levent.getProperty("CLASS") == "CONFIDENTIAL");
+	},
 
-	 isPublicEvent: function(levent) {
-	 	return (levent && !isPrivateEvent(levent) && 
-	 		!isConfidentialEvent(levent));
-	 },
+	isPublicEvent: function(levent) {
+		return (levent && !isPrivateEvent(levent) && 
+				!isConfidentialEvent(levent));
+	},
 
-	 /**
-	  * insert an organizer if not existing and update  
-	  */
-	 insertOrganizer: function(levent, lsyncCalendar) {
-	 	if (levent.organizer)
-	 		return levent;
-	 	var modevent = levent.clone();
-	 	organizer = Components.classes["@mozilla.org/calendar/attendee;1"].createInstance(Components.interfaces.calIAttendee);
-	 	organizer.id = "MAILTO:" + lsyncCalendar.email;
-	 	organizer.commonName = lsyncCalendar.name;
-	 	organizer.participationStatus = "ACCEPTED";
-	 	organizer.rsvp = false;
-	 	organizer.role = "CHAIR";
-	 	organizer.isOrganizer = true;
-	 	modevent.organizer = organizer;
+	/**
+	 * insert an organizer if not existing and update  
+	 */
+	insertOrganizer: function(levent, lsyncCalendar) {
+		if (levent.organizer)
+			return levent;
+		var modevent = levent.clone();
+		organizer = Components.classes["@mozilla.org/calendar/attendee;1"].createInstance(Components.interfaces.calIAttendee);
+		organizer.id = "MAILTO:" + lsyncCalendar.email;
+		organizer.commonName = lsyncCalendar.name;
+		organizer.participationStatus = "ACCEPTED";
+		organizer.rsvp = false;
+		organizer.role = "CHAIR";
+		organizer.isOrganizer = true;
+		modevent.organizer = organizer;
 		/* set task status to NONE if it is NULL */
 		if (lsyncCalendar.syncTasks && !levent.status)
 			modevent.status="NONE";
-	 	lsyncCalendar.gCalendar.modifyItem(modevent, levent, lsyncCalendar.gEvents);
-	 	return modevent;
-	 },
+		lsyncCalendar.gCalendar.modifyItem(modevent, levent, lsyncCalendar.gEvents);
+		return modevent;
+	},
 
-	 /**
-	  * only ORGANIZER is allowed to change non-public events
-	  */
-	 allowSyncEvent: function(levent, revent, lsyncCalendar) {
-	 	var lpublic = isPublicEvent(levent);
-	 	var rpublic = isPublicEvent(revent);
-	 	if (lpublic && rpublic)
-	 		return true;
-	 	/*previous behaviour*/
-	 	var rorgmail = lsyncCalendar.email;
-	 	if (revent.organizer)
-	 		rorgmail = revent.organizer.id.replace(/MAILTO:/i, '');
-	 	var org2mail = (lsyncCalendar.email == rorgmail);
-	 	com.synckolab.tools.logMessage("allowSyncEvent: " + org2mail + ":" + lpublic + ":" + rpublic, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG );
-	 	return org2mail;
-	 },
+	/**
+	 * only ORGANIZER is allowed to change non-public events
+	 */
+	allowSyncEvent: function(levent, revent, lsyncCalendar) {
+		var lpublic = isPublicEvent(levent);
+		var rpublic = isPublicEvent(revent);
+		if (lpublic && rpublic)
+			return true;
+		/*previous behaviour*/
+		var rorgmail = lsyncCalendar.email;
+		if (revent.organizer)
+			rorgmail = revent.organizer.id.replace(/MAILTO:/i, '');
+		var org2mail = (lsyncCalendar.email == rorgmail);
+		com.synckolab.tools.logMessage("allowSyncEvent: " + org2mail + ":" + lpublic + ":" + rpublic, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG );
+		return org2mail;
+	},
 
-	  /**
-	   * sync local changes back to server version
-	   */
-	  checkEventBeforeSync: function(fevent, revent, lsyncCalendar) {
-	  	var rc = allowSyncEvent(fevent, revent, lsyncCalendar);
-	  	if (!rc) {
-	  		com.synckolab.tools.logMessage("Update local event with server one : " + revent.id, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG );
-	  		lsyncCalendar.curItemInListStatus.setAttribute("label", strBundle.getString("localUpdate"));
-	  		lsyncCalendar.gCalendar.modifyItem(revent, fevent, lsyncCalendar.gEvents);
-	  	}
-	  	return rc;
-	  },
+	/**
+	 * sync local changes back to server version
+	 */
+	checkEventBeforeSync: function(fevent, revent, lsyncCalendar) {
+		var rc = allowSyncEvent(fevent, revent, lsyncCalendar);
+		if (!rc) {
+			com.synckolab.tools.logMessage("Update local event with server one : " + revent.id, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG );
+			lsyncCalendar.curItemInListStatus.setAttribute("label", strBundle.getString("localUpdate"));
+			lsyncCalendar.gCalendar.modifyItem(revent, fevent, lsyncCalendar.gEvents);
+		}
+		return rc;
+	},
 
-	 /**
-	  * Event has changed from PUBLIC/CONFIDENTIAL to PRIVATE
-	  */
-	 checkEventServerDeletion: function(fevent, revent, lsyncCalendar) {
-	 	return (revent && 
-	 		allowSyncEvent(fevent, revent, lsyncCalendar) && 
-	 		isPrivateEvent(fevent));
-	 },
+	/**
+	 * Event has changed from PUBLIC/CONFIDENTIAL to PRIVATE
+	 */
+	checkEventServerDeletion: function(fevent, revent, lsyncCalendar) {
+		return (revent && 
+				allowSyncEvent(fevent, revent, lsyncCalendar) && 
+				isPrivateEvent(fevent));
+	},
 
-	 /**
-	  * delete event on Server and database but not in Thunderbird calendar
-	  */
-	 deleteEventOnServer: function(fevent, pevent, lsyncCalendar) {
-	 	if (!checkEventServerDeletion(fevent, pevent, lsyncCalendar))
-	 		return false;
-	 	var eventry = getSyncDbFile(lsyncCalendar.gConfig, lsyncCalendar.getType(), fevent.id);
-	 	var fentry = getSyncFieldFile(lsyncCalendar.gConfig, lsyncCalendar.getType(), fevent.id);
-	 	if (eventry.exists())
-	 		eventry.remove(false);
-	 	if (fentry.exists())
-	 		fentry.remove(false);
-	 	lsyncCalendar.curItemInListStatus.setAttribute("label", strBundle.getString("deleteOnServer"));
-	 	return true;
-	 },
-	   
-	  /**
-	   * clear the description if event is confidential or private 
-	   */
-	  modifyDescriptionOnExport: function(levent, syncTasks) {
-	  	var myclass = levent.getProperty("CLASS");
-	  	if (!isPublicEvent(levent)) {
-	  		levent = levent.clone();
-	  		tmpdesc = (syncTasks==true ? "Task" : "Event");
-	  		levent.setProperty("DESCRIPTION",tmpdesc + " is " + myclass + "!");
-	  	}
-	  	return levent;
-	  },
+	/**
+	 * delete event on Server and database but not in Thunderbird calendar
+	 */
+	deleteEventOnServer: function(fevent, pevent, lsyncCalendar) {
+		if (!checkEventServerDeletion(fevent, pevent, lsyncCalendar))
+			return false;
+		var eventry = getSyncDbFile(lsyncCalendar.gConfig, lsyncCalendar.getType(), fevent.id);
+		var fentry = getSyncFieldFile(lsyncCalendar.gConfig, lsyncCalendar.getType(), fevent.id);
+		if (eventry.exists())
+			eventry.remove(false);
+		if (fentry.exists())
+			fentry.remove(false);
+		lsyncCalendar.curItemInListStatus.setAttribute("label", strBundle.getString("deleteOnServer"));
+		return true;
+	},
 
-	  /**
-	   * prepare event for export 
-	   */
-	  modifyEventOnExport: function(levent, lsyncCalendar) {
-	  	levent = insertOrganizer(levent, lsyncCalendar);
-	  	levent = modifyDescriptionOnExport(levent, lsyncCalendar.syncTasks);
-	  	return levent;
-	  },
+	/**
+	 * clear the description if event is confidential or private 
+	 */
+	modifyDescriptionOnExport: function(levent, syncTasks) {
+		var myclass = levent.getProperty("CLASS");
+		if (!isPublicEvent(levent)) {
+			levent = levent.clone();
+			tmpdesc = (syncTasks==true ? "Task" : "Event");
+			levent.setProperty("DESCRIPTION",tmpdesc + " is " + myclass + "!");
+		}
+		return levent;
+	},
 
-	   /**
-	    * check Events and Todos on privacy changes and modify appropriately
-	    **/
-	 checkEventOnDeletion: function(levent, pevent, lsyncCalendar) { 
-	 	
-	 	if (deleteEventOnServer(levent, pevent, lsyncCalendar)) 
-	 		return "DELETEME";
-	 	if (!checkEventBeforeSync(levent, pevent, lsyncCalendar)) 
-	 		return null;
-	 	return modifyDescriptionOnExport(levent, lsyncCalendar.syncTasks);
-	 }
-	 
+	/**
+	 * prepare event for export 
+	 */
+	modifyEventOnExport: function(levent, lsyncCalendar) {
+		levent = insertOrganizer(levent, lsyncCalendar);
+		levent = modifyDescriptionOnExport(levent, lsyncCalendar.syncTasks);
+		return levent;
+	},
+
+	/**
+	 * check Events and Todos on privacy changes and modify appropriately
+	 **/
+	checkEventOnDeletion: function(levent, pevent, lsyncCalendar) { 
+
+		if (deleteEventOnServer(levent, pevent, lsyncCalendar)) 
+			return "DELETEME";
+		if (!checkEventBeforeSync(levent, pevent, lsyncCalendar)) 
+			return null;
+		return modifyDescriptionOnExport(levent, lsyncCalendar.syncTasks);
+	}
+
 
 };
 
@@ -326,7 +326,7 @@ com.synckolab.calendarTools.message2Event = function(fileContent, extraFields, s
 	}
 	else
 	{
-		fileContent = decode_utf8(decodeQuoted(fileContent));
+		fileContent = com.synckolab.tools.text.utf8.decode(com.synckolab.tools.text.quoted.decode(fileContent));
 		 // this.format == 'iCal'
 		parsedEvent = ical2event(fileContent, syncTasks);
 	}
@@ -352,8 +352,9 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 	//		  - yearly recurrence
 	
 	// decode utf chars and make sure an & is an &amp; (otherwise this is unparseable)
-	xml = fixString4XmlParser(decode_utf8(decodeQuoted(xml)));
-	
+	xml = com.synckolab.tools.text.utf8.decode(com.synckolab.tools.text.quoted.decode(xml));
+	// potential fix: .replace(/&/g, "&amp;")
+
 	// convert the string to xml
 	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser); 
 	var doc = parser.parseFromString(xml, "text/xml");
@@ -391,7 +392,7 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 		return false;
 	}
 		
-	var cur = topNode.firstChild;
+	var cur = new com.synckolab.Node(topNode.firstChild);
 	// iterate over the DOM tree of the XML structure of the event
 	while(cur != null)
 	{
@@ -400,29 +401,29 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 			switch (cur.nodeName.toUpperCase())
 			{
 				case "UID":
-			  		event.id = decode4XML(cur.firstChild.data);
+					event.id = cur.getFirstData();
 					// FIXME - for faster debugging only, so you can see the 
 					// uid resp. the msg subject in the URL field when opening the event, 
 					// you can find the appropriate msg very easily afterwards
-					setKolabItemProperty(event, "URL", decode4XML(cur.firstChild.data));
+					this.setKolabItemProperty(event, "URL", cur.getFirstData());
 					break;
 					
 				case "CREATION-DATE":
 					if (!cur.firstChild)
 						break;
 
-					var s = decode4XML(cur.firstChild.data);
+					var s = cur.getFirstData();
 					// 2005-03-30T15:28:52Z
-					setKolabItemProperty(event, "CREATED", string2CalDateTime(s, true));
+					this.setKolabItemProperty(event, "CREATED", string2CalDateTime(s, true));
 					break;						
 
 				case "LAST-MODIFICATION-DATE":
 					if (!cur.firstChild)
 						break;
 
-					var s = decode4XML(cur.firstChild.data);
+					var s = cur.getFirstData();
 					// 2005-03-30T15:28:52Z
-					setKolabItemProperty(event, "LAST-MODIFIED", string2CalDateTime(s, true));
+					this.setKolabItemProperty(event, "LAST-MODIFIED", string2CalDateTime(s, true));
 					break;						
 
 				// entry date and start date can be handled the same way 
@@ -431,7 +432,7 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 					if (!cur.firstChild)
 						break;
 						
-					var s = decode4XML(cur.firstChild.data);
+					var s = cur.getFirstData();
 					// 2005-03-30T15:28:52Z
 					if (s.indexOf(":") == -1)
 					{
@@ -439,30 +440,30 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 						cDate.isDate = true;
 						// date values witout time part specify a full day event
 						if (syncTasks == true)
-							setKolabItemProperty(event, "entryDate", cDate);
+							this.setKolabItemProperty(event, "entryDate", cDate);
 						else
-							setKolabItemProperty(event, "startDate", cDate);
+							this.setKolabItemProperty(event, "startDate", cDate);
 					}
 					else
 					{
 						if (syncTasks == true)
-							setKolabItemProperty(event, "entryDate", string2CalDateTime(s, true));
+							this.setKolabItemProperty(event, "entryDate", string2CalDateTime(s, true));
 						else
-							setKolabItemProperty(event, "startDate", string2CalDateTime(s, true));
+							this.setKolabItemProperty(event, "startDate", string2CalDateTime(s, true));
 					}
 					break;						
 
 				// hande end date and due-date, completed-date the same way (completed date also sets the percent complete to 100)
 				case "COMPLETED-DATE":
 					if (syncTasks == true)
-						setKolabItemProperty(event, "PERCENT-COMPLETE", 100);
+						this.setKolabItemProperty(event, "PERCENT-COMPLETE", 100);
 				
 				case "DUE-DATE":
 				case "END-DATE":
 					if (!cur.firstChild)
 						break;
 
-					var s = decode4XML(cur.firstChild.data);
+					var s = cur.getFirstData();
 					// 2005-03-30T15:28:52Z
 					if (s.indexOf(":") == -1) // full time event
 					{
@@ -479,16 +480,16 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 
 						// for tasks its endDate
 						if (syncTasks == true)
-							setKolabItemProperty(event, "dueDate", cDate);
+							this.setKolabItemProperty(event, "dueDate", cDate);
 						else
-							setKolabItemProperty(event, "endDate", cDate);
+							this.setKolabItemProperty(event, "endDate", cDate);
 					}
 					else
 					{
 						if (syncTasks == true)
-							setKolabItemProperty(event, "dueDate", string2CalDateTime(s, true));
+							this.setKolabItemProperty(event, "dueDate", string2CalDateTime(s, true));
 						else
-							setKolabItemProperty(event, "endDate", string2CalDateTime(s, true));
+							this.setKolabItemProperty(event, "endDate", string2CalDateTime(s, true));
 					}
 					break;						
 
@@ -497,7 +498,7 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 					if (syncTasks == false)
 						break;
 					if (cur.firstChild)
-						setKolabItemProperty(event, "priority", cur.firstChild.data);
+						this.setKolabItemProperty(event, "priority", cur.firstChild.data);
 					break;
 
 				case "STATUS":
@@ -508,7 +509,7 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 						break;
 						
 					var cStatus = cur.firstChild.data;
-					setKolabItemProperty(event, "status", cStatus);
+					this.setKolabItemProperty(event, "status", cStatus);
 					
 					break;
 										
@@ -529,33 +530,33 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 					if (iComplete > 100)
 						iComplete = 100;
 					
-					setKolabItemProperty(event, "PERCENT-COMPLETE", iComplete);
+					this.setKolabItemProperty(event, "PERCENT-COMPLETE", iComplete);
 					break;
 					
 				case "SUMMARY":
 					if (cur.firstChild)
-						setKolabItemProperty(event, "title", decode4XML(cur.firstChild.data));
+						this.setKolabItemProperty(event, "title", cur.getFirstData());
 					break;
 
 				case "BODY":
 					// sometimes we have <body></body> in the XML
 					if (cur.firstChild)
 					{
-					  	var cnotes = decode4XML(cur.firstChild.data);
-						setKolabItemProperty(event, "DESCRIPTION", cnotes);
+					  	var cnotes = cur.getFirstData();
+						this.setKolabItemProperty(event, "DESCRIPTION", cnotes);
 					}
 					break;
 		
 				case "CREATOR":
-			  		setKolabItemProperty(event, "X-KOLAB-CREATOR-DISPLAY-NAME", getXmlResult(cur, "DISPLAY-NAME", ""));
-			  		setKolabItemProperty(event, "X-KOLAB-CREATOR-SMTP-ADDRESS", getXmlResult(cur, "SMTP-ADDRESS", ""));
+			  		this.setKolabItemProperty(event, "X-KOLAB-CREATOR-DISPLAY-NAME", cur.getXmlResult("DISPLAY-NAME", ""));
+			  		this.setKolabItemProperty(event, "X-KOLAB-CREATOR-SMTP-ADDRESS", cur.getXmlResult("SMTP-ADDRESS", ""));
 					break;
 					
 				case "ORGANIZER":
 					organizer = Components.classes["@mozilla.org/calendar/attendee;1"]
 										  .createInstance(Components.interfaces.calIAttendee);
-					organizer.id = "MAILTO:" + getXmlResult(cur, "SMTP-ADDRESS", "unknown");
-					organizer.commonName = getXmlResult(cur, "DISPLAY-NAME", "");
+					organizer.id = "MAILTO:" + cur.getXmlResult("SMTP-ADDRESS", "unknown");
+					organizer.commonName = cur.getXmlResult("DISPLAY-NAME", "");
 					organizer.participationStatus = "ACCEPTED";
 					organizer.rsvp = false;
 					organizer.role = "CHAIR";
@@ -566,17 +567,17 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 				case "LOCATION":
 					// sometimes we have <location></location> in the XML
 					if (cur.firstChild)
-						setKolabItemProperty(event, "LOCATION", decode4XML(cur.firstChild.data));
+						this.setKolabItemProperty(event, "LOCATION", cur.getFirstData());
 					break;
 
 				case "CATEGORIES":
 					if (cur.firstChild)
 					{
 						if (!event.setCategories) {
-							setKolabItemProperty(event, "CATEGORIES", decode4XML(cur.firstChild.data));
+							this.setKolabItemProperty(event, "CATEGORIES", cur.getFirstData());
 							break;
 						}
-						var cattxt = decode4XML(cur.firstChild.data);
+						var cattxt = cur.getFirstData();
 						if (cattxt) {
 							// from calUtils.js
 							var categories = categoriesStringToArray(cattxt);
@@ -588,7 +589,7 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 				case "ALARM":
 					if (cur.firstChild)
 					{
-						var cData = decode4XML(cur.firstChild.data);
+						var cData = cur.getFirstData();
 						// fix up the cdata if not in the right format
 						if (cData.indexOf("-PT") != 0)
 							cData = "-PT" + cData + "M";
@@ -598,15 +599,15 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 					break;
 					
 				case "SENSITIVITY":
-					setKolabItemProperty(event, "CLASS", 'PUBLIC');
+					this.setKolabItemProperty(event, "CLASS", 'PUBLIC');
 					if (cur.firstChild)
-						switch (decode4XML(cur.firstChild.data))
+						switch (cur.getFirstData())
 						{
 							case "private":
-								setKolabItemProperty(event, "CLASS", 'PRIVATE');
+								this.setKolabItemProperty(event, "CLASS", 'PRIVATE');
 								break;
 							case "confidential":
-								setKolabItemProperty(event, "CLASS", 'CONFIDENTIAL');
+								this.setKolabItemProperty(event, "CLASS", 'CONFIDENTIAL');
 								break;
 						}
 					break;
@@ -761,7 +762,7 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 							break;
 					}
 					
-					recRule.interval = getXmlResult(cur, "INTERVAL", "1");
+					recRule.interval = cur.getXmlResult("INTERVAL", "1");
 					var node = getXmlChildNode(cur, "RANGE");
 					if (node != null)
 					{
@@ -769,7 +770,7 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 						var rangeType = getXmlAttributeValue(node, "type");
 						if (rangeType != null)
 						{
-							var rangeSpec = getXmlResult(cur, "RANGE", "dummy");
+							var rangeSpec = cur.getXmlResult("RANGE", "dummy");
 							switch (rangeType.toUpperCase())
 							{
 								case "DATE":
@@ -819,10 +820,10 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 				case "ATTENDEE":
 					attendee = Components.classes["@mozilla.org/calendar/attendee;1"]
 										 .createInstance(Components.interfaces.calIAttendee);
-					attendee.id = "MAILTO:" + getXmlResult(cur, "SMTP-ADDRESS", "unknown");
-					attendee.commonName = getXmlResult(cur, "DISPLAY-NAME", "");
+					attendee.id = "MAILTO:" + cur.getXmlResult("SMTP-ADDRESS", "unknown");
+					attendee.commonName = cur.getXmlResult("DISPLAY-NAME", "");
 					// The status must be one of none, tentative, accepted, or declined.
-					switch (getXmlResult(cur, "STATUS", "none"))
+					switch (cur.getXmlResult("STATUS", "none"))
 					{
 						case "tentative":
 							attendee.participationStatus = "TENTATIVE";
@@ -837,12 +838,12 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 							attendee.participationStatus = "NEEDS-ACTION";
 					}
 					// The request response status is true or false
-					if (getXmlResult(cur, "REQUEST-RESPONSE", "false") == "true")
+					if (cur.getXmlResult("REQUEST-RESPONSE", "false") == "true")
 						attendee.rsvp = true;
 					else
 						attendee.rsvp = false;
 					// Role is one of required, optional, or resource.
-					switch (getXmlResult(cur, "ROLE", "optional"))
+					switch (cur.getXmlResult("ROLE", "optional"))
 					{
 						case "required":
 							attendee.role = "REQ-PARTICIPANT";
@@ -864,21 +865,21 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 					
 				case "SHOW-TIME-AS":
 					// default is "none"
-			  		setKolabItemProperty(event, "X-KOLAB-SHOW-TIME-AS", decode4XML(cur.firstChild.data));
+			  		this.setKolabItemProperty(event, "X-KOLAB-SHOW-TIME-AS", cur.getFirstData());
 					break;
 					
 				case "COLOR-LABEL":
 					// default is "none"
-			  		setKolabItemProperty(event, "X-KOLAB-COLOR-LABEL", decode4XML(cur.firstChild.data));
+					this.setKolabItemProperty(event, "X-KOLAB-COLOR-LABEL", cur.getFirstData());
 					break;
 
 				default:
-			  		if (cur.firstChild == null)
-			  			break;
-					// remember other fields
-			  		addField(extraFields, cur.nodeName, decode4XML(cur.firstChild.data));
-	  				break;
-					
+					if (cur.firstChild == null)
+						break;
+				// remember other fields
+				addField(extraFields, cur.nodeName, cur.getFirstData());
+				break;
+
 			} // end switch
 		} // end if
 		cur = cur.nextSibling;
@@ -996,7 +997,7 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
 		xml += " <end-date>" + calDateTime2String(endDate, isAllDay) + "</end-date>\n";
 	 }
 		
-	xml += " <summary>" + com.synckolab.toolstext.encode4XML(event.title) +"</summary>\n";
+	xml += " <summary>" + com.synckolab.tools.text.encode4XML(event.title) +"</summary>\n";
 
 	if (skipVolatiles != true)
 	{
@@ -1007,7 +1008,7 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
 	// description only for public events
 	if (event.getProperty("DESCRIPTION") &&
 			(isPublicEvent(event) || !skipVolatiles))
-		xml += " <body>" + com.synckolab.toolstext.encode4XML(event.getProperty("DESCRIPTION")) + "</body>\n";
+		xml += " <body>" + com.synckolab.tools.text.encode4XML(event.getProperty("DESCRIPTION")) + "</body>\n";
 	
 	if (event.getProperty("CLASS"))
 		xml += " <sensitivity>" + event.getProperty("CLASS").toLowerCase() + "</sensitivity>\n";
@@ -1015,7 +1016,7 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
 		xml += " <sensitivity>public</sensitivity>\n";
 	
 	if (event.getProperty("LOCATION"))
-		xml += " <location>" + com.synckolab.toolstext.encode4XML(event.getProperty("LOCATION")) +"</location>\n";
+		xml += " <location>" + com.synckolab.tools.text.encode4XML(event.getProperty("LOCATION")) +"</location>\n";
 	if (event.alarmOffset && event.alarmOffset.inSeconds != 0)
 	{
 		minutes = Math.floor(Math.abs(event.alarmOffset.inSeconds)/60);
@@ -1029,7 +1030,7 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
 		if (catarray.length > 0 ) {
 			xml += " <categories>";
 			for (cnt = 0; cnt < catarray.length; cnt++) {
-				xml += com.synckolab.toolstext.encode4XML(catarray[cnt]) ;
+				xml += com.synckolab.tools.text.encode4XML(catarray[cnt]) ;
 				if ( (cnt+1) < catarray.length)
 					xml += ",";
 				}
@@ -1039,10 +1040,10 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
 	else
 	{
 		if (event.getProperty("CATEGORIES"))
-			xml += " <categories>" + com.synckolab.toolstext.encode4XML(event.getProperty("CATEGORIES")) + "</categories>\n";
+			xml += " <categories>" + com.synckolab.tools.text.encode4XML(event.getProperty("CATEGORIES")) + "</categories>\n";
 		else
 		if (event.getProperty("CATEGORY"))
-			xml += " <categories>" + com.synckolab.toolstext.encode4XML(event.getProperty("CATEGORY")) + "</categories>\n";
+			xml += " <categories>" + com.synckolab.tools.text.encode4XML(event.getProperty("CATEGORY")) + "</categories>\n";
 	}
 
 	var recInfo = event.recurrenceInfo;
@@ -1171,8 +1172,8 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
 						break;
 				}
 				xml += " <attendee>\n";
-				xml += "  <display-name>" + com.synckolab.toolstext.encode4XML(attendee.commonName) + "</display-name>\n";
-				xml += "  <smtp-address>" + com.synckolab.toolstext.encode4XML(mail) + "</smtp-address>\n";
+				xml += "  <display-name>" + com.synckolab.tools.text.encode4XML(attendee.commonName) + "</display-name>\n";
+				xml += "  <smtp-address>" + com.synckolab.tools.text.encode4XML(mail) + "</smtp-address>\n";
 				xml += "  <status>" + status + "</status>\n";
 				xml += "  <request-response>" + (attendee.rsvp ? "true" : "false") + "</request-response>\n";
 				switch (attendee.role)
@@ -1196,8 +1197,8 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
 	if ( event.organizer )
 	{
 		xml += " <organizer>\n";
-		xml += "  <display-name>" + com.synckolab.toolstext.encode4XML(event.organizer.commonName) + "</display-name>\n";
-		xml += "  <smtp-address>" + com.synckolab.toolstext.encode4XML(event.organizer.id.replace(/MAILTO:/i, '')) + "</smtp-address>\n";
+		xml += "  <display-name>" + com.synckolab.tools.text.encode4XML(event.organizer.commonName) + "</display-name>\n";
+		xml += "  <smtp-address>" + com.synckolab.tools.text.encode4XML(event.organizer.id.replace(/MAILTO:/i, '')) + "</smtp-address>\n";
 		xml += " </organizer>\n";
 	}
 
@@ -1207,19 +1208,19 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
 		xml += " <show-time-as>busy</show-time-as>\n";
 		
 	if (event.getProperty("X-KOLAB-COLOR-LABEL"))
-		xml += " <color-label>" + com.synckolab.toolstext.encode4XML(event.getProperty("X-KOLAB-COLOR-LABEL")) + "</color-label>\n";
+		xml += " <color-label>" + com.synckolab.tools.text.encode4XML(event.getProperty("X-KOLAB-COLOR-LABEL")) + "</color-label>\n";
 	if (event.getProperty("X-KOLAB-CREATOR-DISPLAY-NAME") && event.getProperty("X-KOLAB-CREATOR-SMTP-ADDRESS"))
 	{
 		xml += " <creator>\n";
-		xml += "  <display-name>" + com.synckolab.toolstext.encode4XML(event.getProperty("X-KOLAB-CREATOR-DISPLAY-NAME")) + "</display-name>\n";
-		xml += "  <smtp-address>" + com.synckolab.toolstext.encode4XML(event.getProperty("X-KOLAB-CREATOR-SMTP-ADDRESS")) + "</smtp-address>\n";
+		xml += "  <display-name>" + com.synckolab.tools.text.encode4XML(event.getProperty("X-KOLAB-CREATOR-DISPLAY-NAME")) + "</display-name>\n";
+		xml += "  <smtp-address>" + com.synckolab.tools.text.encode4XML(event.getProperty("X-KOLAB-CREATOR-SMTP-ADDRESS")) + "</smtp-address>\n";
 		xml += " </creator>\n";
 	}
 
 	xml += " <revision>0</revision>\n";	
 	if (syncTasks == true)
 	{
-		xml += " <priority>" + com.synckolab.toolstext.encode4XML(event.priority) + "</priority>\n";
+		xml += " <priority>" + com.synckolab.tools.text.encode4XML(event.priority) + "</priority>\n";
 		xml += "</task>\n";
 	}
 	else

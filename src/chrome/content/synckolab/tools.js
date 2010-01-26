@@ -95,15 +95,23 @@ com.synckolab.tools = {
 			synckolab.gWnd.pauseSync();
 },
 
+scrollToBottom : function ()
+{
+	if (com.synckolab.global.wnd != null)
+	{
+		// select and deselect the newly appended item (makes it scroll to the bottom)				
+		var lastItemPos = com.synckolab.global.wnd.document.getElementById('itemList').getRowCount() - 1;
+		if (lastItemPos > 0)
+		{
+			com.synckolab.global.wnd.document.getElementById('itemList').scrollToIndex(lastItemPos);
+			com.synckolab.global.wnd.document.getElementById('itemList').ensureIndexIsVisible(lastItemPos);
+		}
+	}
+},
 
 checkExist: function(value)	{
 	return (value != null && value != "");
 },
-
-getLangString: function(bundle, name) {
-	return bundle.getString(name);
-},
-
 
 
 /**
@@ -126,7 +134,7 @@ stripMailHeader: function (content) {
 		if (startPos == -1 || startPos > content.length - 10)
 			startPos = 0;			
 
-		return trim(content.substring(startPos, content.length));
+		return com.synckolab.tools.text.trim(content.substring(startPos, content.length));
 	}
 
 	// we got a multipart message - strip it apart
@@ -136,7 +144,7 @@ stripMailHeader: function (content) {
 	boundary = content.substring(content.search(/boundary=/)+9);
 
 	// lets trim boundary (in case we have whitespace after the =
-	boundary = this.trim(boundary);
+	boundary = com.synckolab.tools.text.trim(boundary);
 
 	// if the boundary string starts with "... we look for an end
 	if (boundary.charAt(0) == '"')
@@ -223,7 +231,7 @@ stripMailHeader: function (content) {
 			if (endPos == -1)
 				endPos = content.length;
 
-			content = trim(content.substring(startPos, endPos).replace(/[\r\n]/g, ""));
+			content = com.synckolab.tools.text.trim(content.substring(startPos, endPos).replace(/[\r\n]/g, ""));
 
 			this.logMessage("Base64 message: " + content, com.synckolab.global.LOG_DEBUG);
 
@@ -271,7 +279,7 @@ stripMailHeader: function (content) {
 			content = content.substring(0, content.indexOf("--"+boundary));
 	}
 
-	return this.trim(content);
+	return com.synckolab.tools.text.trim(content);
 },
 
 /**
@@ -668,7 +676,7 @@ com.synckolab.tools.readSyncDBFile = function (file)
  * Retrieves a file in the user profile dir which includes the config database
  * make sure to add .cal, .con or .task at the config so there are no duplicate names
  */
-com.synckolab.tools.getHashDataBaseFile = function (config)
+com.synckolab.tools.file.getHashDataBaseFile = function (config)
 {
 	var file = Components.classes["@mozilla.org/file/directory_service;1"].
 	getService(Components.interfaces.nsIProperties).
@@ -683,7 +691,7 @@ com.synckolab.tools.getHashDataBaseFile = function (config)
  * this also creates the required subdirectories if not yet existant
  * you can use the .exists() function to check if we go this one already
  */
-com.synckolab.tools.getSyncFieldFile = function (config, type, id)
+com.synckolab.tools.file.getSyncFieldFile = function (config, type, id)
 {
 	id = id.replace(/[ :.;$\\\/]\#\@/g, "_");
 	var file = Components.classes["@mozilla.org/file/directory_service;1"].
@@ -747,7 +755,7 @@ com.synckolab.dataBase = function (file) {
 				fv = fv.replace (/\\\\/g, "\\");
 			}
 			// split now
-			fv = trim(fv).split(":");
+			fv = com.synckolab.tools.text.trim(fv).split(":");
 			for (var j =0; j < fv.length; j++)
 			{
 				if (fv[j].replace)
@@ -973,10 +981,25 @@ com.synckolab.hashMap.prototype.length = function()
 	return this.len;
 };
 
-
+/**
+ * synckolab node (standard node with a twist)
+ */
 com.synckolab.Node = function(node) {
+	if (node == null)
+		return null;
 	this.node = node;
+	this.nodeName = node.nodeName;
+	this.nodeType = node.nodeType;
+	this.firstChild = node.firstChild;
+	this.nextSibling = new com.synckolab.Node(node.nextSibling);
 };
+
+com.synckolab.Node.prototype.getFirstData =  function () {
+	if (!this.node.firstChild)
+		return null;
+	return com.synckolab.tools.text.decode4XML(this.node.firstChild.data);
+};
+
 /**
  * return the content of a child node with name "name" of the node "node"
  * or the given default "def" if no such node exists
@@ -993,7 +1016,7 @@ com.synckolab.Node.prototype.getXmlResult =  function (name, def)
 				var value = cur.firstChild.nodeValue;
 				// decode the value
 				if (value != null)
-					return decode4XML(value);
+					return com.synckolab.tools.text.decode4XML(value);
 			}
 		}
 		cur = cur.nextSibling;
