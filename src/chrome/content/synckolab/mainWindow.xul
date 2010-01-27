@@ -17,7 +17,7 @@
 	<commandset id="mailCommands">
 		<command id="cmd_synckolab_sync"
 			tooltiptext="&synckolab.sync.tip;"
-			oncommand="com.synckolab.main.sync();"/>
+			oncommand="com.synckolab.main.sync('manual');"/>
 		<command id="cmd_synckolab_options"
 	        oncommand="window.open('chrome://synckolab/content/synckolabPref.xul', 'options', 'chrome,resizable=1');"/>
 	</commandset>

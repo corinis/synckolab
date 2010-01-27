@@ -66,6 +66,10 @@ com.synckolab.addressbookTools = {
 			}
 		},
 		
+		haveCardProperty: function (card, prop) {
+			return (com.synckolab.tools.text.checkExist(this.getCardProperty(card, prop)));
+		},
+		
 		/**
 		 * get the uid of a card
 		 * This has to externalized because uids in lists are != uids in contacts
@@ -310,7 +314,7 @@ com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 					break;
 
 				case "EMAIL":
-					com.synckolab.tools.logMessage("email: " + email + " - " + cur.getXmlResult("SMTP-ADDRESS", ""), this.global.LOG_ERROR + this.global.LOG_AB);
+					com.synckolab.tools.logMessage("email: " + email + " - " + cur.getXmlResult("SMTP-ADDRESS", ""), this.global.LOG_DEBUG + this.global.LOG_AB);
 					switch (email)
 					{
 						case 0:
@@ -523,13 +527,13 @@ com.synckolab.addressbookTools.list2Xml = function(card, fields) {
 	xml += " <product-id>SyncKolab, Kolab resource</product-id>\n";
 	xml += " <uid>"+this.getCardProperty(card, "Custom4")+"</uid>\n";
 	xml += com.synckolab.tools.text.nodeWithContent("categories", this.getCardProperty(card, "Category"), false);
-	xml += " <creation-date>"+date2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000))+"T"+time2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000))+"Z</creation-date>\n";
-	xml += " <last-modification-date>"+date2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000))+"T"+time2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000))+"Z</last-modification-date>\n";
+	xml += " <creation-date>"+com.synckolab.tools.text.date2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000))+"T"+com.synckolab.tools.text.time2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000))+"Z</creation-date>\n";
+	xml += " <last-modification-date>"+com.synckolab.tools.text.date2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000))+"T"+com.synckolab.tools.text.time2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000))+"Z</last-modification-date>\n";
 	// ??
 	xml += " <sensitivity>public</sensitivity>\n";
-	if (com.synckolab.tools.checkExist(this.getCardProperty(card, "Description")))
+	if (this.haveCardProperty(card, "Description"))
 			xml +=" <body>"+com.synckolab.tools.text.encode4XML(this.getCardProperty(card, "Description"))+"</body>\n";
-	if (com.synckolab.tools.checkExist(this.getCardProperty(card, "Notes")))
+	if (this.haveCardProperty(card, "Notes"))
 			xml +=" <body>"+com.synckolab.tools.text.encode4XML(this.getCardProperty(card, "Notes"))+"</body>\n";
 	xml += com.synckolab.tools.text.nodeWithContent("display-name", this.getCardProperty(card, "ListNickName"), false);
 
@@ -545,17 +549,17 @@ com.synckolab.addressbookTools.list2Xml = function(card, fields) {
 				cur = cur.QueryInterface(Components.interfaces.nsIAbCard);
 				xml += "  <member>";
 				xml += com.synckolab.tools.text.nodeWithContent("display-name", this.getCardProperty(cur, "DisplayName"), false);		
-				if (com.synckolab.tools.checkExist(this.getCardProperty(card, "PrimaryEmail")))						
+				if (this.haveCardProperty(card, "PrimaryEmail"))
 					xml += com.synckolab.tools.text.nodeWithContent("smtp-address", cur.primaryEmail, false);
 				else
-				if (com.synckolab.tools.checkExist(this.getCardProperty(card, "SecondEmail")))
+				if (this.haveCardProperty(card, "SecondEmail"))
 					xml += com.synckolab.tools.text.nodeWithContent("smtp-address", cur.secondEmail, false);
 				else
 					com.synckolab.tools.logMessage("ERROR: List entry without an email?!?" + this.getUID(cur), this.global.LOG_ERROR + this.global.LOG_AB);
 									
 				// custom4 is not necessary since there will be a smart-check
 				if (com.synckolab.tools.checkExist (cur.custom4))
-					xml += com.synckolab.tools.text.nodeWithContent("uid", cur.custom4, false);				
+					xml += com.synckolab.tools.text.nodeWithContent("uid", cur.custom4, false);
 				xml += "  </member>\n";
 			}
 		}
@@ -576,31 +580,31 @@ com.synckolab.addressbookTools.list2Vcard = function(card, fields) {
 	var cdate = new Date (this.getCardProperty(card, "LastModifiedDate")*1000);
 	var sTime = (cdate.getHours()<10?"0":"") + cdate.getHours() + ":" + (cdate.getMinutes()<10?"0":"") + cdate.getMinutes() + ":" +
 		(cdate.getSeconds()<10?"0":"") + cdate.getSeconds();
-	var sdate = "DATE: " + getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " +
-		getMonthString (cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime
+	var sdate = "DATE: " + com.synckolab.tools.text.getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " +
+	com.synckolab.tools.text.getMonthString (cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime
 		 + " " + (((cdate.getTimezoneOffset()/60) < 0)?"-":"+") +
 		(((cdate.getTimezoneOffset()/60) < 10)?"0":"") + cdate.getTimezoneOffset() + "\n";
 
 	
 	var msg = "BEGIN:VCARD\n";	
 	// N:Lastname;Firstname;Other;Prefix;Suffix
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "FirstName")) || com.synckolab.tools.checkExist (this.getCardProperty(card, "LastName")))
+ 	if (this.haveCardProperty(card, "FirstName") || this.haveCardProperty(card, "LastName"))
 		msg += "N:" + this.getCardProperty(card, "LastName") + ";" + this.getCardProperty(card, "FirstName") + ";;;\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "DisplayName")))
+ 	if (this.haveCardProperty(card, "DisplayName"))
 		msg += "FN:" + this.getCardProperty(card, "DisplayName") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "ListNickName")))
+ 	if (this.haveCardProperty(card, "ListNickName"))
 		msg += "FN:" + this.getCardProperty(card, "ListNickName") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "NickName")))
+ 	if (this.haveCardProperty(card, "NickName"))
 		msg += "NICKNAME:" + this.getCardProperty(card, "NickName") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "JobTitle")))
+ 	if (this.haveCardProperty(card, "JobTitle"))
 		msg += "TITLE:" + this.getCardProperty(card, "JobTitle") + "\n";
-	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "Company")))
+	if (this.haveCardProperty(card, "Company"))
 		msg += "ORG:" + this.getCardProperty(card, "Company") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "PrimaryEmail"))) 
+ 	if (this.haveCardProperty(card, "PrimaryEmail")) 
 		msg += "EMAIL;TYPE=INTERNET,PREF:" + this.getCardProperty(card, "PrimaryEmail")  + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "SecondEmail"))) 
+ 	if (this.haveCardProperty(card, "SecondEmail")) 
 		msg += "EMAIL;TYPE=INTERNET:" + this.getCardProperty(card, "SecondEmail") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "PreferMailFormat"))) { 
+ 	if (this.haveCardProperty(card, "PreferMailFormat")) { 
 		switch(this.getCardProperty(card, "PreferMailFormat")) {
 			case this.MAIL_FORMAT_UNKNOWN:
 				msg += "X-EMAILFORMAT:Unknown\n";break;
@@ -610,24 +614,24 @@ com.synckolab.addressbookTools.list2Vcard = function(card, fields) {
 				msg += "X-EMAILFORMAT:HTML\n";break;
 		}
 	}
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "AimScreenName"))) 
+ 	if (this.haveCardProperty(card, "AimScreenName")) 
 		msg += "X-AIM:" + this.getCardProperty(card, "AimScreenName") + "\n"; 
-	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "CellularNumber")))
+	if (this.haveCardProperty(card, "CellularNumber"))
 		msg += "TEL;TYPE=CELL:" + this.getCardProperty(card, "CellularNumber") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "HomePhone")))
+ 	if (this.haveCardProperty(card, "HomePhone"))
 		msg += "TEL;TYPE=HOME:" + this.getCardProperty(card, "HomePhone") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "FaxNumber")))
+ 	if (this.haveCardProperty(card, "FaxNumber"))
 		msg += "TEL;TYPE=FAX:" + this.getCardProperty(card, "FaxNumber") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "WorkPhone")))
+ 	if (this.haveCardProperty(card, "WorkPhone"))
 		msg += "TEL;TYPE=WORK:" + this.getCardProperty(card, "WorkPhone") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "PagerNumber")))
+ 	if (this.haveCardProperty(card, "PagerNumber"))
 		msg += "TEL;TYPE=PAGER:" + this.getCardProperty(card, "PagerNumber") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "Department")))
+ 	if (this.haveCardProperty(card, "Department"))
 		msg += "DEPT:" + this.getCardProperty(card, "Department") + "\n";
 	// BDAY:1987-09-27T08:30:00-06:00
-	if (com.synckolab.tools.checkExist(this.getCardProperty(card, "BirthYear")) 
-		||com.synckolab.tools.checkExist(this.getCardProperty(card, "BirthDay")) 
-		|| com.synckolab.tools.checkExist(this.getCardProperty(card, "BirthMonth")))
+	if (this.haveCardProperty(card, "BirthYear") 
+		||this.haveCardProperty(card, "BirthDay") 
+		|| this.haveCardProperty(card, "BirthMonth"))
 	{
 		msg += "BDAY:";
 		msg += this.getCardProperty(card, "BirthYear") + "-";
@@ -638,9 +642,9 @@ com.synckolab.addressbookTools.list2Vcard = function(card, fields) {
 			msg += "0";
 		msg += this.getCardProperty(card, "BirthDay") + "\n";
 	}
-	if (com.synckolab.tools.checkExist(this.getCardProperty(card, "AnniversaryYear")) 
-		||com.synckolab.tools.checkExist(this.getCardProperty(card, "AnniversaryDay")) 
-		||com.synckolab.tools.checkExist(this.getCardProperty(card, "AnniversaryMonth")))
+	if (this.haveCardProperty(card, "AnniversaryYear") 
+		||this.haveCardProperty(card, "AnniversaryDay") 
+		||this.haveCardProperty(card, "AnniversaryMonth"))
 	{
 		msg += "ANNIVERSARY:" ;
 		msg += this.getCardProperty(card, "AnniversaryYear") + "-";
@@ -651,16 +655,16 @@ com.synckolab.addressbookTools.list2Vcard = function(card, fields) {
 			msg += "0";
 		msg += this.getCardProperty(card, "AnniversaryDay") + "\n";
 	}
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "WebPage1")))
+ 	if (this.haveCardProperty(card, "WebPage1"))
 		msg += "URL:" + encodeCardField(this.getCardProperty(card, "WebPage1")) + "\n"; // encode the : chars to HEX, vcard values cannot contain colons
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "WebPage2")))
+ 	if (this.haveCardProperty(card, "WebPage2"))
 		msg += "URL;TYPE=PERSONAL:" + encodeCardField(this.getCardProperty(card, "WebPage2")) + "\n";
 	// ADR:POBox;Ext. Address;Address;City;State;Zip Code;Country
-	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "WorkAddress2")) 
-		|| com.synckolab.tools.checkExist (this.getCardProperty(card, "WorkAddress")) 
-		|| com.synckolab.tools.checkExist (this.getCardProperty(card, "WorkCountry")) 
-		|| com.synckolab.tools.checkExist (this.getCardProperty(card, "WorkCity")) 
-		|| com.synckolab.tools.checkExist (this.getCardProperty(card, "WorkState")))
+	if (this.haveCardProperty(card, "WorkAddress2") 
+		|| this.haveCardProperty(card, "WorkAddress") 
+		|| this.haveCardProperty(card, "WorkCountry") 
+		|| this.haveCardProperty(card, "WorkCity") 
+		|| this.haveCardProperty(card, "WorkState"))
 	{
 		msg += "ADR;TYPE=WORK:;";
 		msg += this.getCardProperty(card, "WorkAddress2") + ";";
@@ -671,11 +675,11 @@ com.synckolab.addressbookTools.list2Vcard = function(card, fields) {
 		msg += this.getCardProperty(card, "WorkCountry") + "\n";
 	}
 	// ADR:POBox;Ext. Address;Address;City;State;Zip Code;Country
-	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "HomeAddress2")) 
-		|| com.synckolab.tools.checkExist (this.getCardProperty(card, "HomeAddress")) 
-		|| com.synckolab.tools.checkExist (this.getCardProperty(card, "HomeCountry")) 
-		|| com.synckolab.tools.checkExist (this.getCardProperty(card, "HomeCity")) 
-		|| com.synckolab.tools.checkExist (this.getCardProperty(card, "HomeState")))
+	if (this.haveCardProperty(card, "HomeAddress2") 
+		|| this.haveCardProperty(card, "HomeAddress") 
+		|| this.haveCardProperty(card, "HomeCountry") 
+		|| this.haveCardProperty(card, "HomeCity") 
+		|| this.haveCardProperty(card, "HomeState"))
 	{
 		msg += "ADR;TYPE=HOME:;";
 		msg += this.getCardProperty(card, "HomeAddress2") + ";";
@@ -685,16 +689,16 @@ com.synckolab.addressbookTools.list2Vcard = function(card, fields) {
 		msg += this.getCardProperty(card, "HomeZipCode") + ";";
 		msg += this.getCardProperty(card, "HomeCountry") + "\n";
  	}
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "Custom1")))
+ 	if (this.haveCardProperty(card, "Custom1"))
 		msg += "CUSTOM1:" + this.getCardProperty(card, "Custom1").replace (/\n/g, "\\n") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "Custom2")))
+ 	if (this.haveCardProperty(card, "Custom2"))
 		msg += "CUSTOM2:" + this.getCardProperty(card, "Custom2").replace (/\n/g, "\\n") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "Custom3")))
+ 	if (this.haveCardProperty(card, "Custom3"))
 		msg += "CUSTOM3:" + this.getCardProperty(card, "Custom3").replace (/\n/g, "\\n") + "\n";
  	// yeap one than more line (or something like that :P) 	
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "Description")))
+ 	if (this.haveCardProperty(card, "Description"))
 		msg += "NOTE:" + this.getCardProperty(card, "Description").replace (/\n/g, "\\n") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "Notes")))
+ 	if (this.haveCardProperty(card, "Notes"))
 		msg += "NOTE:" + this.getCardProperty(card, "Notes").replace (/\n/g, "\\n") + "\n";
 	msg += "UID:" + this.getCardProperty(card, "Custom4") + "\n";	
 	// add extra/missing fields
@@ -752,29 +756,29 @@ com.synckolab.addressbookTools.card2Xml = function(card, fields) {
 	xml += " <product-id>SyncKolab, Kolab resource</product-id>\n";
 	xml += " <uid>"+com.synckolab.tools.text.encode4XML(this.getCardProperty(card, "Custom4"))+"</uid>\n";
 	xml += com.synckolab.tools.text.nodeWithContent("categories", this.getCardProperty(card, "Category"), false);
-	//xml += " <creation-date>"+date2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000))+"T"+time2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000))+"Z</creation-date>\n";
-	xml += " <last-modification-date>"+date2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000))+"T"+time2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000))+"Z</last-modification-date>\n";
+	//xml += " <creation-date>"+com.synckolab.tools.text.date2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000))+"T"+com.synckolab.tools.text.time2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000))+"Z</creation-date>\n";
+	xml += " <last-modification-date>"+com.synckolab.tools.text.date2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000))+"T"+com.synckolab.tools.text.time2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000))+"Z</last-modification-date>\n";
 	// ??
 	xml += " <sensitivity>public</sensitivity>\n";
-	if (com.synckolab.tools.checkExist(this.getCardProperty(card, "Notes")))
+	if (this.haveCardProperty(card, "Notes"))
 			xml +=" <body>"+com.synckolab.tools.text.encode4XML(this.getCardProperty(card, "Notes"))+"</body>\n";
 
-	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "FirstName")) || com.synckolab.tools.checkExist (this.getCardProperty(card, "LastName")) ||com.synckolab.tools.checkExist (this.getCardProperty(card, "DisplayName")) ||
-		com.synckolab.tools.checkExist (this.getCardProperty(card, "NickName")))
+	if (this.haveCardProperty(card, "FirstName") || this.haveCardProperty(card, "LastName") ||this.haveCardProperty(card, "DisplayName") ||
+		this.haveCardProperty(card, "NickName"))
 	{
 		xml += " <name>\n";
-		if (com.synckolab.tools.checkExist (this.getCardProperty(card, "FirstName")))
+		if (this.haveCardProperty(card, "FirstName"))
 			xml += "  <given-name>"+com.synckolab.tools.text.encode4XML(this.getCardProperty(card, "FirstName"))+"</given-name>\n";
 //			xml += "  <middle-names>"+this.getCardProperty(card, "NickName")+"</middle-names>\n"; // not really correct...
-		if (com.synckolab.tools.checkExist (this.getCardProperty(card, "LastName")))
+		if (this.haveCardProperty(card, "LastName"))
 			xml += "  <last-name>"+com.synckolab.tools.text.encode4XML(this.getCardProperty(card, "LastName"))+"</last-name>\n";
-		if (com.synckolab.tools.checkExist (this.getCardProperty(card, "DisplayName")))		
+		if (this.haveCardProperty(card, "DisplayName"))		
 		{
 			xml += "  <full-name>"+com.synckolab.tools.text.encode4XML(this.getCardProperty(card, "DisplayName"))+"</full-name>\n";
 			displayName = this.getCardProperty(card, "DisplayName");
 		}
 		else
-		if (com.synckolab.tools.checkExist (this.getCardProperty(card, "FirstName")) || com.synckolab.tools.checkExist (this.getCardProperty(card, "LastName")))
+		if (this.haveCardProperty(card, "FirstName") || this.haveCardProperty(card, "LastName"))
 		{
 			displayName = this.getCardProperty(card, "FirstName") + " " + this.getCardProperty(card, "LastName");
 			xml += com.synckolab.tools.text.nodeWithContent("full-name", displayName);
@@ -794,42 +798,47 @@ com.synckolab.addressbookTools.card2Xml = function(card, fields) {
 	xml += com.synckolab.tools.text.nodeWithContent("job-title", this.getCardProperty(card, "JobTitle"), false);
 	xml += com.synckolab.tools.text.nodeWithContent("nick-name", this.getCardProperty(card, "NickName"), false);
 	
-	
-	var adate = this.getCardProperty(card, "BirthYear") + "-" + this.getCardProperty(card, "BirthMonth") + "-" + this.getCardProperty(card, "BirthDay");
-	if (adate != "--")
-		xml += com.synckolab.tools.text.nodeWithContent("birthday", adate, false);
-	adate = this.getCardProperty(card, "AnniversaryYear") + "-" + this.getCardProperty(card, "AnniversaryMonth") + "-" + this.getCardProperty(card, "AnniversaryDay");
-	if (adate != "--")
-		xml += com.synckolab.tools.text.nodeWithContent("anniversary", adate, false);
-	if (com.synckolab.tools.checkExist(this.getCardProperty(card, "HomePhone")))
+	if (this.haveCardProperty(card, "BirthYear") && this.haveCardProperty(card, "BirthMonth") && this.haveCardProperty(card, "BirthDay"))
+	{
+		var adate = this.getCardProperty(card, "BirthYear") + "-" + this.getCardProperty(card, "BirthMonth") + "-" + this.getCardProperty(card, "BirthDay");
+		if (adate != "--")
+			xml += com.synckolab.tools.text.nodeWithContent("birthday", adate, false);
+	}
+	if(this.haveCardProperty(card, "AnniversaryYear") && this.haveCardProperty(card, "AnniversaryMonth") && this.haveCardProperty(card, "AnniversaryDay"))
+	{
+		var adate = this.getCardProperty(card, "AnniversaryYear") + "-" + this.getCardProperty(card, "AnniversaryMonth") + "-" + this.getCardProperty(card, "AnniversaryDay");
+		if (adate != "--")
+			xml += com.synckolab.tools.text.nodeWithContent("anniversary", adate, false);
+	}
+	if (this.haveCardProperty(card, "HomePhone"))
 	{	
 		xml += " <phone>\n";
 		xml += "  <type>home1</type>\n";
 		xml += "  <number>"+this.getCardProperty(card, "HomePhone")+"</number>\n";
 		xml += " </phone>\n";
 	}
-	if (com.synckolab.tools.checkExist(this.getCardProperty(card, "WorkPhone")))
+	if (this.haveCardProperty(card, "WorkPhone"))
 	{	
 		xml += " <phone>\n";
 		xml += "  <type>business1</type>\n";
 		xml += "  <number>"+this.getCardProperty(card, "WorkPhone")+"</number>\n";
 		xml += " </phone>\n";
 	}
-	if (com.synckolab.tools.checkExist(this.getCardProperty(card, "FaxNumber")))
+	if (this.haveCardProperty(card, "FaxNumber"))
 	{	
 		xml += " <phone>\n";
 		xml += "  <type>fax</type>\n";
 		xml += "  <number>"+this.getCardProperty(card, "FaxNumber")+"</number>\n";
 		xml += " </phone>\n";
 	}
-	if (com.synckolab.tools.checkExist(this.getCardProperty(card, "CellularNumber")))
+	if (this.haveCardProperty(card, "CellularNumber"))
 	{	
 		xml += " <phone>\n";
 		xml += "  <type>mobile</type>\n";
 		xml += "  <number>"+this.getCardProperty(card, "CellularNumber")+"</number>\n";
 		xml += " </phone>\n";
 	}
-	if (com.synckolab.tools.checkExist(this.getCardProperty(card, "PagerNumber")))
+	if (this.haveCardProperty(card, "PagerNumber"))
 	{	
 		xml += " <phone>\n";
 		xml += "  <type>page</type>\n";
@@ -837,7 +846,7 @@ com.synckolab.addressbookTools.card2Xml = function(card, fields) {
 		xml += " </phone>\n";
 	}
 	
-	if (com.synckolab.tools.checkExist(this.getCardProperty(card, "PrimaryEmail")))
+	if (this.haveCardProperty(card, "PrimaryEmail"))
 	{
 		xml += " <email type=\"primary\">\n";
 		xml += "  <display-name>"+com.synckolab.tools.text.encode4XML(displayName)+"</display-name>\n";
@@ -845,7 +854,7 @@ com.synckolab.addressbookTools.card2Xml = function(card, fields) {
 		xml += " </email>\n";
 	}
 	
-	if (com.synckolab.tools.checkExist(this.getCardProperty(card, "SecondEmail")))
+	if (this.haveCardProperty(card, "SecondEmail"))
 	{
 		xml += " <email>\n";
 		xml += "  <display-name>"+com.synckolab.tools.text.encode4XML(displayName)+"</display-name>\n";
@@ -866,9 +875,9 @@ com.synckolab.addressbookTools.card2Xml = function(card, fields) {
 		}
 	}
 
-	if (com.synckolab.tools.checkExist(this.getCardProperty(card, "HomeAddress")) || com.synckolab.tools.checkExist(this.getCardProperty(card, "HomeAddress2")) ||
-		com.synckolab.tools.checkExist(this.getCardProperty(card, "HomeCity")) || com.synckolab.tools.checkExist(this.getCardProperty(card, "HomeState")) ||
-		com.synckolab.tools.checkExist(this.getCardProperty(card, "HomeZipCode")) || com.synckolab.tools.checkExist(this.getCardProperty(card, "HomeCountry")))
+	if (this.haveCardProperty(card, "HomeAddress") || this.haveCardProperty(card, "HomeAddress2") ||
+		this.haveCardProperty(card, "HomeCity") || this.haveCardProperty(card, "HomeState") ||
+		this.haveCardProperty(card, "HomeZipCode") || this.haveCardProperty(card, "HomeCountry"))
 	{
 		xml += " <address>\n";
 		xml += "  <type>home</type>\n";
@@ -881,9 +890,9 @@ com.synckolab.addressbookTools.card2Xml = function(card, fields) {
 		xml += " </address>\n";
 	}
 
-	if (com.synckolab.tools.checkExist(this.getCardProperty(card, "WorkAddress")) || com.synckolab.tools.checkExist(this.getCardProperty(card, "WorkAddress2")) ||
-		com.synckolab.tools.checkExist(this.getCardProperty(card, "WorkCity")) || com.synckolab.tools.checkExist(this.getCardProperty(card, "WorkState")) ||
-		com.synckolab.tools.checkExist(this.getCardProperty(card, "WorkZipCode")) || com.synckolab.tools.checkExist(this.getCardProperty(card, "WorkCountry")))
+	if (this.haveCardProperty(card, "WorkAddress") || this.haveCardProperty(card, "WorkAddress2") ||
+		this.haveCardProperty(card, "WorkCity") || this.haveCardProperty(card, "WorkState") ||
+		this.haveCardProperty(card, "WorkZipCode") || this.haveCardProperty(card, "WorkCountry"))
 	{
 		xml += " <address>\n";
 		xml += "  <type>business</type>\n";
@@ -1546,7 +1555,7 @@ com.synckolab.addressbookTools.message2Card = function(lines, card, extraFields,
 	if (this.getCardProperty(card, "Custom4") == "")
 	{
 		// generate one
-		this.setCardProperty(card, "Custom4", "vc-" + get_randomVcardId()); 
+		this.setCardProperty(card, "Custom4", "vc-" + com.synckolab.tools.text.randomVcardId()); 
 	}
 
 	return found;
@@ -1555,7 +1564,7 @@ com.synckolab.addressbookTools.message2Card = function(lines, card, extraFields,
 com.synckolab.addressbookTools.list2Human = function(card) {
 	var msg = "";
 	msg += "Name: " + this.getCardProperty(card, "ListNickName") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "Notes")))
+ 	if (this.haveCardProperty(card, "Notes"))
 		msg += "Notes: " + this.getCardProperty(card, "Description") + "\n";
 
 	var cList = card.QueryInterface(Components.interfaces.nsIAbDirectory);
@@ -1578,42 +1587,42 @@ com.synckolab.addressbookTools.list2Human = function(card) {
 com.synckolab.addressbookTools.card2Human = function(card) {
 	var msg = "";
 
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "FirstName")) || com.synckolab.tools.checkExist (this.getCardProperty(card, "LastName")))
+ 	if (this.haveCardProperty(card, "FirstName") || this.haveCardProperty(card, "LastName"))
 		msg += "Name: " + this.getCardProperty(card, "LastName") + " " + this.getCardProperty(card, "FirstName") + "\n";
 	else
-	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "DisplayName")))
+	if (this.haveCardProperty(card, "DisplayName"))
 		msg += "Name: " + this.getCardProperty(card, "DisplayName");
 		
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "JobTitle")))
+ 	if (this.haveCardProperty(card, "JobTitle"))
 		msg += "Title: " + this.getCardProperty(card, "JobTitle") + "\n";
-	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "Company")))
+	if (this.haveCardProperty(card, "Company"))
 		msg += "Company: " + this.getCardProperty(card, "Company") + "\n\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "WebPage1")))
+ 	if (this.haveCardProperty(card, "WebPage1"))
 		msg += "Web: " + this.getCardProperty(card, "WebPage1") + "\n"; 
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "WebPage2")))
+ 	if (this.haveCardProperty(card, "WebPage2"))
 		msg += "Web: " + this.getCardProperty(card, "WebPage2") + "\n\n";
 
-	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "CellularNumber")))
+	if (this.haveCardProperty(card, "CellularNumber"))
 		msg += "Cell #: " + this.getCardProperty(card, "CellularNumber") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "AhomePhone")))
+ 	if (this.haveCardProperty(card, "AhomePhone"))
 		msg += "Home #: " + this.getCardProperty(card, "AhomePhone") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "FaxNumber")))
+ 	if (this.haveCardProperty(card, "FaxNumber"))
 		msg += "Fax #: " + this.getCardProperty(card, "FaxNumber") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "WorkPhone")))
+ 	if (this.haveCardProperty(card, "WorkPhone"))
 		msg += "Work #: " + this.getCardProperty(card, "WorkPhone") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "PagerNumber")))
+ 	if (this.haveCardProperty(card, "PagerNumber"))
 		msg += "Pager #: " + this.getCardProperty(card, "PagerNumber") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "Department")))
+ 	if (this.haveCardProperty(card, "Department"))
 		msg += "Department: " + this.getCardProperty(card, "Department") + "\n";
 	
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "PrimaryEmail"))) 
+ 	if (this.haveCardProperty(card, "PrimaryEmail")) 
 		msg += "E-Mail:" + this.getCardProperty(card, "PrimaryEmail")  + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "SecondEmail"))) 
+ 	if (this.haveCardProperty(card, "SecondEmail")) 
 		msg += "E-Mail:" + this.getCardProperty(card, "SecondEmail") + "\n";
 
-	if (com.synckolab.tools.checkExist(this.getCardProperty(card, "BirthYear")) 
-		||com.synckolab.tools.checkExist(this.getCardProperty(card, "BirthDay")) 
-		|| com.synckolab.tools.checkExist(this.getCardProperty(card, "BirthMonth")))
+	if (this.haveCardProperty(card, "BirthYear") 
+		||this.haveCardProperty(card, "BirthDay") 
+		|| this.haveCardProperty(card, "BirthMonth"))
 	{
 		msg += "Birthday: ";
 		msg += this.getCardProperty(card, "BirthYear") + "-";
@@ -1624,9 +1633,9 @@ com.synckolab.addressbookTools.card2Human = function(card) {
 			msg += "0";
 		msg += this.getCardProperty(card, "BirthDay") + "\n";
 	}
-	if (com.synckolab.tools.checkExist(this.getCardProperty(card, "AnniversaryYear")) 
-		||com.synckolab.tools.checkExist(this.getCardProperty(card, "AnniversaryDay")) 
-		||com.synckolab.tools.checkExist(this.getCardProperty(card, "AnniversaryMonth")))
+	if (this.haveCardProperty(card, "AnniversaryYear") 
+		||this.haveCardProperty(card, "AnniversaryDay") 
+		||this.haveCardProperty(card, "AnniversaryMonth"))
 	{
 		msg += "Anniversary: ";
 		msg += this.getCardProperty(card, "AnniversaryYear") + "-";
@@ -1639,11 +1648,11 @@ com.synckolab.addressbookTools.card2Human = function(card) {
 	}
 
 
-	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "WorkAddress2")) 
-		|| com.synckolab.tools.checkExist (this.getCardProperty(card, "WorkAddress")) 
-		|| com.synckolab.tools.checkExist (this.getCardProperty(card, "WorkCountry")) 
-		|| com.synckolab.tools.checkExist (this.getCardProperty(card, "WorkCity")) 
-		|| com.synckolab.tools.checkExist (this.getCardProperty(card, "WorkState")))
+	if (this.haveCardProperty(card, "WorkAddress2")
+		|| this.haveCardProperty(card, "WorkAddress")
+		|| this.haveCardProperty(card, "WorkCountry")
+		|| this.haveCardProperty(card, "WorkCity")
+		|| this.haveCardProperty(card, "WorkState"))
 	{
 		msg += "Work: ";
 		msg += this.getCardProperty(card, "WorkAddress2") + "\n";
@@ -1654,11 +1663,11 @@ com.synckolab.addressbookTools.card2Human = function(card) {
 		msg += this.getCardProperty(card, "WorkCountry") + "\n";
 	}
 	// ADR:POBox;Ext. Address;Address;City;State;Zip Code;Country
-	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "HomeAddress2")) 
-		|| com.synckolab.tools.checkExist (this.getCardProperty(card, "HomeAddress")) 
-		|| com.synckolab.tools.checkExist (this.getCardProperty(card, "HomeCountry")) 
-		|| com.synckolab.tools.checkExist (this.getCardProperty(card, "HomeCity")) 
-		|| com.synckolab.tools.checkExist (this.getCardProperty(card, "HomeState")))
+	if (this.haveCardProperty(card, "HomeAddress2") 
+		|| this.haveCardProperty(card, "HomeAddress") 
+		|| this.haveCardProperty(card, "HomeCountry") 
+		|| this.haveCardProperty(card, "HomeCity")
+		|| this.haveCardProperty(card, "HomeState"))
 	{
 		msg += "Home: ";
 		msg += this.getCardProperty(card, "HomeAddress2") + "\n";
@@ -1668,7 +1677,7 @@ com.synckolab.addressbookTools.card2Human = function(card) {
 		msg += this.getCardProperty(card, "HomeCity") + "\n";
 		msg += this.getCardProperty(card, "HomeCountry") + "\n";
  	}
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "Notes")))
+ 	if (this.haveCardProperty(card, "Notes"))
 		msg += "Notes: " + this.getCardProperty(card, "Notes") + "\n";
 	return msg;
 };
@@ -1679,29 +1688,29 @@ com.synckolab.addressbookTools.card2Vcard = function(card, fields) {
 	var cdate = new Date (this.getCardProperty(card, "LastModifiedDate")*1000);
 	var sTime = (cdate.getHours()<10?"0":"") + cdate.getHours() + ":" + (cdate.getMinutes()<10?"0":"") + cdate.getMinutes() + ":" +
 		(cdate.getSeconds()<10?"0":"") + cdate.getSeconds();
-	var sdate = "DATE: " + getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " +
-		getMonthString (cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime
+	var sdate = "DATE: " + com.synckolab.tools.text.getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " +
+	com.synckolab.tools.text.getMonthString (cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime
 		 + " " + (((cdate.getTimezoneOffset()/60) < 0)?"-":"+") +
 		(((cdate.getTimezoneOffset()/60) < 10)?"0":"") + cdate.getTimezoneOffset() + "\n";
 
 	
 	var msg = "BEGIN:VCARD\n";
 	// N:Lastname;Firstname;Other;Prefix;Suffix
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "FirstName")) || com.synckolab.tools.checkExist (this.getCardProperty(card, "LastName")))
+ 	if (this.haveCardProperty(card, "FirstName") || this.haveCardProperty(card, "LastName"))
 		msg += "N:" + this.getCardProperty(card, "LastName") + ";" + this.getCardProperty(card, "FirstName") + ";;;\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "DisplayName")))
+ 	if (this.haveCardProperty(card, "DisplayName"))
 		msg += "FN:" + this.getCardProperty(card, "DisplayName") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "NickName")))
+ 	if (this.haveCardProperty(card, "NickName"))
 		msg += "NICKNAME:" + this.getCardProperty(card, "NickName") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "JobTitle")))
+ 	if (this.haveCardProperty(card, "JobTitle"))
 		msg += "TITLE:" + this.getCardProperty(card, "JobTitle") + "\n";
-	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "Company")))
+	if (this.haveCardProperty(card, "Company"))
 		msg += "ORG:" + this.getCardProperty(card, "Company") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "PrimaryEmail"))) 
+ 	if (this.haveCardProperty(card, "PrimaryEmail")) 
 		msg += "EMAIL;TYPE=INTERNET;PREF:" + this.getCardProperty(card, "PrimaryEmail")  + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "SecondEmail"))) 
+ 	if (this.haveCardProperty(card, "SecondEmail")) 
 		msg += "EMAIL;TYPE=INTERNET:" + this.getCardProperty(card, "SecondEmail") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "PreferMailFormat"))) { 
+ 	if (this.haveCardProperty(card, "PreferMailFormat")) { 
 		switch(this.getCardProperty(card, "PreferMailFormat")) {
 			case this.MAIL_FORMAT_UNKNOWN:
 				msg += "X-EMAILFORMAT:Unknown\n";break;
@@ -1711,24 +1720,24 @@ com.synckolab.addressbookTools.card2Vcard = function(card, fields) {
 				msg += "X-EMAILFORMAT:HTML\n";break;
 		}
 	}
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "AimScreenName"))) 
+ 	if (this.haveCardProperty(card, "AimScreenName"))
 		msg += "X-AIM:" + this.getCardProperty(card, "AimScreenName") + "\n"; 
-	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "CellularNumber")))
+	if (this.haveCardProperty(card, "CellularNumber"))
 		msg += "TEL;TYPE=CELL:" + this.getCardProperty(card, "CellularNumber") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "HomePhone")))
+ 	if (this.haveCardProperty(card, "HomePhone"))
 		msg += "TEL;TYPE=HOME:" + this.getCardProperty(card, "HomePhone") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "FaxNumber")))
+ 	if (this.haveCardProperty(card, "FaxNumber"))
 		msg += "TEL;TYPE=FAX:" + this.getCardProperty(card, "FaxNumber") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "WorkPhone")))
+ 	if (this.haveCardProperty(card, "WorkPhone"))
 		msg += "TEL;TYPE=WORK:" + this.getCardProperty(card, "WorkPhone") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "PagerNumber")))
+ 	if (this.haveCardProperty(card, "PagerNumber"))
 		msg += "TEL;TYPE=PAGER:" + this.getCardProperty(card, "PagerNumber") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "Department")))
+ 	if (this.haveCardProperty(card, "Department"))
 		msg += "DEPT:" + this.getCardProperty(card, "Department") + "\n";
 	// BDAY:1987-09-27T08:30:00-06:00
-	if (com.synckolab.tools.checkExist(this.getCardProperty(card, "BirthYear")) 
-		||com.synckolab.tools.checkExist(this.getCardProperty(card, "BirthDay")) 
-		|| com.synckolab.tools.checkExist(this.getCardProperty(card, "BirthMonth")))
+	if (this.haveCardProperty(card, "BirthYear") 
+		||this.haveCardProperty(card, "BirthDay") 
+		|| this.haveCardProperty(card, "BirthMonth"))
 	{
 		msg += "BDAY:";
 		msg += this.getCardProperty(card, "BirthYear") + "-";
@@ -1739,9 +1748,9 @@ com.synckolab.addressbookTools.card2Vcard = function(card, fields) {
 			msg += "0";
 		msg += this.getCardProperty(card, "BirthDay") + "\n";
 	}
-	if (com.synckolab.tools.checkExist(this.getCardProperty(card, "AnniversaryYear")) 
-		||com.synckolab.tools.checkExist(this.getCardProperty(card, "AnniversaryDay")) 
-		||com.synckolab.tools.checkExist(this.getCardProperty(card, "AnniversaryMonth")))
+	if (this.haveCardProperty(card, "AnniversaryYear") 
+		||this.haveCardProperty(card, "AnniversaryDay") 
+		||this.haveCardProperty(card, "AnniversaryMonth"))
 	{
 		msg += "ANNIVERSARY:";
 		msg += this.getCardProperty(card, "AnniversaryYear") + "-";
@@ -1752,16 +1761,16 @@ com.synckolab.addressbookTools.card2Vcard = function(card, fields) {
 			msg += "0";
 		msg += this.getCardProperty(card, "AnniversaryDay") + "\n";
 	}
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "WebPage1")))
+ 	if (this.haveCardProperty(card, "WebPage1"))
 		msg += "URL:" + encodeCardField(this.getCardProperty(card, "WebPage1")) + "\n"; // encode the : chars to HEX, vcard values cannot contain colons
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "WebPage2")))
+ 	if (this.haveCardProperty(card, "WebPage2"))
 		msg += "URL;TYPE=PERSONAL:" + encodeCardField(this.getCardProperty(card, "WebPage2")) + "\n";
 	// ADR:POBox;Ext. Address;Address;City;State;Zip Code;Country
-	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "WorkAddress2")) 
-		|| com.synckolab.tools.checkExist (this.getCardProperty(card, "WorkAddress")) 
-		|| com.synckolab.tools.checkExist (this.getCardProperty(card, "WorkCountry")) 
-		|| com.synckolab.tools.checkExist (this.getCardProperty(card, "WorkCity")) 
-		|| com.synckolab.tools.checkExist (this.getCardProperty(card, "WorkState")))
+	if (this.haveCardProperty(card, "WorkAddress2")
+		|| this.haveCardProperty(card, "WorkAddress")
+		|| this.haveCardProperty(card, "WorkCountry")
+		|| this.haveCardProperty(card, "WorkCity")
+		|| this.haveCardProperty(card, "WorkState"))
 	{
 		msg += "ADR;TYPE=WORK:;";
 		msg += this.getCardProperty(card, "WorkAddress2") + ";";
@@ -1772,11 +1781,11 @@ com.synckolab.addressbookTools.card2Vcard = function(card, fields) {
 		msg += this.getCardProperty(card, "WorkCountry") + "\n";
 	}
 	// ADR:POBox;Ext. Address;Address;City;State;Zip Code;Country
-	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "HomeAddress2")) 
-		|| com.synckolab.tools.checkExist (this.getCardProperty(card, "HomeAddress")) 
-		|| com.synckolab.tools.checkExist (this.getCardProperty(card, "HomeCountry")) 
-		|| com.synckolab.tools.checkExist (this.getCardProperty(card, "HomeCity")) 
-		|| com.synckolab.tools.checkExist (this.getCardProperty(card, "HomeState")))
+	if (this.haveCardProperty(card, "HomeAddress2")
+		|| this.haveCardProperty(card, "HomeAddress")
+		|| this.haveCardProperty(card, "HomeCountry")
+		|| this.haveCardProperty(card, "HomeCity")
+		|| this.haveCardProperty(card, "HomeState"))
 	{
 		msg += "ADR;TYPE=HOME:;";
 		msg += this.getCardProperty(card, "HomeAddress2") + ";";
@@ -1786,18 +1795,18 @@ com.synckolab.addressbookTools.card2Vcard = function(card, fields) {
 		msg += this.getCardProperty(card, "HomeZipCode") + ";";
 		msg += this.getCardProperty(card, "HomeCountry") + "\n";
  	}
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "Custom1")))
+ 	if (this.haveCardProperty(card, "Custom1"))
 		msg += "CUSTOM1:" + this.getCardProperty(card, "Custom1").replace (/\n/g, "\\n") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "Custom2")))
+ 	if (this.haveCardProperty(card, "Custom2"))
 		msg += "CUSTOM2:" + this.getCardProperty(card, "Custom2").replace (/\n/g, "\\n") + "\n";
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "Custom3")))
+ 	if (this.haveCardProperty(card, "Custom3"))
 		msg += "CUSTOM3:" + this.getCardProperty(card, "Custom3").replace (/\n/g, "\\n") + "\n";
  	if (this.getCardProperty(card, "AllowRemoteContent"))
  		msg += "ALLOWREMOTECONTENT:true\n";
  	else
  		msg += "ALLOWREMOTECONTENT:false\n";
  	// yeap one than more line (or something like that :P)
- 	if (com.synckolab.tools.checkExist (this.getCardProperty(card, "Notes")))
+ 	if (this.haveCardProperty(card, "Notes"))
 		msg += "NOTE:" + this.getCardProperty(card, "Notes").replace(/\n\n/g, "\\n").replace (/\n/g, "\\n") + "\n";
 	msg += "UID:" + this.getCardProperty(card, "Custom4") + "\n";	
 	// add extra/missing fields
@@ -1831,18 +1840,18 @@ com.synckolab.addressbookTools.card2Message = function(card, email, format, fiel
 	{
 		// mailing list
 		if (card.isMailList)
-			return generateMail(this.getCardProperty(card, "Custom4"), email, "", "application/x-vnd.kolab.contact.distlist", 
-				true, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(this.list2Xml(card, fields))), list2Human(card));
+			return com.synckolab.tools.generateMail(this.getCardProperty(card, "Custom4"), email, "", "application/x-vnd.kolab.contact.distlist", 
+				true, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(this.list2Xml(card, fields))), this.list2Human(card));
 		else
-			return generateMail(this.getCardProperty(card, "Custom4"), email, "", "application/x-vnd.kolab.contact", 
-				true, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(this.card2Xml(card, fields))), card2Human(card));
+			return com.synckolab.tools.generateMail(this.getCardProperty(card, "Custom4"), email, "", "application/x-vnd.kolab.contact", 
+				true, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(this.card2Xml(card, fields))), this.card2Human(card));
 	}
 	
 	if (card.isMailList)
-		return generateMail(this.getCardProperty(card, "Custom4"), email, "vCard", "application/x-vcard.list", 
+		return com.synckolab.tools.generateMail(this.getCardProperty(card, "Custom4"), email, "vCard", "application/x-vcard.list", 
 			false, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(this.list2Vcard(card,fields))), null);
 
-	return generateMail(this.getCardProperty(card, "Custom4"), email, "vCard", "text/vcard", 
+	return com.synckolab.tools.generateMail(this.getCardProperty(card, "Custom4"), email, "vCard", "text/vcard", 
 			false, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(this.card2Vcard(card, fields))), null);
 			
 		
@@ -1868,8 +1877,6 @@ com.synckolab.addressbookTools.decodeCardField = function(fieldValue) {
 };
 
 
-
-
 //Returns an array of fields that are in conflict
 com.synckolab.addressbookTools.contactConflictTest = function(serverCard,localCard) {
 	var conflictArray = new Array(); //conflictArray.length
@@ -1885,7 +1892,7 @@ com.synckolab.addressbookTools.contactConflictTest = function(serverCard,localCa
 		"custom1","custom2","notes");
 
 	for( i=0 ; i < fieldsArray.length ; i++ ) {
-		if ( eval("localCard."+fieldsArray[i]) != eval("serverCard."+fieldsArray[i]) )
+		if ( this.getCardProperty(localCard, fieldsArray[i]) != this.getCardProperty(serverCard, fieldsArray[i]) )
 			conflictArray.push(fieldsArray[i]);
 	}
 	

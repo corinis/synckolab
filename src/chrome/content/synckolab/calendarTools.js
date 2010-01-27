@@ -69,15 +69,15 @@ com.synckolab.calendarTools = {
 	 */
 	getCalendars: function ()
 	{
-		 try {
-		 	 var syncCalManager = getSynckolabCalendarManager();
-		 	 if (syncCalManager == null || !syncCalManager)
-		 	 	return null;
-			 return syncCalManager.getCalendars({});
+		try {
+			var syncCalManager = this.getCalendarManager();
+			if (syncCalManager == null || !syncCalManager)
+				return null;
+			return syncCalManager.getCalendars({});
 		}
 		catch (e) {
 			com.synckolab.tools.logMessage("Error getting calendars: " + e, com.synckolab.global.LOG_ERROR);
-			 return null;
+			return null;
 		}
 	},
 
@@ -1133,7 +1133,7 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
 			{
 				var endDate = recRule.endDate;
 				if (endDate)
-					xml += "  <range type=\"date\">" + date2String(endDate.jsDate) + "</range>\n";
+					xml += "  <range type=\"date\">" + com.synckolab.tools.text.date2String(endDate.jsDate) + "</range>\n";
 				else
 					xml += "  <range type=\"none\"/>\n";
 			}

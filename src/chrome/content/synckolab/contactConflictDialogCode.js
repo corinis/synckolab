@@ -29,127 +29,133 @@
  * 
  * 
  ***** END LICENSE BLOCK ***** */
+if(!com) var com={};
+if(!com.synckolab) com.synckolab={};
 
-var localCard;
-var serverCard;
-var conflictsArray;
-var conflictResolution;
+com.synckolab.contactConflict = {
 
-function doOK()
-{
-	//User submitted, now check, did user accept only server, only local, or combination of both
-	var bServerOnly = true;
-	var bLocalOnly = true;
-	for ( i=0 ; i < conflictsArray.length ; i++ ) {
-		if ( document.getElementById(conflictsArray[i]).selectedIndex != 0 )
-			bServerOnly = false;
-		if ( document.getElementById(conflictsArray[i]).selectedIndex != 1 )
-			bLocalOnly = false;
+	localCard:null,
+	serverCard: null,
+	conflictsArray: null,
+	conflictResolution: null,
 
-	}
-	if ( bServerOnly )
-		conflictResolution.result = 1;
-	else if ( bLocalOnly )
-		conflictResolution.result = 2;
-	else {
-		//Updating both copies with new values
-		for ( i=0 ; i < conflictsArray.length ; i++ ) {
-			serverValue = eval("serverCard."+conflictsArray[i]);
-			localValue = eval("localCard."+conflictsArray[i]);
-			if ( document.getElementById(conflictsArray[i]).selectedIndex == 0 )
-				eval("localCard."+conflictsArray[i]+" = serverValue");
-			else
-				eval("serverCard."+conflictsArray[i]+" = localValue");
+	doOK: function()
+	{
+		//User submitted, now check, did user accept only server, only local, or combination of both
+		var bServerOnly = true;
+		var bLocalOnly = true;
+		for ( i=0 ; i < this.conflictsArray.length ; i++ ) {
+			if ( document.getElementById(this.conflictsArray[i]).selectedIndex != 0 )
+				bServerOnly = false;
+			if ( document.getElementById(this.conflictsArray[i]).selectedIndex != 1 )
+				bLocalOnly = false;
+
 		}
-		conflictResolution.result = 3;
-	}
-	return true;
-}
-
-function doCancel()
-{
-	conflictResolution.result = 0;
-	return true;
-}
-
-function keepServer()
-{
-	for ( i=0 ; i < conflictsArray.length ; i++ ) {
-		document.getElementById(conflictsArray[i]).selectedIndex = 0;
-	}
-	return false;
-}
-function keepLocal()
-{
-	for ( i=0 ; i < conflictsArray.length ; i++ ) {
-		document.getElementById(conflictsArray[i]).selectedIndex = 1;
-	}
-	return false;
-}
-
-function init()
-{
-	conflictsArray = window.arguments[0];
-	conflictResolution = window.arguments[1];
-	serverCard = window.arguments[2];
-	localCard = window.arguments[3];
-		
-	//Show static elements for the following so that we always know who's record we are looking at	
-	document.getElementById("firstNameStatic").value = localCard.firstName;
-	document.getElementById("lastNameStatic").value = localCard.lastName;
-	document.getElementById("displayNameStatic").value = localCard.displayName;
-	document.getElementById("nickNameStatic").value = localCard.nickName;
-	
-	var serverValue;
-	var localValue;
-	
-	//Loop through the conflicted fields, set their current values, unhide from the dialog
-	for ( i=0 ; i < conflictsArray.length ; i++ ) {
-		serverValue = eval("serverCard."+conflictsArray[i]);
-		localValue = eval("localCard."+conflictsArray[i]);
-		
-		var e = document.getElementById(conflictsArray[i]); //Field Element
-		var innerBox = e.parentNode;
-		//var outerBox = e.parentNode.parentNode; If it wasnt a grid then it would be this simple
-		var outerBox = e.parentNode.parentNode.parentNode.parentNode;
-		
-		//Unhide the conflicted field
-		outerBox.hidden = false;
-		innerBox.hidden = false;
-		
-		//hide the static labels if any
-		if ( document.getElementById(conflictsArray[i]+"Static") )
-			document.getElementById(conflictsArray[i]+"Static").hidden = true;
-		
-		e.hidden = false; //Name is hidden by default, so always unhide just in case
-		if ( conflictsArray[i] == "preferMailFormat" ) {
-			//Handling the special case of Email format preference
-			switch ( serverValue ) {
-				case 1 :
-					e.appendItem("Plain Text [Server]",1);
-					break;
-				case 2 :
-					e.appendItem("HTML [Server]",2);
-					break;
-				default :
-					e.appendItem("Unknown [Server]",0);
-					break;
+		if ( bServerOnly )
+			this.conflictResolution.result = 1;
+		else if ( bLocalOnly )
+			this.conflictResolution.result = 2;
+		else {
+			//Updating both copies with new values
+			for ( i=0 ; i < this.conflictsArray.length ; i++ ) {
+				serverValue = com.synckolab.addressbookTools.getCardProperty(this.serverCard, conflictsArray[i]);
+				localValue = com.synckolab.addressbookTools.getCardProperty(this.localCard, conflictsArray[i]);
+				if ( document.getElementById(this.conflictsArray[i]).selectedIndex == 0 )
+					com.synckolab.addressbookTools.setCardProperty(this.localCard,this.conflictsArray[i], serverValue);
+				else
+					com.synckolab.addressbookTools.setCardProperty(this.serverCard,this.conflictsArray[i], localValue);
 			}
-			switch ( localValue ) {
-				case 1 :
-					e.appendItem("Plain Text [Local]",1);
-					break;
-				case 2 :
-					e.appendItem("HTML [Local]",2);
-					break;
-				default :
-					e.appendItem("Unknown [Local]",0);
-					break;
-			}
-		} else {
-			e.appendItem(serverValue +" [Server]",serverValue);
-			e.appendItem(localValue +" [Local]",localValue);
+			this.conflictResolution.result = 3;
 		}
-		e.selectedIndex = 0; //Set the current value to SERVER
+		return true;
+	},
+
+	doCancel: function()
+	{
+		this.conflictResolution.result = 0;
+		return true;
+	},
+
+	keepServer: function ()
+	{
+		for ( i=0 ; i < this.conflictsArray.length ; i++ ) {
+			document.getElementById(this.conflictsArray[i]).selectedIndex = 0;
+		}
+		return false;
+	},
+	keepLocal: function ()
+	{
+		for ( i=0 ; i < this.conflictsArray.length ; i++ ) {
+			document.getElementById(this.conflictsArray[i]).selectedIndex = 1;
+		}
+		return false;
+	},
+
+	init: function ()
+	{
+		this.conflictsArray = window.arguments[0];
+		this.conflictResolution = window.arguments[1];
+		this.serverCard = window.arguments[2];
+		this.localCard = window.arguments[3];
+			
+		//Show static elements for the following so that we always know who's record we are looking at	
+		document.getElementById("firstNameStatic").value = this.localCard.firstName;
+		document.getElementById("lastNameStatic").value = this.localCard.lastName;
+		document.getElementById("displayNameStatic").value = this.localCard.displayName;
+		document.getElementById("nickNameStatic").value = this.localCard.nickName;
+		
+		var serverValue;
+		var localValue;
+		
+		//Loop through the conflicted fields, set their current values, unhide from the dialog
+		for ( i=0 ; i < this.conflictsArray.length ; i++ ) {
+			serverValue = com.synckolab.addressbookTools.getCardProperty(this.serverCard, this.conflictsArray[i]);
+			localValue = com.synckolab.addressbookTools.getCardProperty(this.localCard, this.conflictsArray[i]);
+			
+			var e = document.getElementById(this.conflictsArray[i]); //Field Element
+			var innerBox = e.parentNode;
+			//var outerBox = e.parentNode.parentNode; If it wasnt a grid then it would be this simple
+			var outerBox = e.parentNode.parentNode.parentNode.parentNode;
+			
+			//Unhide the conflicted field
+			outerBox.hidden = false;
+			innerBox.hidden = false;
+			
+			//hide the static labels if any
+			if ( document.getElementById(this.conflictsArray[i]+"Static") )
+				document.getElementById(this.conflictsArray[i]+"Static").hidden = true;
+			
+			e.hidden = false; //Name is hidden by default, so always unhide just in case
+			if ( conflictsArray[i] == "preferMailFormat" ) {
+				//Handling the special case of Email format preference
+				switch ( serverValue ) {
+					case 1 :
+						e.appendItem("Plain Text [Server]",1);
+						break;
+					case 2 :
+						e.appendItem("HTML [Server]",2);
+						break;
+					default :
+						e.appendItem("Unknown [Server]",0);
+						break;
+				}
+				switch ( localValue ) {
+					case 1 :
+						e.appendItem("Plain Text [Local]",1);
+						break;
+					case 2 :
+						e.appendItem("HTML [Local]",2);
+						break;
+					default :
+						e.appendItem("Unknown [Local]",0);
+						break;
+				}
+			} else {
+				e.appendItem(serverValue +" [Server]",serverValue);
+				e.appendItem(localValue +" [Local]",localValue);
+			}
+			e.selectedIndex = 0; //Set the current value to SERVER
+		}
 	}
-}
+
+};

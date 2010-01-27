@@ -169,24 +169,24 @@ com.synckolab.Calendar = {
 		// get the correct calendar instance
 		var calendars = com.synckolab.cal.tools.getCalendars();
 		for( var i = 0; i < calendars.length; i++ )
-	    {
-	    	if (calendars[i].name == this.gCalendarName || 
-	    	fixNameToMiniCharset(calendars[i].name) == fixNameToMiniCharset(this.gCalendarName))
-	    	{
-	    		this.gCalendar = calendars[i];
-	    		break;
-	    	}
+		{
+			if (calendars[i].name == this.gCalendarName || 
+					fixNameToMiniCharset(calendars[i].name) == fixNameToMiniCharset(this.gCalendarName))
+			{
+				this.gCalendar = calendars[i];
+				break;
+			}
 		}		
-		
+
 		
 		this.folderMessageUids = new Array(); // the checked uids - for better sync
 		
 		// get the sync db
 		
 		if (this.syncTasks)
-			this.dbFile = com.synckolab.tools.getHashDataBaseFile (config + ".task");
+			this.dbFile = com.synckolab.tools.file.getHashDataBaseFile (config + ".task");
 		else
-			this.dbFile = com.synckolab.tools.getHashDataBaseFile (config + ".cal");
+			this.dbFile = com.synckolab.tools.file.getHashDataBaseFile (config + ".cal");
 			
 		this.gConfig = config;
 
@@ -369,10 +369,10 @@ com.synckolab.Calendar = {
 		}
 		else
 		{
-		    // event exists in local calendar
+			// event exists in local calendar
 			this.tools.logMessage("Event exists local: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_DEBUG);
 			
-			var cEvent = message2Event(readSyncDBFile(idxEntry), null, this.syncTasks);
+			var cEvent = this.calTools.message2Event(com.synckolab.tools.readSyncDBFile(idxEntry), null, this.syncTasks);
 
 			var hasEntry = idxEntry.exists() && (cEvent != null);
 			// make sure cEvent is not null, else the comparision will fail
@@ -389,7 +389,7 @@ com.synckolab.Calendar = {
 				//Holds the users response, must be an object so that we can pass by reference
 				conflictResolution = new Object();
 				conflictResolution.result = 0;
-  				
+				
 				// check for conflict resolution settings 
 				if (this.gConflictResolve = 'server')
 					conflictResolution.result = 1;
@@ -462,14 +462,14 @@ com.synckolab.Calendar = {
 						if (this.syncTasks)
 						{
 							
-							msg = generateMail(cur.id, this.email, "iCal", "text/todo", 
-								false, encodeQuoted(encode_utf8(calComp.serializeToICS())), null);
+							msg = com.synckolab.tools.generateMail(cur.id, this.email, "iCal", "text/todo", 
+								false, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(calComp.serializeToICS())), null);
 						}
 						else
 						{
 							
-							msg = generateMail(cur.id, this.email, "iCal", "text/calendar", 
-								false, encodeQuoted(encode_utf8(calComp.serializeToICS())), null);
+							msg = com.synckolab.tools.generateMail(cur.id, this.email, "iCal", "text/calendar", 
+								false, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(calComp.serializeToICS())), null);
 						}
 					}
 
@@ -539,13 +539,13 @@ com.synckolab.Calendar = {
 						
 						if (this.syncTasks)
 						{
-							msg = generateMail(parsedEvent.id, this.email, "iCal", "text/todo", 
-								false, encodeQuoted(encode_utf8(calComp.serializeToICS())), null);
+							msg = com.synckolab.tools.generateMail(parsedEvent.id, this.email, "iCal", "text/todo", 
+								false, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(calComp.serializeToICS())), null);
 						}
 						else
 						{
-							msg = generateMail(parsedEvent.id, this.email, "iCal", "text/calendar", 
-								false, encodeQuoted(encode_utf8(calComp.serializeToICS())), null);
+							msg = com.synckolab.tools.generateMail(parsedEvent.id, this.email, "iCal", "text/calendar", 
+								false, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(calComp.serializeToICS())), null);
 						}
 					}
 					
@@ -699,11 +699,11 @@ com.synckolab.Calendar = {
 				var msg = null;
 				var clonedEvent = cur;
 				if (modifyEventOnExport)
-					clonedEvent = modifyEventOnExport(cur, this);
+					clonedEvent = this.calTools.modifyEventOnExport(cur, this);
 
 				if (this.format == "Xml")
 				{
-					msg = event2kolabXmlMsg(clonedEvent, this.email, this.syncTasks);
+					msg = this.calTools.event2kolabXmlMsg(clonedEvent, this.email, this.syncTasks);
 				} 
 				else
 				{
@@ -717,14 +717,14 @@ com.synckolab.Calendar = {
 
 					if (this.syncTasks)
 					{
-						msg = generateMail(cur.id, this.email, "iCal", "text/todo", 
-							false, encode_utf8(encodeQuoted(calComp.serializeToICS())), null);
+						msg = com.synckolab.tools.generateMail(cur.id, this.email, "iCal", "text/todo", 
+							false, com.synckolab.tools.text.utf8.encode(com.synckolab.tools.text.quoted.encode(calComp.serializeToICS())), null);
 					}
 					else
 					{
 
-						msg = generateMail(cur.id, this.email, "iCal", "text/calendar", 
-							false, encode_utf8(encodeQuoted(calComp.serializeToICS())), null);
+						msg = com.synckolab.tools.generateMail(cur.id, this.email, "iCal", "text/calendar", 
+							false, com.synckolab.tools.text.utf8.encode(com.synckolab.tools.text.quoted.encode(calComp.serializeToICS())), null);
 					}					
 				}
 				

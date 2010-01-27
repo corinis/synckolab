@@ -4,3 +4,5 @@
 * change internalmessage db to use hashmap instead
 * change global functions to use namespace or encapsulate
 * change additional Fields to hashmap for better code reuse and readability
+* encapsulate node with a new prototype for easier access to utility functions
+* use get functions instead of eval

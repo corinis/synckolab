@@ -46,12 +46,12 @@ com.synckolab.tools = {
 	 * Prints out debug messages to the cosole if the global variable DEBUG_SYNCKOLAB is set to true
 	 * Also prints out performance related stuff
 	 */
-	logMessage: function (msg, level) {
+logMessage: function (msg, level) {
 	if (!level)
 		level = com.synckolab.global.LOG_INFO;
 
-	var infolvl = com.synckolab.global.DEBUG_SYNCKOLAB_LEVEL%4;
-	var infostate = com.synckolab.global.DEBUG_SYNCKOLAB_LEVEL - infolvl;
+	var infolvl = com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL%4;
+	var infostate = com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL - infolvl;
 	var clvl = level%4;
 	var cstate = level - clvl;
 
@@ -65,27 +65,27 @@ com.synckolab.tools = {
 	if (infostate != cstate && infostate != com.synckolab.global.LOG_ALL)
 		return;
 
-	if (com.synckolab.global.DEBUG_SYNCKOLAB || clvl == com.synckolab.global.LOG_ERROR)
+	if (com.synckolab.config.DEBUG_SYNCKOLAB || clvl == com.synckolab.global.LOG_ERROR)
 	{
-		if (global.PERFLOG_SYNCKOLAB == true)
+		if (com.synckolab.config.PERFLOG_SYNCKOLAB == true)
 		{
-			if (start == -1)
+			if (this.logStart == -1)
 			{
-				start = (new Date()).getTime();
-				lastmsg = start;
+				this.logStart = (new Date()).getTime();
+				this.lastmsg = this.logStart;
 			}
 			var cTime = (new Date()).getTime();
-			if (cTime - lastmsg != 0)
+			if (cTime - this.lastmsg != 0)
 			{			
-				msg = (cTime - lastmsg) + " - " + msg;
-				lastmsg = cTime;
+				msg = (cTime - this.lastmsg) + " - " + msg;
+				this.lastmsg = cTime;
 			}
 		}
 		// report errors as error
 		if (clvl == com.synckolab.global.LOG_ERROR && Components.utils.reportError)
 			Components.utils.reportError(msg);
 		else
-			global.consoleService.logStringMessage(msg);		
+			com.synckolab.global.consoleService.logStringMessage(msg);		
 	}
 
 	// pause the sync on error if defined by globals
@@ -107,10 +107,6 @@ scrollToBottom : function ()
 			com.synckolab.global.wnd.document.getElementById('itemList').ensureIndexIsVisible(lastItemPos);
 		}
 	}
-},
-
-checkExist: function(value)	{
-	return (value != null && value != "");
 },
 
 
@@ -298,12 +294,12 @@ generateMail: function (cid, mail, adsubject, mime, part, content, hr){
 		return null;
 
 	var msg = "";
-	var bound = get_randomVcardId();
+	var bound = com.synckolab.tools.text.randomVcardId();
 	var cdate = new Date();
 	var sTime = (cdate.getHours()<10?"0":"") + cdate.getHours() + ":" + (cdate.getMinutes()<10?"0":"") + cdate.getMinutes() + ":" +
 	(cdate.getSeconds()<10?"0":"") + cdate.getSeconds();		
-	var sdate = "Date: " + getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " +
-	getMonthString (cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime
+	var sdate = "Date: " + com.synckolab.tools.text.getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " +
+	com.synckolab.tools.text.getMonthString (cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime
 	+ " " + ((cdate.getTimezoneOffset() < 0)?"+":"-") +
 	(Math.abs(cdate.getTimezoneOffset()/60)<10?"0":"") + Math.abs(cdate.getTimezoneOffset()/60) +"00\n"; 
 
@@ -325,7 +321,7 @@ generateMail: function (cid, mail, adsubject, mime, part, content, hr){
 	// card/ical are encoded quoted printable
 	if (!part)
 		msg += "Content-Transfer-Encoding: quoted-printable\n";
-	msg += "User-Agent: SyncKolab " + gSyncKolabVersion + "\n";
+	msg += "User-Agent: SyncKolab " + com.synckolab.global.version + "\n";
 	if (part)
 		msg += "X-Kolab-Type: "+mime+"\n";
 	msg += "\n";
@@ -642,7 +638,7 @@ com.synckolab.tools.readSyncDBFile = function (file)
 		return null;
 	}
 
-	if ((!file.exists()) || (!file.isReadable()))
+	if (!file.exists() || !file.isReadable())
 		return null;
 
 	try
@@ -838,7 +834,7 @@ com.synckolab.dataBase.prototype.write = function(file) {
 	if (this.dbf.exists()) 
 		this.dbf.remove(true);
 	
-	dbf.create(dbf.NORMAL_FILE_TYPE, 0640);
+	this.dbf.create(this.dbf.NORMAL_FILE_TYPE, 0640);
 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
 	stream.init(this.dbf, 2, 0x200, false); // open as "write only"
 	// start iteration
@@ -847,10 +843,10 @@ com.synckolab.dataBase.prototype.write = function(file) {
 	while ((entry = this.db.next()) != null)
 	{
 		// skip "empty" fields
-		var s = this.entry[0];
-		for (var j = 1; this.entry[j]; j++)
+		var s = entry[0];
+		for (var j = 1; entry[j]; j++)
 		{
-			var fv = this.entry[j];
+			var fv = entry[j];
 			// encode :
 			if (fv.replace)
 			{
@@ -893,14 +889,15 @@ com.synckolab.hashMap.prototype.iterate = function() {
 com.synckolab.hashMap.prototype.next = function() {
 	// check if we still have room in the current hash
 	this.idx++;
-	while (this.idx >= this.array[hashIdx].length)
+	while (this.idx >= this.array[this.hashIdx].length)
 	{
 		this.hashIdx++;
 		this.idx = 0;
+		
+		// finished
+		if (this.hashIdx >= this.seed)
+			return null;
 	}
-	// finished
-	if (this.hashIdx > this.seed)
-		return null;
 	
 	return this.array[this.hashIdx][this.idx];
 };

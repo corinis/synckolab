@@ -163,7 +163,7 @@ com.synckolab.AddressBook = {
 		}
 		
 		// we got the address book in gAddressBook
-		this.dbFile = com.synckolab.tools.getHashDataBaseFile (config + ".ab");
+		this.dbFile = com.synckolab.tools.file.getHashDataBaseFile (config + ".ab");
 		
 		// get the sync config
 		this.gConfig = config;
@@ -415,17 +415,17 @@ com.synckolab.AddressBook = {
 			// this card is already in the address book
 			{
 				// make sure to ONLY read the info.. do not get the extra fields from there
-				var cCard = parseMessage(readSyncDBFile(cEntry), null, this.gCardDB);
+				var cCard = this.tools.parseMessage(com.synckolab.tools.readSyncDBFile(cEntry), null, this.gCardDB);
 				
 				// compare each card with each other
-				if (cEntry.exists() && !equalsContact(cCard, aCard) && !equalsContact(cCard, newCard) )
+				if (cEntry.exists() && !this.tools.equalsContact(cCard, aCard) && !this.tools.equalsContact(cCard, newCard) )
 				{
 					//local and server were both updated, ut oh, what do we want to do?
 					com.synckolab.tools.logMessage("Conflicts detected, testing for autoresolve.", com.synckolab.global.LOG_WARNING + com.synckolab.global.LOG_AB);
 					
 					//	This function returns an array on conflicting fields
-					var conflicts = contactConflictTest(newCard,aCard);
-										
+					var conflicts = com.synckolab.addressbookTools.contactConflictTest(newCard,aCard);
+
 					//If there were no conflicts found, skip dialog and update the local copy (Changes to the way the SHA are calculated could cause this)
 					if ( conflicts.length > 0 ) {
 
@@ -437,7 +437,7 @@ com.synckolab.AddressBook = {
 						if (this.gConflictResolve = 'server')
 							conflictResolution.result = 1;
 						else
-						if (this.gConflictResolve = 'client')												
+						if (this.gConflictResolve = 'client')
 							conflictResolution.result = 2;
 						else
 							var conflictDlg = window.openDialog("chrome://synckolab/content/contactConflictDialog.xul","conflictDlg","chrome,modal,resizable=1,width=600,height=400",conflicts,conflictResolution,newCard,aCard);
@@ -528,7 +528,7 @@ com.synckolab.AddressBook = {
 				}
 				else
 				// we got that already, see which to update (server change if db == local != server)
-				if (!cEntry.exists() || (equalsContact(cCard, aCard) && !equalsContact(cCard, newCard)))
+				if (!cEntry.exists() || (this.tools.equalsContact(cCard, aCard) && !this.tools.equalsContact(cCard, newCard)))
 				{
 					com.synckolab.tools.logMessage("server changed: " + this.tools.getUID(aCard), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 					
@@ -562,7 +562,7 @@ com.synckolab.AddressBook = {
 						}
 						catch (de)
 						{
-						    com.synckolab.tools.logMessage("problem with local update for - skipping" + this.tools.getUID(aCard), com.synckolab.global.LOG_WARNING + com.synckolab.global.LOG_AB);
+							com.synckolab.tools.logMessage("problem with local update for - skipping" + this.tools.getUID(aCard), com.synckolab.global.LOG_WARNING + com.synckolab.global.LOG_AB);
 						}
 						
 					}
@@ -585,7 +585,7 @@ com.synckolab.AddressBook = {
 				}
 				else
 				// is the db file equals server, but not local.. we got a local change
-				if (cEntry.exists() && !equalsContact(cCard, aCard) && equalsContact(cCard, newCard))
+				if (cEntry.exists() && !this.tools.equalsContact(cCard, aCard) && this.tools.equalsContact(cCard, newCard))
 				{
 					com.synckolab.tools.logMessage("client changed: " + this.tools.getUID(aCard) + cCard.primaryEmail, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 					
@@ -645,7 +645,7 @@ com.synckolab.AddressBook = {
 				return false;
 			}
 		}
-							
+
 		return true;
 	},
 	
@@ -734,7 +734,7 @@ com.synckolab.AddressBook = {
 			
 			// look at new card
 			// generate a unique id (will random be enough for the future?)
-			setUID(curItem, "pas-id-" + get_randomVcardId());
+			setUID(curItem, "sk-vc-" + com.synckolab.tools.text.randomVcardId());
 			if (cur.isMailList)
 				com.synckolab.tools.logMessage("adding unsaved list: " + this.tools.getUID (curItem), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 			else

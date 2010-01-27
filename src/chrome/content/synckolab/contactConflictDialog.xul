@@ -10,14 +10,15 @@
 
 <dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         buttons="accept,cancel"
-        ondialogaccept="return doOK();"
-        ondialogcancel="return doCancel();"
+        ondialogaccept="return com.synckolab.contactConflict.doOK();"
+        ondialogcancel="return com.synckolab.contactConflict.doCancel();"
         buttonlabelcancel="Skip"
-        onload="init();"
+        onload="com.synckolab.contactConflict.init();"
         persist="screenX screenY"
         title="&synckolab.contactConflict.dialogTitle;">
 
 <script type="application/x-javascript" src="chrome://synckolab/content/contactConflictDialogCode.js"/>
+<script type="application/x-javascript" src="chrome://synckolab/content/addressbookTools.js"/>
 
 <vbox>
 	<label value="&synckolab.contactConflict.dialogMessage;"/>
@@ -243,8 +244,8 @@
 </scrollbox>
 
 <box align="left">
-	<button label="Keep Server" oncommand="keepServer(); return false;"/>
-	<button label="Keep Local" oncommand="keepLocal(); return false;"/>
+	<button label="Keep Server" oncommand="com.synckolab.contactConflict.keepServer(); return false;"/>
+	<button label="Keep Local" oncommand="com.synckolab.contactConflict.keepLocal(); return false;"/>
 </box>
 
 </dialog>

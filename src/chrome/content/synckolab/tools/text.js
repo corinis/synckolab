@@ -56,12 +56,16 @@ com.synckolab.tools.text = {
 	},
 
 	nodeWithContent: function (nodeName, nodeValue, createNonExist) {
-		if (!createNonExist && !checkExist (nodeValue))
+		if (!createNonExist && !this.checkExist (nodeValue))
 			return "";
 		
-		return "<"+nodeName+">" + (checkExist (nodeValue)?this.encode4XML(nodeValue):"") + "</"+nodeName+">\n";
+		return "<"+nodeName+">" + (this.checkExist (nodeValue)?this.encode4XML(nodeValue):"") + "</"+nodeName+">\n";
 	},
 	
+	checkExist: function(value)	{
+		return (value != null && value != "");
+	},
+
 	trim : function(s) { return s.replace(/^\s+|\s+$/g, ''); },
 
 	/**

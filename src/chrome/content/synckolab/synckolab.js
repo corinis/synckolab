@@ -212,15 +212,18 @@ var curStep;
 		configName: null
 };
 */
+	com.synckolab.global.consoleService.logStringMessage("running synckolab V "+com.synckolab.config.version+" with debug level " + com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL);
 
   
 
 	// avoid race condition with manual switch (only timer has a this.forceConfig)
-	if (event != "timer" && this.forceConfig != null)
+	if (com.synckolab.global.running == true)
 	{
 		com.synckolab.tools.logMessage("Ignoring run - there is already an instance!", com.synckolab.global.LOG_WARNING);
 		return;
 	}
+	
+	com.synckolab.global.running = true;
 
 	// in case this wasnt called via timer - its a manual sync
 	if (event != "timer")
@@ -233,7 +236,7 @@ var curStep;
 	if (this.doHideWindow)
 		gWnd = null;
 	else
-		gWnd = window.open("chrome://synckolab/content/progressWindow.xul", "bmarks", "chrome,width=350,height=350,resizable=1");
+		gWnd = window.open("chrome://synckolab/content/progressWindow.xul", "bmarks", "chrome,width=500,height=350,resizable=1");
 	
 	// remember it global as well
 	com.synckolab.global.wnd = gWnd;
@@ -619,6 +622,9 @@ function nextSync()
 			this.forceConfig = null;
 			this.doHideWindow = false;
 		}
+		
+		// set running state to done
+		com.synckolab.global.running = false;
 		return;
 	}
 	
