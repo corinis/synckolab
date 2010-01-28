@@ -594,11 +594,11 @@ com.synckolab.Calendar = {
 			var cur = this.gEvents.events[this.gCurEvent++];
 			var msg = null;
 			var writeCur = true;
-		    
+		
 			this.tools.logMessage ("nextUpdate for "+ ((this.syncTasks==true)?"task":"event") +":" + cur.id, this.global.LOG_CAL + this.global.LOG_DEBUG);
 
 			// check if we can skip this entry	(make sure we got a start and enddate.. otherwise it will fail)
-			var endDate = getEndDate(cur, this.syncTasks);		
+			var endDate = this.calTools.getEndDate(cur, this.syncTasks);		
 				
 			if (endDate != null && this.gSyncTimeFrame > 0 && (endDate.getTime() + (this.gSyncTimeFrame * 86400000) < (new Date()).getTime()))
 			{
@@ -607,7 +607,7 @@ com.synckolab.Calendar = {
 			}
 			
 			/* skip if event is PRIVATE */
-			if (isPrivateEvent(cur)) {
+			if (this.calTools.isPrivateEvent(cur)) {
 				this.tools.logMessage("skipping event because it is marked as PRIVATE: " + cur.id, this.global.LOG_CAL + this.global.LOG_INFO);
 				return null;
 			}

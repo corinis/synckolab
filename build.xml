@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ====================================================================== 
+     Dec 21, 2009 5:30:28 PM                                                        
+
+     SyncKolab    
+     Sync your contacts with imap
+                   
+     gargan                                                                
+     ====================================================================== -->
+<project name="SyncKolab" default="default">
+    <description>
+            Sync your contacts with imap
+    </description>
+	<property name="version" value="1.5.0"/>	
+
+    <!-- ================================= 
+          target: default              
+         ================================= -->
+    <target name="default" depends="depends" description="Sync your contacts with imap">
+    	<delete>
+    		<fileset dir="build">
+        		<include name="**/*.*"/>
+    		</fileset>
+    	</delete>
+        <copy todir="build">
+        	<fileset dir="src">
+        		<include name="**/*.*"/>
+        	</fileset>
+        </copy>
+    	<zip destfile="build/chrome/synckolab.jar" basedir="build/chrome"/>
+    	<zip destfile="synckolab-${version}.xpi" basedir="build"/>
+    </target>
+
+	<target name="nightly" description="nighlty build">
+		
+        <copy todir="build">
+        	<fileset dir="src">
+        		<include name="**/*.*"/>
+        	</fileset>
+        </copy>
+		<replace dir="build" value="http://www.gargan.org/extensions/update.rdf">
+			<include name="**/*.*"/>
+		</replace>
+		
+    	<zip destfile="synckolab-AMO-${version}.xpi"/>
+	</target>
+    <!-- - - - - - - - - - - - - - - - - - 
+          target: depends                      
+         - - - - - - - - - - - - - - - - - -->
+    <target name="depends">
+    </target>
+
+</project>

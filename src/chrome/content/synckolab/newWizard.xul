@@ -138,11 +138,11 @@
 			<description style="width: 350px">
 				&synckolab.wizard.LongDescription;
 			</description>
-	    	<separator class="thin"/>
+		<separator class="thin"/>
 			<description style="width: 350px">
 				&synckolab.settings.AccountDescription;
 			</description>
-	    	<hbox>
+			<hbox>
 				<label value="&synckolab.settings.Account;"/>
 				<menulist id="ImapAcct" tooltiptext="&synckolab.settings.imapAcctTip;" oncommand="checkAccount()" >
 				</menulist> 

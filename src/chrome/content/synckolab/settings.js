@@ -630,12 +630,6 @@ com.synckolab.settings = {
 				{
 					com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab."+config+".autoSync' failed: " + ex, com.synckolab.global.LOG_WARNING);
 				}
-				// set the state
-				try {
-					document.getElementById("syncInterval").setAttribute("disabled", pref.prefIsLocked("SyncKolab."+config+".autoSync"));
-				} catch (ex) {
-					com.synckolab.tools.logMessage("WARNING: failed to read state of SyncKolab."+config+".autoSync: " + ex, com.synckolab.global.LOG_WARNING);
-				}
 		
 				// default do hide the window
 				document.getElementById ("hiddenWnd").checked = true;

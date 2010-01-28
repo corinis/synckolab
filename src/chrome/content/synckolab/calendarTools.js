@@ -169,8 +169,8 @@ com.synckolab.calendarTools = {
 	},
 
 	isPublicEvent: function(levent) {
-		return (levent && !isPrivateEvent(levent) && 
-				!isConfidentialEvent(levent));
+		return (levent && !this.isPrivateEvent(levent) && 
+				!this.isConfidentialEvent(levent));
 	},
 
 	/**
@@ -230,18 +230,18 @@ com.synckolab.calendarTools = {
 	 */
 	checkEventServerDeletion: function(fevent, revent, lsyncCalendar) {
 		return (revent && 
-				allowSyncEvent(fevent, revent, lsyncCalendar) && 
-				isPrivateEvent(fevent));
+				this.allowSyncEvent(fevent, revent, lsyncCalendar) && 
+				this.isPrivateEvent(fevent));
 	},
 
 	/**
 	 * delete event on Server and database but not in Thunderbird calendar
 	 */
 	deleteEventOnServer: function(fevent, pevent, lsyncCalendar) {
-		if (!checkEventServerDeletion(fevent, pevent, lsyncCalendar))
+		if (!this.checkEventServerDeletion(fevent, pevent, lsyncCalendar))
 			return false;
-		var eventry = getSyncDbFile(lsyncCalendar.gConfig, lsyncCalendar.getType(), fevent.id);
-		var fentry = getSyncFieldFile(lsyncCalendar.gConfig, lsyncCalendar.getType(), fevent.id);
+		var eventry = com.synckolab.tools.getSyncDbFile(lsyncCalendar.gConfig, lsyncCalendar.getType(), fevent.id);
+		var fentry = com.synckolab.tools.getSyncFieldFile(lsyncCalendar.gConfig, lsyncCalendar.getType(), fevent.id);
 		if (eventry.exists())
 			eventry.remove(false);
 		if (fentry.exists())
@@ -267,8 +267,8 @@ com.synckolab.calendarTools = {
 	 * prepare event for export 
 	 */
 	modifyEventOnExport: function(levent, lsyncCalendar) {
-		levent = insertOrganizer(levent, lsyncCalendar);
-		levent = modifyDescriptionOnExport(levent, lsyncCalendar.syncTasks);
+		levent = this.insertOrganizer(levent, lsyncCalendar);
+		levent = this.modifyDescriptionOnExport(levent, lsyncCalendar.syncTasks);
 		return levent;
 	},
 
@@ -277,11 +277,11 @@ com.synckolab.calendarTools = {
 	 **/
 	checkEventOnDeletion: function(levent, pevent, lsyncCalendar) { 
 
-		if (deleteEventOnServer(levent, pevent, lsyncCalendar)) 
+		if (this.deleteEventOnServer(levent, pevent, lsyncCalendar)) 
 			return "DELETEME";
-		if (!checkEventBeforeSync(levent, pevent, lsyncCalendar)) 
+		if (!this.checkEventBeforeSync(levent, pevent, lsyncCalendar)) 
 			return null;
-		return modifyDescriptionOnExport(levent, lsyncCalendar.syncTasks);
+		return this.modifyDescriptionOnExport(levent, lsyncCalendar.syncTasks);
 	}
 
 
@@ -328,7 +328,7 @@ com.synckolab.calendarTools.message2Event = function(fileContent, extraFields, s
 	{
 		fileContent = com.synckolab.tools.text.utf8.decode(com.synckolab.tools.text.quoted.decode(fileContent));
 		 // this.format == 'iCal'
-		parsedEvent = ical2event(fileContent, syncTasks);
+		parsedEvent = this.ical2event(fileContent, syncTasks);
 	}
 	return parsedEvent;
 };
@@ -542,14 +542,14 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 					// sometimes we have <body></body> in the XML
 					if (cur.firstChild)
 					{
-					  	var cnotes = cur.getFirstData();
+						var cnotes = cur.getFirstData();
 						this.setKolabItemProperty(event, "DESCRIPTION", cnotes);
 					}
 					break;
 		
 				case "CREATOR":
-			  		this.setKolabItemProperty(event, "X-KOLAB-CREATOR-DISPLAY-NAME", cur.getXmlResult("DISPLAY-NAME", ""));
-			  		this.setKolabItemProperty(event, "X-KOLAB-CREATOR-SMTP-ADDRESS", cur.getXmlResult("SMTP-ADDRESS", ""));
+					this.setKolabItemProperty(event, "X-KOLAB-CREATOR-DISPLAY-NAME", cur.getXmlResult("DISPLAY-NAME", ""));
+					this.setKolabItemProperty(event, "X-KOLAB-CREATOR-SMTP-ADDRESS", cur.getXmlResult("SMTP-ADDRESS", ""));
 					break;
 					
 				case "ORGANIZER":
@@ -777,7 +777,7 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 									if (rangeSpec != "dummy")
 									{
 										// XML type is Date, not DateTime
-										recRule.endDate = string2CalDate(rangeSpec);
+										recRule.endDate = com.synckolab.tools.text.string2CalDate(rangeSpec);
 									}
 									else
 										recRule.count = -1;
@@ -940,7 +940,7 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
 	//	- yearly recurrence
 	
 	var isAllDay = (syncTasks==true)?false:(event.startDate?event.startDate.isDate:false);
-	var endDate = getEndDate(event, syncTasks);
+	var endDate = this.getEndDate(event, syncTasks);
 
 	// correct the end date for all day events before writing the XML object
 	// Kolab uses for 1-day-event:
