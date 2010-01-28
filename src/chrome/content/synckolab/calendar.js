@@ -278,7 +278,7 @@ com.synckolab.Calendar = {
 		if (this.itemList != null)
 		{
 			this.itemList.appendChild(this.curItemInList);
-			scrollToBottom();
+			com.synckolab.tools.scrollToBottom();
 		}
 		
 		// this is an array of arrays that hold fieldname+fielddata of until-now-unknown fields
@@ -316,9 +316,9 @@ com.synckolab.Calendar = {
 		this.tools.logMessage("findevent returned :" + foundEvent + "(" + (foundEvent == null?'null':foundEvent.id) + ") for " + parsedEvent.id + " caching " + this.gCalDB.length() + " events", this.global.LOG_CAL + this.global.LOG_DEBUG);
 				
 		// get the dbfile from the local disk
-		var idxEntry = getSyncDbFile(this.gConfig, this.getType(), parsedEvent.id);
+		var idxEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, this.getType(), parsedEvent.id);
 		// ... and the field file
-		var fEntry = getSyncFieldFile(this.gConfig, this.getType(), parsedEvent.id);
+		var fEntry = com.synckolab.tools.file.getSyncFieldFile(this.gConfig, this.getType(), parsedEvent.id);
 
 		this.tools.logMessage("idxEntry:" + idxEntry, this.global.LOG_CAL + this.global.LOG_DEBUG);
 		
@@ -379,8 +379,8 @@ com.synckolab.Calendar = {
 			var hasEntry = idxEntry.exists() && (cEvent != null);
 			// make sure cEvent is not null, else the comparision will fail
 			this.tools.logMessage("Start comparing events....", this.global.LOG_CAL + this.global.LOG_DEBUG);
-			var equal2parsed = hasEntry && equalsEvent(cEvent, parsedEvent, this.syncTasks, this.email);
-			var equal2found = hasEntry && equalsEvent(cEvent, foundEvent, this.syncTasks, this.email);
+			var equal2parsed = hasEntry && this.calTools.equalsEvent(cEvent, parsedEvent, this.syncTasks, this.email);
+			var equal2found = hasEntry && this.calTools.equalsEvent(cEvent, foundEvent, this.syncTasks, this.email);
 			this.tools.logMessage ("cEvent==parsedEvent: " + equal2parsed + "\ncEvent==foundEvent: " + equal2found,  this.global.LOG_CAL + this.global.LOG_DEBUG);
 			
 			if (hasEntry && !equal2parsed && !equal2found)
@@ -421,8 +421,8 @@ com.synckolab.Calendar = {
 						if (this.gEvents.events[i].id == parsedEvent.id)
 						{
 							try {
-							    // modify the item - catch exceptions due to triggered alarms
-							    // because they will break the sync process
+								// modify the item - catch exceptions due to triggered alarms
+								// because they will break the sync process
 								this.gCalendar.modifyItem(parsedEvent, foundEvent, this.gEvents);
 							} catch (e) {
 								this.tools.logMessage("gCalendar.modifyItem() failed: " + e, this.global.LOG_CAL + this.global.LOG_WARNING);
@@ -441,14 +441,14 @@ com.synckolab.Calendar = {
 					this.tools.logMessage ("put event on server: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
 					
 					// first check privacy info
-					var foundEvent = checkEventOnDeletion(foundEvent, parsedEvent, this);
+					var foundEvent = this.calTools.checkEventOnDeletion(foundEvent, parsedEvent, this);
 					if (!foundEvent || foundEvent == "DELETEME")
 						return foundEvent;
 					
 					var msg = null;
 					if (this.format == "Xml")
 					{
-						msg = event2kolabXmlMsg(foundEvent, this.email, this.syncTasks);
+						msg = this.calTools.event2kolabXmlMsg(foundEvent, this.email, this.syncTasks);
 					} 
 					else
 					{
@@ -520,14 +520,14 @@ com.synckolab.Calendar = {
 				{
 					this.tools.logMessage("event on client changed: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
 	
-					var foundEvent = checkEventOnDeletion(foundEvent, parsedEvent, this);
+					var foundEvent = this.calTools.checkEventOnDeletion(foundEvent, parsedEvent, this);
 					if (!foundEvent || foundEvent == "DELETEME")
 						return foundEvent;
 					
 					var msg = null;
 					if (this.format == "Xml")
 					{
-						msg = event2kolabXmlMsg(foundEvent, this.email, this.syncTasks);
+						msg = this.calTools.event2kolabXmlMsg(foundEvent, this.email, this.syncTasks);
 					} 
 					else
 					{
@@ -634,7 +634,7 @@ com.synckolab.Calendar = {
 			{
 				this.tools.logMessage("nextUpdate decided to write event:" + cur.id, this.global.LOG_CAL + this.global.LOG_INFO);
 
-				var cEntry = getSyncDbFile	(this.gConfig, this.getType(), cur.id);
+				var cEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, this.getType(), cur.id);
 				
 				if (cEntry.exists() && !this.forceServerCopy)
 				{
@@ -665,7 +665,7 @@ com.synckolab.Calendar = {
 					if (this.itemList != null)
 					{
 						this.itemList.appendChild(this.curItemInList);
-						scrollToBottom();
+						com.synckolab.tools.scrollToBottom();
 					}
 					
 				}
@@ -687,7 +687,7 @@ com.synckolab.Calendar = {
 					if (this.itemList != null)
 					{
 						this.itemList.appendChild(this.curItemInList);
-						scrollToBottom();
+						com.synckolab.tools.scrollToBottom();
 					}
 				}
 			}
@@ -731,10 +731,9 @@ com.synckolab.Calendar = {
 				}
 				
 				this.tools.logMessage("New event:\n" + msg, this.global.LOG_CAL + this.global.LOG_DEBUG);
-				this.tools.logMessage("nextUpdate puts event into db (2):" + cur.id, this.global.LOG_CAL + this.global.LOG_INFO);
 				
 				// add the new event into the db
-				var cEntry = getSyncDbFile(this.gConfig, this.getType(), cur.id);
+				var cEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, this.getType(), cur.id);
 				com.synckolab.tools.writeSyncDBFile(cEntry, com.synckolab.tools.stripMailHeader(msg));
 
 			}
