@@ -144,7 +144,11 @@ com.synckolab.AddressBook = {
 				if (cn.hasMoreElements())
 					ABook = cn.getNext();
 				else
+				{
 					alert("Unable to find adress book.. please reconfigure!");
+					return;
+				}
+				
 				continue;
 			}
 			else
@@ -158,7 +162,10 @@ com.synckolab.AddressBook = {
 				if (cn.hasMoreElements())
 					ABook = cn.getNext();
 				else
+				{
 					alert("Unable to find adress book.. please reconfigure!");
+					return;
+				}
 			}
 		}
 		
