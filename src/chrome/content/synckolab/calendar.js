@@ -100,7 +100,7 @@ com.synckolab.Calendar = {
 		this.tools = com.synckolab.tools;
 		this.calTools = com.synckolab.calendarTools;
 
-		if (!calTools.isCalendarAvailable ())
+		if (!this.calTools.isCalendarAvailable ())
 			return;
 		
 		this.tools.logMessage("Initialising calendar...", this.global.LOG_INFO);
@@ -144,6 +144,8 @@ com.synckolab.Calendar = {
 			{
 				// calendar config
 				this.gSync = pref.getBoolPref("SyncKolab."+config+".syncCalendar");
+				com.synckolab.tools.logMessage("Calendar sync? " + this.gSync, com.synckolab.global.LOG_DEBUG);
+
 				if (this.gSync == false)
 					return;
 				this.folderPath = pref.getCharPref("SyncKolab."+config+".CalendarFolderPath");
@@ -167,11 +169,11 @@ com.synckolab.Calendar = {
 		}
 
 		// get the correct calendar instance
-		var calendars = com.synckolab.cal.tools.getCalendars();
+		var calendars = this.calTools.getCalendars();
 		for( var i = 0; i < calendars.length; i++ )
 		{
 			if (calendars[i].name == this.gCalendarName || 
-					fixNameToMiniCharset(calendars[i].name) == fixNameToMiniCharset(this.gCalendarName))
+					com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name) == com.synckolab.tools.text.fixNameToMiniCharset(this.gCalendarName))
 			{
 				this.gCalendar = calendars[i];
 				break;
@@ -184,9 +186,9 @@ com.synckolab.Calendar = {
 		// get the sync db
 		
 		if (this.syncTasks)
-			this.dbFile = com.synckolab.tools.file.getHashDataBaseFile (config + ".task");
+			this.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config + ".task");
 		else
-			this.dbFile = com.synckolab.tools.file.getHashDataBaseFile (config + ".cal");
+			this.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config + ".cal");
 			
 		this.gConfig = config;
 
@@ -220,13 +222,13 @@ com.synckolab.Calendar = {
 			// if no item has been read, onGetResult has never been called 
 			// leaving us stuck in the events chain
 			if (this.gEvents.events.length > 0)
-			    return true;
+				return true;
 			else
-			    return false;
+				return false;
 		}
 		else {
-		  alert("Please select a calender as sync target before trying to synchronize.");
-		  return false;
+			alert("Please select a calender as sync target before trying to synchronize.");
+			return false;
 		}
 	},
 	
@@ -235,10 +237,10 @@ com.synckolab.Calendar = {
 		events: new Array(),
 		sync: '',
 		onOperationComplete: function(aCalendar, aStatus, aOperator, aId, aDetail) {
-			this.tools.logMessage("operation "+(this.syncTasks == true?"tasks":"calendar")+": status="+aStatus + " Op=" + aOperator + " Detail=" + aDetail, this.global.LOG_DEBUG + this.global.LOG_CAL);
+			com.synckolab.tools.logMessage("operation "+(this.syncTasks == true?"tasks":"calendar")+": status="+aStatus + " Op=" + aOperator + " Detail=" + aDetail, com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_CAL);
 			},
 		onGetResult: function(aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {
-				this.tools.logMessage("got results: " + aCount + " items", this.global.LOG_DEBUG + this.global.LOG_CAL);
+				com.synckolab.tools.logMessage("got results: " + aCount + " items", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_CAL);
 				for (var i = 0; i < aCount; i++) {
 					this.events.push(aItems[i]);
 				}

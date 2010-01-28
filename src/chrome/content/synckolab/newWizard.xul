@@ -7,14 +7,10 @@
 
 	<script type="application/x-javascript" src="chrome://synckolab/content/tools.js"/>
 	<script type="application/x-javascript" src="chrome://synckolab/content/calendarTools.js"/>
+	<script type="application/x-javascript" src="chrome://synckolab/content/config.js"/>
 	<script type="application/x-javascript" src="chrome://synckolab/content/contactTools.js"/>
 	<script type="application/x-javascript" src="chrome://synckolab/content/tools/sha1.js"/>
 	<script type="application/x-javascript" src="chrome://synckolab/content/tools/text.js"/>
-	<script type="application/x-javascript" src="chrome://synckolab/content/jslib/jslib.js"/>
-	
-	<script type="application/x-javascript" src="chrome://synckolab/content/jslib/io/io.js"/>
-	<script type="application/x-javascript" src="chrome://synckolab/content/jslib/rdf/rdf.js"/>
-	<script type="application/x-javascript" src="chrome://synckolab/content/jslib/rdf/rdfFile.js"/>
 	<script type="application/x-javascript" src="chrome://synckolab/content/settings.js"/>
 	
 	<script>
@@ -100,8 +96,8 @@
 			if (doneInit)
 				return;
 
-			isCalendar = com.synckolab.calendarTools.isCalendarAvailable() ();
-			prefillFields();
+			isCalendar = com.synckolab.calendarTools.isCalendarAvailable();
+			com.synckolab.settings.prefillFields();
 			doneInit = true;
 		}
 	</script>
@@ -110,11 +106,11 @@
 		</description>
 		<label value="&synckolab.settings.Updates;"/>
 		<label class="text-link" onclick="LaunchUrl('http://www.gargan.org')">www.gargan.org</label>
-    	<separator class="thin"/>
-    	<hbox>
-    		<label value="&synckolab.newwizard.configName;"/>
-	    	<textbox id="configName" onkeyup="checkConfigName(this.value);"/>
-    	</hbox>
+		<separator class="thin"/>
+		<hbox>
+			<label value="&synckolab.newwizard.configName;"/>
+			<textbox id="configName" onkeyup="checkConfigName(this.value);"/>
+		</hbox>
 		<description style="width: 350px">
 			&synckolab.newwizard.descName;
 		</description>
@@ -179,7 +175,7 @@
 		function checkCalendar()
 		{
 			// disable options
-			if (isCalendarAvailable() != true)
+			if (com.synckolab.calendarTools.isCalendarAvailable() != true)
 			{
 				document.getElementById ("syncCalendar").checked = false;
 				document.getElementById ("syncCalendar").disabled = true;

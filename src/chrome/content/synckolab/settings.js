@@ -519,28 +519,28 @@ com.synckolab.settings = {
 				
 				// get the calendar manager to find the right files
 				for( var i = 0; i < calendars.length; i++ )
-			    {
-		    		// only non-remote calendars - hey we are already doin remote sync here :)
+				{
+					// only non-remote calendars - hey we are already doin remote sync here :)
 					var abchild = document.createElement("menuitem");
 					abpopup.appendChild(abchild);
 					abchild.setAttribute("label", calendars[i].name);
-					abchild.setAttribute("value", fixNameToMiniCharset(calendars[i].name));
+					abchild.setAttribute("value", com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
 					if (i == 0)
 					{
 						abchild.setAttribute("selected", "true");
 						abList.setAttribute("label", calendars[i].name);
-						abList.setAttribute("value", fixNameToMiniCharset(calendars[i].name));
+						abList.setAttribute("value", com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
 					}
 		
 					abchild = document.createElement("menuitem");
 					taskpopup.appendChild(abchild);
 					abchild.setAttribute("label", calendars[i].name);
-					abchild.setAttribute("value", fixNameToMiniCharset(calendars[i].name));
+					abchild.setAttribute("value", com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
 					if (i == 0)
 					{
 						abchild.setAttribute("selected", "true");
 						taskList.setAttribute("label", calendars[i].name);
-						taskList.setAttribute("value", fixNameToMiniCharset(calendars[i].name));				
+						taskList.setAttribute("value", com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
 					}
 		    	}
 			}	

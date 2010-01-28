@@ -1588,7 +1588,7 @@ com.synckolab.addressbookTools.card2Human = function(card) {
 	var msg = "";
 
  	if (this.haveCardProperty(card, "FirstName") || this.haveCardProperty(card, "LastName"))
-		msg += "Name: " + this.getCardProperty(card, "LastName") + " " + this.getCardProperty(card, "FirstName") + "\n";
+		msg += "Name: " + (this.haveCardProperty(card, "LastName")?this.getCardProperty(card, "LastName") + " ":"") + (this.haveCardProperty(card, "FirstName")?this.getCardProperty(card, "FirstName"):"") + "\n";
 	else
 	if (this.haveCardProperty(card, "DisplayName"))
 		msg += "Name: " + this.getCardProperty(card, "DisplayName");

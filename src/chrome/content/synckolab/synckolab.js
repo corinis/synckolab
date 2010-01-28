@@ -321,8 +321,20 @@ function goWindow (wnd)
 	if (com.synckolab.calendarTools.isCalendarAvailable())
 	{
 		com.synckolab.tools.logMessage("Calendar available", com.synckolab.global.LOG_INFO);
-		include("chrome://calendar/content/importExport.js");
-		include("chrome://calendar/content/calendar.js");
+		var loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
+		                                .getService(Components.interfaces.mozIJSSubScriptLoader);
+		
+		// load calendar extensions
+		try {
+			loader.loadSubScript("chrome://calendar/content/importExport.js");
+		} catch (ioex) {
+			com.synckolab.tools.logMessage("Calendar Import/Export not available!", com.synckolab.global.LOG_WARNING);
+		}
+		try {
+			loader.loadSubScript("chrome://calendar/content/calendar.js");
+		} catch (ioex) {
+			com.synckolab.tools.logMessage("Calendar base not available!", com.synckolab.global.LOG_WARNING);
+		}
 	}
 	else
 		com.synckolab.tools.logMessage("Calendar not available - disabling", com.synckolab.global.LOG_INFO);
@@ -451,7 +463,7 @@ function nextSync()
 			window.setTimeout(nextSync, com.synckolab.config.SWITCH_TIME);	
 			return;
 		}
-		try
+		//try
 		{
 		
 			if (processMsg != null)
@@ -460,6 +472,8 @@ function nextSync()
 			com.synckolab.Calendar.syncTasks = false;
 			com.synckolab.Calendar.init(syncConfigs[curCalConfig]);
 			
+			com.synckolab.tools.logMessage("Done Calendar init...", com.synckolab.global.LOG_DEBUG);
+
 			// maybe we do not want to sync calendar in this config
 			if (!com.synckolab.Calendar.gSync)
 			{
@@ -469,14 +483,16 @@ function nextSync()
 				return;
 			}
 			else
-			{		
+			{
 				curCalConfig++;
-				com.synckolab.Calendar.folder = getMsgFolder(com.synckolab.Calendar.serverKey, com.synckolab.Calendar.folderPath);		
+				com.synckolab.Calendar.folder = com.synckolab.tools.getMsgFolder(com.synckolab.Calendar.serverKey, com.synckolab.Calendar.folderPath);		
 				com.synckolab.Calendar.folderMsgURI = com.synckolab.Calendar.folder.baseMessageURI;
-				com.synckolab.Calendar.email = getAccountEMail(com.synckolab.Calendar.serverKey);
-				com.synckolab.Calendar.name = getAccountName(com.synckolab.Calendar.serverKey);
+				com.synckolab.Calendar.email = com.synckolab.tools.getAccountEMail(com.synckolab.Calendar.serverKey);
+				com.synckolab.Calendar.name = com.synckolab.tools.getAccountName(com.synckolab.Calendar.serverKey);
 				
-		
+				com.synckolab.tools.logMessage("Calendar: getting calendar: " + com.synckolab.Calendar.gCalendar.name + 
+						"\nMessage Folder: " + com.synckolab.Calendar.folderMsgURI, com.synckolab.global.LOG_DEBUG);
+
 				// display stuff
 				if (gWnd != null)
 				{
@@ -502,14 +518,16 @@ function nextSync()
 				return;
 			}
 		}
+		/*
 		catch (ex)
 		{
 			// if an exception is found print it and continue
-			com.synckolab.tools.logMessage("Error setting calendar config: " + ex, com.synckolab.global.LOG_DEBUG);
+			com.synckolab.tools.logMessage("Error setting calendar config: " + ex, com.synckolab.global.LOG_ERROR);
 			curCalConfig++;
 			window.setTimeout(nextSync, com.synckolab.config.SWITCH_TIME);	
 			return;
 		}
+		*/
 	}
 	else
 	if (com.synckolab.calendarTools.isCalendarAvailable() && curTaskConfig < syncConfigs.length)
@@ -542,10 +560,10 @@ function nextSync()
 			}
 			else
 			{		
-				com.synckolab.Calendar.folder = getMsgFolder(com.synckolab.Calendar.serverKey, com.synckolab.Calendar.folderPath);		
+				com.synckolab.Calendar.folder = com.synckolab.tools.getMsgFolder(com.synckolab.Calendar.serverKey, com.synckolab.Calendar.folderPath);		
 				com.synckolab.Calendar.folderMsgURI = com.synckolab.Calendar.folder.baseMessageURI;
-				com.synckolab.Calendar.email = getAccountEMail(com.synckolab.Calendar.serverKey);
-				com.synckolab.Calendar.name = getAccountName(com.synckolab.Calendar.serverKey);
+				com.synckolab.Calendar.email = com.synckolab.tools.getAccountEMail(com.synckolab.Calendar.serverKey);
+				com.synckolab.Calendar.name = com.synckolab.tools.getAccountName(com.synckolab.Calendar.serverKey);
 				
 		
 				// display stuff
