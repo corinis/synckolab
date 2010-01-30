@@ -30,6 +30,8 @@ com.synckolab.global = {
 		
 		// pointer to the window
 		wnd : null, 
+		
+		isTbird3: true,
 
 		// string bundle use: strBundle.getString("KEYNAME") (init in synckolab.js)
 		strBundle: {},

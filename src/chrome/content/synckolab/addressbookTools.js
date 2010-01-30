@@ -57,7 +57,11 @@ com.synckolab.addressbookTools = {
 			// tbird 3
 			if (card.getProperty)
 			{
-				return card.getProperty(prop, null);
+				var prop = card.getProperty(prop, null);
+				// fix for "null" as string
+				if (prop == "null")
+					return null;
+				return prop;
 			}
 			else
 			{
@@ -314,7 +318,7 @@ com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 					break;
 
 				case "EMAIL":
-					com.synckolab.tools.logMessage("email: " + email + " - " + cur.getXmlResult("SMTP-ADDRESS", ""), this.global.LOG_DEBUG + this.global.LOG_AB);
+					//com.synckolab.tools.logMessage("email: " + email + " - " + cur.getXmlResult("SMTP-ADDRESS", ""), this.global.LOG_DEBUG + this.global.LOG_AB);
 					switch (email)
 					{
 						case 0:
@@ -498,9 +502,9 @@ com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 			default:
 				if (cur.firstChild == null)
 					break;
-				com.synckolab.tools.logMessage("XC FIELD not found: " + cur.nodeName + ":" + cur.getFirstData(), this.global.LOG_WARNING + this.global.LOG_AB);
-				if (extraFields != null && cur.nodeName != "product-id")
+				if (extraFields != null && cur.nodeName != "product-id" && cur.nodeName != "sensitivity")
 				{
+					com.synckolab.tools.logMessage("XC FIELD not found: " + cur.nodeName + ":" + cur.getFirstData(), this.global.LOG_WARNING + this.global.LOG_AB);
 					// remember other fields
 					extraFields.addField(cur.nodeName, cur.getFirstData());
 				}
@@ -804,13 +808,13 @@ com.synckolab.addressbookTools.card2Xml = function(card, fields) {
 	if (this.haveCardProperty(card, "BirthYear") && this.haveCardProperty(card, "BirthMonth") && this.haveCardProperty(card, "BirthDay"))
 	{
 		var adate = this.getCardProperty(card, "BirthYear") + "-" + this.getCardProperty(card, "BirthMonth") + "-" + this.getCardProperty(card, "BirthDay");
-		if (adate != "--")
+		if (adate != "--" && adate != "null-null-null")
 			xml += com.synckolab.tools.text.nodeWithContent("birthday", adate, false);
 	}
 	if(this.haveCardProperty(card, "AnniversaryYear") && this.haveCardProperty(card, "AnniversaryMonth") && this.haveCardProperty(card, "AnniversaryDay"))
 	{
 		var adate = this.getCardProperty(card, "AnniversaryYear") + "-" + this.getCardProperty(card, "AnniversaryMonth") + "-" + this.getCardProperty(card, "AnniversaryDay");
-		if (adate != "--")
+		if (adate != "--" && adate != "null-null-null")
 			xml += com.synckolab.tools.text.nodeWithContent("anniversary", adate, false);
 	}
 	if (this.haveCardProperty(card, "HomePhone"))
@@ -1004,7 +1008,10 @@ com.synckolab.addressbookTools.equalsContact = function(a, b) {
 		"Custom1","Custom2","Custom3","Notes");
 	
 	if (a.isMailList != b.isMailList)
+	{
+		com.synckolab.tools.logMessage ("not equals only one is a mailing list!", this.global.LOG_DEBUG + this.global.LOG_AB);
 		return;
+	}
 		
 	if (a.isMailList)
 		fieldsArray = new Array("listNickName", "description");
@@ -1012,22 +1019,32 @@ com.synckolab.addressbookTools.equalsContact = function(a, b) {
 	for(var i=0 ; i < fieldsArray.length ; i++ ) {
 		var sa = this.getCardProperty(a, fieldsArray[i]);
 		var sb = this.getCardProperty(b, fieldsArray[i]);
+		
+		// empty field is the same as null
+		if (sa == '')
+			sa = null;
+		if (sb == '')
+			sb = null;
+		
 		// null check
 		if (sa == null || sb == null)
 		{
 			if (sa == null && sb == null)
 				continue;
 			else
+			{
+				com.synckolab.tools.logMessage ("not equals " + fieldsArray[i] + " '" + sa + "' vs. '" + sb + "'", this.global.LOG_DEBUG + this.global.LOG_AB);
 				return false;
+			}
 		}
-				
-		// check if not equals
-		if (sa.length != sb.length || sa != sb)
+
+		// check if not equals 
+		if (sa != sb)
 		{
 			// if we got strings... maybe they only differ in whitespace
 			if (sa.replace)
 				// if they are equals without whitespace.. continue
-				if (sa.replace(/\s|(\\n)/g, "") == sb.replace(/\s|(\\n)/g, ""))
+				if (sa.replace(/\s|(\\n)| /g, "") == sb.replace(/\s|(\\n)| /g, ""))
 					continue;
 		
 			com.synckolab.tools.logMessage ("not equals " + fieldsArray[i] + " '" + sa + "' vs. '" + sb + "'", this.global.LOG_DEBUG + this.global.LOG_AB);
@@ -1035,11 +1052,6 @@ com.synckolab.addressbookTools.equalsContact = function(a, b) {
 		}
 	}
 	
-	// check for same contents
-	if (a.isMailList)
-	{
-		// TODO
-	}
 	return true;	
 };
 
@@ -1626,8 +1638,8 @@ com.synckolab.addressbookTools.card2Human = function(card) {
 		msg += "E-Mail:" + this.getCardProperty(card, "SecondEmail") + "\n";
 
 	if (this.haveCardProperty(card, "BirthYear") 
-		||this.haveCardProperty(card, "BirthDay") 
-		|| this.haveCardProperty(card, "BirthMonth"))
+		&& this.haveCardProperty(card, "BirthDay") 
+		&& this.haveCardProperty(card, "BirthMonth"))
 	{
 		msg += "Birthday: ";
 		msg += this.getCardProperty(card, "BirthYear") + "-";
@@ -1639,8 +1651,8 @@ com.synckolab.addressbookTools.card2Human = function(card) {
 		msg += this.getCardProperty(card, "BirthDay") + "\n";
 	}
 	if (this.haveCardProperty(card, "AnniversaryYear") 
-		||this.haveCardProperty(card, "AnniversaryDay") 
-		||this.haveCardProperty(card, "AnniversaryMonth"))
+		&& this.haveCardProperty(card, "AnniversaryDay") 
+		&& this.haveCardProperty(card, "AnniversaryMonth"))
 	{
 		msg += "Anniversary: ";
 		msg += this.getCardProperty(card, "AnniversaryYear") + "-";

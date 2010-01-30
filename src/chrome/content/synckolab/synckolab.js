@@ -1056,15 +1056,31 @@ function updateContent()
 		try
 		{
 			com.synckolab.tools.logMessage("deleting changed messages..", com.synckolab.global.LOG_INFO);
-			var list = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);
-			for (var i = 0; i < updateMessages.length; i++)
+			
+			var list = null;
+			// tbird 3 uses mutablearray
+			if (com.synckolab.global.isTbird3)
 			{
-				com.synckolab.tools.logMessage("deleting [" + updateMessages[i] + "]");
-				//var hdr = com.synckolab.global.messageService.messageURIToMsgHdr(updateMessages[i]);
-				list.AppendElement(updateMessages[i]);	
-
+				list = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
+				for (var i = 0; i < updateMessages.length; i++)
+				{
+					com.synckolab.tools.logMessage("deleting [" + updateMessages[i] + "]");
+					//var hdr = com.synckolab.global.messageService.messageURIToMsgHdr(updateMessages[i]);
+					list.appendElement(updateMessages[i], false);	
+				}
+				gSync.folder.deleteMessages (list, msgWindow, true, false, null, true);
 			}
-			gSync.folder.deleteMessages (list, msgWindow, true, false, null, true);		
+			else
+			{
+				list = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);
+				for (var i = 0; i < updateMessages.length; i++)
+				{
+					com.synckolab.tools.logMessage("deleting [" + updateMessages[i] + "]");
+					//var hdr = com.synckolab.global.messageService.messageURIToMsgHdr(updateMessages[i]);
+					list.AppendElement(updateMessages[i]);	
+				}
+				gSync.folder.deleteMessages (list, msgWindow, true, false, null, true);
+			}
 		}
 		catch (ex)
 		{
@@ -1236,10 +1252,16 @@ function writeContentAfterSave ()
 
 	com.synckolab.tools.logMessage("Setting all messages to read...", com.synckolab.global.LOG_INFO);
 	// before done, set all unread messages to read in the sync folder
-	if (gSync.folder.getMessages)	
+	if (gSync.folder.getMessages)
+	{
+		com.synckolab.global.isTbird3 = false;
 		gMessages = gSync.folder.getMessages(msgWindow);
+	}
 	else
+	{
+		com.synckolab.global.isTbird3 = true;
 		gMessages = gSync.folder.messages; // tbird 3 uses an enumerator property instead of a function
+	}
 
 	while (gMessages.hasMoreElements ())
 	{
