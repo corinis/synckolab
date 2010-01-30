@@ -1039,12 +1039,11 @@ com.synckolab.Node.prototype.getChildNode = function (name)
 	return null;
 };
 
-
 /**
  * return the value of the attribute with name "attrName" of the node "node"
  * or null, if no attribute with that name exists
  */
-com.synckolab.Node.prototype.getAttributeValue = function (attrName)
+com.synckolab.Node.prototype.getAttribute = function (attrName)
 {
 	if (this.node.hasAttributes())
 	{

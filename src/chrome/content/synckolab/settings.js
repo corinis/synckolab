@@ -440,8 +440,7 @@ com.synckolab.settings = {
 					actList.setAttribute("value", com.synckolab.tools.text.accountNameFix(account.prettyName));
 					isFirst = false;
 				}
-				
-			}	
+			}
 			
 			// the adress book list
 			// fill the contact selection
@@ -1525,7 +1524,7 @@ com.synckolab.settings = {
 		delConfig: function()
 		{
 			var config = this.curConfig;
-			if (confirm(strBundle.getFormattedString("configDelete", [config])))
+			if (confirm(this.strBundle.getFormattedString("configDelete", [config])))
 			{
 				// get the treechildren item
 				var tree = document.getElementById("configTree");

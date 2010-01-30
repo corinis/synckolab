@@ -42,7 +42,7 @@
 			if (taskFolder != null)
 				pref.setCharPref("SyncKolab."+confName+".TaskFolderPath", taskFolder);
 			
-			saveAllPrefs(confName);			
+			com.synckolab.settings.saveAllPrefs(confName);			
 			
 			// open settings dialog since we are finished
 			window.open('chrome://synckolab/content/synckolabPref.xul', 'options', 'chrome,resizable=1');
@@ -96,7 +96,7 @@
 			if (doneInit)
 				return;
 
-			isCalendar = com.synckolab.calendarTools.isCalendarAvailable();
+			com.synckolab.settings.isCalendar = com.synckolab.calendarTools.isCalendarAvailable();
 			com.synckolab.settings.prefillFields();
 			doneInit = true;
 		}
@@ -132,7 +132,7 @@
 		// set the folder views
 		function useAccount()
 		{
-			setFolders(document.getElementById("ImapAcct").value);
+			com.synckolab.settings.setFolders(document.getElementById("ImapAcct").value);
 		}
 	</script>
 			<description style="width: 350px">
@@ -190,15 +190,15 @@
 		<description style="width: 320px">
 			&synckolab.wizard.typePageContact;
 		</description>
-      <checkbox id="syncContacts" label="&synckolab.settings.SyncContacts;" tooltiptext="&synckolab.settings.SyncContactsTip;" oncommand="setControlStateContacts(this.checked)" checked="true"/>	
+		<checkbox id="syncContacts" label="&synckolab.settings.SyncContacts;" tooltiptext="&synckolab.settings.SyncContactsTip;" oncommand="setControlStateContacts(this.checked)" checked="true" />
 		<description style="width: 320px">
-			&synckolab.wizard.typePageCalendar;
+				&synckolab.wizard.typePageCalendar;
 		</description>
-      <checkbox id="syncCalendar" label="&synckolab.settings.SyncCalendar;" tooltiptext="&synckolab.settings.SyncCalendarTip;" oncommand="setControlStateCalendar(this.checked)" checked="true"/>	
+		<checkbox id="syncCalendar" label="&synckolab.settings.SyncCalendar;" tooltiptext="&synckolab.settings.SyncCalendarTip;" oncommand="setControlStateCalendar(this.checked)" checked="true" />
 		<description style="width: 320px">
-			&synckolab.wizard.typePageTasks;
+				&synckolab.wizard.typePageTasks;
 		</description>
-      <checkbox id="syncTasks" label="&synckolab.settings.SyncTasks;" tooltiptext="&synckolab.settings.SyncTasksTip;" oncommand="setControlStateTasks(this.checked)" checked="true"/>	
+		<checkbox id="syncTasks" label="&synckolab.settings.SyncTasks;" tooltiptext="&synckolab.settings.SyncTasksTip;" oncommand="setControlStateTasks(this.checked)" checked="true" />	
 	</wizardpage>
 	<wizardpage id="conPage" pageid="conPageId" onpageshow="noAdvance();checkWizConFolder()" description="&synckolab.wizard.conPageInfo;">
 		<script>
@@ -224,13 +224,13 @@
 			</menulist> 
 		</hbox>
 
-		<tree class="syncKolab" flex="7" id="conImapFolder" rows="7" height="100" width="350" hidecolumnpicker="true" seltype="single" onselect="setWizConFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
-      		<treecols>
-		      <treecol id="conFolder" label="&synckolab.settings.ContactFolder;" primary="true" flex="1"/>
-  			</treecols>  			
-		</tree>
-      
-        <checkbox id="saveToContactImap" label="&synckolab.settings.SaveToImap;" checked="true" tooltiptext="&synckolab.settings.SaveToImapTip;"/>
+	<tree class="syncKolab" flex="7" id="conImapFolder" rows="7" height="100" width="350" hidecolumnpicker="true" seltype="single" onselect="setWizConFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
+		<treecols>
+			<treecol id="conFolder" label="&synckolab.settings.ContactFolder;" primary="true" flex="1" />
+		</treecols>
+	</tree>
+
+	<checkbox id="saveToContactImap" label="&synckolab.settings.SaveToImap;" checked="true" tooltiptext="&synckolab.settings.SaveToImapTip;" />
 	</wizardpage>		
 	<wizardpage id="calPage" pageid="calPageId" onpageshow="noAdvance();checkWizCalFolder()" description="&synckolab.wizard.calPageInfo;">
 		<script>
@@ -255,15 +255,15 @@
 			<menulist id="calFormat" tooltiptext="&synckolab.settings.FormatTip;" flex="1">
 			</menulist> 
 		</hbox>
-    	<separator class="thin"/>
-      
-      <tree class="synckolab" flex="7" id="calImapFolder" rows="7" height="100" width="350" hidecolumnpicker="true" seltype="single" onselect="setWizCalFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
-      	<treecols>
-		      <treecol id="calFolder" label="&synckolab.settings.CalendarFolder;" primary="true" flex="1"/>
-  			</treecols>
-      </tree>
-
-      <checkbox id="saveToCalendarImap" label="&synckolab.settings.SaveToImap;" checked="true" tooltiptext="&synckolab.settings.SaveToImapTip;"/>
+		<separator class="thin" />
+	
+		<tree class="synckolab" flex="7" id="calImapFolder" rows="7" height="100" width="350" hidecolumnpicker="true" seltype="single" onselect="setWizCalFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
+			<treecols>
+				<treecol id="calFolder" label="&synckolab.settings.CalendarFolder;" primary="true" flex="1" />
+			</treecols>
+		</tree>
+	
+		<checkbox id="saveToCalendarImap" label="&synckolab.settings.SaveToImap;" checked="true" tooltiptext="&synckolab.settings.SaveToImapTip;" />
 	</wizardpage>
 	<wizardpage id="taskPage" pageid="taskPageId" onpageshow="noAdvance();checkWizTaskFolder()" description="&synckolab.wizard.taskPageInfo;">
 		<script>
@@ -289,12 +289,12 @@
 			</menulist> 
 		</hbox>
 
-      <tree class="synckolab" flex="7" id="taskImapFolder" rows="7" height="100" width="350" hidecolumnpicker="true" seltype="single" onselect="setWizTaskFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
-      	<treecols>
-		      <treecol id="taskFolder" label="&synckolab.settings.TaskFolder;" primary="true" flex="1"/>
-  			</treecols>
-      </tree>
-      <checkbox id="saveToTaskImap" label="&synckolab.settings.SaveToImap;" checked="true" tooltiptext="&synckolab.settings.SaveToImapTip;"/>
+	<tree class="synckolab" flex="7" id="taskImapFolder" rows="7" height="100" width="350" hidecolumnpicker="true" seltype="single" onselect="setWizTaskFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
+		<treecols>
+			<treecol id="taskFolder" label="&synckolab.settings.TaskFolder;" primary="true" flex="1" />
+		</treecols>
+	</tree>
+	<checkbox id="saveToTaskImap" label="&synckolab.settings.SaveToImap;" checked="true" tooltiptext="&synckolab.settings.SaveToImapTip;" />
 	</wizardpage>
 	<wizardpage id="donePage" pageid="donePageId" description="">
 		<description style="width: 350px">
