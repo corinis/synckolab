@@ -429,7 +429,7 @@ com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 					}
 					found = true;
 				break;
-			  case "BODY":
+			case "BODY":
 					if (cur.firstChild == null)
 						break;
 					
@@ -438,14 +438,14 @@ com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 					com.synckolab.tools.logMessage("cur.firstchild.data.length="+cur.firstChild.data.length + " - cnotes=" + cnotes.length + " - card.notes=" + this.getCardProperty(card, "Notes").length , this.global.LOG_DEBUG + this.global.LOG_AB);
 					found = true;
 				break;
-			  case "DEPARTMENT":
+			case "DEPARTMENT":
 					if (cur.firstChild == null)
 						break;
 					this.setCardProperty(card, "Department", cur.getFirstData());
 					found = true;
 				break;
 	
-			  case "WEB-PAGE":
+			case "WEB-PAGE":
 					if (cur.firstChild == null)
 						break;
 					this.setCardProperty(card, "WebPage1", cur.getFirstData());
@@ -459,13 +459,13 @@ com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 					found = true;
 					break;
 
-			  case "UID":
+			case "UID":
 				if (cur.firstChild == null)
 					break;
 				this.setCardProperty(card, "Custom4", cur.getFirstData());
 				break;
 
-			  case "CUSTOM1":
+			case "CUSTOM1":
 				if (cur.firstChild == null)
 					break;
 				this.setCardProperty(card, "Custom1", cur.getFirstData());
@@ -499,8 +499,11 @@ com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 				if (cur.firstChild == null)
 					break;
 				com.synckolab.tools.logMessage("XC FIELD not found: " + cur.nodeName + ":" + cur.getFirstData(), this.global.LOG_WARNING + this.global.LOG_AB);
-				// remember other fields
-				extraFields.addField(cur.nodeName, cur.getFirstData());
+				if (extraFields != null && cur.nodeName != "product-id")
+				{
+					// remember other fields
+					extraFields.addField(cur.nodeName, cur.getFirstData());
+				}
 				break;
 				
 			} // end switch
@@ -917,7 +920,7 @@ com.synckolab.addressbookTools.card2Xml = function(card, fields) {
 	// add extra/missing fields
 	if (fields != null)
 	{
-		msg += fields.toXmlString();
+		xml += fields.toXmlString();
 	}
 	
 	xml += "</contact>\n";
@@ -1379,12 +1382,13 @@ com.synckolab.addressbookTools.message2Card = function(lines, card, extraFields,
 				}
 				else
 				{
-					com.synckolab.tools.logMessage("additional email found: " + tok[1], this.global.LOG_WARNING + this.global.LOG_AB);	
-					extraFields.addField(tok[0], tok[1]);
+					com.synckolab.tools.logMessage("additional email found: " + tok[1], this.global.LOG_WARNING + this.global.LOG_AB);
+					if (extraFields != null)
+						extraFields.addField(tok[0], tok[1]);
 				}
 
 				found = true;
-		    break;
+				break;
 			case "X-EMAILFORMAT": 
 				// This will set the Email format to vCard, not part of vCard 3.0 spec, so the X- is there, I assume a Kolab server would just ignore this field
 				switch(tok[1]) {
@@ -1467,10 +1471,10 @@ com.synckolab.addressbookTools.message2Card = function(lines, card, extraFields,
 				found = true;
 			break;
 			
-		  case "ADR;TYPE=HOME,POSTAL":
-		  case "ADR;TYPE=HOME":
-		  case "ADR;HOME":
-		  case "ADR":
+		case "ADR;TYPE=HOME,POSTAL":
+		case "ADR;TYPE=HOME":
+		case "ADR;HOME":
+		case "ADR":
 				// ADR:POBox;Ext. Address;Address;City;State;Zip Code;Country
 				var cur = tok[1].split(";");
 				this.setCardProperty(card, "HomeAddress2", cur[1]);
@@ -1538,15 +1542,16 @@ com.synckolab.addressbookTools.message2Card = function(lines, card, extraFields,
 
 			
 		  // stuff we just do not parse :)
-		  case "":
-		  case "BEGIN":
-		  case "END":
-		  case "VERSION":
+		case "":
+		case "BEGIN":
+		case "END":
+		case "VERSION":
 			break;
 			
-		  default:
+		default:
 			com.synckolab.tools.logMessage("VC FIELD not found: " + tok[0] + ":" + tok[1], this.global.LOG_WARNING + this.global.LOG_AB);
-			extraFields.addField(tok[0], tok[1]);
+			if (extraFields != null)
+				extraFields.addField(tok[0], tok[1]);
 			break;
 		} // end switch
 	}

@@ -288,7 +288,7 @@ com.synckolab.tools.text = {
 			return "";
 	
 		var datetime = (val instanceof Date) ? val : val.jsDate;
-		var resultstring = date2String(datetime);
+		var resultstring = this.date2String(datetime);
 		if (!allday)
 		{
 			resultstring = datetime.getUTCFullYear() + "-" +

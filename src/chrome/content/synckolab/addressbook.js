@@ -169,15 +169,16 @@ com.synckolab.AddressBook = {
 			}
 		}
 		
-		// we got the address book in gAddressBook
+		// uid -> filename database - main functions needs to know the name
 		this.dbFile = com.synckolab.tools.file.getHashDataBaseFile (config + ".ab");
 		
 		// get the sync config
 		this.gConfig = config;
 		
-		// card hashmap
+		// a hashmap remembering all the cards - for faster use
 		this.gCardDB = new com.synckolab.hashMap();
 		
+		// cache all the cards with the uid in the CardDB hashmap
 		// fill the hashmap
 		var lCards = this.gAddressBook.childCards;
 		// tbird 2 has nsIAbDirectory.Cards
@@ -323,7 +324,7 @@ com.synckolab.AddressBook = {
 			return null;
 		}
 		
-		if (newCard) //message2Card (fileContent, newCard, messageFields)
+		if (newCard) 
 		{
 			// remember current uid
 			this.gCurUID = this.tools.getUID(newCard);
@@ -336,7 +337,7 @@ com.synckolab.AddressBook = {
 			this.curItemInListId.setAttribute("label", this.tools.getUID(newCard));
 			this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("checking"));
 			// since we disabled mailing list - wont come here
-			if (newCard.isMailList)			
+			if (newCard.isMailList)
 				this.curItemInListContent.setAttribute("label", com.synckolab.global.strBundle.getString("mailingList") + " " + newCard.listNickName);
 			else
 			if (newCard.displayName != "")
@@ -600,7 +601,7 @@ com.synckolab.AddressBook = {
 					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("updateOnServer"));
 					
 					// remember this message for update - generate mail message (incl. extra fields)
-					this.messageFields = new com.synckolab.database(fEntry);
+					this.messageFields = new com.synckolab.dataBase(fEntry);
 					var cContent = this.tools.card2Message(aCard, this.email, this.format, messageFields);
 
 					// write the current content in the sync-db file

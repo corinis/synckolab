@@ -111,6 +111,19 @@ scrollToBottom : function ()
 
 
 /**
+ * Return a boolean value telling whether
+ * the first argument is a string.
+ */ 
+isString: function (s) {
+	if (typeof s == 'string') return true;
+	if (typeof s == 'object') { 
+		var criterion = s.constructor.toString().match(/string/i); 
+		return (criterion != null); 
+	}
+	return false;
+},
+
+/**
  * Removes a possible mail header and extracts only the "real" content.
  * This also trims the message and removes some common problems (like -- at the end)
  */
@@ -552,7 +565,7 @@ com.synckolab.tools.file = {
 		var tempFolderResource = com.synckolab.global.rdf.GetResource(tempFolderUri);
 		var tempFolder = tempFolderResource.QueryInterface(Components.interfaces.nsIMsgFolder);
 		var np = tempFolder.path.nativePath;
-		var deletedArray = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);        
+		var deletedArray = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);
 		var parentArray = Components.classes["@mozilla.org/supports-array;1"].createInstance(Components.interfaces.nsISupportsArray);
 		deletedArray.AppendElement(tempFolderResource);
 		var parFolderResource = com.synckolab.global.rdf.GetResource(trashFolderUri);
@@ -583,7 +596,7 @@ com.synckolab.tools.file = {
 	getSyncDbFile: function (config, type, id)	{
 		if (id == null)
 		{
-			this.logMessage("Error: entry has no id (" +config + ": " + type + ")", com.synckolab.global.LOG_ERROR);	
+			this.logMessage("Error: entry has no id (" +config + ": " + type + ")", com.synckolab.global.LOG_ERROR);
 			return null;
 		}
 
@@ -646,7 +659,7 @@ com.synckolab.tools.readSyncDBFile = function (file)
 		// setup the input stream on the file
 		var istream = Components.classes["@mozilla.org/network/file-input-stream;1"]
 		                                 .createInstance(Components.interfaces.nsIFileInputStream);
-		istream.init(this.file, 0x01, 4, null);
+		istream.init(file, 0x01, 4, null);
 		var fileScriptableIO = Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance(Components.interfaces.nsIScriptableInputStream); 
 		fileScriptableIO.init(istream);
 		// parse the xml into our internal document
@@ -759,7 +772,6 @@ com.synckolab.dataBase = function (file) {
 			}
 			// add the hashmap
 			this.add(fv);
-			this.len++;
 		}
 
 };
@@ -769,18 +781,17 @@ com.synckolab.dataBase = function (file) {
  * returns the position of this entry in the db
  */
 com.synckolab.dataBase.prototype.get = function(key) {
-	for (var i = 0; this.db[i]; i++)
-	{
-		if (this.db[i] && key == this.db[i][0])
-			return this.db[i];
-	}
-	return null;
+	return this.db.get(key);
 };
 
 com.synckolab.dataBase.prototype.remove = function(entry) {
 	this.db.remove(entry[0]);
 };
 
+/**
+ * add an array - the first entry is the key!
+ * @param entry
+ */
 com.synckolab.dataBase.prototype.add = function(entry) {
 	this.db.put(entry[0], entry);
 };
@@ -845,8 +856,9 @@ com.synckolab.dataBase.prototype.write = function(file) {
 		// skip "empty" fields
 		var s = entry[0];
 		for (var j = 1; entry[j]; j++)
-		{
+		{			
 			var fv = entry[j];
+			
 			// encode :
 			if (fv.replace)
 			{
@@ -856,12 +868,14 @@ com.synckolab.dataBase.prototype.write = function(file) {
 			s += ":" + fv;
 		}
 		s += "\n";
+		com.synckolab.tools.logMessage("writing " + s, com.synckolab.global.LOG_DEBUG);
 		stream.write(s, s.length);
 	}
 	s = "\n\n";
 	stream.write(s, s.length);
 	stream.close();
 };
+
 
 
 /**
@@ -899,7 +913,7 @@ com.synckolab.hashMap.prototype.next = function() {
 			return null;
 	}
 	
-	return this.array[this.hashIdx][this.idx];
+	return this.array[this.hashIdx][this.idx].value;
 };
 
 
@@ -929,6 +943,14 @@ com.synckolab.hashMap.prototype.put = function( key, value )
 		// get a key
 		var ikey = this.getIKey(key) % this.seed;
 		var car = this.array[ikey];
+		// overwrite if we already have it
+		for( var k = 0 ; k < car.length ; k++ )
+		{
+			if( car[k].key == key ) {
+				car[k].value = value;
+				return;
+			}
+		}
 		car[car.length] = new com.synckolab.hashMap.entry( key, value );
 		this.len++;
 	}
@@ -950,7 +972,7 @@ com.synckolab.hashMap.prototype.remove = function( key )
 	for( var k = 0 ; k < car.length ; k++ )
 	{
 		if( car[k].key == key ) {
-			car[k].splice(k, 1);
+			this.array[ikey].splice(k, 1);
 			this.len--;
 			return true;
 		}

@@ -829,7 +829,7 @@ function getMessage ()
 	*/
 	gLastMessageDBHdr = cur;
 	gSyncFileKey = syncMessageDb.get(cur.mime2DecodedSubject);
-
+	
 	gSyncKeyInfo = cur.mime2DecodedSubject;
 	if (gSyncFileKey != null)
 	{
@@ -839,7 +839,7 @@ function getMessage ()
 		{
 			// get the content from the cached file and ignore the imap
 			com.synckolab.tools.logMessage("taking content from: " + gSyncFileKey[3] + "/" + gSyncFileKey[4], com.synckolab.global.LOG_DEBUG);
-			fileContent = com.synckolab.tools.readSyncDBFile(getSyncDbFile(gSyncFileKey[3], gSync.getType(), gSyncFileKey[4]));
+			fileContent = com.synckolab.tools.readSyncDBFile(com.synckolab.tools.file.getSyncDbFile(gSyncFileKey[3], gSync.getType(), gSyncFileKey[4]));
 
 			// make sure we dont read an empty file
 			if (fileContent != null && fileContent != "")
@@ -858,7 +858,7 @@ function getMessage ()
 			gSyncFileKey = {}; // we not yet know the id
 			gSyncFileKey[0] = '';
 			gSyncFileKey[1] = cur.messageSize;
-			gSyncFileKey[2] = cur.date;			
+			gSyncFileKey[2] = cur.date;
 			
 		}
 	}
@@ -963,7 +963,7 @@ function parseMessageRunner ()
 	// no change... remember that :)
 	else
 	{
-		// fill info about the file and readd it 
+		// fill info about the file and re-add it 
 		gSyncFileKey[0] = gSyncKeyInfo;
 		gSyncFileKey[3] = gSync.gConfig;
 		gSyncFileKey[4] = gSync.gCurUID;
@@ -1111,18 +1111,18 @@ function updateContentWrite ()
 			if (sfile.exists()) 
 				sfile.remove(true);
 			sfile.create(sfile.NORMAL_FILE_TYPE, 0600);
-		  
+		
 			// make the message rfc compatible (make sure all lines en with \r\n)
 			content = content.replace(/\r\n|\n|\r/g, "\r\n");
 			
 			// create a new message in there
-		 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
-		 	stream.init(sfile, 2, 0x200, false); // open as "write only"
+			var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
+			stream.init(sfile, 2, 0x200, false); // open as "write only"
 			stream.write(content, content.length);
 			stream.close();
 			
 			// write the temp file back to the original directory
-			com.synckolab.tools.copyToFolder (gTmpFile, gSync.folder); 
+			copyToFolder (gTmpFile, gSync.folder); 
 		}
 		else
 			updateContentWrite ();
@@ -1160,7 +1160,7 @@ function updateContentAfterSave ()
 }
 
 // Step 6  10%
-// write everything thats not yet in the message folder
+// write everything thats not yet in the message folder but is in the local db
 function writeContent ()
 {
 	// pause sync...
@@ -1286,8 +1286,6 @@ function copyToFolder (fileName, folderUri)
 		fileSpec.nativePath = fileName;
 
 		// at this pont, check the content, we do not write a load of bogus messages in the imap folder
-		//alert ("File content:" + fileSpec.fileContents);
-		
 		copyservice = Components.classes["@mozilla.org/messenger/messagecopyservice;1"].getService(Components.interfaces.nsIMsgCopyService);
 		// in order to be able to REALLY copy the message setup a listener
 		// and mark as read

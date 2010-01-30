@@ -183,8 +183,7 @@ com.synckolab.Calendar = {
 		
 		this.folderMessageUids = new Array(); // the checked uids - for better sync
 		
-		// get the sync db
-		
+		// uid -> filename database - main functions needs to know the name
 		if (this.syncTasks)
 			this.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config + ".task");
 		else
@@ -192,7 +191,7 @@ com.synckolab.Calendar = {
 			
 		this.gConfig = config;
 
-		// card hashmap
+		// remember all the items we already worked with
 		this.gCalDB = new com.synckolab.hashMap();
 	},
 	
@@ -282,10 +281,10 @@ com.synckolab.Calendar = {
 		}
 		
 		// this is an array of arrays that hold fieldname+fielddata of until-now-unknown fields
-		var messageFields = new Array();		
+		var messageFields = new com.synckolab.dataBase();
 
 		// parse the content
-		var parsedEvent = message2Event(fileContent, messageFields, this.syncTasks);
+		var parsedEvent = this.calTools.message2Event(fileContent, messageFields, this.syncTasks);
 		
 		if (parsedEvent == null)
 		{
@@ -304,7 +303,7 @@ com.synckolab.Calendar = {
 
 		if (!this.syncTasks && parsedEvent.startDate)
 		{
-			info += " (" + date2String(parsedEvent.startDate.jsDate) + ")";
+			info += " (" + com.synckolab.tools.text.date2String(parsedEvent.startDate.jsDate) + ")";
 		}
 		this.curItemInListContent.setAttribute("label", info);
 		
@@ -312,7 +311,7 @@ com.synckolab.Calendar = {
 		this.folderMessageUids.push(parsedEvent.id);
 		
 		// ok lets see if we have this one already 
-		var foundEvent = findEvent (this.gCalDB, parsedEvent.id);
+		var foundEvent = this.calTools.findEvent (this.gCalDB, parsedEvent.id);
 		this.tools.logMessage("findevent returned :" + foundEvent + "(" + (foundEvent == null?'null':foundEvent.id) + ") for " + parsedEvent.id + " caching " + this.gCalDB.length() + " events", this.global.LOG_CAL + this.global.LOG_DEBUG);
 				
 		// get the dbfile from the local disk
@@ -327,7 +326,7 @@ com.synckolab.Calendar = {
 		{
 			// a new event
 			this.tools.logMessage("a new event, locally unknown:" + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_DEBUG);
-			if (!idxEntry.exists() || !allowSyncEvent(foundEvent, parsedEvent, this))
+			if (!idxEntry.exists() || !this.calTools.allowSyncEvent(foundEvent, parsedEvent, this))
 			{
 				// use the original content to write the snyc file 
 				// this makes it easier to compare later on and makes sure no info is 
@@ -335,8 +334,8 @@ com.synckolab.Calendar = {
 				com.synckolab.tools.writeSyncDBFile (idxEntry, fileContent);
 				
 				// also write the extra fields in a file
-				if (messageFields.length > 0)
-					writeDataBase(fEntry, messageFields);
+				if (messageFields.length() > 0)
+					messageFields.write(fEntry);
 				
 				this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localAdd"));
 				
@@ -396,7 +395,7 @@ com.synckolab.Calendar = {
 				if (this.gConflictResolve = 'server')
 					conflictResolution.result = 1;
 				else
-				if (this.gConflictResolve = 'client')												
+				if (this.gConflictResolve = 'client')
 					conflictResolution.result = 2;
 				else
 				// display a dialog asking for whats going on
@@ -413,8 +412,8 @@ com.synckolab.Calendar = {
 					com.synckolab.tools.writeSyncDBFile (idxEntry, fileContent);
 	
 					// also write the extra fields in a file
-					if (messageFields.length > 0)
-						writeDataBase(fEntry, messageFields);
+					if (messageFields.length() > 0)
+						messageFields.write(fEntry);
 	
 					for (var i = 0; i < this.gEvents.events.length; i++)
 					{
@@ -700,8 +699,7 @@ com.synckolab.Calendar = {
 		
 				var msg = null;
 				var clonedEvent = cur;
-				if (modifyEventOnExport)
-					clonedEvent = this.calTools.modifyEventOnExport(cur, this);
+				clonedEvent = this.calTools.modifyEventOnExport(cur, this);
 
 				if (this.format == "Xml")
 				{
@@ -746,6 +744,6 @@ com.synckolab.Calendar = {
 	
 	doneParsing: function ()
 	{
-//		writeDataBase (this.dbFile, this.db);
+		// done
 	}
 };

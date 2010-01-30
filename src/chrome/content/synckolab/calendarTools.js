@@ -199,8 +199,8 @@ com.synckolab.calendarTools = {
 	 * only ORGANIZER is allowed to change non-public events
 	 */
 	allowSyncEvent: function(levent, revent, lsyncCalendar) {
-		var lpublic = isPublicEvent(levent);
-		var rpublic = isPublicEvent(revent);
+		var lpublic = this.isPublicEvent(levent);
+		var rpublic = this.isPublicEvent(revent);
 		if (lpublic && rpublic)
 			return true;
 		/*previous behaviour*/
@@ -255,7 +255,7 @@ com.synckolab.calendarTools = {
 	 */
 	modifyDescriptionOnExport: function(levent, syncTasks) {
 		var myclass = levent.getProperty("CLASS");
-		if (!isPublicEvent(levent)) {
+		if (!this.isPublicEvent(levent)) {
 			levent = levent.clone();
 			tmpdesc = (syncTasks==true ? "Task" : "Event");
 			levent.setProperty("DESCRIPTION",tmpdesc + " is " + myclass + "!");
@@ -290,8 +290,6 @@ com.synckolab.calendarTools = {
 
 
 
-
-
 /* ----- functions to handle the Kolab 2 XML event format ----- */
 
 
@@ -301,7 +299,7 @@ com.synckolab.calendarTools = {
  *   comparing iCal vs. XML
  */
 com.synckolab.calendarTools.equalsEvent = function(a, b, syncTasks, email) {
-	return this.cnv_event2xml(a, true, syncTasks, email) == cnv_event2xml(b, true, syncTasks, email);
+	return this.cnv_event2xml(a, true, syncTasks, email) == this.cnv_event2xml(b, true, syncTasks, email);
 };
 
 com.synckolab.calendarTools.message2Event = function(fileContent, extraFields, syncTasks) {
@@ -319,7 +317,7 @@ com.synckolab.calendarTools.message2Event = function(fileContent, extraFields, s
 		else
 			parsedEvent = Components.classes["@mozilla.org/calendar/event;1"]
 				.createInstance(Components.interfaces.calIEvent);
-		if (xml2Event(fileContent, extraFields, parsedEvent) == false)
+		if (this.xml2Event(fileContent, extraFields, parsedEvent) == false)
 		{
 			return null;
 		}
@@ -414,7 +412,7 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 
 					var s = cur.getFirstData();
 					// 2005-03-30T15:28:52Z
-					this.setKolabItemProperty(event, "CREATED", string2CalDateTime(s, true));
+					this.setKolabItemProperty(event, "CREATED", com.synckolab.tools.text.string2CalDateTime(s, true));
 					break;						
 
 				case "LAST-MODIFICATION-DATE":
@@ -423,7 +421,7 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 
 					var s = cur.getFirstData();
 					// 2005-03-30T15:28:52Z
-					this.setKolabItemProperty(event, "LAST-MODIFIED", string2CalDateTime(s, true));
+					this.setKolabItemProperty(event, "LAST-MODIFIED", com.synckolab.tools.text.string2CalDateTime(s, true));
 					break;						
 
 				// entry date and start date can be handled the same way 
@@ -436,7 +434,7 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 					// 2005-03-30T15:28:52Z
 					if (s.indexOf(":") == -1)
 					{
-						var cDate = string2CalDate(s);
+						var cDate = com.synckolab.tools.text.string2CalDate(s);
 						cDate.isDate = true;
 						// date values witout time part specify a full day event
 						if (syncTasks == true)
@@ -447,9 +445,9 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 					else
 					{
 						if (syncTasks == true)
-							this.setKolabItemProperty(event, "entryDate", string2CalDateTime(s, true));
+							this.setKolabItemProperty(event, "entryDate", com.synckolab.tools.text.string2CalDateTime(s, true));
 						else
-							this.setKolabItemProperty(event, "startDate", string2CalDateTime(s, true));
+							this.setKolabItemProperty(event, "startDate", com.synckolab.tools.text.string2CalDateTime(s, true));
 					}
 					break;						
 
@@ -487,9 +485,9 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 					else
 					{
 						if (syncTasks == true)
-							this.setKolabItemProperty(event, "dueDate", string2CalDateTime(s, true));
+							this.setKolabItemProperty(event, "dueDate", com.synckolab.tools.text.string2CalDateTime(s, true));
 						else
-							this.setKolabItemProperty(event, "endDate", string2CalDateTime(s, true));
+							this.setKolabItemProperty(event, "endDate", com.synckolab.tools.text.string2CalDateTime(s, true));
 					}
 					break;						
 
@@ -621,7 +619,7 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 						.createInstance(Components.interfaces.calIRecurrenceRule);
 					// read the "cycle" attribute for the units and
 					// map the Kolab XML values to the Sunbird values
-					units = getXmlAttributeValue(cur, "cycle");
+					units = cur.getAttribute("cycle");
 					if (units == null)
 						units = "weekly";
 					recRule.type = units.toUpperCase();
@@ -641,7 +639,7 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 								   && (recur.nodeName.toUpperCase() == "DAY"))
 								{
 									var day = recur.firstChild.data;
-									onDays.push(getDayIndex(day));
+									onDays.push(com.synckolab.tools.kolab.getDayIndex(day));
 								}
 								recur = recur.nextSibling;
 							}
@@ -651,7 +649,7 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 						case "MONTHLY":
 							// need to process extra type "type" which can be
 							// "daynumber" or "weekday"
-							mode = getXmlAttributeValue(cur, "type");
+							mode = cur.getAttribute("type");
 							switch (mode.toUpperCase())
 							{
 								case "DAYNUMBER":
@@ -685,7 +683,7 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 										}
 										detail = detail.nextSibling;
 									}
-									dayindex = getDayIndex(day);
+									dayindex = com.synckolab.tools.kolab.getDayIndex(day);
 									if (daynumber == -1)
 										recRule.setComponent("BYDAY", 1, [(-1)*(8+dayindex)]);
 									else
@@ -696,7 +694,7 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 						case "YEARLY":
 							// need to process extra type "type" which can be
 							// "weekday", monthday" or "yearday"
-							mode = getXmlAttributeValue(cur, "type");
+							mode = cur.getAttribute("type");
 							var day;
 							var daynumber;
 							var month;
@@ -763,11 +761,11 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 					}
 					
 					recRule.interval = cur.getXmlResult("INTERVAL", "1");
-					var node = getXmlChildNode(cur, "RANGE");
+					var node = new com.synckolab.Node(cur.getChildNode("RANGE"));
 					if (node != null)
 					{
 						// read the "type" attribute of the range
-						var rangeType = getXmlAttributeValue(node, "type");
+						var rangeType = node.getAttribute("type");
 						if (rangeType != null)
 						{
 							var rangeSpec = cur.getXmlResult("RANGE", "dummy");
@@ -807,10 +805,10 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 					{
 						if(node.nodeType == Node.ELEMENT_NODE && (node.nodeName.toUpperCase() == "EXCLUSION"))
 						{
-							   date = string2CalDate(node.firstChild.data);
-							   recInfo.removeOccurrenceAt(date);
-							   var exclusion = recInfo.getOccurrenceFor(date,true);
-							   recInfo.modifyException(exclusion, true);
+							date = string2CalDate(node.firstChild.data);
+							recInfo.removeOccurrenceAt(date);
+							var exclusion = recInfo.getOccurrenceFor(date,true);
+							recInfo.modifyException(exclusion, true);
 						}
 						node = node.nextSibling;
 					}
@@ -877,7 +875,8 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 					if (cur.firstChild == null)
 						break;
 				// remember other fields
-				addField(extraFields, cur.nodeName, cur.getFirstData());
+				if (extraFields)
+					extraFields.addField(cur.nodeName, cur.getFirstData());
 				break;
 
 			} // end switch
@@ -898,7 +897,7 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
  */
 com.synckolab.calendarTools.event2xml = function (event, syncTasks, email)
 {
-	return cnv_event2xml( event, false, syncTasks, email);
+	return this.cnv_event2xml( event, false, syncTasks, email);
 };
 
 
@@ -978,36 +977,36 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
 	else
 		xml += '<event version='+'"'+'1.0" >\n';
 	if (skipVolatiles != true)
-		xml += " <product-id>Synckolab " + gSyncKolabVersion + ", Calendar Sync</product-id>\n";
+		xml += " <product-id>Synckolab " + com.synckolab.config.version + ", Calendar Sync</product-id>\n";
 
 	xml += " <uid>" + event.id + "</uid>\n";
 	
 	if(syncTasks == true)
 	{
-		xml += " <start-date>" + calDateTime2String(event.entryDate, isAllDay) + "</start-date>\n";
-		xml += " <due-date>" + calDateTime2String(endDate, isAllDay) + "</due-date>\n";
+		xml += " <start-date>" + com.synckolab.tools.text.calDateTime2String(event.entryDate, isAllDay) + "</start-date>\n";
+		xml += " <due-date>" + com.synckolab.tools.text.calDateTime2String(endDate, isAllDay) + "</due-date>\n";
 		/*
 		if (!skipVolatiles)
-			xml += " <completed-date>" + calDateTime2String(completedDate, true) + "</completed-date>\n";
+			xml += " <completed-date>" + com.synckolab.tools.text.calDateTime2String(completedDate, true) + "</completed-date>\n";
 		*/
 	}
 	else
 	{
-		xml += " <start-date>" + calDateTime2String(event.startDate, isAllDay) + "</start-date>\n";
-		xml += " <end-date>" + calDateTime2String(endDate, isAllDay) + "</end-date>\n";
+		xml += " <start-date>" + com.synckolab.tools.text.calDateTime2String(event.startDate, isAllDay) + "</start-date>\n";
+		xml += " <end-date>" + com.synckolab.tools.text.calDateTime2String(endDate, isAllDay) + "</end-date>\n";
 	 }
 		
 	xml += " <summary>" + com.synckolab.tools.text.encode4XML(event.title) +"</summary>\n";
 
 	if (skipVolatiles != true)
 	{
-		xml += " <creation-date>" + tcalDateTime2String(event.getProperty("CREATED"), false) + "</creation-date>\n";
-		xml += " <last-modification-date>" + calDateTime2String(event.getProperty("LAST-MODIFIED"), false) + "</last-modification-date>\n";
+		xml += " <creation-date>" + com.synckolab.tools.text.calDateTime2String(event.getProperty("CREATED"), false) + "</creation-date>\n";
+		xml += " <last-modification-date>" + com.synckolab.tools.text.calDateTime2String(event.getProperty("LAST-MODIFIED"), false) + "</last-modification-date>\n";
 	}
 
 	// description only for public events
 	if (event.getProperty("DESCRIPTION") &&
-			(isPublicEvent(event) || !skipVolatiles))
+			(this.isPublicEvent(event) || !skipVolatiles))
 		xml += " <body>" + com.synckolab.tools.text.encode4XML(event.getProperty("DESCRIPTION")) + "</body>\n";
 	
 	if (event.getProperty("CLASS"))
@@ -1060,7 +1059,7 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
 				xml += " <recurrence cycle=\"weekly\">\n";
 				// need to process the <day> value here
 				for each (var i in recRule.getComponent("BYDAY", {})) {
-					xml += "  <day>" + getKolabXmlDayName(i) + "</day>\n";
+					xml += "  <day>" + com.synckolab.tools.kolab.getXmlDayName(i) + "</day>\n";
 				}
 				break;
 			case "MONTHLY":
@@ -1081,7 +1080,7 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
 						dayindex = days[0] % 8;
 						daynumber = (days[0] - dayindex) / 8;
 						xml += "  <daynumber>" + daynumber + "</daynumber>\n";
-						xml += "  <day>" + getKolabXmlDayName(dayindex) + "</day>\n";
+						xml += "  <day>" + com.synckolab.tools.kolab.getXmlDayName(dayindex) + "</day>\n";
 					}
 					else
 					{
@@ -1090,7 +1089,7 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
 							dayindex = days[0] * -1 - 8;
 						else
 							dayindex = 1;
-						xml += "  <day>" + getKolabXmlDayName(dayindex) + "</day>\n";
+						xml += "  <day>" + com.synckolab.tools.kolab.getXmlDayName(dayindex) + "</day>\n";
 					}
 				}
 				break;
@@ -1143,7 +1142,7 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
 			{
 				var item = items[i];
 				if (item.isNegative)
-					xml += "  <exclusion>" + calDateTime2String(item.date, true) + "</exclusion>\n";
+					xml += "  <exclusion>" + com.synckolab.tools.text.calDateTime2String(item.date, true) + "</exclusion>\n";
 			}
 			xml += " </recurrence>\n";
 		}
@@ -1241,10 +1240,10 @@ com.synckolab.calendarTools.event2Human = function(event, syncTasks)
 		var isAllDay = event.startDate?event.startDate.isDate:false;
 		if (event.startDate)
 		{
-			txt += "Start date: " + calDateTime2String(event.startDate, isAllDay) + "\n";
+			txt += "Start date: " + com.synckolab.tools.text.calDateTime2String(event.startDate, isAllDay) + "\n";
 			var endDate = event.endDate;
 			if (event.endDate)		
-				txt += "End date: " + calDateTime2String(endDate, isAllDay) + "\n\n";
+				txt += "End date: " + com.synckolab.tools.text.calDateTime2String(endDate, isAllDay) + "\n\n";
 		}
 	}
 	if (event.getProperty("DESCRIPTION"))
@@ -1261,9 +1260,9 @@ com.synckolab.calendarTools.event2Human = function(event, syncTasks)
  */
 com.synckolab.calendarTools.event2kolabXmlMsg = function (event, email, syncTasks)
 {
-	var xml = event2xml(event, syncTasks, email);
-	var my_msg = generateMail(event.id, email, "", syncTasks?"application/x-vnd.kolab.task":"application/x-vnd.kolab.event", 
-			true, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(xml)), event2Human(event, syncTasks));
+	var xml = this.event2xml(event, syncTasks, email);
+	var my_msg = com.synckolab.tools.generateMail(event.id, email, "", syncTasks?"application/x-vnd.kolab.task":"application/x-vnd.kolab.event", 
+			true, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(xml)), this.event2Human(event, syncTasks));
 	return my_msg;
 };
 
@@ -1277,7 +1276,7 @@ com.synckolab.calendarTools.ical2event = function(content, todo)
 	var event;
 	var icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
 						   .getService(Components.interfaces.calIICSService);
-			  
+
 	var rootComp = null;
 	try
 	{
@@ -1287,7 +1286,7 @@ com.synckolab.calendarTools.ical2event = function(content, todo)
 		com.synckolab.tools.logMessage("unable to parse ical: " + content, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_ERROR);
 		return null;
 	}
-  
+
 	if (rootComp.componentType == 'VCALENDAR') {
 		event = rootComp;
 	} else 
