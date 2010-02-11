@@ -140,7 +140,7 @@ com.synckolab.calendarTools = {
 				item.isCompleted = value;
 				break;
 			case "status":
-				item.status = getTaskStatus(value,false);
+				item.status = this.getTaskStatus(value,false);
 				break;
 			case "title":
 				item.title = value;
@@ -216,10 +216,10 @@ com.synckolab.calendarTools = {
 	 * sync local changes back to server version
 	 */
 	checkEventBeforeSync: function(fevent, revent, lsyncCalendar) {
-		var rc = allowSyncEvent(fevent, revent, lsyncCalendar);
+		var rc = this.allowSyncEvent(fevent, revent, lsyncCalendar);
 		if (!rc) {
 			com.synckolab.tools.logMessage("Update local event with server one : " + revent.id, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG );
-			lsyncCalendar.curItemInListStatus.setAttribute("label", strBundle.getString("localUpdate"));
+			lsyncCalendar.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localUpdate"));
 			lsyncCalendar.gCalendar.modifyItem(revent, fevent, lsyncCalendar.gEvents);
 		}
 		return rc;
@@ -246,7 +246,7 @@ com.synckolab.calendarTools = {
 			eventry.remove(false);
 		if (fentry.exists())
 			fentry.remove(false);
-		lsyncCalendar.curItemInListStatus.setAttribute("label", strBundle.getString("deleteOnServer"));
+		lsyncCalendar.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("deleteOnServer"));
 		return true;
 	},
 
@@ -288,10 +288,7 @@ com.synckolab.calendarTools = {
 };
 
 
-
-
 /* ----- functions to handle the Kolab 2 XML event format ----- */
-
 
 /**
  * This functions checks if two events are equals
@@ -970,7 +967,7 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
 			xml += " <status>completed</status>\n";
 		}
 		else	{
-			xml += " <status>" + getTaskStatus(event.status, true) + "</status>\n";
+			xml += " <status>" + this.getTaskStatus(event.status, true) + "</status>\n";
 			xml += " <completed>" + event.percentComplete +"</completed>\n";
 		}
 	}

@@ -83,7 +83,7 @@ com.synckolab.AddressBook = {
 	getType: function() {
 		return "contact";
 	},
-	
+
 	init: function(config) {
 		// shortcuts for some common used utils
 		this.tools = com.synckolab.addressbookTools;

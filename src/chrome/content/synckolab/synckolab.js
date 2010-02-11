@@ -248,8 +248,22 @@ var curStep;
 		try {
 			com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL = com.synckolab.global.LOG_ALL + pref.getIntPref("SyncKolab.debugLevel");
 		} catch (ex) {
-			com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab.debugLevel' failed: " + ex, com.synckolab.global.LOG_WARNING);
-			com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL = com.synckolab.global.LOG_ALL + com.synckolab.global.LOG_WARNING;
+			// maybe it was a String pref
+			try {
+				com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL = Number(pref.getCharPref("SyncKolab.debugLevel"));
+				if (com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL == 'NaN')
+				{
+					com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL = com.synckolab.global.LOG_ALL + com.synckolab.global.LOG_WARNING;
+				}
+				// update to int
+				pref.clearUserPref("SyncKolab.debugLevel")
+				pref.setIntPref("SyncKolab.debugLevel", com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL);
+				
+			}
+			catch (ex) {
+				com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab.debugLevel' failed: " + ex, com.synckolab.global.LOG_WARNING);
+				com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL = com.synckolab.global.LOG_ALL + com.synckolab.global.LOG_WARNING;
+			}
 		};				
 	} catch(e) {
 		com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab.closeWindow' failed: " + e, com.synckolab.global.LOG_WARNING);

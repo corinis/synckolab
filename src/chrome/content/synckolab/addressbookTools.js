@@ -663,9 +663,9 @@ com.synckolab.addressbookTools.list2Vcard = function(card, fields) {
 		msg += this.getCardProperty(card, "AnniversaryDay") + "\n";
 	}
  	if (this.haveCardProperty(card, "WebPage1"))
-		msg += "URL:" + encodeCardField(this.getCardProperty(card, "WebPage1")) + "\n"; // encode the : chars to HEX, vcard values cannot contain colons
+		msg += "URL:" + this.encodeCardField(this.getCardProperty(card, "WebPage1")) + "\n"; // encode the : chars to HEX, vcard values cannot contain colons
  	if (this.haveCardProperty(card, "WebPage2"))
-		msg += "URL;TYPE=PERSONAL:" + encodeCardField(this.getCardProperty(card, "WebPage2")) + "\n";
+		msg += "URL;TYPE=PERSONAL:" + this.encodeCardField(this.getCardProperty(card, "WebPage2")) + "\n";
 	// ADR:POBox;Ext. Address;Address;City;State;Zip Code;Country
 	if (this.haveCardProperty(card, "WorkAddress2") 
 		|| this.haveCardProperty(card, "WorkAddress") 
@@ -1533,13 +1533,13 @@ com.synckolab.addressbookTools.message2Card = function(lines, card, extraFields,
 		  case "URL;TYPE=WORK":
 		  case "URL":
 				// WebPage1 is work web page
-				this.setCardProperty(card, "WebPage1", decodeCardField(tok[1])); // decode to convert the : char hex codes back to ascii
+				this.setCardProperty(card, "WebPage1", this.decodeCardField(tok[1])); // decode to convert the : char hex codes back to ascii
 				found = true;
 				break;
 		  case "URL;TYPE=PRIVATE":
 		  case "URL;TYPE=PERSONAL":
 				// WebPage2 is home web page
-				this.setCardProperty(card, "WebPage2", decodeCardField(tok[1])); // decode to convert the : char hex codes back to ascii
+				this.setCardProperty(card, "WebPage2", this.decodeCardField(tok[1])); // decode to convert the : char hex codes back to ascii
 				found = true;
 				break;
 		  case "UID":
