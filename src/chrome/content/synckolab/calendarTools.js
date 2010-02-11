@@ -466,7 +466,7 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 					if (s.indexOf(":") == -1) // full time event
 					{
 						// date values witout time part specify a full day event
-						var cDate = string2CalDate(s);
+						var cDate = com.synckolab.tools.text.string2CalDate(s);
 						// Kolab uses for 1-day-event:
 						// startdate = day_x, enddate = day_x
 						// Sunbird uses for 1-day-event:
@@ -592,7 +592,7 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 						if (cData.indexOf("-PT") != 0)
 							cData = "-PT" + cData + "M";
 						
-						event.alarmOffset = createDuration(cData);
+						event.alarmOffset = com.synckolab.tools.text.createDuration(cData);
 					}
 					break;
 					
@@ -794,8 +794,8 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 					}
 					else
 					{
-					   // no range set
-					   recRule.count = -1;
+						// no range set
+						recRule.count = -1;
 					}
 					
 					recInfo.insertRecurrenceItemAt(recRule, 0);
@@ -805,7 +805,7 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 					{
 						if(node.nodeType == Node.ELEMENT_NODE && (node.nodeName.toUpperCase() == "EXCLUSION"))
 						{
-							date = string2CalDate(node.firstChild.data);
+							date = com.synckolab.tools.text.string2CalDate(node.firstChild.data);
 							recInfo.removeOccurrenceAt(date);
 							var exclusion = recInfo.getOccurrenceFor(date,true);
 							recInfo.modifyException(exclusion, true);

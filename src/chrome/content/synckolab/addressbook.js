@@ -742,7 +742,7 @@ com.synckolab.AddressBook = {
 			
 			// look at new card
 			// generate a unique id (will random be enough for the future?)
-			setUID(curItem, "sk-vc-" + com.synckolab.tools.text.randomVcardId());
+			com.synckolab.addressbookTools.setUID(curItem, "sk-vc-" + com.synckolab.tools.text.randomVcardId());
 			if (cur.isMailList)
 				com.synckolab.tools.logMessage("adding unsaved list: " + this.tools.getUID (curItem), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 			else
@@ -780,11 +780,11 @@ com.synckolab.AddressBook = {
 			}
 			
 			// and write the message
-			content = card2Message(curItem, this.email, this.format);
+			content = com.synckolab.addressbookTools.card2Message(curItem, this.email, this.format);
 			com.synckolab.tools.logMessage("New Card " + this.tools.getUID(curItem), 2);
 
 			// get the dbfile from the local disk
-			var cEntry = getSyncDbFile	(this.gConfig, this.getType(), this.tools.getUID(curItem));
+			var cEntry = com.synckolab.tools.file.getSyncDbFile	(this.gConfig, this.getType(), this.tools.getUID(curItem));
 			// write the current content in the sync-db file
 			com.synckolab.tools.writeSyncDBFile (cEntry, com.synckolab.tools.stripMailHeader(content));
 			
@@ -810,7 +810,7 @@ com.synckolab.AddressBook = {
 			if (!alreadyProcessed)
 			{
 				// get the dbfile from the local disk
-				var cEntry = getSyncDbFile	(this.gConfig, this.getType(), this.tools.getUID(curItem));
+				var cEntry = com.synckolab.tools.file.getSyncDbFile	(this.gConfig, this.getType(), this.tools.getUID(curItem));
 				if (this.tools.getUID(curItem) == null)
 				{
 					alert("UID is NULL???" + curItem.custom4);
@@ -878,11 +878,11 @@ com.synckolab.AddressBook = {
 					}
 					
 					// and write the message
-					content = card2Message(curItem, this.email, this.format);
+					content = com.synckolab.addressbookTools.card2Message(curItem, this.email, this.format);
 					com.synckolab.tools.logMessage("New Card " + this.tools.getUID(curItem), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 					
 					// get the dbfile from the local disk
-					var cEntry = getSyncDbFile	(this.gConfig, this.getType(), this.tools.getUID(curItem));
+					var cEntry = com.synckolab.tools.file.getSyncDbFile	(this.gConfig, this.getType(), this.tools.getUID(curItem));
 					// write the current content in the sync-db file
 					com.synckolab.tools.writeSyncDBFile (cEntry, com.synckolab.tools.stripMailHeader(content));
 				}				
