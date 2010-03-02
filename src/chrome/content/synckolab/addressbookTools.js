@@ -1025,6 +1025,12 @@ com.synckolab.addressbookTools.equalsContact = function(a, b) {
 			sa = null;
 		if (sb == '')
 			sb = null;
+		// zero equals not set (so set to null) - for comparison only
+		if (sa == 0)
+			sa = null;
+		if (sb == 0)
+			sb = null;
+		
 		
 		// null check
 		if (sa == null || sb == null)
