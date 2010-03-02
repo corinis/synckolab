@@ -750,7 +750,7 @@ com.synckolab.AddressBook = {
 			
 			writeCur = true;
 			// tbird<3
-			if (cur.editCardToDatabase)
+			if (cur.editCardToDatabase && !this.gAddressBook.modifyCard)
 				cur.editCardToDatabase ("moz-abmdbdirectory://"+this.gAddressBook);
 			else
 				this.gAddressBook.modifyCard(cur);
