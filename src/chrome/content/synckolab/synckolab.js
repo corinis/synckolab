@@ -256,7 +256,7 @@ var curStep;
 					com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL = com.synckolab.global.LOG_ALL + com.synckolab.global.LOG_WARNING;
 				}
 				// update to int
-				pref.clearUserPref("SyncKolab.debugLevel")
+				pref.clearUserPref("SyncKolab.debugLevel");
 				pref.setIntPref("SyncKolab.debugLevel", com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL);
 				
 			}
@@ -610,7 +610,7 @@ function nextSync()
 			// if an exception is found print it and continue
 			com.synckolab.tools.logMessage("Error setting task config: " + ex, com.synckolab.global.LOG_ERROR);
 			curTaskConfig++;
-			window.setTimeout(nextSync, com.synckolab.config.SWITCH_TIME);	
+			window.setTimeout(nextSync, com.synckolab.config.SWITCH_TIME);
 			return;
 		}
 	}
@@ -685,10 +685,23 @@ var updateMessagesContent;
 var gMessages;
 var gSync;
 
-// this function is being called just before the content parsing starts
-// its sole purpose is to make sure all messages are downloaded and refreshed
+function waitForAsyncGetItems () {
+	prepareContent();
+}
+
+
+/**
+ * this function is being called just before the content parsing starts
+ * its sole purpose is to make sure all messages/contacts are downloaded and refreshed
+ */
 function prepareContent ()
 {
+	// wait for the data
+	if (gSync.dataReady() == false)
+	{
+		window.setTimeout(prepareContent, com.synckolab.config.SWITCH_TIME);
+		return;
+	}
 	// update folder information from imap and make sure we got everything
 	gSync.folder.updateFolder (msgWindow);
 	// my UrlListener calls getContent
@@ -696,8 +709,10 @@ function prepareContent ()
 	
 }
 
-// start with the sync with the sync class
-// saves the contact folder into fileContent
+/**
+ * start with the sync with the sync class
+ * saves the contact folder into fileContent
+ */
 function getContent ()
 {	
 	// check if folder REALLY exists

@@ -202,6 +202,7 @@ com.synckolab.Calendar = {
 		this.gEvents.nextFunc = nextFunc;
 		this.gEvents.events = new Array();
 		this.gEvents.sync = sync;
+		this.gEvents.ready = false;
 		
 		// gCalendar might be invalid if no calendar is selected in the settings
 		if (this.gCalendar) {
@@ -209,34 +210,21 @@ com.synckolab.Calendar = {
 				this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_TODO | this.gCalendar.ITEM_FILTER_COMPLETED_ALL, 0, null, null, this.gEvents);
 			else
 				this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_EVENT, 0, null, null, this.gEvents);
-
-			// fill the hashmap
-			for (var i =0; i < this.gEvents.events.length; i++)
-			{
-				this.gCalDB.put(this.gEvents.events[i].id, this.gEvents.events[i]);
-			}
-				
-			this.tools.logMessage("Getting items for " + (this.syncTasks == true?"tasks":"calendar"), this.global.LOG_CAL + this.global.LOG_DEBUG);
-			
-			// if no item has been read, onGetResult has never been called 
-			// leaving us stuck in the events chain
-			if (this.gEvents.events.length > 0)
-				return true;
-			else
-				return false;
 		}
 		else {
 			alert("Please select a calender as sync target before trying to synchronize.");
 			return false;
 		}
 	},
-	
+	// asynchronous function for getting the items
 	gEvents: {
 		nextFunc: '',
 		events: new Array(),
 		sync: '',
+		ready: false,
 		onOperationComplete: function(aCalendar, aStatus, aOperator, aId, aDetail) {
 			com.synckolab.tools.logMessage("operation "+(this.syncTasks == true?"tasks":"calendar")+": status="+aStatus + " Op=" + aOperator + " Detail=" + aDetail, com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_CAL);
+			this.ready = true;
 			},
 		onGetResult: function(aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {
 				com.synckolab.tools.logMessage("got results: " + aCount + " items", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_CAL);
@@ -245,7 +233,28 @@ com.synckolab.Calendar = {
 				}
 			}
 	},
-
+	/**
+	 * a callback function for synckolab.js - synckolab will only start with the sync when this returns true
+	 */
+	dataReady: function() {
+		// check if we got the data already
+		if (this.gEvents.ready == false)
+			return false;
+		
+		// make sure not to doublefill the map
+		this.gCalDB.clear();
+		
+		// fill the hashmap
+		for (var i =0; i < this.gEvents.events.length; i++)
+		{
+			this.gCalDB.put(this.gEvents.events[i].id, this.gEvents.events[i]);
+		}
+		this.tools.logMessage("Indexed " + this.gCalDB.length() + " Entries", this.global.LOG_CAL + this.global.LOG_DEBUG);
+		
+		this.tools.logMessage("Getting items for " + (this.syncTasks == true?"tasks":"calendar"), this.global.LOG_CAL + this.global.LOG_DEBUG);
+		
+		return true;
+	},
 	/**
 	 * Returns the number of cards in the adress book
 	 */
@@ -586,7 +595,7 @@ com.synckolab.Calendar = {
 			// we are done
 			return "done";
 		}
-		this.tools.logMessage("get event", this.global.LOG_CAL + this.global.LOG_DEBUG);
+		this.tools.logMessage("get event ( "+this.gCurEvent+" of "+this.gEvents.events.length+")", this.global.LOG_CAL + this.global.LOG_DEBUG);
 		
 		if (this.gEvents != null && this.gCurEvent <= this.gEvents.events.length )
 		{

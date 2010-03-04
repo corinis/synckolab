@@ -232,7 +232,13 @@ com.synckolab.AddressBook = {
 			}
 		}
 	},
-
+	/**
+	 * a callback function for synckolab.js - synckolab will only start with the sync when this returns true
+	 * for abook: data getting is synchronous so not needed - calendar is a different story!
+	 */
+	dataReady: function() {
+		return true;
+	},
 	/**
 	 * Returns the number of cards in the adress book
 	 */
