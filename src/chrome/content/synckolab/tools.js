@@ -602,21 +602,28 @@ com.synckolab.tools.file = {
 
 		id = id.replace(/[ :.;$\\\/]\#\@/g, "_");
 		var file = Components.classes["@mozilla.org/file/directory_service;1"].
-		getService(Components.interfaces.nsIProperties).
-		get("ProfD", Components.interfaces.nsIFile);
-		file.append("synckolab");
-		if (!file.exists())
-			file.create(1, 0775);
-
-		file.append(type);
-
-		if (!file.exists())
-			file.create(1, 0775);
-
-		file.append(config);
-		if (!file.exists())
-			file.create(1, 0775);
-		file.append(id);
+			getService(Components.interfaces.nsIProperties).
+			get("ProfD", Components.interfaces.nsIFile);
+		try {
+			file.append("synckolab");
+			if (!file.exists())
+				file.create(1, 0775);
+	
+			file.append(type);
+	
+			if (!file.exists())
+				file.create(1, 0775);
+	
+			file.append(config);
+			if (!file.exists())
+				file.create(1, 0775);
+			file.append(id);
+		}
+		catch (ex)
+		{
+			this.logMessage("Problem with getting syncDbFile:  (" +config + ": " + type + ": " + id + ")\n" + ex, com.synckolab.global.LOG_ERROR);
+			return null;
+		}
 		return file;
 	}
 };
