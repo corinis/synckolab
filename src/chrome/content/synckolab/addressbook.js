@@ -787,10 +787,10 @@ com.synckolab.AddressBook = {
 			
 			// and write the message
 			content = com.synckolab.addressbookTools.card2Message(curItem, this.email, this.format);
-			com.synckolab.tools.logMessage("New Card " + this.tools.getUID(curItem), 2);
+			com.synckolab.tools.logMessage("New Card " + this.tools.getUID(curItem), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 
 			// get the dbfile from the local disk
-			var cEntry = com.synckolab.tools.file.getSyncDbFile	(this.gConfig, this.getType(), this.tools.getUID(curItem));
+			var cEntry = com.synckolab.tools.file.getSyncDbFile (this.gConfig, this.getType(), this.tools.getUID(curItem));
 			// write the current content in the sync-db file
 			com.synckolab.tools.writeSyncDBFile (cEntry, com.synckolab.tools.stripMailHeader(content));
 			

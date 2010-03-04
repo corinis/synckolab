@@ -51,16 +51,20 @@ com.synckolab.addressbookTools = {
 		 * the function fixes the first chard of the property
 		 * @param card the nsIAbCard
 		 * @param prop the name of the property to get (make sure ot use tbird3 camel case!!!)
+		 * @param def if the prop is empty
 		 * @return the property value 
 		 */
-		getCardProperty : function(card, prop) {
+		getCardProperty : function(card, prop, def) {
+			if (!def)
+				def = null;
+			
 			// tbird 3
 			if (card.getProperty)
 			{
 				var prop = card.getProperty(prop, null);
 				// fix for "null" as string
-				if (prop == "null")
-					return null;
+				if (prop == "null" || prop == null)
+					return def;
 				return prop;
 			}
 			else
@@ -122,7 +126,7 @@ com.synckolab.addressbookTools = {
 					case	"AllowRemoteContent":	return card.allowRemoteContent;
 					default:
 						com.synckolab.tools.logMessage("Unable to get property: " + prop + " (reason: not found): " + value, this.global.LOG_WARNING + this.global.LOG_AB);
-						return null;
+						return def;
 				}
 			}
 		},
@@ -828,9 +832,9 @@ com.synckolab.addressbookTools.list2Vcard = function(card, fields) {
 				msg += card2Vcard(cur, null);
 									
 				// custom4 is not really necessary since there will be a smart-check
-				if (com.synckolab.tools.checkExist (cur.custom4))
+				if (this.getUID(cur))
 				{
-					uidList += cur.custom4 + ";";
+					uidList += this.getUID(cur) + ";";
 				}
 			}
 		}
@@ -1811,12 +1815,18 @@ com.synckolab.addressbookTools.card2Human = function(card) {
 		|| this.haveCardProperty(card, "WorkState"))
 	{
 		msg += "Work: ";
-		msg += this.getCardProperty(card, "WorkAddress2") + "\n";
-		msg += this.getCardProperty(card, "WorkAddress") + "\n";
-		msg += this.getCardProperty(card, "WorkZipCode") + " ";
-		msg += this.getCardProperty(card, "WorkState") + " ";
-		msg += this.getCardProperty(card, "WorkCity") + "\n";
-		msg += this.getCardProperty(card, "WorkCountry") + "\n";
+		if (this.haveCardProperty(card, "WorkAddress"))
+			msg += this.getCardProperty(card, "WorkAddress") + "\n";
+		if (this.haveCardProperty(card, "WorkAddress2"))
+			msg += this.getCardProperty(card, "WorkAddress2") + "\n";
+		if (this.haveCardProperty(card, "WorkZipCode"))
+			msg += this.getCardProperty(card, "WorkZipCode") + " ";
+		if (this.haveCardProperty(card, "WorkState"))
+			msg += this.getCardProperty(card, "WorkState") + " ";
+		if (this.haveCardProperty(card, "WorkCity"))
+			msg += this.getCardProperty(card, "WorkCity") + "\n";
+		if (this.haveCardProperty(card, "WorkCountry"))
+			msg += this.getCardProperty(card, "WorkCountry") + "\n";
 	}
 	// ADR:POBox;Ext. Address;Address;City;State;Zip Code;Country
 	if (this.haveCardProperty(card, "HomeAddress2") 
@@ -1826,12 +1836,18 @@ com.synckolab.addressbookTools.card2Human = function(card) {
 		|| this.haveCardProperty(card, "HomeState"))
 	{
 		msg += "Home: ";
-		msg += this.getCardProperty(card, "HomeAddress2") + "\n";
-		msg += this.getCardProperty(card, "HomeAddress") + "\n";
-		msg += this.getCardProperty(card, "HomeZipCode") + " ";
-		msg += this.getCardProperty(card, "HomeState") + " ";
-		msg += this.getCardProperty(card, "HomeCity") + "\n";
-		msg += this.getCardProperty(card, "HomeCountry") + "\n";
+		if (this.haveCardProperty(card, "HomeAddress"))
+			msg += this.getCardProperty(card, "HomeAddress") + "\n";
+		if (this.haveCardProperty(card, "HomeAddress2"))
+			msg += this.getCardProperty(card, "HomeAddress2") + "\n";
+		if (this.haveCardProperty(card, "HomeZipCode"))
+			msg += this.getCardProperty(card, "HomeZipCode") + " ";
+		if (this.haveCardProperty(card, "HomeState"))
+			msg += this.getCardProperty(card, "HomeState") + " ";
+		if (this.haveCardProperty(card, "HomeCity"))
+			msg += this.getCardProperty(card, "HomeCity") + "\n";
+		if (this.haveCardProperty(card, "HomeCountry"))
+			msg += this.getCardProperty(card, "HomeCountry") + "\n";
  	}
  	if (this.haveCardProperty(card, "Notes"))
 		msg += "Notes: " + this.getCardProperty(card, "Notes") + "\n";
@@ -1929,12 +1945,12 @@ com.synckolab.addressbookTools.card2Vcard = function(card, fields) {
 		|| this.haveCardProperty(card, "WorkState"))
 	{
 		msg += "ADR;TYPE=WORK:;";
-		msg += this.getCardProperty(card, "WorkAddress2") + ";";
-		msg += this.getCardProperty(card, "WorkAddress") + ";";
-		msg += this.getCardProperty(card, "WorkCity") + ";";
-		msg += this.getCardProperty(card, "WorkState") + ";";
-		msg += this.getCardProperty(card, "WorkZipCode") + ";";
-		msg += this.getCardProperty(card, "WorkCountry") + "\n";
+		msg += this.getCardProperty(card, "WorkAddress","") + ";";
+		msg += this.getCardProperty(card, "WorkAddress2","") + ";";
+		msg += this.getCardProperty(card, "WorkCity","") + ";";
+		msg += this.getCardProperty(card, "WorkState","") + ";";
+		msg += this.getCardProperty(card, "WorkZipCode","") + ";";
+		msg += this.getCardProperty(card, "WorkCountry","") + "\n";
 	}
 	// ADR:POBox;Ext. Address;Address;City;State;Zip Code;Country
 	if (this.haveCardProperty(card, "HomeAddress2")
@@ -1944,12 +1960,12 @@ com.synckolab.addressbookTools.card2Vcard = function(card, fields) {
 		|| this.haveCardProperty(card, "HomeState"))
 	{
 		msg += "ADR;TYPE=HOME:;";
-		msg += this.getCardProperty(card, "HomeAddress2") + ";";
-		msg += this.getCardProperty(card, "HomeAddress") + ";";
-		msg += this.getCardProperty(card, "HomeCity") + ";";
-		msg += this.getCardProperty(card, "HomeState") + ";";
-		msg += this.getCardProperty(card, "HomeZipCode") + ";";
-		msg += this.getCardProperty(card, "HomeCountry") + "\n";
+		msg += this.getCardProperty(card, "HomeAddress","") + ";";
+		msg += this.getCardProperty(card, "HomeAddress2","") + ";";
+		msg += this.getCardProperty(card, "HomeCity","") + ";";
+		msg += this.getCardProperty(card, "HomeState","") + ";";
+		msg += this.getCardProperty(card, "HomeZipCode","") + ";";
+		msg += this.getCardProperty(card, "HomeCountry","") + "\n";
  	}
  	if (this.haveCardProperty(card, "Custom1"))
 		msg += "CUSTOM1:" + this.getCardProperty(card, "Custom1").replace (/\n/g, "\\n") + "\n";
@@ -1966,7 +1982,7 @@ com.synckolab.addressbookTools.card2Vcard = function(card, fields) {
  	// yeap one than more line (or something like that :P)
  	if (this.haveCardProperty(card, "Notes"))
 		msg += "NOTE:" + this.getCardProperty(card, "Notes").replace(/\n\n/g, "\\n").replace (/\n/g, "\\n") + "\n";
-	msg += "UID:" + this.getCardProperty(card, "Custom4") + "\n";	
+	msg += "UID:" + this.getUID(card) + "\n";	
 	// add extra/missing fields
 	if (fields != null)
 	{
@@ -1988,7 +2004,7 @@ com.synckolab.addressbookTools.card2Vcard = function(card, fields) {
  */
 com.synckolab.addressbookTools.card2Message = function(card, email, format, fields) {
 	// it may be we do not have a uid - skip it then
-	if (!card.isMailList && (this.getCardProperty(card, "Custom4") == null || this.getCardProperty(card, "Custom4").length < 2) )
+	if (!card.isMailList && (this.getUID(card) == null || this.getUID(card).length < 2) )
 		return null;
 
 	com.synckolab.tools.logMessage("creating message out of card... ", this.global.LOG_INFO + this.global.LOG_AB);
@@ -1998,18 +2014,18 @@ com.synckolab.addressbookTools.card2Message = function(card, email, format, fiel
 	{
 		// mailing list
 		if (card.isMailList)
-			return com.synckolab.tools.generateMail(this.getCardProperty(card, "Custom4"), email, "", "application/x-vnd.kolab.contact.distlist", 
+			return com.synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vnd.kolab.contact.distlist", 
 				true, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(this.list2Xml(card, fields))), this.list2Human(card));
 		else
-			return com.synckolab.tools.generateMail(this.getCardProperty(card, "Custom4"), email, "", "application/x-vnd.kolab.contact", 
+			return com.synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vnd.kolab.contact", 
 				true, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(this.card2Xml(card, fields))), this.card2Human(card));
 	}
 	
 	if (card.isMailList)
-		return com.synckolab.tools.generateMail(this.getCardProperty(card, "Custom4"), email, "vCard", "application/x-vcard.list", 
+		return com.synckolab.tools.generateMail(this.getUID(card), email, "vCard", "application/x-vcard.list", 
 			false, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(this.list2Vcard(card,fields))), null);
 
-	return com.synckolab.tools.generateMail(this.getCardProperty(card, "Custom4"), email, "vCard", "text/vcard", 
+	return com.synckolab.tools.generateMail(this.getUID(card), email, "vCard", "text/vcard", 
 			false, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(this.card2Vcard(card, fields))), null);
 			
 		

@@ -1225,12 +1225,14 @@ function writeContent ()
 	var content = gSync.nextUpdate();
 	if (content == "done")
 	{
-			writeContentAfterSave ();
-			return;
+		com.synckolab.tools.logMessage("content is 'done'", com.synckolab.global.LOG_INFO);
+		writeContentAfterSave ();
+		return;
 	}
 	
 	if (content == null)
 	{
+		com.synckolab.tools.logMessage("content is null - continue", com.synckolab.global.LOG_WARNING);
 		window.setTimeout(writeContent, com.synckolab.config.SWITCH_TIME);	
 		return;
 	}
