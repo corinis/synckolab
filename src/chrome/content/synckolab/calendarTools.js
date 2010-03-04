@@ -666,7 +666,7 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 							{
 								case "DAYNUMBER":
 									// daynumber has <daynumber>
-									var detail = getXmlChildNode(cur, "daynumber");
+									var detail = cur.getChildNode("daynumber");
 									if ((detail != null)
 										&& (detail.nodeType == Node.ELEMENT_NODE)
 										&& (detail.nodeName.toUpperCase() == "DAYNUMBER"))
