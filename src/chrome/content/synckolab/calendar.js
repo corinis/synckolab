@@ -428,6 +428,10 @@ com.synckolab.Calendar = {
 					{
 						if (this.gEvents.events[i].id == parsedEvent.id)
 						{
+							// if we change a local event make sure to set alarmLastAck
+							if (parsedEvent.alarmLastAck)
+								parsedEvent.alarmLastAck = foundEvent.alarmLastAck.clone();
+							
 							try {
 								// modify the item - catch exceptions due to triggered alarms
 								// because they will break the sync process
@@ -508,9 +512,13 @@ com.synckolab.Calendar = {
 					{
 						if (this.gEvents.events[i].id == parsedEvent.id)
 						{
+							// if we change a local event make sure to set alarmLastAck
+							if (parsedEvent.alarmLastAck)
+								parsedEvent.alarmLastAck = foundEvent.alarmLastAck.clone();
+							
 							try {
 								// modify the item - catch exceptions due to triggered alarms
-								// because they will break the sync process
+								// because they will break the sync process								
  								this.gCalendar.modifyItem(parsedEvent, foundEvent, this.gEvents);
 							} catch (e) {
 								this.tools.logMessage("gCalendar.modifyItem() failed: " + e, this.global.LOG_CAL + this.global.LOG_WARNING);

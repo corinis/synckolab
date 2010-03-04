@@ -603,8 +603,24 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 						// fix up the cdata if not in the right format
 						if (cData.indexOf("-PT") != 0)
 							cData = "-PT" + cData + "M";
-						
-						event.alarmOffset = com.synckolab.tools.text.createDuration(cData);
+						var alarmOffset = com.synckolab.tools.text.createDuration(cData);
+						// tbird 3 uses multiple alarms (using addAlarm)
+						if (event.addAlarm)
+						{
+							var alarm = Components.classes["@mozilla.org/calendar/alarm;1"].createInstance(Components.interfaces.calIAlarm);
+							alarm.related = 1; // 1: related to startdate - 2: related to enddate
+							alarm.offset = alarmOffset;
+							// optional attributes
+							if (cur.getAttribute("description") != null)
+								alarm.description = cur.getAttribute("description");
+							if (cur.getAttribute("summary") != null)
+								alarm.description = cur.getAttribute("summary");
+							if (cur.getAttribute("action") != null)
+								alarm.description = cur.getAttribute("action");
+							event.addAlarm(alarm);
+						}
+						else
+							event.alarmOffset = alarmOffset;
 					}
 					break;
 					
@@ -1028,9 +1044,33 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
 	
 	if (event.getProperty("LOCATION"))
 		xml += " <location>" + com.synckolab.tools.text.encode4XML(event.getProperty("LOCATION")) +"</location>\n";
+	// tbird 3: allow multiple alarms
+	if (event.getAlarms)
+	{
+		// Alarms (only allow relative alarms)
+		for each (let alarm in event.getAlarms({})) {
+			// skip abolute ALARM_RELATED_ABSOLUTE = 0;
+			if (alarm.related == 0)
+				continue;
+			var minutes = Math.floor(Math.abs(alarm.offset.inSeconds)/60);
+			
+			// tbird 3 has some other attributes which we should take care of
+			var att = "";
+			if (alarm.description != null && alarm.description != "")
+				att += 'description="' + alarm.description + '"';
+			if (alarm.summary != null && alarm.summary != "")
+				att += 'summary="' + alarm.description + '"';
+			if (alarm.action != null && alarm.action != "")
+				att += 'action="' + alarm.action + '"';
+			
+			xml += " <alarm "+att+">" + minutes + "</alarm>\n";
+		}
+	}
+	else
+	// tbird 2
 	if (event.alarmOffset && event.alarmOffset.inSeconds != 0)
 	{
-		minutes = Math.floor(Math.abs(event.alarmOffset.inSeconds)/60);
+		var minutes = Math.floor(Math.abs(event.alarmOffset.inSeconds)/60);
 		xml += " <alarm>" + minutes + "</alarm>\n";
 	}
 	
