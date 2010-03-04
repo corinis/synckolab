@@ -174,6 +174,13 @@ com.synckolab.addressbookTools = {
 
 
 com.synckolab.addressbookTools.setCardProperty = function(card, prop, value) {
+	// make sure not write "null" anywhere
+	if (value == null || value == "null")
+		value = "";
+	// autoclean contacts
+	if (prop == "Custom4" && (value.indexOf("pas-id-") == 0 || value.indoxOf("sk-") == 0))
+		value = "";
+	
 	// tbird 3
 	if (card.setProperty)
 	{
@@ -182,7 +189,7 @@ com.synckolab.addressbookTools.setCardProperty = function(card, prop, value) {
 	}
 	else
 	{
-		// translation switch
+		// translation switch - tbird 2 still has to use custom4
 		switch (prop)
 		{
 			case	"AimScreenName":	card.aimScreenName = value; break;
@@ -704,9 +711,9 @@ com.synckolab.addressbookTools.list2Vcard = function(card, fields) {
 	if (this.haveCardProperty(card, "Company"))
 		msg += "ORG:" + this.getCardProperty(card, "Company") + "\n";
  	if (this.haveCardProperty(card, "PrimaryEmail")) 
-		msg += "EMAIL;TYPE=INTERNET,PREF:" + this.getCardProperty(card, "PrimaryEmail")  + "\n";
+		msg += "EMAIL;TYPE=3DINTERNET,PREF:" + this.getCardProperty(card, "PrimaryEmail")  + "\n";
  	if (this.haveCardProperty(card, "SecondEmail")) 
-		msg += "EMAIL;TYPE=INTERNET:" + this.getCardProperty(card, "SecondEmail") + "\n";
+		msg += "EMAIL;TYPE=3DINTERNET:" + this.getCardProperty(card, "SecondEmail") + "\n";
  	if (this.haveCardProperty(card, "PreferMailFormat")) { 
 		switch(this.getCardProperty(card, "PreferMailFormat")) {
 			case this.MAIL_FORMAT_UNKNOWN:
@@ -720,15 +727,15 @@ com.synckolab.addressbookTools.list2Vcard = function(card, fields) {
  	if (this.haveCardProperty(card, "AimScreenName")) 
 		msg += "X-AIM:" + this.getCardProperty(card, "AimScreenName") + "\n"; 
 	if (this.haveCardProperty(card, "CellularNumber"))
-		msg += "TEL;TYPE=CELL:" + this.getCardProperty(card, "CellularNumber") + "\n";
+		msg += "TEL;TYPE=3DCELL:" + this.getCardProperty(card, "CellularNumber") + "\n";
  	if (this.haveCardProperty(card, "HomePhone"))
-		msg += "TEL;TYPE=HOME:" + this.getCardProperty(card, "HomePhone") + "\n";
+		msg += "TEL;TYPE=3DHOME:" + this.getCardProperty(card, "HomePhone") + "\n";
  	if (this.haveCardProperty(card, "FaxNumber"))
-		msg += "TEL;TYPE=FAX:" + this.getCardProperty(card, "FaxNumber") + "\n";
+		msg += "TEL;TYPE=3DFAX:" + this.getCardProperty(card, "FaxNumber") + "\n";
  	if (this.haveCardProperty(card, "WorkPhone"))
-		msg += "TEL;TYPE=WORK:" + this.getCardProperty(card, "WorkPhone") + "\n";
+		msg += "TEL;TYPE=3DWORK:" + this.getCardProperty(card, "WorkPhone") + "\n";
  	if (this.haveCardProperty(card, "PagerNumber"))
-		msg += "TEL;TYPE=PAGER:" + this.getCardProperty(card, "PagerNumber") + "\n";
+		msg += "TEL;TYPE=3DPAGER:" + this.getCardProperty(card, "PagerNumber") + "\n";
  	if (this.haveCardProperty(card, "Department"))
 		msg += "DEPT:" + this.getCardProperty(card, "Department") + "\n";
 	// BDAY:1987-09-27T08:30:00-06:00
@@ -761,7 +768,7 @@ com.synckolab.addressbookTools.list2Vcard = function(card, fields) {
  	if (this.haveCardProperty(card, "WebPage1"))
 		msg += "URL:" + this.encodeCardField(this.getCardProperty(card, "WebPage1")) + "\n"; // encode the : chars to HEX, vcard values cannot contain colons
  	if (this.haveCardProperty(card, "WebPage2"))
-		msg += "URL;TYPE=PERSONAL:" + this.encodeCardField(this.getCardProperty(card, "WebPage2")) + "\n";
+		msg += "URL;TYPE=3DPERSONAL:" + this.encodeCardField(this.getCardProperty(card, "WebPage2")) + "\n";
 	// ADR:POBox;Ext. Address;Address;City;State;Zip Code;Country
 	if (this.haveCardProperty(card, "WorkAddress2") 
 		|| this.haveCardProperty(card, "WorkAddress") 
@@ -769,7 +776,7 @@ com.synckolab.addressbookTools.list2Vcard = function(card, fields) {
 		|| this.haveCardProperty(card, "WorkCity") 
 		|| this.haveCardProperty(card, "WorkState"))
 	{
-		msg += "ADR;TYPE=WORK:;";
+		msg += "ADR;TYPE=3DWORK:;";
 		msg += this.getCardProperty(card, "WorkAddress2") + ";";
 		msg += this.getCardProperty(card, "WorkAddress") + ";";
 		msg += this.getCardProperty(card, "WorkCity") + ";";
@@ -784,7 +791,7 @@ com.synckolab.addressbookTools.list2Vcard = function(card, fields) {
 		|| this.haveCardProperty(card, "HomeCity") 
 		|| this.haveCardProperty(card, "HomeState"))
 	{
-		msg += "ADR;TYPE=HOME:;";
+		msg += "ADR;TYPE=3DHOME:;";
 		msg += this.getCardProperty(card, "HomeAddress2") + ";";
 		msg += this.getCardProperty(card, "HomeAddress") + ";";
 		msg += this.getCardProperty(card, "HomeCity") + ";";
@@ -1748,7 +1755,7 @@ com.synckolab.addressbookTools.card2Human = function(card) {
 	var msg = "";
 
  	if (this.haveCardProperty(card, "FirstName") || this.haveCardProperty(card, "LastName"))
-		msg += "Name: " + (this.haveCardProperty(card, "LastName")?this.getCardProperty(card, "LastName") + " ":"") + (this.haveCardProperty(card, "FirstName")?this.getCardProperty(card, "FirstName"):"") + "\n";
+		msg += "Name: " + (this.haveCardProperty(card, "LastName")?this.getCardProperty(card, "LastName", "") + " ":"") + this.getCardProperty(card, "FirstName", "") + "\n";
 	else
 	if (this.haveCardProperty(card, "DisplayName"))
 		msg += "Name: " + this.getCardProperty(card, "DisplayName");
@@ -1869,7 +1876,7 @@ com.synckolab.addressbookTools.card2Vcard = function(card, fields) {
 	var msg = "BEGIN:VCARD\n";
 	// N:Lastname;Firstname;Other;Prefix;Suffix
  	if (this.haveCardProperty(card, "FirstName") || this.haveCardProperty(card, "LastName"))
-		msg += "N:" + this.getCardProperty(card, "LastName") + ";" + this.getCardProperty(card, "FirstName") + ";;;\n";
+		msg += "N:" + this.getCardProperty(card, "LastName", "") + ";" + this.getCardProperty(card, "FirstName", "") + ";;;\n";
  	if (this.haveCardProperty(card, "DisplayName"))
 		msg += "FN:" + this.getCardProperty(card, "DisplayName") + "\n";
  	if (this.haveCardProperty(card, "NickName"))
@@ -1879,9 +1886,9 @@ com.synckolab.addressbookTools.card2Vcard = function(card, fields) {
 	if (this.haveCardProperty(card, "Company"))
 		msg += "ORG:" + this.getCardProperty(card, "Company") + "\n";
  	if (this.haveCardProperty(card, "PrimaryEmail")) 
-		msg += "EMAIL;TYPE=INTERNET;PREF:" + this.getCardProperty(card, "PrimaryEmail")  + "\n";
+		msg += "EMAIL;TYPE=3DINTERNET;PREF:" + this.getCardProperty(card, "PrimaryEmail")  + "\n";
  	if (this.haveCardProperty(card, "SecondEmail")) 
-		msg += "EMAIL;TYPE=INTERNET:" + this.getCardProperty(card, "SecondEmail") + "\n";
+		msg += "EMAIL;TYPE=3DINTERNET:" + this.getCardProperty(card, "SecondEmail") + "\n";
  	if (this.haveCardProperty(card, "PreferMailFormat")) { 
 		switch(this.getCardProperty(card, "PreferMailFormat")) {
 			case this.MAIL_FORMAT_UNKNOWN:
@@ -1895,15 +1902,15 @@ com.synckolab.addressbookTools.card2Vcard = function(card, fields) {
  	if (this.haveCardProperty(card, "AimScreenName"))
 		msg += "X-AIM:" + this.getCardProperty(card, "AimScreenName") + "\n"; 
 	if (this.haveCardProperty(card, "CellularNumber"))
-		msg += "TEL;TYPE=CELL:" + this.getCardProperty(card, "CellularNumber") + "\n";
+		msg += "TEL;TYPE=3DCELL:" + this.getCardProperty(card, "CellularNumber") + "\n";
  	if (this.haveCardProperty(card, "HomePhone"))
-		msg += "TEL;TYPE=HOME:" + this.getCardProperty(card, "HomePhone") + "\n";
+		msg += "TEL;TYPE=3DHOME:" + this.getCardProperty(card, "HomePhone") + "\n";
  	if (this.haveCardProperty(card, "FaxNumber"))
-		msg += "TEL;TYPE=FAX:" + this.getCardProperty(card, "FaxNumber") + "\n";
+		msg += "TEL;TYPE=3DFAX:" + this.getCardProperty(card, "FaxNumber") + "\n";
  	if (this.haveCardProperty(card, "WorkPhone"))
-		msg += "TEL;TYPE=WORK:" + this.getCardProperty(card, "WorkPhone") + "\n";
+		msg += "TEL;TYPE=3DWORK:" + this.getCardProperty(card, "WorkPhone") + "\n";
  	if (this.haveCardProperty(card, "PagerNumber"))
-		msg += "TEL;TYPE=PAGER:" + this.getCardProperty(card, "PagerNumber") + "\n";
+		msg += "TEL;TYPE=3DPAGER:" + this.getCardProperty(card, "PagerNumber") + "\n";
  	if (this.haveCardProperty(card, "Department"))
 		msg += "DEPT:" + this.getCardProperty(card, "Department") + "\n";
 	// BDAY:1987-09-27T08:30:00-06:00
@@ -1934,9 +1941,9 @@ com.synckolab.addressbookTools.card2Vcard = function(card, fields) {
 		msg += this.getCardProperty(card, "AnniversaryDay") + "\n";
 	}
  	if (this.haveCardProperty(card, "WebPage1"))
-		msg += "URL:" + encodeCardField(this.getCardProperty(card, "WebPage1")) + "\n"; // encode the : chars to HEX, vcard values cannot contain colons
+		msg += "URL:" + this.encodeCardField(this.getCardProperty(card, "WebPage1")) + "\n"; // encode the : chars to HEX, vcard values cannot contain colons
  	if (this.haveCardProperty(card, "WebPage2"))
-		msg += "URL;TYPE=PERSONAL:" + encodeCardField(this.getCardProperty(card, "WebPage2")) + "\n";
+		msg += "URL;TYPE=3DPERSONAL:" + this.encodeCardField(this.getCardProperty(card, "WebPage2")) + "\n";
 	// ADR:POBox;Ext. Address;Address;City;State;Zip Code;Country
 	if (this.haveCardProperty(card, "WorkAddress2")
 		|| this.haveCardProperty(card, "WorkAddress")
@@ -1944,7 +1951,7 @@ com.synckolab.addressbookTools.card2Vcard = function(card, fields) {
 		|| this.haveCardProperty(card, "WorkCity")
 		|| this.haveCardProperty(card, "WorkState"))
 	{
-		msg += "ADR;TYPE=WORK:;";
+		msg += "ADR;TYPE=3DWORK:;";
 		msg += this.getCardProperty(card, "WorkAddress","") + ";";
 		msg += this.getCardProperty(card, "WorkAddress2","") + ";";
 		msg += this.getCardProperty(card, "WorkCity","") + ";";
@@ -1959,7 +1966,7 @@ com.synckolab.addressbookTools.card2Vcard = function(card, fields) {
 		|| this.haveCardProperty(card, "HomeCity")
 		|| this.haveCardProperty(card, "HomeState"))
 	{
-		msg += "ADR;TYPE=HOME:;";
+		msg += "ADR;TYPE=3DHOME:;";
 		msg += this.getCardProperty(card, "HomeAddress","") + ";";
 		msg += this.getCardProperty(card, "HomeAddress2","") + ";";
 		msg += this.getCardProperty(card, "HomeCity","") + ";";
@@ -2023,11 +2030,16 @@ com.synckolab.addressbookTools.card2Message = function(card, email, format, fiel
 	
 	if (card.isMailList)
 		return com.synckolab.tools.generateMail(this.getUID(card), email, "vCard", "application/x-vcard.list", 
-			false, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(this.list2Vcard(card,fields))), null);
+			false, decodeURIComponent(card.translateTo("vcard")), null);
 
 	return com.synckolab.tools.generateMail(this.getUID(card), email, "vCard", "text/vcard", 
 			false, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(this.card2Vcard(card, fields))), null);
 			
+	/*
+	return com.synckolab.tools.generateMail(this.getUID(card), email, "vCard", "text/vcard", 
+			false, decodeURIComponent(card.translateTo("vcard")), null);
+			- this works kinda... some fields ar emissing and others are wrong named in order to be compatible with kolab
+	*/
 		
 };
 
@@ -2037,6 +2049,7 @@ com.synckolab.addressbookTools.card2Message = function(card, email, format, fiel
  */
 com.synckolab.addressbookTools.encodeCardField = function(fieldValue) {
 	var safeStr;
+	safeStr = fieldValue.replace(/=/g, "=3D");
 	safeStr = fieldValue.replace(/:/g, "=3A");
 	return safeStr.replace(/;/g, "=3B");
 };
@@ -2047,6 +2060,7 @@ com.synckolab.addressbookTools.encodeCardField = function(fieldValue) {
 com.synckolab.addressbookTools.decodeCardField = function(fieldValue) {
 	var unsafeStr;
 	unsafeStr = fieldValue.replace(/=3A/g, ":");
+	unsafeStr = fieldValue.replace(/=3D/g, "=");
 	return unsafeStr.replace(/=3B/g, ";");
 };
 
