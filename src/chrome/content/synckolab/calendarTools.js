@@ -296,7 +296,22 @@ com.synckolab.calendarTools = {
  *   comparing iCal vs. XML
  */
 com.synckolab.calendarTools.equalsEvent = function(a, b, syncTasks, email) {
-	return this.cnv_event2xml(a, true, syncTasks, email) == this.cnv_event2xml(b, true, syncTasks, email);
+	var sa = this.cnv_event2xml(a, true, syncTasks, email);
+	var sb = this.cnv_event2xml(b, true, syncTasks, email);
+	if (sa == sb)
+		return true;
+	// do a diff to see whats different
+	var la = sa.split("\n");
+	var lb = sa.split("\n");
+	var i;
+	for (i=0; i < la.length && i < lb.length; i++)
+	{
+		if (la[i] != lb[i])
+		{
+			com.synckolab.tools.logMessage("not equals: " + la[i] + " vs. " + lb[i], com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_INFO );
+		}
+	}
+	return false;
 };
 
 com.synckolab.calendarTools.message2Event = function(fileContent, extraFields, syncTasks) {
