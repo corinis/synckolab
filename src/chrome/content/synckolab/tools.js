@@ -306,7 +306,14 @@ stripMailHeader: function (content) {
 				}
 			}
 		}
-		
+
+		if (content.indexOf("<?xml") != -1)
+		{
+			// workaround for #22552 (xml only) - this definitely should not produce any side effects
+			content = content.replace("version=2", 'version="');
+			content = content.replace("encoding=2", 'encoding="')
+		}
+
 		if (isQP != -1)
 		{
 			content = content.substring(isQP, content.length);
@@ -324,12 +331,6 @@ stripMailHeader: function (content) {
 		contentIdx = content.indexOf("<?xml");
 		if (contentIdx == -1)
 			contentIdx = content.indexOf("BEGIN:");
-		else
-		{
-			// workaround for #22552 (xml only) - this definitely should not produce any side effects
-			content = content.replace("version=2", 'version="');
-			content = content.replace("encoding=2", 'encoding="')
-		}
 		
 		if (contentIdx != -1)
 			content = content.substring(contentIdx);
