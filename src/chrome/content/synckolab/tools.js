@@ -180,6 +180,44 @@ stripMailHeader: function (content) {
 	}
 	// try to get the start of the card part
 
+	// remove the tmp image if it exists...
+	var file = Components.classes["@mozilla.org/file/directory_service;1"].
+	   getService(Components.interfaces.nsIProperties).
+	   get("TmpD", Components.interfaces.nsIFile);
+	file.append("syncKolab.img");
+	if (file.exists()) 
+		file.remove(true);
+	
+	// check if we have an image attachment
+	var imgC = content;
+	var imgIdx = imgC.search(/Content-Type:[ \t\r\n]+image/i);
+	
+	if (imgIdx != -1)
+	{
+		// get rid of the last part until the boundary
+		imgC = imgC.substring(imgIdx);
+		var idx = imgC.indexOf(boundary);
+		if (idx != -1)
+			imgC = imgC.substring(0, idx);
+		
+		// get the image data (make sure to remove \n and whitespace
+		idx = imgC.indexOf('\n\n');
+		imgC = imgC.substring(idx);
+		imgC = imgC.replace(/[\r\n \t-]+/g, "");
+		// now we got one line of data - write it in a tmpfile (unencoded - obviously)
+		file.create(file.NORMAL_FILE_TYPE, 0666);
+		var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
+		stream.init(file, 2, 0x200, false); // open as "write only"
+		var fileIO = Components.classes["@mozilla.org/binaryoutputstream;1"].createInstance(Components.interfaces.nsIBinaryOutputStream); 
+		fileIO.setOutputStream(stream);
+		
+		var fcontent = atob(imgC);
+		fileIO.writeBytes(fcontent, fcontent.length);
+		
+		fileIO.close();
+		stream.close();
+	}
+	
 	// check kolab XML first
 	var contentIdx = -1;
 	var contTypeIdx = content.search(/Content-Type:[ \t\r\n]+application\/x-vnd.kolab./i);
@@ -192,7 +230,7 @@ stripMailHeader: function (content) {
 			content = content.substring(0, endcontentIdx);
 		if ((new RegExp ("--$")).test(content))
 			content = content.substring(0, content.length - 2);
-
+		
 		contentIdx = content.indexOf("<?xml");
 	}
 	else
@@ -222,9 +260,12 @@ stripMailHeader: function (content) {
 	// if we did not find a decoded card, it might be base64
 	if (contentIdx == -1)
 	{
+		
 		var isQP = content.search(/Content-Transfer-Encoding:[ \t\r\n]+quoted-printable/i);
 		var isBase64 = content.search(/Content-Transfer-Encoding:[ \t\r\n]+base64/i);
 
+		this.logMessage("contentIdx == -1: looks like its encoded: QP=" + isQP + " B64=" + isBase64);
+		
 		if (isBase64 != -1)
 		{
 			this.logMessage("Base64 Decoding message. (Boundary: "+boundary+")", com.synckolab.global.LOG_INFO);
@@ -254,9 +295,7 @@ stripMailHeader: function (content) {
 				// out of memory error... this can be handled :)
 				if (e.result == Components.results.NS_ERROR_OUT_OF_MEMORY)
 				{
-					var base64 = new JavaScriptBase64;
-					base64.JavaScriptBase64(content);					
-					content = base64.decode();
+					content = com.synckolab.text.base64.decode(content);
 					this.logMessage("decoded base64: " + content, com.synckolab.global.LOG_DEBUG);
 
 				}
@@ -267,18 +306,27 @@ stripMailHeader: function (content) {
 				}
 			}
 		}
-		else
-			if (isQP != -1)
-			{
-				content = content.substring(isQP, content.length);
-				content = decodeQuoted(content);
-			}
-			else
-			{
-				// so this message has no <xml>something</xml> area
-				this.logMessage("Error parsing this message: no xml segment found\n" + content, com.synckolab.global.LOG_ERROR);
-				return null;
-			}
+		
+		if (isQP != -1)
+		{
+			content = content.substring(isQP, content.length);
+			content = com.synckolab.tools.text.quoted.decode(content);
+		}
+		
+		if (isQP == -1 && isBase64 == -1)
+		{
+			// so this message has no <xml>something</xml> area
+			this.logMessage("Error parsing this message: no xml segment found\n" + content, com.synckolab.global.LOG_ERROR);
+			return null;
+		}
+		
+		// with the decoded content - check for the real start
+		contentIdx = content.indexOf("<?xml");
+		if (contentIdx == -1)
+			contentIdx = content.indexOf("BEGIN:");
+		
+		if (contentIdx != -1)
+			content = content.substring(contentIdx);
 	}
 	else
 	{
@@ -300,8 +348,9 @@ stripMailHeader: function (content) {
  * part: true if this is a multipart message
  * content: the content for the message
  * hr: human Readable Part (optional)
+ * profileimage: optional image attachment (the name of the image - it always resides in profile/Photos/XXX.jpg!)
  */
-generateMail: function (cid, mail, adsubject, mime, part, content, hr){
+generateMail: function (cid, mail, adsubject, mime, part, content, hr, image){
 	// sometime we just do not want a new message :)
 	if (content == null)
 		return null;
@@ -366,7 +415,59 @@ generateMail: function (cid, mail, adsubject, mime, part, content, hr){
 		msg += 'Content-Transfer-Encoding: quoted-printable\n';
 		msg += 'Content-Disposition: attachment;\n filename="kolab.xml"\n\n';
 	}
+	// add the content
 	msg += content + '\n';
+	
+	// if we have an image try to read it and create a new part (ONLY for xml)
+	if (part && image) {
+		var file = Components.classes["@mozilla.org/file/directory_service;1"].
+			getService(Components.interfaces.nsIProperties).
+			get("ProfD", Components.interfaces.nsIFile);
+		try {
+			file.append("Photos");
+			if (!file.exists())
+				file.create(1, 0775);
+	
+			file.append(image);
+			// file actually exists - we can try to read it and attach it
+			if (file.exists() && file.isReadable())
+			{
+				// setup the input stream on the file
+				var istream = Components.classes["@mozilla.org/network/file-input-stream;1"]
+				                                 .createInstance(Components.interfaces.nsIFileInputStream);
+				istream.init(file, 0x01, 4, null);
+				var fileIO = Components.classes["@mozilla.org/binaryinputstream;1"].createInstance(Components.interfaces.nsIBinaryInputStream); 
+				fileIO.setInputStream(istream);
+				// get the image
+				var fileContent = "";
+				var csize = 0; 
+				while ((csize = fileIO.available()) != 0)
+				{
+					var data = fileIO.readBytes(csize);
+					fileContent += btoa(data);
+				}
+				fileIO.close(); 	
+				istream.close();
+
+				this.logMessage("got " + fileContent.length + " bytes", com.synckolab.global.LOG_WARNING);
+				
+				// now we got the image into fileContent - lets attach
+				
+				msg += '\n--Boundary-00='+bound+'\n';
+				msg += 'Content-Type: image/jpeg;\n name="'+image+'"\n';
+				msg += 'Content-Transfer-Encoding: base64\n';
+				msg += 'Content-Disposition: attachment;\n filename="'+image+'"\n\n';
+				msg += fileContent;
+			}
+		}
+		catch (ex)
+		{
+			this.logMessage("Unable to read image: "+image+"\n" + ex, com.synckolab.global.LOG_WARNING);
+			return null;
+		}
+		
+	}
+
 	if (part)
 		msg += '--Boundary-00='+bound+'--\n';
 	else
@@ -596,7 +697,7 @@ com.synckolab.tools.file = {
 	getSyncDbFile: function (config, type, id)	{
 		if (id == null)
 		{
-			this.logMessage("Error: entry has no id (" +config + ": " + type + ")", com.synckolab.global.LOG_ERROR);
+			com.synckolab.tools.logMessage("Error: entry has no id (" +config + ": " + type + ")", com.synckolab.global.LOG_ERROR);
 			return null;
 		}
 
@@ -621,7 +722,7 @@ com.synckolab.tools.file = {
 		}
 		catch (ex)
 		{
-			this.logMessage("Problem with getting syncDbFile:  (" +config + ": " + type + ": " + id + ")\n" + ex, com.synckolab.global.LOG_ERROR);
+			com.synckolab.tools.logMessage("Problem with getting syncDbFile:  (" +config + ": " + type + ": " + id + ")\n" + ex, com.synckolab.global.LOG_ERROR);
 			return null;
 		}
 		return file;

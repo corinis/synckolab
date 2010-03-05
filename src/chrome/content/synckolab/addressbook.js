@@ -337,7 +337,7 @@ com.synckolab.AddressBook = {
 			
 			// remember that we did this uid already
 			this.folderMessageUids.push(this.tools.getUID(newCard));
-			com.synckolab.tools.logMessage("got card from message: " + this.tools.getUID(newCard), com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);	
+			com.synckolab.tools.logMessage("got card from message: " + this.tools.getUID(newCard), com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
 
 			// update list item
 			this.curItemInListId.setAttribute("label", this.tools.getUID(newCard));
@@ -374,6 +374,15 @@ com.synckolab.AddressBook = {
 					// lost/changed
 					com.synckolab.tools.writeSyncDBFile (cEntry, fileContent);
 					
+					// also copy the image
+					var pName = this.tools.getCardProperty(newCard, "PhotoName");
+					if (pName != null && pName != "" && pName != "null")
+					{
+						// in case the copy failed - clear the photoname
+						if(this.tools.copyImage(pName) == false)
+							this.tools.setCardProperty(newCard, "PhotoName", "");
+					}
+					
 					// also write the extra fields in a file
 					if (messageFields.length() > 0)
 						messageFields.write(fEntry);
@@ -383,7 +392,7 @@ com.synckolab.AddressBook = {
 						// skip mailing lists
 						this.gAddressBook.addMailList(newCard);
 					}
-					else					
+					else
 					{
 						this.gAddressBook.addCard (newCard);
 						// also add to the hash-database
@@ -511,6 +520,16 @@ com.synckolab.AddressBook = {
 						try
 						{
 							this.gAddressBook.deleteCards(list);
+
+							// also copy the image
+							var pName = this.tools.getCardProperty(newCard, "PhotoName");
+							if (pName != null && pName != "" && pName != "null")
+							{
+								// in case the copy failed - clear the photoname
+								if(this.tools.copyImage(pName) == false)
+									this.tools.setCardProperty(newCard, "PhotoName", "");
+							}
+							
 							// add the new one
 							this.gAddressBook.addCard (newCard);
 						}
@@ -572,6 +591,16 @@ com.synckolab.AddressBook = {
 						try
 						{
 							this.gAddressBook.deleteCards(list);
+
+							// also copy the image
+							var pName = this.tools.getCardProperty(newCard, "PhotoName");
+							if (pName != null && pName != "" && pName != "null")
+							{
+								// in case the copy failed - clear the photoname
+								if(this.tools.copyImage(pName) == false)
+									this.tools.setCardProperty(newCard, "PhotoName", "");
+							}
+
 							this.gAddressBook.addCard (newCard);
 						}
 						catch (de)

@@ -178,7 +178,7 @@ com.synckolab.addressbookTools.setCardProperty = function(card, prop, value) {
 	if (value == null || value == "null")
 		value = "";
 	// autoclean contacts
-	if (prop == "Custom4" && (value.indexOf("pas-id-") == 0 || value.indoxOf("sk-") == 0))
+	if (prop == "Custom4" && (value.indexOf("pas-id-") == 0 || value.indexOf("sk-") == 0))
 		value = "";
 	
 	// tbird 3
@@ -510,9 +510,11 @@ com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 					found = true;
 					break;
 				case "PICTURE":
-					// check if the attachment file exists under ~/Photos/*
-					// set the PhotoName to the file
-					// if it does not exist: create it out of the attachment
+					if (cur.firstChild == null)
+						break;
+					
+					// we should have a picture named /tmp/synckolab.img - this will be moved if we keep this contact
+					this.setCardProperty(card, "PhotoName", cur.getFirstData());
 					break;
 				case "PICTURE-URI":
 					if (cur.firstChild == null)
@@ -856,6 +858,41 @@ com.synckolab.addressbookTools.list2Vcard = function(card, fields) {
 };
 
 /**
+ * moves the temp image stored in /tmp/synckolab.img to its final position
+ */
+com.synckolab.addressbookTools.copyImage = function(newName) {
+	// wrong name - forget it
+	if (newName == null || newName == "" || newName == "null")
+		return;
+	var file = Components.classes["@mozilla.org/file/directory_service;1"].
+	   getService(Components.interfaces.nsIProperties).
+	   get("TmpD", Components.interfaces.nsIFile);
+	file.append("syncKolab.img");
+	
+	// we dont have the image
+	if (!file.exists()) 
+		return false;
+	
+	var fileTo = Components.classes["@mozilla.org/file/directory_service;1"].
+		getService(Components.interfaces.nsIProperties).
+		get("ProfD", Components.interfaces.nsIFile);
+	fileTo.append("Photos");
+	if (!fileTo.exists())
+		fileTo.create(1, 0775);
+	try
+	{
+		file.moveTo(fileTo, newName);
+	}
+	catch (ex) {
+		com.synckolab.tools.logMessage ("Unable to move file " + newName + "\n" + ex, this.global.LOG_WARNING + this.global.LOG_AB);
+	}
+	
+	// check if the file exists
+	fileTo.append(newName);	
+	return fileTo.exists();
+};
+
+/**
  * Creates xml (kolab2) out of a given card. 
  * The return is the xml as string.
  * @param card nsIAbCard: the adress book card
@@ -867,7 +904,6 @@ com.synckolab.addressbookTools.card2Xml = function(card, fields) {
 	//com.synckolab.tools.logMessage ("VCARD: \n" + card.translateTo("vcard"), this.global.LOG_WARNING + this.global.LOG_AB); // converts a little too much and ignores uuid
 	
 	// debug for photo:
-	com.synckolab.tools.logMessage ("UUID: " + this.getCardProperty(card, "UUID") + "\nPhoto info: \n\tPhotoName: " + this.getCardProperty(card, "PhotoName") + "\n\tPhotoType: " + this.getCardProperty(card, "PhotoType") + "\n\tPhotoURI: " + this.getCardProperty(card, "PhotoURI"), this.global.LOG_WARNING + this.global.LOG_AB); 
 	
 	var displayName = "";
 	var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
@@ -1024,9 +1060,10 @@ com.synckolab.addressbookTools.card2Xml = function(card, fields) {
 		xml += " </address>\n";
 	}
 	
-	// photo
-	//xml += com.synckolab.tools.text.nodeWithContent("picture", this.getCardProperty(card, "Custom1"), false); picture refers to an attachment
-	
+	// photo name = photo - this is an attachment (handled outside)
+	xml += com.synckolab.tools.text.nodeWithContent("picture", this.getCardProperty(card, "PhotoName"), false); 
+
+	// we can probably ignore that
 	var ptype = this.getCardProperty(card, "PhotoType");
 	if (ptype == "web" || ptype == "file")
 	{
@@ -1986,6 +2023,14 @@ com.synckolab.addressbookTools.card2Vcard = function(card, fields) {
  		msg += "ALLOWREMOTECONTENT:true\n";
  	else
  		msg += "ALLOWREMOTECONTENT:false\n";
+ 	// picture
+ 	msg += "PICTURE:" + this.getCardProperty(card, "PhotoName");
+	var ptype = this.getCardProperty(card, "PhotoType");
+	if (ptype == "web" || ptype == "file")
+	{
+		msg += "PICTURE-URI:" + this.getCardProperty(card, "PhotoURI"); // we can distinguish between file: and http: anyways
+	}
+
  	// yeap one than more line (or something like that :P)
  	if (this.haveCardProperty(card, "Notes"))
 		msg += "NOTE:" + this.getCardProperty(card, "Notes").replace(/\n\n/g, "\\n").replace (/\n/g, "\\n") + "\n";
@@ -2016,6 +2061,7 @@ com.synckolab.addressbookTools.card2Message = function(card, email, format, fiel
 
 	com.synckolab.tools.logMessage("creating message out of card... ", this.global.LOG_INFO + this.global.LOG_AB);
 	
+
 	// for the kolab xml format
 	if(format == "Xml")
 	{
@@ -2025,7 +2071,7 @@ com.synckolab.addressbookTools.card2Message = function(card, email, format, fiel
 				true, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(this.list2Xml(card, fields))), this.list2Human(card));
 		else
 			return com.synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vnd.kolab.contact", 
-				true, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(this.card2Xml(card, fields))), this.card2Human(card));
+				true, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(this.card2Xml(card, fields))), this.card2Human(card), this.getCardProperty(card, "PhotoName"));
 	}
 	
 	if (card.isMailList)
