@@ -502,7 +502,7 @@ com.synckolab.AddressBook = {
 					}
 					
 					if ( bUpdateLocal ) {
-						// Update local entry						
+						// Update local entry
 						
 						// first delete the card 
 						if (this.isTbird2 == true)
@@ -536,7 +536,7 @@ com.synckolab.AddressBook = {
 						catch (de)
 						{
 							com.synckolab.tools.logMessage("problem with local update for - skipping" + this.tools.getUID(aCard), com.synckolab.global.LOG_WARNING + com.synckolab.global.LOG_AB);
-						}						
+						}
 						
 						// write the current content in the sync-db file
 						com.synckolab.tools.writeSyncDBFile (cEntry, fileContent);
