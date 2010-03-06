@@ -1314,7 +1314,7 @@ com.synckolab.calendarTools.event2kolabXmlMsg = function (event, email, syncTask
 {
 	var xml = this.event2xml(event, syncTasks, email);
 	var my_msg = com.synckolab.tools.generateMail(event.id, email, "", syncTasks?"application/x-vnd.kolab.task":"application/x-vnd.kolab.event", 
-			true, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(xml)), this.event2Human(event, syncTasks));
+			true, com.synckolab.tools.text.utf8.encode(xml), this.event2Human(event, syncTasks));
 	return my_msg;
 };
 

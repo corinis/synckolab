@@ -2024,7 +2024,7 @@ com.synckolab.addressbookTools.card2Vcard = function(card, fields) {
  	else
  		msg += "ALLOWREMOTECONTENT:false\n";
  	// picture
- 	msg += "PICTURE:" + this.getCardProperty(card, "PhotoName");
+ 	msg += "PICTURE:" + this.getCardProperty(card, "PhotoName") + "\n";
 	var ptype = this.getCardProperty(card, "PhotoType");
 	if (ptype == "web" || ptype == "file")
 	{
@@ -2068,10 +2068,10 @@ com.synckolab.addressbookTools.card2Message = function(card, email, format, fiel
 		// mailing list
 		if (card.isMailList)
 			return com.synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vnd.kolab.contact.distlist", 
-				true, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(this.list2Xml(card, fields))), this.list2Human(card));
+				true, com.synckolab.tools.text.utf8.encode(this.list2Xml(card, fields)), this.list2Human(card));
 		else
 			return com.synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vnd.kolab.contact", 
-				true, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(this.card2Xml(card, fields))), this.card2Human(card), this.getCardProperty(card, "PhotoName"));
+				true, com.synckolab.tools.text.utf8.encode(this.card2Xml(card, fields)), this.card2Human(card), this.getCardProperty(card, "PhotoName"));
 	}
 	
 	if (card.isMailList)
@@ -2079,7 +2079,7 @@ com.synckolab.addressbookTools.card2Message = function(card, email, format, fiel
 			false, decodeURIComponent(card.translateTo("vcard")), null);
 
 	return com.synckolab.tools.generateMail(this.getUID(card), email, "vCard", "text/vcard", 
-			false, com.synckolab.tools.text.quoted.encode(com.synckolab.tools.text.utf8.encode(this.card2Vcard(card, fields))), null);
+			false, com.synckolab.tools.text.utf8.encode(this.card2Vcard(card, fields)), null);
 			
 	/*
 	return com.synckolab.tools.generateMail(this.getUID(card), email, "vCard", "text/vcard", 

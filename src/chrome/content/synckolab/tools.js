@@ -306,20 +306,14 @@ stripMailHeader: function (content) {
 				}
 			}
 		}
-
-		if (content.indexOf("<?xml") != -1)
-		{
-			// workaround for #22552 (xml only) - this definitely should not produce any side effects
-			content = content.replace("version=2", 'version="');
-			content = content.replace("encoding=2", 'encoding="')
-		}
-
+		else
 		if (isQP != -1)
 		{
 			content = content.substring(isQP, content.length);
 			content = com.synckolab.tools.text.quoted.decode(content);
 		}
 		
+
 		if (isQP == -1 && isBase64 == -1)
 		{
 			// so this message has no <xml>something</xml> area
@@ -331,6 +325,15 @@ stripMailHeader: function (content) {
 		contentIdx = content.indexOf("<?xml");
 		if (contentIdx == -1)
 			contentIdx = content.indexOf("BEGIN:");
+		else
+		{
+			// workaround for #22552 (xml only) - this definitely should not produce any side effects
+			content = content.replace("version=2", 'version="');
+			content = content.replace("encoding=2", 'encoding="');
+			content = content.replace("version!", 'version="1');
+			content = content.replace("encoding!", 'encoding="1');
+		}
+
 		
 		if (contentIdx != -1)
 			content = content.substring(contentIdx);
@@ -419,11 +422,13 @@ generateMail: function (cid, mail, adsubject, mime, part, content, hr, image){
 
 		msg += '\n--Boundary-00='+bound+'\n';
 		msg += 'Content-Type: '+mime+';\n name="kolab.xml"\n';
-		msg += 'Content-Transfer-Encoding: quoted-printable\n';
+		msg += 'Content-Transfer-Encoding: base64\n';
 		msg += 'Content-Disposition: attachment;\n filename="kolab.xml"\n\n';
+		msg += btoa(content) + '\n';
 	}
-	// add the content
-	msg += content + '\n';
+	else
+		// add the content
+		msg += com.synckolab.tools.text.quoted.encode(content) + '\n';
 	
 	// if we have an image try to read it and create a new part (ONLY for xml)
 	if (part && image) {

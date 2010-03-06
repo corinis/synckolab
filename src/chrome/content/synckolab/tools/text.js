@@ -593,7 +593,16 @@ com.synckolab.tools.text.quoted = {
 	},
 	
 	decode: function (s) {
-		return s.replace(/=[\r\n]+/g, "").replace(/=[0-9A-F]{2}/gi,
+		s = s.replace(/=[\r\n]+/g, "");
+
+		// in order to avoid problematic decoding prepare the string
+		// known problems might arise with:
+		// TYPE=CELL
+		// TYPE=FAX
+		s = s.replace("TYPE=CELL", "TYPE=3DCELL");
+		s = s.replace("TYPE=FAX", "TYPE=3DFAX");
+		
+		return s.replace(/=[0-9A-F]{2}/gi,
 				function(v){ return String.fromCharCode(parseInt(v.substr(1),16)); });
 	}
 };
