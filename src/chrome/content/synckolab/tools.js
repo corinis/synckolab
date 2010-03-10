@@ -306,12 +306,15 @@ stripMailHeader: function (content) {
 				}
 			}
 		}
-		else
+		
+		
+
 		if (isQP != -1)
 		{
 			content = content.substring(isQP, content.length);
 			content = com.synckolab.tools.text.quoted.decode(content);
 		}
+		
 		
 
 		if (isQP == -1 && isBase64 == -1)
@@ -325,14 +328,6 @@ stripMailHeader: function (content) {
 		contentIdx = content.indexOf("<?xml");
 		if (contentIdx == -1)
 			contentIdx = content.indexOf("BEGIN:");
-		else
-		{
-			// workaround for #22552 (xml only) - this definitely should not produce any side effects
-			content = content.replace("version=2", 'version="');
-			content = content.replace("encoding=2", 'encoding="');
-			content = content.replace("version!", 'version="1');
-			content = content.replace("encoding!", 'encoding="1');
-		}
 
 		
 		if (contentIdx != -1)
@@ -345,6 +340,12 @@ stripMailHeader: function (content) {
 		if (content.indexOf(boundary) != -1)
 			content = content.substring(0, content.indexOf("--"+boundary));
 	}
+	
+	// content might still be quotted printable... doublecheck
+	// check if we have to decode quoted printable
+	if (content.indexOf("version=3D=22") != -1) // we know from the version
+		content = com.synckolab.tools.text.quoted.decode(content);
+
 
 	return com.synckolab.tools.text.trim(content);
 },

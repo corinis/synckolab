@@ -321,15 +321,16 @@ com.synckolab.AddressBook = {
 		
 		newCard = newItem;
 		
+		/*
 		if (newCard && newCard.isMailList)
 		{
 			// skip mailing lists
-			this.curItemInListContent.setAttribute("label", com.synckolab.global.strBundle.getString("mailingList") + " " + newCard.listNickName);
+			this.curItemInListContent.setAttribute("label", com.synckolab.global.strBundle.getString("mailingList") + " " + this.tools.getUID(newCard));
 			this.curItemInListId.setAttribute("label", com.synckolab.global.strBundle.getString("noChange"));
 			com.synckolab.tools.logMessage("skipping mailing lists!", com.synckolab.global.LOG_WARNING + com.synckolab.global.LOG_AB);
 			return null;
 		}
-		
+		*/
 		if (newCard) 
 		{
 			// remember current uid

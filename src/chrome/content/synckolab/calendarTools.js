@@ -355,6 +355,9 @@ com.synckolab.calendarTools.message2Event = function(fileContent, extraFields, s
 com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 {
 	var syncTasks = false;
+	// check if we have to decode quoted printable
+	if (xml.indexOf("version=3D=22") != -1) // we know from the version
+		xml = com.synckolab.tools.text.quoted.decode(xml);
 	
 	com.synckolab.tools.logMessage("Parsing an XML event:\n" + xml, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
 	// TODO improve recurrence settings
@@ -362,8 +365,13 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 	//		  - yearly recurrence
 	
 	// decode utf chars and make sure an & is an &amp; (otherwise this is unparseable)
-	xml = com.synckolab.tools.text.utf8.decode(com.synckolab.tools.text.quoted.decode(xml));
-	// potential fix: .replace(/&/g, "&amp;")
+	xml = com.synckolab.tools.text.utf8.decode(xml);
+	// temporary fixes:
+	// - attribute: "summary= ; "action=
+	// TODO: remove for non-nightly!!!
+	xml = xml.replace('"summary=', '" summary=');
+	xml = xml.replace('"action=', '" action=');
+	
 
 	// convert the string to xml
 	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser); 
@@ -1057,11 +1065,11 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
 			// tbird 3 has some other attributes which we should take care of
 			var att = "";
 			if (alarm.description != null && alarm.description != "")
-				att += 'description="' + alarm.description + '"';
+				att += 'description="' + alarm.description + '" ';
 			if (alarm.summary != null && alarm.summary != "")
-				att += 'summary="' + alarm.description + '"';
+				att += 'summary="' + alarm.description + '" ';
 			if (alarm.action != null && alarm.action != "")
-				att += 'action="' + alarm.action + '"';
+				att += 'action="' + alarm.action + '" ';
 			
 			xml += " <alarm "+att+">" + minutes + "</alarm>\n";
 		}
