@@ -858,12 +858,15 @@ com.synckolab.AddressBook = {
 				
 				if (cEntry.exists() && !this.forceServerCopy)
 				{
-					if (this.isTbird2 == true)
-						this.deleteList.AppendElement(curItem);
-					else
-					// tbird 3
-						this.deleteList.appendElement(curItem, false);
-					
+					// TODO: do not delte list for now..
+					if (! curItem.isMailList)
+					{
+						if (this.isTbird2 == true)
+							this.deleteList.AppendElement(curItem);
+						else
+						// tbird 3
+							this.deleteList.appendElement(curItem, false);
+					}
 					// create a new item in the itemList for display
 					this.curItemInList = this.doc.createElement("listitem");
 					this.curItemInListId = this.doc.createElement("listcell");
