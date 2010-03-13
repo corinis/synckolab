@@ -227,7 +227,7 @@ com.synckolab.AddressBook = {
 				}
 				catch (ex)
 				{
-					com.synckolab.tools.logMessage("AB: Empty address book (exception on first)... ", com.synckolab.global.LOG_DEBUG);				
+					com.synckolab.tools.logMessage("AB: Empty address book (exception on first)... ", com.synckolab.global.LOG_DEBUG);
 				}
 			}
 		}
@@ -737,7 +737,8 @@ com.synckolab.AddressBook = {
 		
 		curItem = cur;
 		
-		// mailing lists are nsIABDirectory 
+		// mailing lists are nsIABDirectory
+		/*
 		if (cur.isMailList)
 		{
 			com.synckolab.tools.logMessage("GOT A MAILING LIST!!! - skipping", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
@@ -756,11 +757,13 @@ com.synckolab.AddressBook = {
 			}
 			return null;
 		}
+		*/
 		
 		
 		// check for this entry
 		if (this.tools.getUID (curItem) == null)
 		{
+			/*
 			if (cur.isMailList)
 			{
 				try
@@ -775,6 +778,7 @@ com.synckolab.AddressBook = {
 				// skip this one.. there simply ARE no valid mailing list without UID
 				return null;
 			}
+			*/
 			
 			// look at new card
 			// generate a unique id (will random be enough for the future?)

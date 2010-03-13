@@ -142,15 +142,16 @@ com.synckolab.addressbookTools = {
 		getUID: function(card) {
 			if (card == null)
 				return null;
-			
+
+			// for mailing lists
+			if (card.isMailList && card.displayName)
+				return com.synckolab.tools.sha1.hex_sha1(card.displayName);
+
 			// tbird 3: we can use custom fields!!!
 			var uid = this.getCardProperty(card, "UUID");
 			if (uid != "" && uid != null)
 				return uid;
 
-			// for pre tbird 3
-			if (card.isMailList)
-				return this.getCardProperty(card, "ListNickName");
 			
 			// pre tbird 3 style
 			if (this.getCardProperty(card, "Custom4") == "")
@@ -651,16 +652,22 @@ com.synckolab.addressbookTools.list2Xml = function(card, fields) {
 	if (this.haveCardProperty(card, "Nickname"))
 		xml +=" <nickname>"+com.synckolab.tools.text.encode4XML(this.getCardProperty(card, "Nickname"))+"</nickname>\n";
 
-	var cList = card;
-	if (cList.addressLists)
- 	{
-		var total = cList.addressLists.Count();
-		if (total)
+	xml +=" <name>"+com.synckolab.tools.text.encode4XML(card.displayName)+"</name>\n";
+
+	let abManager = Components.classes["@mozilla.org/abmanager;1"]
+	                                   .getService(Components.interfaces.nsIAbManager);
+	let cList = abManager.getDirectory(card.mailListURI);
+	
+	var lCards = cList.childCards;
+	if (lCards != null)
+	{
+		if (lCards.hasMoreElements)
 		{
-			for ( var i = 0; i < total; i++ )
+			var card = null;
+			while (lCards.hasMoreElements() && (card = lCards.getNext ()) != null)
 			{
-				var cur = cList.addressLists.GetElementAt(i);
-				cur = cur.QueryInterface(Components.interfaces.nsIAbCard);
+				// get the right interface
+				cur = card.QueryInterface(Components.interfaces.nsIAbCard);
 				// get the uid or generate it
 				var uid = this.getUID(cur);
 				if (!uid)
@@ -684,9 +691,22 @@ com.synckolab.addressbookTools.list2Xml = function(card, fields) {
 				xml += "  </member>\n";
 			}
 		}
+		else
+		{
+			com.synckolab.tools.logMessage("lists not supported " + xml, com.synckolab.global.LOG_WARNING + com.synckolab.global.LOG_AB);
+			return null;
+		}
 	}
-
+	else
+	{
+		com.synckolab.tools.logMessage("lists not supported " + xml, com.synckolab.global.LOG_WARNING + com.synckolab.global.LOG_AB);
+		return null;
+	}
+	
 	xml += "</distribution-list>\n";
+	com.synckolab.tools.logMessage("list: " + xml, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+
+	return xml;
 };
 
 /**
@@ -1776,25 +1796,28 @@ com.synckolab.addressbookTools.message2Card = function(lines, card, extraFields,
 
 com.synckolab.addressbookTools.list2Human = function(card) {
 	var msg = "";
-	msg += "Name: " + this.getCardProperty(card, "ListNickName") + "\n";
- 	if (this.haveCardProperty(card, "Notes"))
-		msg += "Notes: " + this.getCardProperty(card, "Description") + "\n";
-
-	var cList = card.QueryInterface(Components.interfaces.nsIAbDirectory);
-	if (cList.addressLists)
- 	{
-		msg += "Members: \n";
-		var total = cList.addressLists.Count();
-		if (total)
-		{
-			for ( var i = 0;  i < total; i++ )
+	msg += "Name: " + this.getCardProperty(card, "DisplayName") + "\n";
+	if (this.haveCardProperty(card, "Notes"))
+		msg += "Notes: " + this.getCardProperty(card, "Notes") + "\n";
+	
+	let abManager = Components.classes["@mozilla.org/abmanager;1"]
+	                                   .getService(Components.interfaces.nsIAbManager);
+	let cList = abManager.getDirectory(card.mailListURI);
+	
+	var lCards = cList.childCards;
+	if (lCards != null)
+	{
+		msg += "Members: \n\n";
+		var card = null;
+		if (lCards.hasMoreElements)
+			while (lCards.hasMoreElements() && (card = lCards.getNext ()) != null)
 			{
-				var card = cList.addressLists.GetElementAt(i);
+				// get the right interface
 				card = card.QueryInterface(Components.interfaces.nsIAbCard);
 				msg += this.getCardProperty(card, "DisplayName") + "<" + this.getCardProperty(card, "PrimaryEmail") + ">\n";
 			}
-		}
-	}	
+	}
+	return msg;
 };
 
 com.synckolab.addressbookTools.card2Human = function(card) {
@@ -2076,8 +2099,10 @@ com.synckolab.addressbookTools.card2Message = function(card, email, format, fiel
 	{
 		// mailing list
 		if (card.isMailList)
+		{
 			return com.synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vnd.kolab.contact.distlist", 
 				true, com.synckolab.tools.text.utf8.encode(this.list2Xml(card, fields)), this.list2Human(card));
+		}
 		else
 			return com.synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vnd.kolab.contact", 
 				true, com.synckolab.tools.text.utf8.encode(this.card2Xml(card, fields)), this.card2Human(card), this.getCardProperty(card, "PhotoName"));

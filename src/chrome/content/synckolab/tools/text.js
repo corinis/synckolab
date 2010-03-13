@@ -271,18 +271,20 @@ com.synckolab.tools.text = {
 	},
 	
 	// produces: 2005-03-30
-	date2String: function (cdate)
+	date2String: function (datetime)
 	{
-		if (!cdate)
+		if (!datetime)
 			return '';
-		return cdate.getFullYear() + "-" + (cdate.getMonth()+1 < 10?"0":"") + (cdate.getMonth()+1) + "-" +
-		(cdate.getDate() < 10?"0":"") + cdate.getDate();
+		return datetime.getUTCFullYear() + "-" +
+			(datetime.getUTCMonth()+1 < 10 ? "0" : "") + (datetime.getUTCMonth()+1) + "-" +
+			(datetime.getUTCDate() < 10 ? "0" : "") + datetime.getUTCDate();
 	},
 	// produces 15:28:52
-	time2String: function (cdate)
+	time2String: function (datetime)
 	{
-		return (cdate.getHours()<10?"0":"") + cdate.getHours() + ":" + (cdate.getMinutes()<10?"0":"") + cdate.getMinutes() + ":" +
-		(cdate.getSeconds()<10?"0":"") + cdate.getSeconds();
+		return (datetime.getUTCHours() < 10 ? "0" : "") + datetime.getUTCHours() + ":" +
+			(datetime.getUTCMinutes() < 10 ? "0" : "") + datetime.getUTCMinutes() + ":" +
+			(datetime.getUTCSeconds() < 10 ? "0" : "") + datetime.getUTCSeconds();
 	},
 	
 	// produces: 2005-03-30T15:28:52Z for allday = false,
@@ -296,13 +298,9 @@ com.synckolab.tools.text = {
 		var resultstring = this.date2String(datetime);
 		if (!allday)
 		{
-			resultstring = datetime.getUTCFullYear() + "-" +
-			(datetime.getUTCMonth()+1 < 10 ? "0" : "") + (datetime.getUTCMonth()+1) + "-" +
-			(datetime.getUTCDate() < 10 ? "0" : "") + datetime.getUTCDate();
+			resultstring = this.date2String(datetime);
 			resultstring += 'T';
-			resultstring += (datetime.getUTCHours() < 10 ? "0" : "") + datetime.getUTCHours() + ":" +
-			(datetime.getUTCMinutes() < 10 ? "0" : "") + datetime.getUTCMinutes() + ":" +
-			(datetime.getUTCSeconds() < 10 ? "0" : "") + datetime.getUTCSeconds();
+			resultstring += this.time2String(datetime);
 			resultstring += 'Z';
 		}
 		return resultstring;

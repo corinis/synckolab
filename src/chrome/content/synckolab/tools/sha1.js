@@ -10,9 +10,7 @@
 
 if(!com) var com={};
 if(!com.synckolab) com.synckolab={};
-if(!com.synckolab.tools) {com.synckolab.tools={};
-	alert ("dont have tools???");
-}
+if(!com.synckolab.tools) {com.synckolab.tools={};}
 
 com.synckolab.tools.sha1 = {
 	/*
@@ -27,9 +25,9 @@ com.synckolab.tools.sha1 = {
 	 * These are the functions you'll usually want to call
 	 * They take string arguments and return either hex or base-64 encoded strings
 	 */
-	hex_sha1: function(s){return this.binb2hex(this.core_sha1(this.str2binb(s),s.length * chrsz));},
-	b64_sha1: function(s){return this.binb2b64(this.core_sha1(this.str2binb(s),s.length * chrsz));},
-	str_sha1: function(s){return this.binb2str(this.core_sha1(this.str2binb(s),s.length * chrsz));},
+	hex_sha1: function(s){return this.binb2hex(this.core_sha1(this.str2binb(s),s.length * this.chrsz));},
+	b64_sha1: function(s){return this.binb2b64(this.core_sha1(this.str2binb(s),s.length * this.chrsz));},
+	str_sha1: function(s){return this.binb2str(this.core_sha1(this.str2binb(s),s.length * this.chrsz));},
 	hex_hmac_sha1: function(key, data){ return this.binb2hex(this.core_hmac_sha1(key, data));},
 	b64_hmac_sha1: function(key, data){ return this.binb2b64(this.core_hmac_sha1(key, data));},
 	str_hmac_sha1: function(key, data){ return this.binb2str(this.core_hmac_sha1(key, data));},
@@ -133,7 +131,7 @@ com.synckolab.tools.sha1 = {
 	core_hmac_sha1: function(key, data)
 	{
 		var bkey = this.str2binb(key);
-		if(bkey.length > 16) bkey = this.core_sha1(bkey, key.length * chrsz);
+		if(bkey.length > 16) bkey = this.core_sha1(bkey, key.length * this.chrsz);
 
 		var ipad = Array(16), opad = Array(16);
 		for(var i = 0; i < 16; i++) 
@@ -142,7 +140,7 @@ com.synckolab.tools.sha1 = {
 			opad[i] = bkey[i] ^ 0x5C5C5C5C;
 		}
 
-		var hash = this.core_sha1(ipad.concat(this.str2binb(data)), 512 + data.length * chrsz);
+		var hash = this.core_sha1(ipad.concat(this.str2binb(data)), 512 + data.length * this.chrsz);
 		return this.core_sha1(opad.concat(hash), 512 + 160);
 	},
 
@@ -154,9 +152,9 @@ com.synckolab.tools.sha1 = {
 	 */
 	str2binb: function(str)	{
 		var bin = Array();
-		var mask = (1 << chrsz) - 1;
-		for(var i = 0; i < str.length * chrsz; i += chrsz)
-			bin[i>>5] |= (str.charCodeAt(i / chrsz) & mask) << (24 - i%32);
+		var mask = (1 << this.chrsz) - 1;
+		for(var i = 0; i < str.length * this.chrsz; i += this.chrsz)
+			bin[i>>5] |= (str.charCodeAt(i / this.chrsz) & mask) << (24 - i%32);
 		return bin;
 	},
 
@@ -165,8 +163,8 @@ com.synckolab.tools.sha1 = {
 	 */
 	binb2str: function(bin){
 		var str = "";
-		var mask = (1 << chrsz) - 1;
-		for(var i = 0; i < bin.length * 32; i += chrsz)
+		var mask = (1 << this.chrsz) - 1;
+		for(var i = 0; i < bin.length * 32; i += this.chrsz)
 			str += String.fromCharCode((bin[i>>5] >>> (24 - i%32)) & mask);
 		return str;
 	},
@@ -175,7 +173,7 @@ com.synckolab.tools.sha1 = {
 	 * Convert an array of big-endian words to a hex string.
 	 */
 	binb2hex: function(binarray)	{
-		var hex_tab = hexcase ? "0123456789ABCDEF" : "0123456789abcdef";
+		var hex_tab = this.hexcase ? "0123456789ABCDEF" : "0123456789abcdef";
 		var str = "";
 		for(var i = 0; i < binarray.length * 4; i++)
 		{
