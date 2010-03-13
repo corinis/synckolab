@@ -348,6 +348,12 @@ com.synckolab.Calendar = {
 				
 				this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localAdd"));
 				
+				// update the parsedEvent timestamp so it wont display a window
+				var lastAckTime = Components.classes["@mozilla.org/calendar/datetime;1"]
+				                                     .createInstance(Components.interfaces.calIDateTime);
+				lastAckTime.jsDate = new Date();
+				parsedEvent.alarmLastAck = lastAckTime;
+				
 				// add the new event
 				this.gCalendar.addItem(parsedEvent, this.gEvents);
 				// also add to the hash-database
@@ -388,8 +394,9 @@ com.synckolab.Calendar = {
 			// make sure cEvent is not null, else the comparision will fail
 			this.tools.logMessage("Start comparing events....", this.global.LOG_CAL + this.global.LOG_DEBUG);
 			var equal2parsed = hasEntry && this.calTools.equalsEvent(cEvent, parsedEvent, this.syncTasks, this.email);
+			this.tools.logMessage ("cEvent==parsedEvent: " + equal2parsed,  this.global.LOG_CAL + this.global.LOG_DEBUG);
 			var equal2found = hasEntry && this.calTools.equalsEvent(cEvent, foundEvent, this.syncTasks, this.email);
-			this.tools.logMessage ("cEvent==parsedEvent: " + equal2parsed + "\ncEvent==foundEvent: " + equal2found,  this.global.LOG_CAL + this.global.LOG_DEBUG);
+			this.tools.logMessage ("cEvent==foundEvent: " + equal2found,  this.global.LOG_CAL + this.global.LOG_DEBUG);
 			
 			if (hasEntry && !equal2parsed && !equal2found)
  			{

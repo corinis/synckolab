@@ -254,7 +254,12 @@ com.synckolab.tools.text = {
 		if (createDateTime)
 			calDateTime = new createDateTime();
 		else
+		if (CalDateTime)
 			calDateTime = new CalDateTime();
+		else
+			calDateTime = Components.classes["@mozilla.org/calendar/datetime;1"]
+			                                 .createInstance(Components.interfaces.calIDateTime);
+
 	
 		var jsDate = null;
 		if (useUTC)
@@ -320,8 +325,12 @@ com.synckolab.tools.text = {
 		if (createDateTime)
 			calDateTime = new createDateTime();
 		else
+		if (CalDateTime)
 			calDateTime = new CalDateTime();
-	
+		else
+			calDateTime = Components.classes["@mozilla.org/calendar/datetime;1"]
+			                                 .createInstance(Components.interfaces.calIDateTime);
+
 		calDateTime.jsDate = new Date(Date.UTC(cdate[0], cdate[1]-1, cdate[2], 0, 0, 0));
 		calDateTime.isDate = true;
 		return calDateTime;
@@ -330,10 +339,12 @@ com.synckolab.tools.text = {
 	// Create a duration object for an alarm time
 	createDuration: function (minutes)	{
 		var duration = Components.classes["@mozilla.org/calendar/duration;1"].createInstance(Components.interfaces.calIDuration);
-		if (minutes > 0)
+		/*
+		if (minutes < 0)
 		{
 			minutes = minutes * -1;
 		}
+		*/
 		duration.inSeconds = minutes * 60;
 		duration.normalize();
 		return duration;

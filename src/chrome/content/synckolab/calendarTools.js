@@ -300,9 +300,10 @@ com.synckolab.calendarTools.equalsEvent = function(a, b, syncTasks, email) {
 	var sb = this.cnv_event2xml(b, true, syncTasks, email);
 	if (sa == sb)
 		return true;
+
 	// do a diff to see whats different
 	var la = sa.split("\n");
-	var lb = sa.split("\n");
+	var lb = sb.split("\n");
 	var i;
 	for (i=0; i < la.length && i < lb.length; i++)
 	{
@@ -608,10 +609,8 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 					if (cur.firstChild)
 					{
 						var cData = cur.getFirstData();
-						// fix up the cdata if not in the right format
-						if (cData.indexOf("-PT") != 0)
-							cData = "-PT" + cData + "M";
-						var alarmOffset = com.synckolab.tools.text.createDuration(cData);
+						var alarmOffset = com.synckolab.tools.text.createDuration(Number(cData));
+						
 						// tbird 3 uses multiple alarms (using addAlarm)
 						if (event.addAlarm)
 						{
@@ -622,9 +621,9 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 							if (cur.getAttribute("description") != null)
 								alarm.description = cur.getAttribute("description");
 							if (cur.getAttribute("summary") != null)
-								alarm.description = cur.getAttribute("summary");
+								alarm.summary = cur.getAttribute("summary");
 							if (cur.getAttribute("action") != null)
-								alarm.description = cur.getAttribute("action");
+								alarm.action = cur.getAttribute("action");
 							event.addAlarm(alarm);
 						}
 						else
@@ -1067,9 +1066,9 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
 			if (alarm.description != null && alarm.description != "")
 				att += 'description="' + alarm.description + '" ';
 			if (alarm.summary != null && alarm.summary != "")
-				att += 'summary="' + alarm.description + '" ';
+				att += 'summary="' + alarm.summary + '" ';
 			if (alarm.action != null && alarm.action != "")
-				att += 'action="' + alarm.action + '" ';
+				att += 'action="' + alarm.action + '"';
 			
 			xml += " <alarm "+att+">" + minutes + "</alarm>\n";
 		}
@@ -1285,7 +1284,7 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
 	else
 		xml += "</event>\n";
 
-	com.synckolab.tools.logMessage("Created XML event structure:\n=============================\n" + xml, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+	//com.synckolab.tools.logMessage("Created XML event structure:\n=============================\n" + xml, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
 	return xml;
 };
 
