@@ -1261,7 +1261,6 @@ com.synckolab.addressbookTools.vList2Card  = function(uids, lines, card, cards) 
 	//	parse the card
 	for (var i = 0; i < lines.length; i++)
 	{
-		// decode utf8
 		var vline = lines[i];
 		
 		// strip the \n at the end
@@ -1294,54 +1293,54 @@ com.synckolab.addressbookTools.vList2Card  = function(uids, lines, card, cards) 
 				}
 				*/
 				break;						
-		// the all important unique list name! 				
-		case "FN":
-			this.setCardProperty(card, "ListNickName", tok[1]);
-			break;
-		case "NOTE":
-			this.setCardProperty(card, "Description", tok[1].replace (/\\n/g, "\n")); // carriage returns were stripped, add em back
-			found = true;
-			break;
-		
-		case "UID":
-			// we cannot set the custom4 for a mailing list... but since tbird defined
-			// the name to be unique... lets keep it that way
-			//this.setCardProperty(card, "Custom4", tok[1]);
-			break;
-		case "BEGIN":
-			if (!beginVCard)
-			{
-				beginVCard = true;
+			// the all important unique list name! 				
+			case "FN":
+				this.setCardProperty(card, "ListNickName", tok[1]);
 				break;
-			}
+			case "NOTE":
+				this.setCardProperty(card, "Description", tok[1].replace (/\\n/g, "\n")); // carriage returns were stripped, add em back
+				found = true;
+				break;
 			
-			// sub-vcard... parse...
-			var cStart = i;
-			for (; i < lines.length; i++)
-				if (lines[i].toUpperCase() == "END:VCARD")
+			case "UID":
+				// we cannot set the custom4 for a mailing list... but since tbird defined
+				// the name to be unique... lets keep it that way
+				//this.setCardProperty(card, "Custom4", tok[1]);
+				break;
+			case "BEGIN":
+				if (!beginVCard)
+				{
+					beginVCard = true;
 					break;
-			var newCard = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
-			message2Card(lines, newCard, null, cStart, i);
-			// check if we know this card already :) - ONLY cards
-			var gotCard = findCard (cards, this.getUID(newCard), null);
-			if (gotCard != null)
-			{
-				card.addressLists.AppendElement(gotCard);
-			}
-			else
-				card.addressLists.AppendElement(newCard);
-			break;
-			
-		// stuff we just do not parse :)
-		case "END":
-		case "VERSION":
-		case "":
-			break;
-			
-		default:
-			consoleService.logStringMessage("VL FIELD not found: " + tok[0] + ":" + tok[1]);
-			//extraFields.addField(tok[0], tok[1]);
-			break;
+				}
+				
+				// sub-vcard... parse...
+				var cStart = i;
+				for (; i < lines.length; i++)
+					if (lines[i].toUpperCase() == "END:VCARD")
+						break;
+				var newCard = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
+				message2Card(lines, newCard, null, cStart, i);
+				// check if we know this card already :) - ONLY cards
+				var gotCard = findCard (cards, this.getUID(newCard), null);
+				if (gotCard != null)
+				{
+					card.addressLists.AppendElement(gotCard);
+				}
+				else
+					card.addressLists.AppendElement(newCard);
+				break;
+				
+			// stuff we just do not parse :)
+			case "END":
+			case "VERSION":
+			case "":
+				break;
+				
+			default:
+				consoleService.logStringMessage("VL FIELD not found: " + tok[0] + ":" + tok[1]);
+				//extraFields.addField(tok[0], tok[1]);
+				break;
 		} // end switch
 	}
 	return true;
