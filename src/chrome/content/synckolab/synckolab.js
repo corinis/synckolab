@@ -58,9 +58,10 @@ com.synckolab.main = {
 				
 				com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL = com.synckolab.global.LOG_ALL + pref.getIntPref("SyncKolab.debugLevel");
 			} catch (ex) {
-				com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab.debugLevel' failed: " + ex, com.synckolab.global.LOG_WARNING);
+				com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab.debugLevel' failed - setting default: " + ex, com.synckolab.global.LOG_WARNING);
 				com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL = com.synckolab.global.LOG_ALL + com.synckolab.global.LOG_WARNING;
-			};				
+				pref.setIntPref("SyncKolab.debugLevel", com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL);
+			};
 
 			// create a thread for each configuration
 			var configs = new Array();
@@ -946,7 +947,6 @@ var syncKolabStreamListener = {
 		// remove the header of the content
 		fileContent = com.synckolab.tools.stripMailHeader(fileContent);
 
-		// stop here for testing
 		parseMessageRunner ();
 	}
 };

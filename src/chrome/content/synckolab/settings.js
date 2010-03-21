@@ -656,7 +656,8 @@ com.synckolab.settings = {
 				catch (ex)
 				{
 					// ignore (use ask)
-					com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab."+config+".Resolve' failed: " + ex, com.synckolab.global.LOG_WARNING);
+					com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab."+config+".Resolve' Setting to default failed: " + ex, com.synckolab.global.LOG_INFO);
+					pref.setCharPref("SyncKolab."+config+".Resolve", "ask");
 				}
 				
 				actList = document.getElementById("DefaultResolve");

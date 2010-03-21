@@ -357,7 +357,7 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 {
 	var syncTasks = false;
 	// check if we have to decode quoted printable
-	if (xml.indexOf("version=3D=22") != -1) // we know from the version
+	if (xml.indexOf(" version=3D") != -1) // we know from the version
 		xml = com.synckolab.tools.text.quoted.decode(xml);
 	
 	com.synckolab.tools.logMessage("Parsing an XML event:\n" + xml, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);

@@ -281,7 +281,7 @@ stripMailHeader: function (content) {
 			if (endPos == -1)
 				endPos = content.length;
 
-			content = com.synckolab.tools.text.trim(content.substring(startPos, endPos).replace(/[\r\n]/g, ""));
+			content = content.substring(startPos, endPos).replace(/[\r\n \t]+/g, "");
 
 			this.logMessage("Base64 message: " + content, com.synckolab.global.LOG_DEBUG);
 
@@ -343,7 +343,7 @@ stripMailHeader: function (content) {
 	
 	// content might still be quotted printable... doublecheck
 	// check if we have to decode quoted printable
-	if (content.indexOf("version=3D=22") != -1) // we know from the version
+	if (content.indexOf(" version=3D") != -1) // we know from the version
 		content = com.synckolab.tools.text.quoted.decode(content);
 
 
@@ -425,7 +425,18 @@ generateMail: function (cid, mail, adsubject, mime, part, content, hr, image){
 		msg += 'Content-Type: '+mime+';\n name="kolab.xml"\n';
 		msg += 'Content-Transfer-Encoding: base64\n';
 		msg += 'Content-Disposition: attachment;\n filename="kolab.xml"\n\n';
-		msg += btoa(content) + '\n';
+		// keep lines at 80 chars
+		var acontent = btoa(content);
+		var n = 0;
+		for (n= 0; n < acontent.length; )
+		{
+			if (n + 80 < acontent.length)
+				msg += acontent.slice(n, n+80);
+			else
+				msg += acontent.slice(n);
+			msg += "\n";
+			n+=80;
+		}
 	}
 	else
 		// add the content

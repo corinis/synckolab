@@ -115,10 +115,8 @@ com.synckolab.Calendar = {
 			try {
 				this.gConflictResolve = pref.getCharPref("SyncKolab."+config+".Resolve");
 			}
-			catch (e) 
-			{
-				this.tools.logMessage("WARNING: Reading 'SyncKolab."+config+".Resolve' failed: " + e, this.global.LOG_WARNING);
-			}
+			catch (ignore) 
+			{	}
 
 			if (this.syncTasks == true)
 			{

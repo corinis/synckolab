@@ -95,13 +95,6 @@ com.synckolab.AddressBook = {
 		this.forceLocalCopy = false;
 		
 		this.folderMessageUids = new Array(); // the checked uids - for better sync
-		try {
-			this.gConflictResolve = pref.getCharPref("SyncKolab."+config+".Resolve");
-		}
-		catch (e) 
-		{
-			com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab."+config+".Resolve' failed: " + e, com.synckolab.global.LOG_WARNING);
-		}
 		
 		// initialize the configuration
 		try 
@@ -113,10 +106,9 @@ com.synckolab.AddressBook = {
 			addressBookName = pref.getCharPref("SyncKolab."+config+".AddressBook");
 			this.format = pref.getCharPref("SyncKolab."+config+".AddressBookFormat");
 			this.gSaveImap = pref.getBoolPref("SyncKolab."+config+".saveToContactImap");
-			
-			// since Imap savine does not work with xml - disable this
-			//if (this.format == "Xml")
-			//	this.gSaveImap = false;
+			try {
+				this.gConflictResolve = pref.getCharPref("SyncKolab."+config+".Resolve");
+			} catch (ignore) {};
 		} catch(e) {
 			return;
 		}
@@ -392,6 +384,8 @@ com.synckolab.AddressBook = {
 					{
 						// skip mailing lists
 						this.gAddressBook.addMailList(newCard);
+						// also add to the hash-database
+						this.gCardDB.put(this.tools.getUID(newCard), newCard);
 					}
 					else
 					{
@@ -569,13 +563,23 @@ com.synckolab.AddressBook = {
 					// server changed - update local
 					if (aCard.isMailList)
 					{
-						this.gAddressBook.deleteDirectory(aCard);
-						this.gAddressBook.addMailList(newCard);
+						var list = null;
+						
+						try
+						{
+							list = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
+							list.appendElement(aCard, false);
+							this.gAddressBook.deleteCards(list);
+							//this.gAddressBook.deleteDirectory(aCard);
+							this.gAddressBook.addMailList(newCard);
+						} catch (de)
+						{
+							com.synckolab.tools.logMessage("problem with local update for - skipping" + this.tools.getUID(aCard), com.synckolab.global.LOG_WARNING + com.synckolab.global.LOG_AB);
+						}
 					}
 					else
 					{
 						var list = null;
-						com.synckolab.tools.logMessage("create list: " + this.tools.getUID(aCard), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 						// first delete the card 
 						if (this.isTbird2 == true)
 						{
@@ -614,7 +618,8 @@ com.synckolab.AddressBook = {
 					com.synckolab.tools.logMessage("updated local" + this.tools.getUID(aCard), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 					
 					// write the current content in the sync-db file
-					com.synckolab.tools.writeSyncDBFile (cEntry, com.synckolab.tools.stripMailHeader(this.tools.card2Message(newCard, this.email, this.format)));
+					//com.synckolab.tools.writeSyncDBFile (cEntry, com.synckolab.tools.stripMailHeader(this.tools.card2Message(newCard, this.email, this.format)));
+					com.synckolab.tools.writeSyncDBFile (cEntry, fileContent);
 
 					// also write the extra fields in a file (or remove if nothing there)
 					if (messageFields.length() > 0)
