@@ -54,13 +54,20 @@ com.synckolab.addressbookTools = {
 		 * @param def if the prop is empty
 		 * @return the property value 
 		 */
-		getCardProperty : function(card, prop, def) {
+		getCardProperty: function(card, prop, def) {
 			if (!def)
 				def = null;
+			
 			
 			// tbird 3
 			if (card.getProperty)
 			{
+				if (card.isMailList && prop == "Name")
+				{
+					if (card.dirName)
+						return card.dirName;
+					return card.displayName;
+				}
 				var prop = card.getProperty(prop, null);
 				// fix for "null" as string
 				if (prop == "null" || prop == null)
@@ -69,6 +76,18 @@ com.synckolab.addressbookTools = {
 			}
 			else
 			{
+				if (card.isMailList)
+				{
+					switch (prop) {
+						case "Name":
+							if (card.dirName)
+								return card.dirName;
+							return card.displayName;
+						case "NickName": return card.listNickName;
+						case "Notes": return card.description;
+					}
+				}
+				
 				switch (prop)
 				{
 					case	"AimScreenName":	return card.aimScreenName;
@@ -144,12 +163,9 @@ com.synckolab.addressbookTools = {
 				return null;
 
 			// for mailing lists
-			if (card.isMailList && card.dirName)
-				return com.synckolab.tools.sha1.hex_sha1(card.dirName);
+			if (card.isMailList)
+				return com.synckolab.tools.sha1.hex_sha1(this.getCardProperty(card, "Name"));
 			
-			if (card.isMailList && card.displayName)
-				return com.synckolab.tools.sha1.hex_sha1(card.displayName);
-
 			// tbird 3: we can use custom fields!!!
 			var uid = this.getCardProperty(card, "UUID");
 			if (uid != "" && uid != null)
@@ -872,7 +888,7 @@ com.synckolab.addressbookTools.list2Vcard = function(card, fields) {
 	var cList = card;
 	if (cList.addressLists)
  	{
-		var total = cList.addressLists.Count();
+		var total = cList.addressLists.length;
 		com.synckolab.tools.logMessage ("List has " + total + " contacts", this.global.LOG_INFO + this.global.LOG_AB);
 		if (!total || total == 0)
 			return null; // do not add a list without members
@@ -881,8 +897,7 @@ com.synckolab.addressbookTools.list2Vcard = function(card, fields) {
 		{
 			for ( var i = 0;  i < total; i++ )
 			{
-				var cur = cList.addressLists.GetElementAt(i);
-				cur = cur.QueryInterface(Components.interfaces.nsIAbCard);
+				var cur = cList.addressLists.queryElementAt(i, Components.interfaces.nsIAbCard);
 				// generate the sub-vcard
 				msg += card2Vcard(cur, null);
 									
@@ -1220,11 +1235,98 @@ com.synckolab.addressbookTools.equalsContact = function(a, b) {
 	if (a.isMailList != b.isMailList)
 	{
 		com.synckolab.tools.logMessage ("not equals only one is a mailing list!", this.global.LOG_DEBUG + this.global.LOG_AB);
-		return;
+		return false;
 	}
 		
 	if (a.isMailList)
-		fieldsArray = new Array("listNickName", "description");
+	{
+		com.synckolab.tools.logMessage ("start comparing mailing lists!", this.global.LOG_DEBUG + this.global.LOG_AB);
+		
+		
+		// update fieldsArray for second run
+		fieldsArray = new Array("Notes", "Nickname");
+
+		let abManager = Components.classes["@mozilla.org/abmanager;1"]
+		                                   .getService(Components.interfaces.nsIAbManager);
+		com.synckolab.tools.logMessage ("aUri:" + a.mailListURI + "(if: "+(a instanceof Components.interfaces.nsIAbDirectory)+")" +
+					" b.uri: " + b.mailListURI  + "(if: "+(b instanceof Components.interfaces.nsIAbDirectory)+")", this.global.LOG_DEBUG + this.global.LOG_AB);
+		
+		// to get a list(hashmap) of all cards there is either: .childCards (if it is already saved) or Array addressLists
+		var aList=a;
+		var bList=b;
+		var aCards = null;
+		var bCards = null;
+		
+		if (!(a instanceof Components.interfaces.nsIAbDirectory))
+		{
+			aList = abManager.getDirectory(a.mailListURI);
+			aCards = aList.childCards;
+		}
+		else
+			aCards = aList.addressLists.enumerate();
+			
+		if (!(b instanceof Components.interfaces.nsIAbDirectory))
+		{
+			bList = abManager.getDirectory(b.mailListURI);
+			bCards = bList.childCards;
+		}
+		else
+			bCards = bList.addressLists.enumerate();
+
+		// put the childs in a hashmap
+		var aMap = new com.synckolab.hashMap();
+		aMap.clear();
+
+		
+		var aCount = 0;
+		if (aCards != null)
+		{
+			if (aCards.hasMoreElements)
+			{
+				var card = null;
+				while (aCards.hasMoreElements() && (card = aCards.getNext ()) != null)
+				{
+					// get the right interface
+					cur = card.QueryInterface(Components.interfaces.nsIAbCard);
+					// get the uid or generate it
+					aMap.put(this.getUID(cur), cur);
+					aCount++;
+				}
+			}
+		}
+		
+		// now do a compare
+		var bCount = 0;
+		if (bCards != null)
+		{
+			if (bCards.hasMoreElements)
+			{
+				var card = null;
+				while (bCards.hasMoreElements() && (card = bCards.getNext ()) != null)
+				{
+					// get the right interface
+					cur = card.QueryInterface(Components.interfaces.nsIAbCard);
+					// get the uid or generate it
+					var cUID = this.getUID(cur);
+					com.synckolab.tools.logMessage ("check " + cUID + "", this.global.LOG_DEBUG + this.global.LOG_AB);
+					
+					if (!aMap.get(cUID))
+					{
+						com.synckolab.tools.logMessage ("not equals " + cUID + " not found", this.global.LOG_DEBUG + this.global.LOG_AB);
+						return false;
+					}
+					bCount++;
+				}
+			}
+		}
+		
+		// if there are any childcards left - return
+		if (aCount != bCount)
+		{
+			com.synckolab.tools.logMessage ("not equals  '" + aCount + "' vs. '" + bCount + "'", this.global.LOG_DEBUG + this.global.LOG_AB);
+			return false;
+		}
+	}
 
 	for(var i=0 ; i < fieldsArray.length ; i++ ) {
 		var sa = this.getCardProperty(a, fieldsArray[i]);
@@ -1268,7 +1370,7 @@ com.synckolab.addressbookTools.equalsContact = function(a, b) {
 		}
 	}
 	
-	return true;	
+	return true;
 };
 
 com.synckolab.addressbookTools.vList2Card  = function(uids, lines, card, cards) {
@@ -1343,10 +1445,10 @@ com.synckolab.addressbookTools.vList2Card  = function(uids, lines, card, cards) 
 				var gotCard = findCard (cards, this.getUID(newCard), null);
 				if (gotCard != null)
 				{
-					card.addressLists.AppendElement(gotCard);
+					card.addressLists.appendElement(gotCard);
 				}
 				else
-					card.addressLists.AppendElement(newCard);
+					card.addressLists.appendElement(newCard);
 				break;
 				
 			// stuff we just do not parse :)
@@ -1458,6 +1560,18 @@ com.synckolab.addressbookTools.Xml2List = function(topNode, extraFields, cards) 
 	
 	return card;
 };
+
+/**
+ * @return true if the message contains a list instead of a card
+ */
+com.synckolab.addressbookTools.isMailList = function(message) {
+	if (message.indexOf("<?xml") != -1 || message.indexOf("<?XML") != -1)
+	{
+		return (message.indexOf("<distribution-list") != -1);
+	}
+	if (message.indexOf("X-LIST" != -1))
+		return true;
+}
 
 /**
  * Parses a vcard/xml/list into its card/list object.

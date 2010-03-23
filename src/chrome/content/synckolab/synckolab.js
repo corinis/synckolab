@@ -686,6 +686,7 @@ var updateMessagesContent;
 var gMessages;
 var gSync;
 
+
 function waitForAsyncGetItems () {
 	prepareContent();
 }
@@ -709,6 +710,8 @@ function prepareContent ()
 	gSync.folder.compact (syncKolabUrlListener, msgWindow); // this should take care of refreshes
 	
 }
+
+var gLaterMessages; // for lists - we have to wait until we got everything - then start
 
 /**
  * start with the sync with the sync class
@@ -736,7 +739,11 @@ function getContent ()
 			gSync.forceLocalCopy = true;
 	}
 	
-		
+	// prepare empty later list
+	gLaterMessages = {};
+	gLaterMessages.msgs = new Array();
+	gLaterMessages.pointer = 0;
+	
 	// get the message keys
 	if (gSync.folder.getMessages)	
 		gMessages = gSync.folder.getMessages(null);	 // dont need the msgWindow use null
@@ -775,17 +782,11 @@ function getMessage ()
 		return;
 	}
 		
- 	var cur = null;
- 	try
- 	{
- 		if (gMessages.hasMoreElements ())
+	var cur = null;
+	try
+	{
+		if (gMessages.hasMoreElements () && gLaterMessages.pointer == 0)
 			cur = gMessages.getNext().QueryInterface(Components.interfaces.nsIMsgDBHdr);
-		else
-		{
-			// done with messages go on...
-			parseFolderToAddressFinish ();
-			return;
-		}
 	}
 	catch (ex)
 	{
@@ -793,56 +794,76 @@ function getMessage ()
 		updateContentAfterSave ();
 		return;
 	}
-	
-	// check message flags (based on mailnews\base\public\nsMsgMessageFlags.h -> deleted=0x200000
-	com.synckolab.tools.logMessage("Message " + cur.mime2DecodedSubject + " (dateInSeconds: " + cur.dateInSeconds + ") has flags: " + cur.flags + " flag imap_deleted? " + (cur.flags&0x200000), com.synckolab.global.LOG_DEBUG);
-	var skipCMessage = false;
-	
-	if (cur.flags&0x200000)
-	{
-		com.synckolab.tools.logMessage("Message " + cur.mime2DecodedSubject + " has been DELETED on imap!", com.synckolab.global.LOG_INFO);
-		// skip current and process next nessage	
-		skipCMessage = true;
-		
-	}
-	
-	// check if we can ignore this message because its too old (0=take all into accout)	
-	if(gSync.gSyncTimeFrame > 0 && skipCMessage != true)
-	{
-		com.synckolab.tools.logMessage("Checking if message might be too old for now " + (new Date()).getTime(), com.synckolab.global.LOG_DEBUG);
 
-		// now get the correct startdate (convert in milliseconds)
-		if ((cur.dateInSeconds + (gSync.gSyncTimeFrame * 86400))*1000 < (new Date()).getTime())
+	var laterMsg = null;
+	
+	// get the messages we skipped
+	if (cur == null)
+	{
+		if (gLaterMessages.pointer >= gLaterMessages.msgs.length)
 		{
-			com.synckolab.tools.logMessage("Message " + cur.mime2DecodedSubject + " will be ignored (too old) Now: " + (new Date()).getTime(), com.synckolab.global.LOG_INFO);
+			gLaterMessages.msgs = new Array();
+			// done with messages go on...
+			parseFolderToAddressFinish ();
+			return;
+		}
+
+		com.synckolab.tools.logMessage("msg:" + gLaterMessages.pointer + " vs. " + gLaterMessages.msgs.length, com.synckolab.global.LOG_INFO);
+
+		laterMsg = gLaterMessages.msgs[gLaterMessages.pointer++];
+		cur = laterMsg.hdr;
+	}
+	else
+	{
+		// check message flags (based on mailnews\base\public\nsMsgMessageFlags.h -> deleted=0x200000
+		com.synckolab.tools.logMessage("Message " + cur.mime2DecodedSubject + " (dateInSeconds: " + cur.dateInSeconds + ") has flags: " + cur.flags + " flag imap_deleted? " + (cur.flags&0x200000), com.synckolab.global.LOG_DEBUG);
+		var skipCMessage = false;
+		
+		if (cur.flags&0x200000)
+		{
+			com.synckolab.tools.logMessage("Message " + cur.mime2DecodedSubject + " has been DELETED on imap!", com.synckolab.global.LOG_INFO);
 			// skip current and process next nessage	
 			skipCMessage = true;
-		}
-	}
-	
-	
-	if (skipCMessage == true)
-	{
-		curMessage++;
-		if (curMessage <= totalMessages)
-		{
-			var curpointer = 5 + (55*(curMessage/totalMessages));
-			meter.setAttribute("value", curpointer + "%");
-			if (gWnd != null)
-				curCounter.setAttribute("value", curMessage + "/" + totalMessages);
-			else
-				curCounter.setAttribute("label", curMessage + "/" + totalMessages);
 			
-			// next message
-			window.setTimeout(getMessage, com.synckolab.config.SWITCH_TIME);	
 		}
-		else
+		
+		// check if we can ignore this message because its too old (0=take all into accout)	
+		if(gSync.gSyncTimeFrame > 0 && skipCMessage != true)
 		{
-			window.setTimeout(parseFolderToAddressFinish, com.synckolab.config.SWITCH_TIME);	
-		}
-		return;
-	}
+			com.synckolab.tools.logMessage("Checking if message might be too old for now " + (new Date()).getTime(), com.synckolab.global.LOG_DEBUG);
 	
+			// now get the correct startdate (convert in milliseconds)
+			if ((cur.dateInSeconds + (gSync.gSyncTimeFrame * 86400))*1000 < (new Date()).getTime())
+			{
+				com.synckolab.tools.logMessage("Message " + cur.mime2DecodedSubject + " will be ignored (too old) Now: " + (new Date()).getTime(), com.synckolab.global.LOG_INFO);
+				// skip current and process next nessage	
+				skipCMessage = true;
+			}
+		}
+		
+		
+		if (skipCMessage == true)
+		{
+			curMessage++;
+			if (curMessage <= totalMessages)
+			{
+				var curpointer = 5 + (55*(curMessage/totalMessages));
+				meter.setAttribute("value", curpointer + "%");
+				if (gWnd != null)
+					curCounter.setAttribute("value", curMessage + "/" + totalMessages);
+				else
+					curCounter.setAttribute("label", curMessage + "/" + totalMessages);
+				
+				// next message
+				window.setTimeout(getMessage, com.synckolab.config.SWITCH_TIME);	
+			}
+			else
+			{
+				window.setTimeout(parseFolderToAddressFinish, com.synckolab.config.SWITCH_TIME);	
+			}
+			return;
+		}
+	} // this part only for the first run
 	
 	// check if we actually have to process this message, or if this is already known
 	
@@ -861,6 +882,14 @@ function getMessage ()
 	gSyncFileKey = syncMessageDb.get(cur.mime2DecodedSubject);
 	
 	gSyncKeyInfo = cur.mime2DecodedSubject;
+	if (laterMsg != null) {
+		com.synckolab.tools.logMessage("getting " + cur.mime2DecodedSubject + " from fist round...", com.synckolab.global.LOG_DEBUG);
+		fileContent = laterMsg.content;
+		gSyncFileKey = laterMsg.fileKey;
+		parseMessageRunner ();
+		return;
+	}
+	else
 	if (gSyncFileKey != null)
 	{
 		com.synckolab.tools.logMessage("we have " + cur.mime2DecodedSubject + " already locally...", com.synckolab.global.LOG_DEBUG);
@@ -898,7 +927,7 @@ function getMessage ()
 		gSyncFileKey = {}; // we not yet know the id
 		gSyncFileKey[0] = '';
 		gSyncFileKey[1] = cur.messageSize;
-		gSyncFileKey[2] = cur.date;			
+		gSyncFileKey[2] = cur.date;
 	}
 	
 	
@@ -906,7 +935,7 @@ function getMessage ()
 	// parseMessageRunner is called when we got the message
 	fileContent = "";
 	gCurMessageKey = cur.messageKey;
-	var aurl = new Object();	
+	var aurl = new Object();
 	com.synckolab.global.messageService.CopyMessage(
         gSync.folderMsgURI +"#"+gCurMessageKey,
         syncKolabStreamListener, false, null, msgWindow, aurl
@@ -974,42 +1003,53 @@ function parseMessageRunner ()
 	// fix the message for line truncs (last char in line is =)
 	fileContent = fileContent.replace(/=\n(\S)/g, "$1");
 	
-	var content = gSync.parseMessage(fileContent, updateMessagesContent);
-	
-	// just to make sure there REALLY isnt any content left :)
-	fileContent = "";
-	if (content != null)
-	{
-		if (content == "DELETEME")
-			com.synckolab.tools.logMessage("updating and/or deleting [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]", com.synckolab.global.LOG_INFO);
-		else
-			com.synckolab.tools.logMessage("updating [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]", com.synckolab.global.LOG_INFO);
-		// adding message to list of to-delete messages - gSync.folderMsgURI +"#"+
-		updateMessages.push(gLastMessageDBHdr); 
-		updateMessagesContent.push(content); 
-		com.synckolab.tools.logMessage("changed msg #" + updateMessages.length, com.synckolab.global.LOG_INFO);
-	}
-	// no change... remember that :)
-	else
-	{
-		// fill info about the file and re-add it 
-		gSyncFileKey[0] = gSyncKeyInfo;
-		gSyncFileKey[3] = gSync.gConfig;
-		gSyncFileKey[4] = gSync.gCurUID;
-		// Add the key
-		syncMessageDb.add(gSyncFileKey);
-	}
+	var content = null;
 
+	content = gSync.parseMessage(fileContent, updateMessagesContent, (gLaterMessages.pointer == 0));
+	
+	
+	if (content == "LATER") {
+		var cMsg = {};
+		cMsg.content = fileContent;
+		cMsg.hdr = gLastMessageDBHdr;
+		cMsg.fileKey = gSyncFileKey;
+//		cMsg.messageKey = gCurMessageKey;
+		gLaterMessages.msgs.push(cMsg);
+	}
+	else {
+		// just to make sure there REALLY isnt any content left :)
+		fileContent = "";
+		if (content != null)
+		{
+			if (content == "DELETEME")
+				com.synckolab.tools.logMessage("updating and/or deleting [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]", com.synckolab.global.LOG_INFO);
+			else
+				com.synckolab.tools.logMessage("updating [" + gSync.folderMsgURI +"#"+gCurMessageKey + "]", com.synckolab.global.LOG_INFO);
+			// adding message to list of to-delete messages - gSync.folderMsgURI +"#"+
+			updateMessages.push(gLastMessageDBHdr); 
+			updateMessagesContent.push(content); 
+			com.synckolab.tools.logMessage("changed msg #" + updateMessages.length, com.synckolab.global.LOG_INFO);
+		}
+		// no change... remember that :)
+		else
+		{
+			// fill info about the file and re-add it 
+			gSyncFileKey[0] = gSyncKeyInfo;
+			gSyncFileKey[3] = gSync.gConfig;
+			gSyncFileKey[4] = gSync.gCurUID;
+			// Add the key
+			syncMessageDb.add(gSyncFileKey);
+		}
+	}
+	
 	// process next nessage	
 	curMessage++;
-	if (curMessage <= totalMessages)
+	if (curMessage <= totalMessages || gLaterMessages.pointer < gLaterMessages.msgs.length)
 	{
-		var curpointer = 5 + (55*(curMessage/totalMessages));
+		var curpointer = 5 + (55*((curMessage + gLaterMessages.pointer)/(totalMessages + gLaterMessages.msgs.length)));
 		meter.setAttribute("value", curpointer + "%");
-		if (gWnd != null)
-			curCounter.setAttribute("value", curMessage + "/" + totalMessages);
-		else
-			curCounter.setAttribute("label", curMessage + "/" + totalMessages);
+
+		curCounter.setAttribute((gWnd != null)?"value":"label", (curMessage + gLaterMessages.pointer) + "/" + (totalMessages + gLaterMessages.msgs.length));
 
 		if (curMessage%20 == 0)
 		{

@@ -57,7 +57,7 @@ function pauseSync ()
 		</listhead>
 	
 		<listcols>
-			<listcol/>
+			<listcol width="150px"/>
 			<listcol/>
 			<listcol flex="1"/>
 		</listcols>

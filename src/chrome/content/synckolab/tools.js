@@ -1070,7 +1070,7 @@ com.synckolab.hashMap.prototype.getIKey = function (key)
 
 com.synckolab.hashMap.prototype.put = function( key, value )
 {
-	if( ( typeof key != "undefined" ) && ( typeof value != "undefined" ) )
+	if( ( typeof key != "undefined" ) && ( typeof value != "undefined" ) && key != null )
 	{
 		// get a key
 		var ikey = this.getIKey(key) % this.seed;

@@ -185,12 +185,18 @@ com.synckolab.AddressBook = {
 				{
 					// get the right interface
 					card = card.QueryInterface(Components.interfaces.nsIAbCard);
-					// only save the cards that do have a custom4
-					if (this.tools.getUID(card) != null && this.tools.getUID(card) != "" )
+					
+					// create a UUID if it does not exist!
+					var cUID = this.tools.getUID(card);
+					if (cUID == null || cUID == "" )
 					{
-						this.gCardDB.put(this.tools.getUID(card), card);
+						cUID = "sk-vc-" + com.synckolab.tools.text.randomVcardId();
+						this.tools.setUID(card, cUID);
+						this.gAddressBook.modifyCard(card);
 					}
-				}		
+					
+					this.gCardDB.put(cUID, card);
+				}
 			else
 			//tbird 2
 			{
@@ -279,7 +285,13 @@ com.synckolab.AddressBook = {
 	 * parses the given content, if an update is required the 
 	 * new message content is returned otherwise null
 	 */	
-	parseMessage: function(fileContent) {
+	parseMessage: function(fileContent, tmp, checkForLater) {
+		
+		if (checkForLater)
+		{
+			if (this.tools.isMailList(fileContent))
+				return "LATER";
+		}
 		// the new card might be a card OR a directory
 		var newItem = null; 
 		
@@ -337,7 +349,7 @@ com.synckolab.AddressBook = {
 			this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("checking"));
 			// since we disabled mailing list - wont come here
 			if (newCard.isMailList)
-				this.curItemInListContent.setAttribute("label", com.synckolab.global.strBundle.getString("mailingList") + " " + newCard.listNickName);
+				this.curItemInListContent.setAttribute("label", com.synckolab.global.strBundle.getString("mailingList") + " " + this.tools.getCardProperty(newCard, "Name"));
 			else
 			if (newCard.displayName != "")
 				this.curItemInListContent.setAttribute("label", newCard.displayName + " <" + newCard.primaryEmail + ">");
@@ -409,16 +421,16 @@ com.synckolab.AddressBook = {
 					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("deleteOnServer"));
 	
 					try
-					{				
+					{
 						// also remove the local db file since we deleted the contact
 						cEntry.remove(false);
 					}
 					catch (dele)
 					{ // ignore this - if the file does not exist
 					}
-										
+
 					try
-					{				
+					{
 						// delete extra file if we dont need it
 						fEntry.remove(false);
 					}
@@ -427,7 +439,7 @@ com.synckolab.AddressBook = {
 					}
 					
 					return "DELETEME";
-				}				
+				}
 			}
 			else
 			// this card is already in the address book
@@ -636,7 +648,7 @@ com.synckolab.AddressBook = {
 				// is the db file equals server, but not local.. we got a local change
 				if (cEntry.exists() && !this.tools.equalsContact(cCard, aCard) && this.tools.equalsContact(cCard, newCard))
 				{
-					com.synckolab.tools.logMessage("client changed: " + this.tools.getUID(aCard) + cCard.primaryEmail, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+					com.synckolab.tools.logMessage("client changed " + this.tools.getUID(aCard) + " - " + cCard.primaryEmail, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 					
 					// update list item
 					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("updateOnServer"));
@@ -809,7 +821,7 @@ com.synckolab.AddressBook = {
 			this.curItemInListId.setAttribute("label", this.tools.getUID(curItem));
 			this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("addToServer"));
 			if (curItem.isMailList)
-				this.curItemInListContent.setAttribute("label", com.synckolab.global.strBundle.getString("mailingList") + " " + this.tools.getUID(curItem));
+				this.curItemInListContent.setAttribute("label", com.synckolab.global.strBundle.getString("mailingList") + " " + this.tools.getCardProperty(curItem, "Name"));
 			else
 				this.curItemInListContent.setAttribute("label", cur.firstName + " " + curItem.lastName + " <" + curItem.primaryEmail + ">");
 			
