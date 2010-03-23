@@ -34,6 +34,7 @@ if(!com.synckolab) com.synckolab={};
 // synckolab interface
 com.synckolab.main = {
 	
+	timer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
 	/************************
 	 * Global Variables
 	 */
@@ -164,7 +165,7 @@ com.synckolab.main = {
 			
 		// wait a minute
 		com.synckolab.tools.logMessage("sync timer: sleep for one minute", com.synckolab.global.LOG_DEBUG);
-		window.setTimeout(com.synckolab.main.syncKolabTimer, 60000);
+		com.synckolab.main.timer.initWithCallback({notify:function(){com.synckolab.main.syncKolabTimer();}}, 60000, 0);
 	}
 
 };
@@ -203,6 +204,7 @@ var gSyncKeyInfo;
 // progress variables 
 var curStep;
 
+var timer = Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
 
 
 /*contains:
@@ -273,7 +275,8 @@ var curStep;
 	com.synckolab.tools.logMessage("Debug Level set to: " + com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL, com.synckolab.global.LOG_WARNING);
 
 	// wait until loaded
-	window.setTimeout(goWindow, com.synckolab.config.SWITCH_TIME, gWnd);
+	timer.initWithCallback({notify:function(){goWindow(gWnd);}}, com.synckolab.config.SWITCH_TIME, 0);
+	
 
 
 function goWindow (wnd)
@@ -284,7 +287,7 @@ function goWindow (wnd)
 		var statusMsg1 = wnd.document.getElementById('current-action');
 		if (statusMsg1 == null || !statusMsg1)
 		{
-			window.setTimeout(goWindow, com.synckolab.config.SWITCH_TIME, wnd);		 
+			timer.initWithCallback({notify:function(){goWindow(wnd);}}, com.synckolab.config.SWITCH_TIME, 0);
 			return;
 		}
 	}
@@ -336,10 +339,11 @@ function goWindow (wnd)
 	if (com.synckolab.calendarTools.isCalendarAvailable())
 	{
 		com.synckolab.tools.logMessage("Calendar available", com.synckolab.global.LOG_INFO);
+		/*
 		var loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
 		                                .getService(Components.interfaces.mozIJSSubScriptLoader);
 		
-		// load calendar extensions
+		// load calendar extensions		
 		try {
 			loader.loadSubScript("chrome://calendar/content/importExport.js");
 		} catch (ioex) {
@@ -350,11 +354,12 @@ function goWindow (wnd)
 		} catch (ioex) {
 			com.synckolab.tools.logMessage("Calendar base not available!", com.synckolab.global.LOG_WARNING);
 		}
+		*/
 	}
 	else
 		com.synckolab.tools.logMessage("Calendar not available - disabling", com.synckolab.global.LOG_INFO);
 	
-	window.setTimeout(startSync, com.synckolab.config.SWITCH_TIME);		 
+	timer.initWithCallback({notify:function(){startSync();}}, com.synckolab.config.SWITCH_TIME, 0);
 }
 
 var gTmpFile;
@@ -401,7 +406,7 @@ function startSync(event) {
 
 	
 	// all initialized, lets run
-	window.setTimeout(nextSync, com.synckolab.config.SWITCH_TIME);	
+	timer.initWithCallback({notify:function(){nextSync();}}, com.synckolab.config.SWITCH_TIME, 0);
 }
 
 // this function is called after everything is done
@@ -417,7 +422,7 @@ function nextSync()
 		if (syncConfigs[curConConfig].length <= 0)
 		{
 			curConConfig++;
-			window.setTimeout(nextSync, com.synckolab.config.SWITCH_TIME);	
+			timer.initWithCallback({notify:function(){nextSync();}}, com.synckolab.config.SWITCH_TIME, 0);	
 			return;
 		}
 
@@ -433,7 +438,7 @@ function nextSync()
 		if (!com.synckolab.AddressBook.gSync)
 		{
 			com.synckolab.tools.logMessage("Skipping adressbook config " + syncConfigs[curConConfig], com.synckolab.global.LOG_DEBUG);
-			window.setTimeout(nextSync, com.synckolab.config.SWITCH_TIME);	
+			timer.initWithCallback({notify:function(){nextSync();}}, com.synckolab.config.SWITCH_TIME, 0);	
 			return;
 		}
 		else
@@ -463,7 +468,7 @@ function nextSync()
 			// remember the sync class
 			gSync = com.synckolab.AddressBook;
 				
-			window.setTimeout(prepareContent, com.synckolab.config.SWITCH_TIME);	
+			timer.initWithCallback({notify:function(){prepareContent();}}, com.synckolab.config.SWITCH_TIME, 0);
 		}	
 	}
 	else
@@ -475,7 +480,7 @@ function nextSync()
 		if (syncConfigs[curCalConfig].length <= 0)
 		{
 			curCalConfig++;
-			window.setTimeout(nextSync, com.synckolab.config.SWITCH_TIME);	
+			timer.initWithCallback({notify:function(){nextSync();}}, com.synckolab.config.SWITCH_TIME, 0);	
 			return;
 		}
 		//try
@@ -494,7 +499,7 @@ function nextSync()
 			{
 				com.synckolab.tools.logMessage("Skipping calendar config " + syncConfigs[curCalConfig], com.synckolab.global.LOG_DEBUG);
 				curCalConfig++;
-				window.setTimeout(nextSync, com.synckolab.config.SWITCH_TIME, com.synckolab.Calendar);	
+				timer.initWithCallback({notify:function(){nextSync(com.synckolab.Calendar);}}, com.synckolab.config.SWITCH_TIME, 0);
 				return;
 			}
 			else
@@ -529,7 +534,7 @@ function nextSync()
 				// the init2 does the goon for us		
 				com.synckolab.Calendar.init2(prepareContent, com.synckolab.Calendar);
 
-				window.setTimeout(prepareContent, com.synckolab.config.SWITCH_TIME, com.synckolab.Calendar);
+				timer.initWithCallback({notify:function(){prepareContent(com.synckolab.Calendar);}}, com.synckolab.config.SWITCH_TIME, 0);
 				return;
 			}
 		}
@@ -539,7 +544,7 @@ function nextSync()
 			// if an exception is found print it and continue
 			com.synckolab.tools.logMessage("Error setting calendar config: " + ex, com.synckolab.global.LOG_ERROR);
 			curCalConfig++;
-			window.setTimeout(nextSync, com.synckolab.config.SWITCH_TIME);	
+			timer.initWithCallback({notify:function(){nextSync();}}, com.synckolab.config.SWITCH_TIME, 0);	
 			return;
 		}
 		*/
@@ -553,7 +558,7 @@ function nextSync()
 		if (syncConfigs[curTaskConfig].length <= 0)
 		{
 			curTaskConfig++;
-			window.setTimeout(nextSync, com.synckolab.config.SWITCH_TIME);	
+			timer.initWithCallback({notify:function(){nextSync();}}, com.synckolab.config.SWITCH_TIME, 0);	
 			return;
 		}
 		
@@ -570,7 +575,7 @@ function nextSync()
 			if (!com.synckolab.Calendar.gSync)
 			{
 				com.synckolab.tools.logMessage("skipping task config " + syncConfigs[curTaskConfig], com.synckolab.global.LOG_DEBUG);
-				window.setTimeout(nextSync, com.synckolab.config.SWITCH_TIME, com.synckolab.Calendar);	
+				timer.initWithCallback({notify:function(){prepareContent(com.synckolab.Calendar);}}, com.synckolab.config.SWITCH_TIME, 0);
 				return;
 			}
 			else
@@ -602,7 +607,7 @@ function nextSync()
 				// the init2 does the goon for us		
 				com.synckolab.Calendar.init2(prepareContent, com.synckolab.Calendar);
 
-				window.setTimeout(prepareContent, com.synckolab.config.SWITCH_TIME, com.synckolab.Calendar);
+				timer.initWithCallback({notify:function(){prepareContent(com.synckolab.Calendar);}}, com.synckolab.config.SWITCH_TIME, 0);
 				return;
 			}
 		}
@@ -611,7 +616,7 @@ function nextSync()
 			// if an exception is found print it and continue
 			com.synckolab.tools.logMessage("Error setting task config: " + ex, com.synckolab.global.LOG_ERROR);
 			curTaskConfig++;
-			window.setTimeout(nextSync, com.synckolab.config.SWITCH_TIME);
+			timer.initWithCallback({notify:function(){nextSync();}}, com.synckolab.config.SWITCH_TIME, 0);
 			return;
 		}
 	}
@@ -701,7 +706,7 @@ function prepareContent ()
 	// wait for the data
 	if (gSync.dataReady() == false)
 	{
-		window.setTimeout(prepareContent, com.synckolab.config.SWITCH_TIME);
+		timer.initWithCallback({notify:function(){prepareContent();}}, com.synckolab.config.SWITCH_TIME, 0);
 		return;
 	}
 	// update folder information from imap and make sure we got everything
@@ -762,7 +767,7 @@ function getContent ()
 	else
 		statusMsg.setAttribute("label", com.synckolab.global.strBundle.getString("syncEntries"));
 	meter.setAttribute("value", "5%");
-	window.setTimeout(getMessage, com.synckolab.config.SWITCH_TIME);	
+	timer.initWithCallback({notify:function(){getMessage();}}, com.synckolab.config.SWITCH_TIME, 0);
 }
 
 var gLastMessageDBHdr; // save last message header
@@ -773,7 +778,7 @@ function getMessage ()
 	// pause sync...
 	if (gWnd != null && gWnd.gPauseSync)
 	{
-		window.setTimeout(getMessage, com.synckolab.config.SWITCH_TIME);
+		timer.initWithCallback({notify:function(){getMessage();}}, com.synckolab.config.SWITCH_TIME, 0);
 		return;
 	}
 	if (gWnd != null && gWnd.gStopSync)
@@ -855,11 +860,11 @@ function getMessage ()
 					curCounter.setAttribute("label", curMessage + "/" + totalMessages);
 				
 				// next message
-				window.setTimeout(getMessage, com.synckolab.config.SWITCH_TIME);	
+				timer.initWithCallback({notify:function(){getMessage();}}, com.synckolab.config.SWITCH_TIME, 0);
 			}
 			else
 			{
-				window.setTimeout(parseFolderToAddressFinish, com.synckolab.config.SWITCH_TIME);	
+				timer.initWithCallback({notify:function(){parseFolderToAddressFinish();}}, com.synckolab.config.SWITCH_TIME, 0);
 			}
 			return;
 		}
@@ -988,7 +993,7 @@ function parseMessageRunner ()
 	// pause sync...
 	if (gWnd != null && gWnd.gPauseSync)
 	{
-		window.setTimeout(parseMessageRunner, com.synckolab.config.SWITCH_TIME);	
+		timer.initWithCallback({notify:function(){parseMessageRunner();}}, com.synckolab.config.SWITCH_TIME, 0);
 		return;
 	}
 	if (gWnd != null && gWnd.gStopSync)
@@ -1061,11 +1066,11 @@ function parseMessageRunner ()
 		}
 				
 		// next message
-		window.setTimeout(getMessage, com.synckolab.config.SWITCH_TIME);	
+		timer.initWithCallback({notify:function(){getMessage();}}, com.synckolab.config.SWITCH_TIME, 0);
 	}
 	else
 	{
-		window.setTimeout(parseFolderToAddressFinish, com.synckolab.config.SWITCH_TIME);	
+		timer.initWithCallback({notify:function(){parseFolderToAddressFinish();}}, com.synckolab.config.SWITCH_TIME, 0);
 	}
 }
 
@@ -1096,7 +1101,7 @@ function parseFolderToAddressFinish ()
 	}
 	
 	
-	window.setTimeout(updateContent, com.synckolab.config.SWITCH_TIME);	
+	timer.initWithCallback({notify:function(){updateContent();}}, com.synckolab.config.SWITCH_TIME, 0);
 }
 
 
@@ -1108,7 +1113,7 @@ function updateContent()
 	// pause sync...
 	if (gWnd != null && gWnd.gPauseSync)
 	{
-		window.setTimeout(updateContent, com.synckolab.config.SWITCH_TIME);	
+		timer.initWithCallback({notify:function(){updateContent();}}, com.synckolab.config.SWITCH_TIME, 0);
 		return;
 	}
 		
@@ -1158,7 +1163,7 @@ function updateContent()
 	}
 	curMessage = -1;
 	// now write the new ones
-	window.setTimeout(updateContentWrite, com.synckolab.config.SWITCH_TIME);	
+	timer.initWithCallback({notify:function(){updateContentWrite();}}, com.synckolab.config.SWITCH_TIME, 0);
 }
 
 /* Write all changed messages back to the folder. Skip
@@ -1169,7 +1174,7 @@ function updateContentWrite ()
 	// pause sync...
 	if (gWnd != null && gWnd.gPauseSync)
 	{
-		window.setTimeout(updateContentWrite, com.synckolab.config.SWITCH_TIME);	
+		timer.initWithCallback({notify:function(){updateContentWrite();}}, com.synckolab.config.SWITCH_TIME, 0);
 		return;
 	}
 		
@@ -1241,7 +1246,7 @@ function updateContentAfterSave ()
 		curCounter.setAttribute("label", "...");
 	}
 	
-	window.setTimeout(writeContent, com.synckolab.config.SWITCH_TIME);	
+	timer.initWithCallback({notify:function(){writeContent();}}, com.synckolab.config.SWITCH_TIME, 0);
 }
 
 // Step 6  10%
@@ -1251,7 +1256,7 @@ function writeContent ()
 	// pause sync...
 	if (gWnd != null && gWnd.gPauseSync)
 	{
-		window.setTimeout(writeContent, com.synckolab.config.SWITCH_TIME);	
+		timer.initWithCallback({notify:function(){writeContent();}}, com.synckolab.config.SWITCH_TIME, 0);
 		return;
 	}
 		
@@ -1273,7 +1278,7 @@ function writeContent ()
 	if (content == null)
 	{
 		com.synckolab.tools.logMessage("content is null - continue", com.synckolab.global.LOG_WARNING);
-		window.setTimeout(writeContent, com.synckolab.config.SWITCH_TIME);	
+		timer.initWithCallback({notify:function(){writeContent();}}, com.synckolab.config.SWITCH_TIME, 0);
 		return;
 	}
 	
@@ -1312,7 +1317,7 @@ function writeContentAfterSave ()
 	// pause sync...
 	if (gWnd != null && gWnd.gPauseSync)
 	{
-		window.setTimeout(writeContentAfterSave, com.synckolab.config.SWITCH_TIME);	
+		timer.initWithCallback({notify:function(){writeContentAfterSave();}}, com.synckolab.config.SWITCH_TIME, 0);
 		return;
 	}
 	if (gWnd != null && gWnd.gStopSync)
@@ -1346,7 +1351,7 @@ function writeContentAfterSave ()
 	
 
 	com.synckolab.tools.logMessage("Running compact", com.synckolab.global.LOG_INFO);
-	window.setTimeout(syncKolabCompact, 2000);  // wait for a second
+	timer.initWithCallback({notify:function(){syncKolabCompact();}}, 2000, 0); // wait for a second or two
 }
 
 function syncKolabCompact() {
@@ -1359,7 +1364,7 @@ function syncKolabCompact() {
 	
 	gSync.doneParsing();
 	com.synckolab.tools.logMessage("nextSync", com.synckolab.global.LOG_INFO);
-	window.setTimeout(nextSync, com.synckolab.config.SWITCH_TIME);	
+	timer.initWithCallback({notify:function(){nextSync();}}, com.synckolab.config.SWITCH_TIME, 0);	
 }
 
 
@@ -1411,9 +1416,9 @@ var kolabCopyServiceListener = {
 	},
 	OnStopCopy: function(status) {
 		if (curStep == 5)
-			window.setTimeout(updateContentWrite, com.synckolab.config.SWITCH_TIME);	
+			timer.initWithCallback({notify:function(){updateContentWrite();}}, com.synckolab.config.SWITCH_TIME, 0);
 		if (curStep == 6)
-			window.setTimeout(writeContent, com.synckolab.config.SWITCH_TIME);	
+			timer.initWithCallback({notify:function(){writeContent();}}, com.synckolab.config.SWITCH_TIME, 0);
 	}
 };
 

@@ -15,7 +15,7 @@
 			<Description>
 				<em:id>{92650c4d-4b8e-4d2a-b7eb-24ecf4f6b63a}</em:id>
 				<em:minVersion>2.0</em:minVersion>
-				<em:maxVersion>2.0.*.*</em:maxVersion>
+				<em:maxVersion>2.1a1pre</em:maxVersion>
 			</Description>
 		</em:targetApplication>
 		
@@ -28,7 +28,7 @@
 		<em:creator>Niko Berger</em:creator>
 		<em:homepageURL>http://www.gargan.org/extensions/synckolab.html</em:homepageURL>
 		<em:optionsURL>chrome://synckolab/content/synckolabPref.xul</em:optionsURL>
-		<em:updateURL>https://www.gargan.org/extensions/update.rdf</em:updateURL>
+		<!--<em:updateURL>https://www.gargan.org/extensions/update.rdf</em:updateURL>-->
 
 		<em:contributor>Andreas Gungl;a.gungl(at)gmx.de</em:contributor>		
 		<em:contributor>Steven D Miller (Copart);stevendm(at)rellims.com</em:contributor>

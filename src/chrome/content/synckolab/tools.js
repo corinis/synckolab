@@ -394,7 +394,7 @@ generateMail: function (cid, mail, adsubject, mime, part, content, hr, image){
 	// card/ical are encoded quoted printable
 	if (!part)
 		msg += "Content-Transfer-Encoding: quoted-printable\n";
-	msg += "User-Agent: SyncKolab " + com.synckolab.global.version + "\n";
+	msg += "User-Agent: SyncKolab " + com.synckolab.config.version + "\n";
 	if (part)
 		msg += "X-Kolab-Type: "+mime+"\n";
 	msg += "\n";
