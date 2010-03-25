@@ -339,22 +339,6 @@ function goWindow (wnd)
 	if (com.synckolab.calendarTools.isCalendarAvailable())
 	{
 		com.synckolab.tools.logMessage("Calendar available", com.synckolab.global.LOG_INFO);
-		/*
-		var loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
-		                                .getService(Components.interfaces.mozIJSSubScriptLoader);
-		
-		// load calendar extensions		
-		try {
-			loader.loadSubScript("chrome://calendar/content/importExport.js");
-		} catch (ioex) {
-			com.synckolab.tools.logMessage("Calendar Import/Export not available!", com.synckolab.global.LOG_WARNING);
-		}
-		try {
-			loader.loadSubScript("chrome://calendar/content/calendar.js");
-		} catch (ioex) {
-			com.synckolab.tools.logMessage("Calendar base not available!", com.synckolab.global.LOG_WARNING);
-		}
-		*/
 	}
 	else
 		com.synckolab.tools.logMessage("Calendar not available - disabling", com.synckolab.global.LOG_INFO);

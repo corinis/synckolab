@@ -211,8 +211,14 @@ stripMailHeader: function (content) {
 		var fileIO = Components.classes["@mozilla.org/binaryoutputstream;1"].createInstance(Components.interfaces.nsIBinaryOutputStream); 
 		fileIO.setOutputStream(stream);
 		
-		var fcontent = atob(imgC);
-		fileIO.writeBytes(fcontent, fcontent.length);
+		try {
+			var fcontent = atob(imgC);
+			fileIO.writeBytes(fcontent, fcontent.length);
+		}
+		catch (ex) {
+			// still continue
+			this.logMessage("Error while handling image: " + ex + "\nStream:\n" + imgC, com.synckolab.global.LOG_INFO);
+		}
 		
 		fileIO.close();
 		stream.close();
