@@ -190,15 +190,15 @@
 		<description style="width: 320px">
 			&synckolab.wizard.typePageContact;
 		</description>
-		<checkbox id="syncContacts" label="&synckolab.settings.SyncContacts;" tooltiptext="&synckolab.settings.SyncContactsTip;" oncommand="setControlStateContacts(this.checked)" checked="true" />
+		<checkbox id="syncContacts" label="&synckolab.settings.SyncContacts;" tooltiptext="&synckolab.settings.SyncContactsTip;" oncommand="com.synckolab.settings.setControlStateContacts(this.checked)" checked="true" />
 		<description style="width: 320px">
 				&synckolab.wizard.typePageCalendar;
 		</description>
-		<checkbox id="syncCalendar" label="&synckolab.settings.SyncCalendar;" tooltiptext="&synckolab.settings.SyncCalendarTip;" oncommand="setControlStateCalendar(this.checked)" checked="true" />
+		<checkbox id="syncCalendar" label="&synckolab.settings.SyncCalendar;" tooltiptext="&synckolab.settings.SyncCalendarTip;" oncommand="com.synckolab.settings.setControlStateCalendar(this.checked)" checked="true" />
 		<description style="width: 320px">
 				&synckolab.wizard.typePageTasks;
 		</description>
-		<checkbox id="syncTasks" label="&synckolab.settings.SyncTasks;" tooltiptext="&synckolab.settings.SyncTasksTip;" oncommand="setControlStateTasks(this.checked)" checked="true" />	
+		<checkbox id="syncTasks" label="&synckolab.settings.SyncTasks;" tooltiptext="&synckolab.settings.SyncTasksTip;" oncommand="com.synckolab.settings.setControlStateTasks(this.checked)" checked="true" />	
 	</wizardpage>
 	<wizardpage id="conPage" pageid="conPageId" onpageshow="noAdvance();checkWizConFolder()" description="&synckolab.wizard.conPageInfo;">
 		<script>

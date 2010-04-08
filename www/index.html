@@ -4,10 +4,10 @@
 			<h5 class="infoHeader">Downloads</h5>
 			<ul>
 				<li>
-					<a href="http://www.gargan.org/extensions/synckolab-NIGHTLY.xpi">SyncKolab NIGHTLY 1.0.4</a>
+					<a href="http://www.gargan.org/extensions/synckolab-NIGHTLY.xpi">SyncKolab NIGHTLY 1.5.1</a>
 				</li>
 				<li>
-					<a href="http://www.gargan.org/extensions/synckolab-1.0.3.xpi">synckolab 1.0.3</a>
+					<a href="http://www.gargan.org/extensions/synckolab-1.5.0.xpi">synckolab 1.5.0</a>
 				</li>
 			</ul>
 		</div>
@@ -43,7 +43,9 @@
 	<!-- ***************** INFO/NEWS *************** -->
 	<!-- MAIN CONTENT -->
 	<h1>Sync Kolab</h1>
-	<p> SyncKolab was written to add kolab functionality to thunderbird. It reads a selected Imap folder and synchronizes it with the local address book (and calendar in the future). It is currently under heavy development, so use with care!<br/> It has been tested under Thunderbird for Windows, Linux and MacOSX. <br/> For up-to-date information and most recent version, check out my regular homepage at <a href="http://www.gargan.org">www.gargan.org</a><br/> Version 1.0 had 61 prereleases and 83
+	<p> SyncKolab was written to add kolab functionality to thunderbird. It reads a selected Imap folder and synchronizes it with the local address book (and calendar in the future). It is currently under heavy development, so use with care!<br/> It has been tested under Thunderbird for Windows, Linux and MacOSX. <br/> For up-to-date information and most recent version, check out my regular homepage at <a href="http://www.gargan.org">www.gargan.org</a>
+	<br/> Version 1.5 pushed the synckolab to full Thunderbird 3 and Lightning 1 support and finally includes all fields including mailing lists and photos.
+	<br/> Version 1.0 had 61 prereleases and 83
 		nightly releases with over 100 bugs fixed and is known to work nicely with Thunderbird 2 and Lightning 0.8.<br/> Even with this extensive testing, there might still occur problems in combination with other extensions, operating systems, thunderbird versions and/or special characters in your contacts/tasks/calendar entries .<br/> Because of this, you should make a backup of all your relevant data (server side or your profile directory) before doing your first sync. If seomthing happens
 		because of a bug you can then easily restore your data afterward.<br/>
 	</p>
@@ -64,24 +66,10 @@
 	<b>So do I need the kolab server?</b>
 	<p>If you want full collaboration in your company/group - YES... if you didnt need it until now and only want to sync your data over multiple maches - or just have a simple shared calendar/adress book with a few buddies - no. you can happily live with just your imap server :) </p>
 	<h2>SyncKolab Nightly</h2>
-	<p> You can get a nightly build at <a href="http://www.gargan.org/extensions/synckolab-NIGHTLY.xpi">synckolab NIGHTLY</a> (rightclick). </p> Beware that this may easily break all you contacts/calender entries, altough we try to create stable nighlies.<br/> So create a backup of your thunderbird profile folder before trying it out! <pre>
-* Added prefer-mail-format to contacts (XML Format)
-* contact now displays displayname if no name/surname is given
-* calendar now correctly writes/reads sync db file (speedup)
-* calendar finally syncs correctly (bad error in database file)
-* added seamonkey to the installable targets
-* mail format changes recognized
-* successfully tested calendar sync with thunderbird 3.0a1
-* added seamonkey target application
-* hu-HU translation added
-* added possibility to use -1 as sync time to sync ALL entries
-* fixed #1801: multiple attached cards/xmls are now handled correctly
-* fixed Problems with newlines on parsers (two newlines made the parser cut off the xml)
-* fixed a problem that sometimes prevented multipart messages from being parsed as xml correctly
-* base64 errors fixed (if the =NUM was in the text it was accidently used as base64)
-* added option to specify debug level (default:warning - set to DEBUG if you got a problem)
-* changed settings to use prettyName instead of BaseMessageURI (NOT YET VERIFIED) - use 
-</pre>
+	<p> You can get a nightly build at <a href="http://www.gargan.org/extensions/synckolab-NIGHTLY.xpi">synckolab NIGHTLY</a> (rightclick). </p> Beware that this may easily break all you contacts/calender entries, altough we try to create stable nighlies.<br/> So create a backup of your thunderbird profile folder before trying it out! 
+	<pre>
+	-- no nightly since 1.5.0 yet
+	</pre>
 	<h2>Status of the Kolab Extension</h2>
 	<ul>
 		<li>mailing list support</li>
