@@ -481,7 +481,8 @@ com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 							break;
 						default:
 							// remember other emails
-							extraFields.addField("PHONE:" + cur.getXmlResult("TYPE", "CELLULAR"), num);
+							if (extraFields)
+								extraFields.addField("PHONE:" + cur.getXmlResult("TYPE", "CELLULAR"), num);
 							break;
 					}
 					found = true;
