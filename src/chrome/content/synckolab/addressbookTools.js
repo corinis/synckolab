@@ -627,7 +627,7 @@ com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 				case "ALLOW-REMOTE-CONTENT":
 					if (cur.firstChild == null)
 						break;
-					if (cur.firstChild.data.toUpperCase() == 'TRUE')
+					if ('TRUE' == cur.firstChild.data.toUpperCase())
 						this.setCardProperty(card, "AllowRemoteContent", true);
 					else
 						this.setCardProperty(card, "AllowRemoteContent", false);
@@ -908,14 +908,12 @@ com.synckolab.addressbookTools.card2Xml = function(card, fields) {
 	if (this.haveCardProperty(card, "BirthYear") && this.haveCardProperty(card, "BirthMonth") && this.haveCardProperty(card, "BirthDay"))
 	{
 		var adate = this.getCardProperty(card, "BirthYear") + "-" + this.getCardProperty(card, "BirthMonth") + "-" + this.getCardProperty(card, "BirthDay");
-		if (adate != "--" && adate != "null-null-null")
-			xml += com.synckolab.tools.text.nodeWithContent("birthday", adate, false);
+		xml += com.synckolab.tools.text.nodeWithContent("birthday", adate, false);
 	}
 	if(this.haveCardProperty(card, "AnniversaryYear") && this.haveCardProperty(card, "AnniversaryMonth") && this.haveCardProperty(card, "AnniversaryDay"))
 	{
 		var adate = this.getCardProperty(card, "AnniversaryYear") + "-" + this.getCardProperty(card, "AnniversaryMonth") + "-" + this.getCardProperty(card, "AnniversaryDay");
-		if (adate != "--" && adate != "null-null-null")
-			xml += com.synckolab.tools.text.nodeWithContent("anniversary", adate, false);
+		xml += com.synckolab.tools.text.nodeWithContent("anniversary", adate, false);
 	}
 	if (this.haveCardProperty(card, "HomePhone"))
 	{	
@@ -1114,14 +1112,6 @@ com.synckolab.addressbookTools.genConSha1 = function(card) {
  *
  */
 com.synckolab.addressbookTools.equalsContact = function(a, b) {
-	//Fields to look for
-	var fieldsArray = new Array(
-		"FirstName","LastName","DisplayName","NickName",
-		"PrimaryEmail","SecondEmail","AimScreenName","PreferMailFormat",
-		"WorkPhone","HomePhone","FaxNumber","PagerNumber","CellularNumber",
-		"HomeAddress","HomeAddress2","HomeCity","HomeState","HomeZipCode","HomeCountry","WebPage2",
-		"JobTitle","Department","Company","WorkAddress","WorkAddress2","WorkCity","WorkState","WorkZipCode","WorkCountry","WebPage1",
-		"Custom1","Custom2","Custom3","Custom4","Notes");
 	
 	if (a.isMailList != b.isMailList)
 	{
@@ -1129,6 +1119,17 @@ com.synckolab.addressbookTools.equalsContact = function(a, b) {
 		return false;
 	}
 		
+	//Fields to look for
+	var fieldsArray = new Array(
+		"BirthYear", "BirthMonth", "BirthDay", 
+		"AnniversaryYear", "AnniversaryMonth", "AnniversaryDay", 
+		"FirstName","LastName","DisplayName","NickName",
+		"PrimaryEmail","SecondEmail","AimScreenName","PreferMailFormat",
+		"WorkPhone","HomePhone","FaxNumber","PagerNumber","CellularNumber",
+		"HomeAddress","HomeAddress2","HomeCity","HomeState","HomeZipCode","HomeCountry","WebPage2",
+		"JobTitle","Department","Company","WorkAddress","WorkAddress2","WorkCity","WorkState","WorkZipCode","WorkCountry","WebPage1",
+		"Custom1","Custom2","Custom3","Custom4","Notes");
+
 	if (a.isMailList)
 	{
 		com.synckolab.tools.logMessage ("start comparing mailing lists!", this.global.LOG_DEBUG + this.global.LOG_AB);

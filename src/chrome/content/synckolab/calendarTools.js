@@ -108,6 +108,9 @@ com.synckolab.calendarTools = {
 		if (tasks == true && cur.startDate !=null && cur.dueDate)
 			return cur.dueDate.jsDate;
 
+		if (tasks == false && cur.startDate !=null && cur.untilDate)
+			return cur.untilDate.jsDate;
+
 		if (tasks == false && cur.startDate !=null && cur.endDate)
 			return cur.endDate.jsDate;
 			
@@ -126,8 +129,12 @@ com.synckolab.calendarTools = {
 			case "startDate":
 				item.startDate = value;
 				break;
+			// endDate might be untilDate
 			case "endDate":
-				item.endDate = value;
+				if (endDate)
+					item.endDate = value;
+				else
+					item.untilDate = value;
 				break;
 
 			case "entryDate":
@@ -554,7 +561,11 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 					
 				case "SUMMARY":
 					if (cur.firstChild)
-						this.setKolabItemProperty(event, "title", cur.getFirstData());
+					{
+						var data = cur.getFirstData();
+						if (data != '' && data != 'null' && data != null)
+							this.setKolabItemProperty(event, "title", cur.getFirstData());
+					}
 					break;
 
 				case "BODY":
@@ -810,7 +821,11 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 									if (rangeSpec != "dummy")
 									{
 										// XML type is Date, not DateTime
-										recRule.endDate = com.synckolab.tools.text.string2CalDate(rangeSpec);
+										if (recRule.endDate)
+											recRule.endDate = com.synckolab.tools.text.string2CalDate(rangeSpec);
+										else
+										// new lighnting
+											recRule.untilDate = com.synckolab.tools.text.string2CalDate(rangeSpec);
 									}
 									else
 										recRule.count = -1;
@@ -1189,7 +1204,12 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
 			}
 			else
 			{
+				
 				var endDate = recRule.endDate;
+				// new lightning
+				if (!endDate)
+					endDate = recRule.untilDate;
+				
 				if (endDate)
 					xml += "  <range type=\"date\">" + com.synckolab.tools.text.date2String(endDate.jsDate) + "</range>\n";
 				else
