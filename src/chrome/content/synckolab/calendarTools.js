@@ -491,7 +491,7 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 
 					var s = cur.getFirstData();
 					// 2005-03-30T15:28:52Z
-					if (s.indexOf(":") == -1) // full time event
+					if (s.indexOf(":") == -1) // full day event
 					{
 						// date values witout time part specify a full day event
 						var cDate = com.synckolab.tools.text.string2CalDate(s);
@@ -500,6 +500,7 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 						// Sunbird uses for 1-day-event:
 						// startdate = day_x, enddate = day_x + 1
 						var tmp_date = cDate.jsDate;
+						com.synckolab.tools.logMessage("Found EndDate: "+s+" - in time: " + tmp_date.getTime(), com.synckolab.global.LOG_DEBUG);
 						tmp_date.setTime(tmp_date.getTime() + 24*60*60000);
 						cDate.jsDate = tmp_date;
 						cDate.isDate = true;
