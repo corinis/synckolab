@@ -231,15 +231,17 @@ com.synckolab.settings = {
 				com.synckolab.tools.logMessage("WARNING: failed to read SyncKolab.debugLevel: " + ex, com.synckolab.global.LOG_WARNING);
 			}
 			var debugEle = document.getElementById("debugLvl");
-			debugEle.setAttribute("value", cfgDbgLevel);
-			// get the label
-			debugEle.setAttribute("label", document.getElementById("debugLvl"+cfgDbgLevel).getAttribute("label"));
+			if (debugEle) {
+				debugEle.setAttribute("value", cfgDbgLevel);
+				// get the label
+				debugEle.setAttribute("label", document.getElementById("debugLvl"+cfgDbgLevel).getAttribute("label"));
 
-			// set the state
-			try {
-				debugEle.setAttribute("disabled", pref.prefIsLocked("SyncKolab.debugLevel"));
-			} catch (ex) {
-				com.synckolab.tools.logMessage("WARNING: failed to read state of SyncKolab.debugLevel: " + ex, com.synckolab.global.LOG_WARNING);
+				// set the state
+				try {
+					debugEle.setAttribute("disabled", pref.prefIsLocked("SyncKolab.debugLevel"));
+				} catch (ex) {
+					com.synckolab.tools.logMessage("WARNING: failed to read state of SyncKolab.debugLevel: " + ex, com.synckolab.global.LOG_WARNING);
+				}
 			}
 
 		},
