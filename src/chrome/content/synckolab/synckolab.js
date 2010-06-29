@@ -110,7 +110,7 @@ com.synckolab.main = {
 		}
 		else
 		// only continue timer if nothing is running right now!
-		if (this.forceConfig == null)
+		if (com.synckolab.main.forceConfig == null)
 		{
 			// go through all configs
 			for (var i=0; i < this.syncConfigs.length; i++)
@@ -151,7 +151,7 @@ com.synckolab.main = {
 					this.syncConfigs[i].gSyncTimer = 0;
 					// hide the window 
 					this.doHideWindow = this.syncConfigs[i].gAutoHideWindow;
-					this.forceConfig = this.syncConfigs[i].configName;
+					com.synckolab.main.forceConfig = this.syncConfigs[i].configName;
 					com.synckolab.main.sync("timer");
 					
 					// make sure, that we do not start another config right now
@@ -161,7 +161,7 @@ com.synckolab.main = {
 			}
 		}
 		else
-			com.synckolab.tools.logMessage("sync with config "+this.forceConfig +" is still running...", com.synckolab.global.LOG_DEBUG);
+			com.synckolab.tools.logMessage("sync with config "+com.synckolab.main.forceConfig +" is still running...", com.synckolab.global.LOG_DEBUG);
 			
 		// wait a minute
 		com.synckolab.tools.logMessage("sync timer: sleep for one minute", com.synckolab.global.LOG_DEBUG);
@@ -231,7 +231,7 @@ var timer = Components.classes["@mozilla.org/timer;1"].createInstance(Components
 	// in case this wasnt called via timer - its a manual sync
 	if (event != "timer")
 	{
-		this.forceConfig = "MANUAL-SYNC";
+		com.synckolab.main.forceConfig = "MANUAL-SYNC";
 	}
 	
 	com.synckolab.global.strBundle = document.getElementById("synckolabBundle");
@@ -382,10 +382,10 @@ function startSync(event) {
 	}
 	
 	// called from timer - we force ONE configuration
-	if (this.forceConfig != null && this.forceConfig != "MANUAL-SYNC")
+	if (com.synckolab.main.forceConfig != null && com.synckolab.main.forceConfig != "MANUAL-SYNC")
 	{
 		syncConfigs = new Array();
-		syncConfigs.push(this.forceConfig);
+		syncConfigs.push(com.synckolab.main.forceConfig);
 	}
 
 	
@@ -606,6 +606,8 @@ function nextSync()
 	}
 	else //done
 	{
+		com.synckolab.tools.logMessage("Done syncing resetting" , com.synckolab.global.LOG_DEBUG);
+		
 		if (gWnd != null)
 			totalMeter.setAttribute("value", "100%");
 		
@@ -638,10 +640,10 @@ function nextSync()
 		}
 		
 		// done autorun
-		if (this.forceConfig != null)
+		if (com.synckolab.main.forceConfig != null)
 		{
-			com.synckolab.tools.logMessage("finished autorun of config " + this.forceConfig, com.synckolab.global.LOG_INFO);
-			this.forceConfig = null;
+			com.synckolab.tools.logMessage("finished autorun of config " + com.synckolab.main.forceConfig, com.synckolab.global.LOG_INFO);
+			com.synckolab.main.forceConfig = null;
 			this.doHideWindow = false;
 		}
 		
