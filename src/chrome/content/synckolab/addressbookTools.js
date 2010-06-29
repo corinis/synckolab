@@ -436,7 +436,8 @@ com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 							break;
 						default:
 							// remember other emails
-							extraFields.addField("EMAIL", cur.getXmlResult("SMTP-ADDRESS", ""));
+							if (extraFields != null)
+								extraFields.addField("EMAIL", cur.getXmlResult("SMTP-ADDRESS", ""));
 							break;
 							
 					}
@@ -480,8 +481,8 @@ com.synckolab.addressbookTools.xml2Card = function(xml, extraFields, cards) {
 							this.setCardProperty(card, "PagerNumber", num);
 							break;
 						default:
-							// remember other emails
-							if (extraFields)
+							// remember other phone numbers
+							if (extraFields != null)
 								extraFields.addField("PHONE:" + cur.getXmlResult("TYPE", "CELLULAR"), num);
 							break;
 					}
