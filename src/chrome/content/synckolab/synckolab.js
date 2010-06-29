@@ -558,8 +558,8 @@ function nextSync()
 			// maybe we do not want to sync calendar in this config
 			if (!com.synckolab.Calendar.gSync)
 			{
-				com.synckolab.tools.logMessage("skipping task config " + syncConfigs[curTaskConfig], com.synckolab.global.LOG_DEBUG);
-				timer.initWithCallback({notify:function(){prepareContent(com.synckolab.Calendar);}}, com.synckolab.config.SWITCH_TIME, 0);
+				com.synckolab.tools.logMessage("Skipping task config " + syncConfigs[curTaskConfig], com.synckolab.global.LOG_DEBUG);
+				timer.initWithCallback({notify:function(){nextSync(com.synckolab.Calendar);}}, com.synckolab.config.SWITCH_TIME, 0);
 				return;
 			}
 			else

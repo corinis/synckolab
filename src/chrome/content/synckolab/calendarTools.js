@@ -247,8 +247,8 @@ com.synckolab.calendarTools = {
 	deleteEventOnServer: function(fevent, pevent, lsyncCalendar) {
 		if (!this.checkEventServerDeletion(fevent, pevent, lsyncCalendar))
 			return false;
-		var eventry = com.synckolab.tools.getSyncDbFile(lsyncCalendar.gConfig, lsyncCalendar.getType(), fevent.id);
-		var fentry = com.synckolab.tools.getSyncFieldFile(lsyncCalendar.gConfig, lsyncCalendar.getType(), fevent.id);
+		var eventry = com.synckolab.tools.file.getSyncDbFile(lsyncCalendar.gConfig, lsyncCalendar.getType(), fevent.id);
+		var fentry = com.synckolab.tools.file.getSyncFieldFile(lsyncCalendar.gConfig, lsyncCalendar.getType(), fevent.id);
 		if (eventry.exists())
 			eventry.remove(false);
 		if (fentry.exists())
