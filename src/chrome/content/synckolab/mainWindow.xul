@@ -52,6 +52,7 @@
 
 	<script type="application/x-javascript">
 		window.addEventListener("load", com.synckolab.main.syncKolabTimer, false);
+		window.document.getElementById('folderTree').addEventListener("click", com.synckolab.main.groupwareActions, false);  
 	</script>
     
     <!-- calendar -->

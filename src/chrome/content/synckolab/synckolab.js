@@ -171,6 +171,181 @@ com.synckolab.main = {
 };
 
 
+var groupwareContactFolders = new Array();
+var groupwareCalendarFolders = new Array();
+var groupwareTaskFolders = new Array();
+var groupwareNoteFolders = new Array();
+var groupwareConfigs = new Array();
+
+com.synckolab.main.groupwareActions = function () {
+	this.logMessage = com.synckolab.tools.logMessage;
+	this.logMessage("Starting groupware Actions function", com.synckolab.global.LOG_DEBUG);
+
+   // Grab the selected folder and figure out what the INBOX is so we can switch to that later
+	var selected_foldername = gFolderDisplay.displayedFolder.URI;
+	var index = selected_foldername.indexOf('INBOX',0);
+	var email_account = selected_foldername.substring(0, index);
+   var inbox = email_account.concat('INBOX');
+   
+	var versionChecker = Components.classes["@mozilla.org/xpcom/version-comparator;1"].getService(Components.interfaces.nsIVersionComparator);  
+		
+	var currentConfigs = new Array();
+	var syncConfigs = new Array();
+	var configChanged = 0;
+	
+	try {
+		var syncConfig = pref.getCharPref("SyncKolab.Configs");
+		syncConfigs = syncConfig.split(';');
+		syncConfigs.sort;
+	} catch(ex) {
+		com.synckolab.tools.logMessage("ERROR: Reading 'SyncKolab.Configs' failed: " + ex, com.synckolab.global.LOG_ERROR);
+		return;
+	}
+	
+	com.synckolab.tools.logMessage("Groupware Actions groupware Configs " + groupwareConfigs.length, com.synckolab.global.LOG_DEBUG);
+	com.synckolab.tools.logMessage("Groupware Actions sync Configs " + syncConfigs.length, com.synckolab.global.LOG_DEBUG);
+
+	// Check our previous configs against the current list of configs.
+	if (groupwareConfigs.length != (syncConfigs.length - 1)) {
+		com.synckolab.tools.logMessage("Groupware Actions configs are not the same length.", com.synckolab.global.LOG_DEBUG);
+		configChanged = 1;
+	}
+
+	// The length of the configs did not change but the configs themselves might have
+	if (!configChanged) {
+		// Compare both arrays to make sure the details are the same
+		com.synckolab.tools.logMessage("Groupware Actions comparing the config names", com.synckolab.global.LOG_DEBUG);
+      
+		for (var i = 0; i < (syncConfigs.length - 1); i++) {
+		   com.synckolab.tools.logMessage("Groupware Actions sync config names:" + syncConfigs[i], com.synckolab.global.LOG_DEBUG);
+		   com.synckolab.tools.logMessage("Groupware Actions groupware config names:" + groupwareConfigs[i], com.synckolab.global.LOG_DEBUG);
+			if (syncConfigs[i] != groupwareConfigs[i]) {
+				configChanged = 1;
+				break;
+			}			
+		}
+	}
+
+	if (configChanged) {		
+		// The configs have changed so we need to check them out
+		com.synckolab.tools.logMessage("Groupware Actions the configs have changed", com.synckolab.global.LOG_DEBUG);
+		var currentConfig = 0;
+		
+		// re-initialize groupwareConfigs
+		groupwareConfigs.length = 0;
+				
+
+		// Loop through the Configs getting all the Contact folder paths.
+		for (currentConfig = 0; currentConfig < (syncConfigs.length - 1); currentConfig++) {
+			com.synckolab.tools.logMessage("Reading of config in groupwareActions " + syncConfigs[currentConfig], com.synckolab.global.LOG_DEBUG);
+			// skip problematic configs :)
+			if (syncConfigs[currentConfig].length <= 0) {
+				com.synckolab.tools.logMessage("Skipping problem config " + syncConfigs[currentConfig], com.synckolab.global.LOG_DEBUG);
+				break;
+			} else {
+
+				// We found a valid config so save it.
+				groupwareConfigs.push(syncConfigs[currentConfig]);
+			
+				// initialize the address book
+				com.synckolab.AddressBook.init(syncConfigs[currentConfig]);	
+				com.synckolab.tools.logMessage("Done Contact init... in groupwareActions", com.synckolab.global.LOG_DEBUG);
+
+				// maybe we do not want to sync contacts in this config
+				if (!com.synckolab.AddressBook.gSync) {
+					com.synckolab.tools.logMessage("Skipping adressbook config " + syncConfigs[currentConfig], com.synckolab.global.LOG_DEBUG);
+				} else {
+					groupwareContactFolders.push(com.synckolab.AddressBook.folderPath);
+				}
+
+				if (com.synckolab.calendarTools.isCalendarAvailable()) {
+
+					// initialize the Calendar
+					com.synckolab.Calendar.init(syncConfigs[currentConfig]);	
+					com.synckolab.tools.logMessage("Done Calendar init... in groupwareActions", com.synckolab.global.LOG_DEBUG);
+
+					// maybe we do not want to sync calendar in this config
+					if (!com.synckolab.Calendar.gSync) {
+						com.synckolab.tools.logMessage("Skipping calendar config " + syncConfigs[currentConfig], com.synckolab.global.LOG_DEBUG);
+					} else {
+						groupwareCalendarFolders.push(com.synckolab.Calendar.folderPath);
+					}
+					
+					// Now grab the Task configuration
+					com.synckolab.Calendar.syncTasks = true;
+					com.synckolab.Calendar.init(syncConfigs[currentConfig]);
+					if (!com.synckolab.Calendar.gSync) {
+						com.synckolab.tools.logMessage("Skipping Task config " + syncConfigs[currentConfig], com.synckolab.global.LOG_DEBUG);
+					} else {
+						groupwareTaskFolders.push(com.synckolab.Calendar.folderPath);
+					}
+				}
+			}
+		}
+	} else {
+		com.synckolab.tools.logMessage("Configs have not changed" + syncConfigs[currentConfig], com.synckolab.global.LOG_DEBUG);
+	}	
+
+	this.logMessage("In groupware Actions function folder name is " + selected_foldername, com.synckolab.global.LOG_DEBUG);
+	
+	for (var i = 0; i < groupwareContactFolders.length; i++) {
+		this.logMessage("In groupware Actions function Contact folder name is " + groupwareContactFolders[i], com.synckolab.global.LOG_DEBUG);
+	}
+
+	for (var i = 0; i < groupwareCalendarFolders.length; i++) {
+		this.logMessage("In groupware Actions function Calendar folder name is " + groupwareCalendarFolders[i], com.synckolab.global.LOG_DEBUG);
+	}	
+
+	for (var i = 0; i < groupwareTaskFolders.length; i++) {
+		this.logMessage("In groupware Actions function Task folder name is " + groupwareTaskFolders[i], com.synckolab.global.LOG_DEBUG);
+	}	
+	
+	for (var i = 0; i < groupwareCalendarFolders.length; i++) {
+		if (selected_foldername == groupwareCalendarFolders[i]) {
+		this.logMessage("In groupware Actions selected Calendar folder", com.synckolab.global.LOG_DEBUG);
+
+			if (versionChecker.compare(Application.version, "3.0b4") >= 0) {
+				document.getElementById('tabmail').openTab('calendar', { title: document.getElementById('calendar-tab-button').getAttribute('tooltiptext') })
+				SelectFolder(inbox);
+			}
+
+			return;
+		} else {
+		this.logMessage("In groupware Actions did NOT select Calendar folder", com.synckolab.global.LOG_DEBUG);
+		}			
+	}
+
+	for (var i = 0; i < groupwareTaskFolders.length; i++) {
+		if (selected_foldername == groupwareTaskFolders[i]) {
+		this.logMessage("In groupware Actions selected Task folder", com.synckolab.global.LOG_DEBUG);
+
+			if (versionChecker.compare(Application.version, "3.0b4") >= 0) {
+				document.getElementById('tabmail').openTab('tasks', { title: document.getElementById('task-tab-button').getAttribute('tooltiptext') })
+				SelectFolder(inbox);
+			}
+
+			return;
+		} else {
+		this.logMessage("In groupware Actions did NOT select Task folder", com.synckolab.global.LOG_DEBUG);
+		}
+	}
+
+	for (var i = 0; i < groupwareContactFolders.length; i++) {
+		if (selected_foldername == groupwareContactFolders[i]) {
+		this.logMessage("In groupware Actions selected Contacts folder", com.synckolab.global.LOG_DEBUG);
+			if (versionChecker.compare(Application.version, "3.0b4") >= 0) {
+				document.getElementById('tabmail').openTab('contentTab', {contentPage: 'chrome://messenger/content/addressbook/addressbook.xul'});
+				SelectFolder(inbox);
+			}
+
+			return;
+		} else {
+		this.logMessage("In groupware Actions did NOT select Contact folder", com.synckolab.global.LOG_DEBUG);
+		}
+	}
+
+}
+
 
 /**
  * The main synckolab functions. 
@@ -1411,3 +1586,4 @@ var kolabCopyServiceListener = {
 
 
 };
+
