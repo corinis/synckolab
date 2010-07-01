@@ -7,3 +7,5 @@ locale synckolab it jar:chrome/synckolab.jar!/locale/it/
 locale synckolab ja-JA jar:chrome/synckolab.jar!/locale/ja-JA/
 locale synckolab pl-PL jar:chrome/synckolab.jar!/locale/pl-PL/
 content synckolab jar:chrome/synckolab.jar!/content/synckolab/
+skin synckolab classic/1.0 jar:chrome/synckolab.jar!/skin/classic/synckolab/
+overlay chrome://messenger/content/messenger.xul chrome://synckolab/content/mainWindow.xul
