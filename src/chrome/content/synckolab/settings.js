@@ -225,16 +225,26 @@ com.synckolab.settings = {
 
 			// set the default debug level
 			var cfgDbgLevel = com.synckolab.global.LOG_WARNING;
-			try {		
+			try {
 				cfgDbgLevel = pref.getIntPref("SyncKolab.debugLevel");
 			} catch (ex) {
 				com.synckolab.tools.logMessage("WARNING: failed to read SyncKolab.debugLevel: " + ex, com.synckolab.global.LOG_WARNING);
 			}
-			var debugEle = document.getElementById("debugLvl");
+			
+			var debugEle = document.getElementById("skDebugLevel");
 			if (debugEle) {
 				debugEle.setAttribute("value", cfgDbgLevel);
+				var iCLabel = cfgDbgLevel;
+				while (iCLabel > 3)
+					iCLabel -= 4;
+				
+				var sCLabel = "skDebugLevel"+iCLabel;
+				var cLabel = document.getElementById(sCLabel);
 				// get the label
-				debugEle.setAttribute("label", document.getElementById("debugLvl"+cfgDbgLevel).getAttribute("label"));
+				if (cLabel != null)
+					debugEle.setAttribute("label", cLabel.getAttribute("label"));
+				else
+					com.synckolab.tools.logMessage("WARNING: could not find Label " + sCLabel, com.synckolab.global.LOG_WARNING);
 
 				// set the state
 				try {
@@ -1474,8 +1484,8 @@ com.synckolab.settings = {
 			var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 		
 			try {
-			pref.setBoolPref("SyncKolab.closeWindow", document.getElementById ("closeWnd").checked);
-				pref.setIntPref("SyncKolab.debugLevel", document.getElementById ("debugLvl").value);
+				pref.setBoolPref("SyncKolab.closeWindow", document.getElementById ("closeWnd").checked);
+				pref.setIntPref("SyncKolab.debugLevel", document.getElementById ("skDebugLevel").value);
 			} catch ( ex ) {
 				com.synckolab.tools.logMessage("Error: failed to set prefs value: " + ex, com.synckolab.global.LOG_ERROR);
 			};

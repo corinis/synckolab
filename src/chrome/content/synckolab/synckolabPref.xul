@@ -88,12 +88,12 @@
 							<hbox>
 								<label>&synckolab.debugLevel;
 								</label>
-								<menulist id="debugLvl">
+								<menulist id="skDebugLevel">
 									<menupopup>
-										<menuitem id="debugLvl0" label="&synckolab.logError;" value="0" />
-										<menuitem id="debugLvl1" label="&synckolab.logWarning;" value="1" />
-										<menuitem id="debugLvl2" label="&synckolab.logInfo;" value="2" />
-										<menuitem id="debugLvl3" label="&synckolab.logDebug;" value="3" />
+										<menuitem id="skDebugLevel0" label="&synckolab.logError;" value="0" />
+										<menuitem id="skDebugLevel1" label="&synckolab.logWarning;" value="1" />
+										<menuitem id="skDebugLevel2" label="&synckolab.logInfo;" value="2" />
+										<menuitem id="skDebugLevel3" label="&synckolab.logDebug;" value="3" />
 									</menupopup>
 								</menulist>
 							</hbox>
