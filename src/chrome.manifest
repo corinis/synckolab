@@ -1,0 +1,9 @@
+locale synckolab cs-CZ jar:chrome/synckolab.jar!/locale/cs-CZ/
+locale synckolab de jar:chrome/synckolab.jar!/locale/de/
+locale synckolab en-US jar:chrome/synckolab.jar!/locale/en-US/
+locale synckolab fr-FR jar:chrome/synckolab.jar!/locale/fr-FR/
+locale synckolab hu-HU jar:chrome/synckolab.jar!/locale/hu-HU/
+locale synckolab it jar:chrome/synckolab.jar!/locale/it/
+locale synckolab ja-JA jar:chrome/synckolab.jar!/locale/ja-JA/
+locale synckolab pl-PL jar:chrome/synckolab.jar!/locale/pl-PL/
+content synckolab jar:chrome/synckolab.jar!/content/synckolab/
