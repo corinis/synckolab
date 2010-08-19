@@ -1046,7 +1046,8 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
 		xml += " <start-date>" + com.synckolab.tools.text.calDateTime2String(event.startDate, isAllDay) + "</start-date>\n";
 		xml += " <end-date>" + com.synckolab.tools.text.calDateTime2String(endDate, isAllDay) + "</end-date>\n";
 	 }
-		
+	
+	
 	xml += " <summary>" + com.synckolab.tools.text.encode4XML(event.title) +"</summary>\n";
 
 	if (skipVolatiles != true)
@@ -1314,7 +1315,10 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
  */
 com.synckolab.calendarTools.event2Human = function(event, syncTasks)
 {
-	var txt = "Summary: " + event.title +"\n";
+	var txt = "";
+	if (event.title != null)
+		txt += "Summary: " + event.title +"\n";
+	
 	if(syncTasks == false)
 	{
 		var isAllDay = event.startDate?event.startDate.isDate:false;
