@@ -485,7 +485,8 @@ com.synckolab.AddressBook = {
 
 					//If there were no conflicts found, skip dialog and update the local copy (Changes to the way the SHA are calculated could cause this)
 					if ( conflicts.length > 0 ) {
-
+						com.synckolab.tools.logMessage("Conflicts length is greater than 0.", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
+						
 						//Holds the users response, must be an object so that we can pass by reference
 						conflictResolution = new Object();
 						conflictResolution.result = 0;

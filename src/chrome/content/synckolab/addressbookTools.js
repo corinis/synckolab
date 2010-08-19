@@ -90,7 +90,7 @@ com.synckolab.addressbookTools = {
 				
 				switch (prop)
 				{
-					case	"AimScreenName":	return card.aimScreenName;
+					case	"AimScreenName":	return (card.aimScreenName?card.aimScreenName:card.aim_screen_name);
 					case	"AnniversaryDay":	return card.anniversaryDay;
 					case	"AnniversaryMonth":	return card.anniversaryMonth;
 					case	"AnniversaryYear":	return card.anniversaryYear;
@@ -212,7 +212,7 @@ com.synckolab.addressbookTools.setCardProperty = function(card, prop, value) {
 		// translation switch - tbird 2 still has to use custom4
 		switch (prop)
 		{
-			case	"AimScreenName":	card.aimScreenName = value; break;
+			case	"AimScreenName":	if(card.aimScreenName) card.aimScreenName = value; else card.aim_screen_name = value; break;
 			case	"AnniversaryDay":	card.anniversaryDay = value; break;
 			case	"AnniversaryMonth":	card.anniversaryMonth = value; break;
 			case	"AnniversaryYear":	card.anniversaryYear = value; break;
@@ -1117,7 +1117,7 @@ com.synckolab.addressbookTools.equalsContact = function(a, b) {
 	
 	if (a.isMailList != b.isMailList)
 	{
-		com.synckolab.tools.logMessage ("not equals only one is a mailing list!", this.global.LOG_DEBUG + this.global.LOG_AB);
+		com.synckolab.tools.logMessage("Both are not mailing lists returning false!", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
 		return false;
 	}
 		
@@ -1139,7 +1139,7 @@ com.synckolab.addressbookTools.equalsContact = function(a, b) {
 
 	if (a.isMailList)
 	{
-		com.synckolab.tools.logMessage ("start comparing mailing lists!", this.global.LOG_DEBUG + this.global.LOG_AB);
+		com.synckolab.tools.logMessage("start comparing mailing lists!", this.global.LOG_DEBUG + this.global.LOG_AB);
 		
 		
 		// update fieldsArray for second run
@@ -1474,10 +1474,20 @@ com.synckolab.addressbookTools.Xml2List = function(topNode, extraFields, cards) 
 com.synckolab.addressbookTools.isMailList = function(message) {
 	if (message.indexOf("<?xml") != -1 || message.indexOf("<?XML") != -1)
 	{
-		return (message.indexOf("<distribution-list") != -1);
+		if (message.indexOf("<distribution-list") != -1 || message.indexOf("<DISTRIBUTION-LIST") != -1)
+		{
+			com.synckolab.tools.logMessage("is mail list returning true", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
+			return true;
+		}
 	}
-	if (message.indexOf("X-LIST" != -1))
+
+	if (message.indexOf("X-LIST") != -1 || message.indexOf("x-list") != -1)
+	{
+		com.synckolab.tools.logMessage("is mail list returning true", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
 		return true;
+	}
+
+	return false;
 }
 
 /**
