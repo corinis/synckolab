@@ -1123,14 +1123,19 @@ com.synckolab.addressbookTools.equalsContact = function(a, b) {
 		
 	//Fields to look for
 	var fieldsArray = new Array(
+		// these are numbers
 		"BirthYear", "BirthMonth", "BirthDay", 
-		"AnniversaryYear", "AnniversaryMonth", "AnniversaryDay", 
+		"AnniversaryYear", "AnniversaryMonth", "AnniversaryDay",
+		// now for stings
 		"FirstName","LastName","DisplayName","NickName",
 		"PrimaryEmail","SecondEmail","AimScreenName","PreferMailFormat",
 		"WorkPhone","HomePhone","FaxNumber","PagerNumber","CellularNumber",
 		"HomeAddress","HomeAddress2","HomeCity","HomeState","HomeZipCode","HomeCountry","WebPage2",
 		"JobTitle","Department","Company","WorkAddress","WorkAddress2","WorkCity","WorkState","WorkZipCode","WorkCountry","WebPage1",
 		"Custom1","Custom2","Custom3","Custom4","Notes");
+	// remember the numeric field
+	var numericFieldCount = 6;
+	
 
 	if (a.isMailList)
 	{
@@ -1225,7 +1230,7 @@ com.synckolab.addressbookTools.equalsContact = function(a, b) {
 	for(var i=0 ; i < fieldsArray.length ; i++ ) {
 		var sa = this.getCardProperty(a, fieldsArray[i]);
 		var sb = this.getCardProperty(b, fieldsArray[i]);
-		
+				
 		// empty field is the same as null
 		if (sa == '')
 			sa = null;
@@ -1236,7 +1241,15 @@ com.synckolab.addressbookTools.equalsContact = function(a, b) {
 			sa = null;
 		if (sb == 0)
 			sb = null;
-		
+
+		// in case the fields are below a certain limit they should be treated as numeric
+		if (i < numericFieldCount) {
+			if (sa != null)
+				sa = Number(sa);
+			if (sb != null)
+				sb = Number(sb);
+		}
+
 		
 		// null check
 		if (sa == null || sb == null)
@@ -1502,7 +1515,9 @@ com.synckolab.addressbookTools.parseMessage = function(message, extraFields, car
 	// check for encoded:
 	if (message.indexOf("TYPE=3D") != -1)
 		message = com.synckolab.tools.text.quoted.decode(message);
-	
+	else
+		if (message.indexOf("=C3=") != -1)
+			message = com.synckolab.tools.text.quoted.decode(message);
 	// make an array of all lines for easier parsing
 	var lines = message.split("\n");
 
