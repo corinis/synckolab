@@ -60,6 +60,7 @@
 <!ENTITY synckolab.logWarning						"Avertissements" >
 <!ENTITY synckolab.logInfo							"Information" >
 <!ENTITY synckolab.logDebug							"Tout (Debogage)" >
+<!ENTITY synckolab.settings.SyncOnStart				"Automatically sync on start">
 
 <!-- Account Tab -->
 <!ENTITY synckolab.settings.AccountDescription	"Veuillez sélectionner un compte IMAP pour la synchronisation">

@@ -1,21 +1,19 @@
-# Polish translation thanks to Artur Szumski
-
 contacts=Kontakty
 calendar=Kalendarz
 tasks=Zadania
 aboutSyncKolab=O SyncKolabie
-saveConfig=Zapisz konfiguracjê
+saveConfig=Zapisz konfiguracjÄ™
 configFiles=Pliki konfiguracyjne
-loadConfig=Za³aduj konfiguracjê
-configReplaceAll=Czy na pewno chcesz nadpisaæ bierz¹c¹ konfiguracjê?
-configInvalid=Niew³aœciwy plik konfiguracyjny
-configOverwrite=Czy na pewno chcesz nadpisaæ: 
-configDelete=Czy na pewno chcesz skasowaæ konfiguracjê %1$s?
+loadConfig=ZaÅ‚aduj konfiguracjÄ™
+configReplaceAll=Czy na pewno chcesz nadpisaÄ‡ bierzÄ…cÄ… konfiguracjÄ™?
+configInvalid=NiewÅ‚aÅ›ciwy plik konfiguracyjny
+configOverwrite=Czy na pewno chcesz nadpisaÄ‡: 
+configDelete=Czy na pewno chcesz skasowaÄ‡ konfiguracjÄ™ %1$s?
 
 # status messages
 checking=sprawdzanie
-parsing=przesy³anie
-unparseable=nieprzesy³alny
+parsing=przesyÅ‚anie
+unparseable=nieprzesyÅ‚alny
 unknown=nieznany
 addToServer=dodaj na serwerze
 deleteOnServer=kasuj na serwerze
@@ -30,12 +28,12 @@ conflict=konflikt
 mailingList=lista dystrybucyjna
 
 close=Zamknij
-syncfinished=Zakoñczono. Mo¿esz teraz zamkn¹c to okno!.
-syncEntries=Synchronizujê wpisy...
-writeChangedEntries=Zapisywanie zmienionych wpisów...
-writeNewEntries=Zapisywanie nowych wpisów...
-getContent=Pobieranie zawartoœci...
-syncCopyToServer=Brak wpisów na serwerze, ale istniej¹ wpisy na komputerze lokalnym.\nCzy chcesz skopiowaæ wszystkie wpisy lokalne na serwer?
-syncCopyToClient=Brak wpisów na komputerze lokalnym, ale istniej¹ wpisy na serwerze.\nCzy chcesz skopiowaæ wszystkie wpisy z serwera? 
+syncfinished=ZakoÅ„czono. MoÅ¼esz teraz zamknÄ…c to okno!.
+syncEntries=SynchronizujÄ™ wpisy...
+writeChangedEntries=Zapisywanie zmienionych wpisÃ³w...
+writeNewEntries=Zapisywanie nowych wpisÃ³w...
+getContent=Pobieranie zawartoÅ›ci...
+syncCopyToServer=Brak wpisÃ³w na serwerze, ale istniejÄ… wpisy na komputerze lokalnym.\nCzy chcesz skopiowaÄ‡ wszystkie wpisy lokalne na serwer?
+syncCopyToClient=Brak wpisÃ³w na komputerze lokalnym, ale istniejÄ… wpisy na serwerze.\nCzy chcesz skopiowaÄ‡ wszystkie wpisy z serwera? 
 
-calConflictUseServer=Dokonano zmian na serwerze i komputerze lokalnym. Kliknij OK aby u¿yæ wersji z serwera.\nRekord lokalny: %1$s<%2$s>\nRekord serwera: %3$s<%4$s>
+calConflictUseServer=Dokonano zmian na serwerze i komputerze lokalnym. Kliknij OK aby uÅ¼yÄ‡ wersji z serwera.\nRekord lokalny: %1$s<%2$s>\nRekord serwera: %3$s<%4$s>

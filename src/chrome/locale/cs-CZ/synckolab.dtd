@@ -60,6 +60,8 @@
 <!ENTITY synckolab.logWarning						"Warnings" >
 <!ENTITY synckolab.logInfo							"Information" >
 <!ENTITY synckolab.logDebug							"Everything (Debug)" >
+<!ENTITY synckolab.settings.SyncOnStart				"automaticky synchronizovat na start
+">
 
 <!-- Account Tab -->
 <!ENTITY synckolab.settings.AccountDescription	"Prosím, zvolte IMAP účet, který chcete synchronizovat">

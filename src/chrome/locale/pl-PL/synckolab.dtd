@@ -1,6 +1,3 @@
-<!--
- Polish translation thanks to Artur Szumski
--->
 <!-- buttons -->
 <!ENTITY synckolab.syncMenu.label				"Start SyncKolaba">
 <!ENTITY synckolab.optionMenu.label				"Opcje SyncKolaba">
@@ -9,99 +6,100 @@
 <!ENTITY synckolab.sync.tip						"Synchronizuj Foldery danych (Kolab)">
 
 <!ENTITY synckolab.contactConflict.dialogTitle		"Konflikt danych">
-<!ENTITY synckolab.contactConflict.dialogMessage	"Znaleziono konflikty. Proszê wybraæ której wersji u¿yæ dla ka¿dej z pozycji.">
+<!ENTITY synckolab.contactConflict.dialogMessage	"Znaleziono konflikty. ProszÄ™ wybraÄ‡ ktÃ³rej wersji uÅ¼yÄ‡ dla kaÅ¼dej z pozycji.">
 
 <!ENTITY synckolab.settings.Account		"Konto">
-<!ENTITY synckolab.settings.abook		"Ksi¹¿ka adresowa">
+<!ENTITY synckolab.settings.abook		"KsiÄ…Å¼ka adresowa">
 <!ENTITY synckolab.settings.Contact		"Kontakt">
 <!ENTITY synckolab.settings.Calendar	"Kalendarz">
 <!ENTITY synckolab.settings.Tasks		"Zadania">
 
-<!ENTITY synckolab.settings.ContactFolder	"Folder Kontaktów">
-<!ENTITY synckolab.settings.ContactFormat	"Format Kontaktów">
+<!ENTITY synckolab.settings.ContactFolder	"Folder KontaktÃ³w">
+<!ENTITY synckolab.settings.ContactFormat	"Format KontaktÃ³w">
 <!ENTITY synckolab.settings.SaveToImap		"Zapisz do folderu IMAP">
 <!ENTITY synckolab.settings.Configuration	"Konfiguracja">
 <!ENTITY synckolab.settings.CalendarFormat	"Format Kalendarza">
 <!ENTITY synckolab.settings.CalendarFolder	"Folder Kalendarza">
-<!ENTITY synckolab.settings.TaskFormat		"Format Zadañ">
-<!ENTITY synckolab.settings.TaskFolder		"Folder Zadañ">
+<!ENTITY synckolab.settings.TaskFormat		"Format ZadaÅ„">
+<!ENTITY synckolab.settings.TaskFolder		"Folder ZadaÅ„">
 <!ENTITY synckolab.settings.SyncContacts	"Synchronizuj Kontakty">
 <!ENTITY synckolab.settings.SyncCalendar	"Synchronizuj Kalendarz">
 <!ENTITY synckolab.settings.SyncTasks		"Synchronizuj Zadania">
-<!ENTITY synckolab.settings.CloseWindow		"Zamknij okno synchronizacji po zakoñczeniu operacji.">
+<!ENTITY synckolab.settings.CloseWindow		"Zamknij okno synchronizacji po zakoÅ„czeniu operacji.">
 <!ENTITY synckolab.settings.add				"Nowa">
-<!ENTITY synckolab.settings.load			"Za³aduj">
+<!ENTITY synckolab.settings.load			"ZaÅ‚aduj">
 <!ENTITY synckolab.settings.saveSingle		"Eksportuj">
 <!ENTITY synckolab.settings.saveAll			"Eksportuj Wszystkie">
 <!ENTITY synckolab.settings.del				"Kasuj">
 <!ENTITY synckolab.settings.SyncCalendar	"Synchronizuj Kalendarz">
-<!ENTITY synckolab.settings.SyncCalendarTip	"aktywuj jeœli chcesz przy pomocy konfiguracji synchronizowaæ kalendarz">
+<!ENTITY synckolab.settings.SyncCalendarTip	"aktywuj jeÅ›li chcesz przy pomocy konfiguracji synchronizowaÄ‡ kalendarz">
 <!ENTITY synckolab.settings.SyncContacts	"Synchronizuj Kontakty">
-<!ENTITY synckolab.settings.SyncContactsTip	"aktywuj jeœli chcesz przy pomocy konfiguracji synchronizowaæ ksi¹¿kê adresow¹">
+<!ENTITY synckolab.settings.SyncContactsTip	"aktywuj jeÅ›li chcesz przy pomocy konfiguracji synchronizowaÄ‡ ksiÄ…Å¼kÄ™ adresowÄ…">
 <!ENTITY synckolab.settings.SyncTasks		"Synchronizuj Zadania">
-<!ENTITY synckolab.settings.SyncTasksTip	"aktywuj jeœli chcesz przy pomocy konfiguracji synchronizowaæ zadania">
-<!ENTITY synckolab.settings.FormatTip		"Wybierz format XML jeœli wymieniasz dane z serwerem Kolab2. W innym przypadku pozostañ przy standardzie vcard/ical.">
+<!ENTITY synckolab.settings.SyncTasksTip	"aktywuj jeÅ›li chcesz przy pomocy konfiguracji synchronizowaÄ‡ zadania">
+<!ENTITY synckolab.settings.FormatTip		"Wybierz format XML jeÅ›li wymieniasz dane z serwerem Kolab2. W innym przypadku pozostaÅ„ przy standardzie vcard/ical.">
 <!ENTITY synckolab.settings.DefaultResolve	"W przypadku konfliktu przy synchronizacji: ">
 <!ENTITY synckolab.settings.ResolveAsk		"pytaj">
-<!ENTITY synckolab.settings.ResolveServer	"u¿yj wersji serwera">
-<!ENTITY synckolab.settings.ResolveClient	"u¿yj wersji lokalnej">
-<!ENTITY synckolab.settings.ResolveSmart	"Automatycznie po³¹cz informacje i rozwi¹¿ problem">
-<!ENTITY synckolab.settings.CalSyncTimeframe	"Ignoruj wpisy starsze ni¿ ">
+<!ENTITY synckolab.settings.ResolveServer	"uÅ¼yj wersji serwera">
+<!ENTITY synckolab.settings.ResolveClient	"uÅ¼yj wersji lokalnej">
+<!ENTITY synckolab.settings.ResolveSmart	"Automatycznie poÅ‚Ä…cz informacje i rozwiÄ…Å¼ problem">
+<!ENTITY synckolab.settings.CalSyncTimeframe	"Ignoruj wpisy starsze niÅ¼ ">
 <!ENTITY synckolab.settings.TimeframeSyncDays	" dni (-1: brak)">
 
-<!ENTITY synckolab.settings.Updates			"W celu uaktualnienia sprawdŸ:">
+<!ENTITY synckolab.settings.Updates			"W celu uaktualnienia sprawdÅº:">
 
-<!ENTITY synckolab.settings.imapAcctTip 			"Wspierane s¹ tylko konta IMAP, synchronizacja nie bêdzie wykonana na kontach innego rodzaju.">
+<!ENTITY synckolab.settings.imapAcctTip 			"Wspierane sÄ… tylko konta IMAP, synchronizacja nie bÄ™dzie wykonana na kontach innego rodzaju.">
 <!ENTITY synckolab.settings.SyncKolabHeader			"SyncKolab">
-<!ENTITY synckolab.settings.SyncKolabDescription 	"SyncKolab pozwala na synchronizacjê Twoich kontaktów i wpisów kalendarza na wielu komputerach przy u¿yciu serwera IMAP.">
-<!ENTITY synckolab.settings.DescKolabServer 		"Dla pe³nego wsparcia pracy grupowej mo¿esz sprawdziæ serwer kolaboracyjny: ">
-<!ENTITY synckolab.settings.DescOtherClients 		"Inne programy klienckie z którymi wspó³pracuje SyncKolab: ">
+<!ENTITY synckolab.settings.SyncKolabDescription 	"SyncKolab pozwala na synchronizacjÄ™ Twoich kontaktÃ³w i wpisÃ³w kalendarza na wielu komputerach przy uÅ¼yciu serwera IMAP.">
+<!ENTITY synckolab.settings.DescKolabServer 		"Dla peÅ‚nego wsparcia pracy grupowej moÅ¼esz sprawdziÄ‡ serwer kolaboracyjny: ">
+<!ENTITY synckolab.settings.DescOtherClients 		"Inne programy klienckie z ktÃ³rymi wspÃ³Å‚pracuje SyncKolab: ">
 
 <!-- log level -->
 <!ENTITY synckolab.debugLevel						"Poziom informacji diagnostycznych" >
-<!ENTITY synckolab.logError							"Tylko b³êdy" >
-<!ENTITY synckolab.logWarning						"Ostrze¿enia" >
+<!ENTITY synckolab.logError							"Tylko bÅ‚Ä™dy" >
+<!ENTITY synckolab.logWarning						"OstrzeÅ¼enia" >
 <!ENTITY synckolab.logInfo							"Informajce" >
 <!ENTITY synckolab.logDebug							"Wszystko (Debugging)" >
+<!ENTITY synckolab.settings.SyncOnStart				"synchronizacji na start">
 
 <!-- Account Tab -->
-<!ENTITY synckolab.settings.AccountDescription	"Proszê wybraæ Konto IMAP s³u¿¹ce do synchronizacji">
-<!ENTITY synckolab.settings.SyncInterval 		"Czas pomiêdzy synchronizacjami: ">
-<!ENTITY synckolab.settings.SyncIntervalDescription "Okreœl czas co jaki SyncKolab bêdzie sprawdza³ czy zasz³y zmiany. U¿yj 0 aby manualnie dokonywac sprawdzenia.">
+<!ENTITY synckolab.settings.AccountDescription	"ProszÄ™ wybraÄ‡ Konto IMAP sÅ‚uÅ¼Ä…ce do synchronizacji">
+<!ENTITY synckolab.settings.SyncInterval 		"Czas pomiÄ™dzy synchronizacjami: ">
+<!ENTITY synckolab.settings.SyncIntervalDescription "OkreÅ›l czas co jaki SyncKolab bÄ™dzie sprawdzaÅ‚ czy zaszÅ‚y zmiany. UÅ¼yj 0 aby manualnie dokonywac sprawdzenia.">
 <!ENTITY synckolab.settings.SyncIntervalMinutes "minut">
-<!ENTITY synckolab.settings.SaveToImapTip		"Odznacz to pole, jeœli nie chcesz dokonywaæ zapisu na serwerze IMAP (tylko odczyt)">
+<!ENTITY synckolab.settings.SaveToImapTip		"Odznacz to pole, jeÅ›li nie chcesz dokonywaÄ‡ zapisu na serwerze IMAP (tylko odczyt)">
 <!ENTITY synckolab.settings.HiddenWindow		"Ukryj okno stanu gdy synchronizacja jest wykonywana automatycznie">
 
 <!-- New Config Wizard -->
 <!ENTITY synckolab.newwizard.title 		"Przewodnik Konfiguracji SyncKolaba">
-<!ENTITY synckolab.wizard.LongDescription	"W kolejnych oknach bêdzie mo¿na wybraæ dla ka¿dego typu informacji (kalendarz, ksi¹¿ka adresowa, zadania) folder do synchronizacji na serwerze IMAP. Bêdzie mo¿na okreœliæ czy chcesz u¿yæ trybu 'tylko do odczytu' (¿adne informacje nie s¹ zapisywane na serwerze IMAP - dla folderów wspó³dzielonych) oraz wybraæ format (xml dla Kolab2 lub vcard/ical).">
-<!ENTITY synckolab.newwizard.intro 		"SyncKolab pozwala na synchronizacjê Twoich kontaktów i wpisów kalendarza na wielu komputerach przy u¿yciu serwera IMAP.">
-<!ENTITY synckolab.newwizard.selectAccount	"Proszê wybraæ Konto IMAP s³u¿¹ce do synchronizacji">
-<!ENTITY synckolab.newwizard.configName	"Nazwa wyœwietlana">
-<!ENTITY synckolab.newwizard.descName "Nazwa wyœwietlana ma na celu jedynie identyfikacjê konfiguracji. Istotne jest, aby nadawaæ nazwy znacz¹ce  gdy posiadasz wiele konfiguracji/folderów do synchronizacji np. AdresyWspolne, Kalendarz Praca, Zadania Domowe). Upewnij siê, czy nie istnieje ju¿ konfiguracja o nazwie której zamierzasz u¿yæ oraz ¿e nazwa nie zawiera znaków specjalnych takich jak .-[]# ">
-<!ENTITY synckolab.wizard.AccountIntervalDescription "Wybierz konto IMAP o okreœl podstawowe parametry synchronizacji">
-<!ENTITY synckolab.wizard.typePageDesc	"Okreœl które informacje maj¹ byc synchronizowane z u¿yciem wybranego konta IMAP">
-<!ENTITY synckolab.wizard.typePageLongDesc	"Dla ka¿dej z konfiguracji SyncKolaba mo¿esz u¿yæ folderów tego samego konta IMAP aby wybiórczo synchronizowaæ folder zawieraj¹cy ksi¹¿kê adresow¹, kalendarz i/lub listê zadañ">
-<!ENTITY synckolab.wizard.typePageContact	"Zaznacz, jeœli chcesz synchronizowaæ kontakty z folderu IMAP z lokaln¹ ksi¹¿k¹ adresow¹ Thunderbirda">
-<!ENTITY synckolab.wizard.typePageCalendar	"Zaznacz, jeœli chcesz synchronizowaæ wpisy kalendarza z folderu IMAP z kalendarzem lokalnym">
-<!ENTITY synckolab.wizard.typePageTasks		"Zaznacz, jeœli chcesz synchronizowaæ listê zadañ z folderu IMAP z list¹ zadañ kalendarza lokalnego">
-<!ENTITY synckolab.wizard.conPageInfo	"Wybierz ksi¹¿kê adresow¹ i folder do synchronizacji. ">
+<!ENTITY synckolab.wizard.LongDescription	"W kolejnych oknach bÄ™dzie moÅ¼na wybraÄ‡ dla kaÅ¼dego typu informacji (kalendarz, ksiÄ…Å¼ka adresowa, zadania) folder do synchronizacji na serwerze IMAP. BÄ™dzie moÅ¼na okreÅ›liÄ‡ czy chcesz uÅ¼yÄ‡ trybu 'tylko do odczytu' (Å¼adne informacje nie sÄ… zapisywane na serwerze IMAP - dla folderÃ³w wspÃ³Å‚dzielonych) oraz wybraÄ‡ format (xml dla Kolab2 lub vcard/ical).">
+<!ENTITY synckolab.newwizard.intro 		"SyncKolab pozwala na synchronizacjÄ™ Twoich kontaktÃ³w i wpisÃ³w kalendarza na wielu komputerach przy uÅ¼yciu serwera IMAP.">
+<!ENTITY synckolab.newwizard.selectAccount	"ProszÄ™ wybraÄ‡ Konto IMAP sÅ‚uÅ¼Ä…ce do synchronizacji">
+<!ENTITY synckolab.newwizard.configName	"Nazwa wyÅ›wietlana">
+<!ENTITY synckolab.newwizard.descName "Nazwa wyÅ›wietlana ma na celu jedynie identyfikacjÄ™ konfiguracji. Istotne jest, aby nadawaÄ‡ nazwy znaczÄ…ce  gdy posiadasz wiele konfiguracji/folderÃ³w do synchronizacji np. AdresyWspolne, Kalendarz Praca, Zadania Domowe). Upewnij siÄ™, czy nie istnieje juÅ¼ konfiguracja o nazwie ktÃ³rej zamierzasz uÅ¼yÄ‡ oraz Å¼e nazwa nie zawiera znakÃ³w specjalnych takich jak .-[]# ">
+<!ENTITY synckolab.wizard.AccountIntervalDescription "Wybierz konto IMAP o okreÅ›l podstawowe parametry synchronizacji">
+<!ENTITY synckolab.wizard.typePageDesc	"OkreÅ›l ktÃ³re informacje majÄ… byc synchronizowane z uÅ¼yciem wybranego konta IMAP">
+<!ENTITY synckolab.wizard.typePageLongDesc	"Dla kaÅ¼dej z konfiguracji SyncKolaba moÅ¼esz uÅ¼yÄ‡ folderÃ³w tego samego konta IMAP aby wybiÃ³rczo synchronizowaÄ‡ folder zawierajÄ…cy ksiÄ…Å¼kÄ™ adresowÄ…, kalendarz i/lub listÄ™ zadaÅ„">
+<!ENTITY synckolab.wizard.typePageContact	"Zaznacz, jeÅ›li chcesz synchronizowaÄ‡ kontakty z folderu IMAP z lokalnÄ… ksiÄ…Å¼kÄ… adresowÄ… Thunderbirda">
+<!ENTITY synckolab.wizard.typePageCalendar	"Zaznacz, jeÅ›li chcesz synchronizowaÄ‡ wpisy kalendarza z folderu IMAP z kalendarzem lokalnym">
+<!ENTITY synckolab.wizard.typePageTasks		"Zaznacz, jeÅ›li chcesz synchronizowaÄ‡ listÄ™ zadaÅ„ z folderu IMAP z listÄ… zadaÅ„ kalendarza lokalnego">
+<!ENTITY synckolab.wizard.conPageInfo	"Wybierz ksiÄ…Å¼kÄ™ adresowÄ… i folder do synchronizacji. ">
 <!ENTITY synckolab.wizard.calPageInfo	"Wybierz kalendarz i folder do synchronizacji.">
 <!ENTITY synckolab.wizard.taskPageInfo	"Wybierz zadania kalendarza i folder do synchronizacji.">
-<!ENTITY synckolab.newwizard.DoneText	"Pomyœlnie stworzy³eœ now¹ konfiguracjê SyncKolaba. Mo¿esz rozpocz¹c synchronizacjê poprzez wybranie 'Narzêdzia-Start SyncKolaba'.">
-<!ENTITY synckolab.newwizard.DoneText2	"W przypadku napotkania b³êdu (np. synchronizacja nagle siê przerwa³a lub niktóre wpisy zosta³y Ÿle zapisane podczas synchronizacji  - proszê u¿yæ informacji dostarczonych przez 'Narzêdzia-Konsola b³êdów') lub jeœli masz sugestie/propozycje, proszê o kontakt za pomoc¹ listy mailingowej lub otwarcie nowego biletu na bugzilli">
+<!ENTITY synckolab.newwizard.DoneText	"PomyÅ›lnie stworzyÅ‚eÅ› nowÄ… konfiguracjÄ™ SyncKolaba. MoÅ¼esz rozpoczÄ…c synchronizacjÄ™ poprzez wybranie 'NarzÄ™dzia-Start SyncKolaba'.">
+<!ENTITY synckolab.newwizard.DoneText2	"W przypadku napotkania bÅ‚Ä™du (np. synchronizacja nagle siÄ™ przerwaÅ‚a lub niktÃ³re wpisy zostaÅ‚y Åºle zapisane podczas synchronizacji  - proszÄ™ uÅ¼yÄ‡ informacji dostarczonych przez 'NarzÄ™dzia-Konsola bÅ‚Ä™dÃ³w') lub jeÅ›li masz sugestie/propozycje, proszÄ™ o kontakt za pomocÄ… listy mailingowej lub otwarcie nowego biletu na bugzilli">
 
 <!-- other -->
 <!ENTITY synckolab.with			"z">
-<!ENTITY synckolab.proprietary 	"w³asnoœæ">
+<!ENTITY synckolab.proprietary 	"wÅ‚asnoÅ›Ä‡">
 
 <!-- progress window -->
 <!ENTITY synckolab.progress.Pause			"Pauza">
 <!ENTITY synckolab.progress.UnPause			"Kontynuuj">
 <!ENTITY synckolab.progress.Cancel			"Przerwij">
-<!ENTITY synckolab.progress.CurrentProgress	"Aktualny postêp">
+<!ENTITY synckolab.progress.CurrentProgress	"Aktualny postÄ™p">
 <!ENTITY synckolab.progress.status			"Stan">
-<!ENTITY synckolab.progress.content			"Zawartoœæ">
-<!ENTITY synckolab.progress.message			"Wiadomoœæ">
-<!ENTITY synckolab.progress.CurrentAction	"Bierz¹ce dzia³anie">
+<!ENTITY synckolab.progress.content			"ZawartoÅ›Ä‡">
+<!ENTITY synckolab.progress.message			"WiadomoÅ›Ä‡">
+<!ENTITY synckolab.progress.CurrentAction	"BierzÄ…ce dziaÅ‚anie">
 <!ENTITY synckolab.progress.Processing		"Przetwarzanie">

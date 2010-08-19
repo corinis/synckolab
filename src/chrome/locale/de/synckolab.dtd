@@ -62,6 +62,7 @@
 <!ENTITY synckolab.logWarning						"Warnungen" >
 <!ENTITY synckolab.logInfo							"Informationen" >
 <!ENTITY synckolab.logDebug							"alles (debug)" >
+<!ENTITY synckolab.settings.SyncOnStart				"Bei jedem Programmstart automatisch abgleichen">
 
 <!-- Account Tab -->
 <!ENTITY synckolab.settings.AccountDescription	"Bitte wählen Sie ein IMAP Konto für diese Konfiguration aus">
