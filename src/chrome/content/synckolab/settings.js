@@ -553,7 +553,7 @@ com.synckolab.settings = {
 						taskList.setAttribute("label", calendars[i].name);
 						taskList.setAttribute("value", com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
 					}
-		    	}
+				}
 			}	
 		},
 		
@@ -641,7 +641,18 @@ com.synckolab.settings = {
 				{
 					com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab."+config+".autoSync' failed: " + ex, com.synckolab.global.LOG_WARNING);
 				}
-		
+				
+				// check for autosync
+				document.getElementById ("syncOnStart").checked = false;
+				try
+				{
+					document.getElementById ("syncOnStart").checked = pref.getBoolPref("SyncKolab."+config+".syncOnStart");
+				}
+				catch (ex)
+				{
+					com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab."+config+".startOnSync' failed: " + ex, com.synckolab.global.LOG_WARNING);
+				}
+
 				// default do hide the window
 				document.getElementById ("hiddenWnd").checked = true;
 				try
@@ -1450,6 +1461,11 @@ com.synckolab.settings = {
 			else
 				pref.setBoolPref("SyncKolab."+config+".hiddenWindow", false);
 			
+			if(document.getElementById ("syncOnStart"))
+				pref.setBoolPref("SyncKolab."+config+".syncOnStart", document.getElementById ("syncOnStart").checked);
+			else
+				pref.setBoolPref("SyncKolab."+config+".syncOnStart", false);
+
 			pref.setCharPref("SyncKolab."+config+".AddressBook", document.getElementById ("conURL").value);
 			pref.setCharPref("SyncKolab."+config+".AddressBookFormat", document.getElementById ("conFormat").value);
 			pref.setBoolPref("SyncKolab."+config+".saveToContactImap", document.getElementById ("saveToContactImap").checked);
@@ -1484,8 +1500,13 @@ com.synckolab.settings = {
 			var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 		
 			try {
-				pref.setBoolPref("SyncKolab.closeWindow", document.getElementById ("closeWnd").checked);
+				if (document.getElementById ("closeWnd"))
+					pref.setBoolPref("SyncKolab.closeWindow", document.getElementById ("closeWnd").checked);
+				else
+					pref.setBoolPref("SyncKolab.closeWindow", false);
+				
 				pref.setIntPref("SyncKolab.debugLevel", document.getElementById ("skDebugLevel").value);
+				
 			} catch ( ex ) {
 				com.synckolab.tools.logMessage("Error: failed to set prefs value: " + ex, com.synckolab.global.LOG_ERROR);
 			};
@@ -1615,7 +1636,14 @@ com.synckolab.settings = {
 			}
 		},
 		
-		
+		/**
+		 * Enables/disables the autosync on start
+		 */
+		setSyncOnStart: function(active) 
+		{
+			
+		},
+				
 		/**
 		 * Enables/disables the controls on the page
 		 */

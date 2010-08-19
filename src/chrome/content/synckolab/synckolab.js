@@ -104,6 +104,16 @@ com.synckolab.main = {
 					com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab."+configs[i]+".hiddenWindow' failed: " + ex, com.synckolab.global.LOG_WARNING);
 					this.syncConfigs[i].gAutoHideWindow = false;
 				}
+				this.syncConfigs[i].startOnce = false;
+				try
+				{
+					this.syncConfigs[i].startOnce = pref.getBoolPref("SyncKolab."+configs[i]+".syncOnStart");
+				}catch (ex)
+				{
+					com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab."+configs[i]+".syncOnStart' failed: " + ex, com.synckolab.global.LOG_WARNING);
+					this.syncConfigs[i].gAutoHideWindow = false;
+				}
+
 
 				this.syncConfigs[i].configName = configs[i];
 			}
@@ -137,17 +147,23 @@ com.synckolab.main = {
 				com.synckolab.tools.logMessage("synctimer: checking: "+this.syncConfigs[i].configName+" ("+this.syncConfigs[i].gAutoRun+")....", com.synckolab.global.LOG_DEBUG);
 
 				// skip all configurations which dont have autorun
-				if (this.syncConfigs[i].gAutoRun == 0)
+				if (this.syncConfigs[i].gAutoRun == 0 && this.syncConfigs[i].startOnce != true)
 				{
 					continue;
 				}
 				
 				this.syncConfigs[i].gSyncTimer++;
 				// lets start (make sure no other auto config is running right now)
-				if (this.syncConfigs[i].gSyncTimer >= this.syncConfigs[i].gAutoRun)
+				if (this.syncConfigs[i].startOnce == true || this.syncConfigs[i].gSyncTimer >= this.syncConfigs[i].gAutoRun)
 				{
-					
-					com.synckolab.tools.logMessage("running syncKolab configuration "+this.syncConfigs[i].configName+" ("+this.syncConfigs[i].gAutoRun+")....", com.synckolab.global.LOG_INFO);
+					if(this.syncConfigs[i].startOnce == true)
+					{
+						com.synckolab.tools.logMessage("autorun on start: syncKolab configuration "+this.syncConfigs[i].configName, com.synckolab.global.LOG_INFO);
+						// set to false - once is more than enough
+						this.syncConfigs[i].startOnce = false;
+					}
+					else
+						com.synckolab.tools.logMessage("running syncKolab configuration "+this.syncConfigs[i].configName+" ("+this.syncConfigs[i].gAutoRun+")", com.synckolab.global.LOG_INFO);
 					this.syncConfigs[i].gSyncTimer = 0;
 					// hide the window 
 					this.doHideWindow = this.syncConfigs[i].gAutoHideWindow;
@@ -162,7 +178,7 @@ com.synckolab.main = {
 		}
 		else
 			com.synckolab.tools.logMessage("sync with config "+com.synckolab.main.forceConfig +" is still running...", com.synckolab.global.LOG_DEBUG);
-			
+		
 		// wait a minute
 		com.synckolab.tools.logMessage("sync timer: sleep for one minute", com.synckolab.global.LOG_DEBUG);
 		com.synckolab.main.timer.initWithCallback({notify:function(){com.synckolab.main.syncKolabTimer();}}, 60000, 0);
@@ -185,8 +201,8 @@ com.synckolab.main.groupwareActions = function () {
 	var selected_foldername = gFolderDisplay.displayedFolder.URI;
 	var index = selected_foldername.indexOf('INBOX',0);
 	var email_account = selected_foldername.substring(0, index);
-   var inbox = email_account.concat('INBOX');
-   
+	var inbox = email_account.concat('INBOX');
+
 	var versionChecker = Components.classes["@mozilla.org/xpcom/version-comparator;1"].getService(Components.interfaces.nsIVersionComparator);  
 		
 	var currentConfigs = new Array();
@@ -215,7 +231,7 @@ com.synckolab.main.groupwareActions = function () {
 	if (!configChanged) {
 		// Compare both arrays to make sure the details are the same
 		com.synckolab.tools.logMessage("Groupware Actions comparing the config names", com.synckolab.global.LOG_DEBUG);
-      
+
 		for (var i = 0; i < (syncConfigs.length - 1); i++) {
 		   com.synckolab.tools.logMessage("Groupware Actions sync config names:" + syncConfigs[i], com.synckolab.global.LOG_DEBUG);
 		   com.synckolab.tools.logMessage("Groupware Actions groupware config names:" + groupwareConfigs[i], com.synckolab.global.LOG_DEBUG);

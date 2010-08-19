@@ -125,8 +125,9 @@
 								<textbox id="syncInterval" maxlength="5" style="width: 50px" />
 								<label value="&synckolab.settings.SyncIntervalMinutes;" />
 							</hbox>
-
+							<checkbox id="syncOnStart" label="&synckolab.settings.SyncOnStart;" tooltiptext="&synckolab.settings.SyncOnStart;" />
 							<checkbox id="hiddenWnd" label="&synckolab.settings.HiddenWindow;" />
+							<separator class="thin" />
 							<hbox>
 								<label value="&synckolab.settings.DefaultResolve;" />
 								<menulist id="DefaultResolve">
