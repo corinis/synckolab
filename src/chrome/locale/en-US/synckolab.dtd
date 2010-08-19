@@ -7,6 +7,11 @@
 
 <!ENTITY synckolab.contactConflict.dialogTitle		"Contact Conflict">
 <!ENTITY synckolab.contactConflict.dialogMessage	"Conflicts detected. Please select which version to use for each field.">
+<!ENTITY synckolab.contactConflict.Internet.box		"Internet">
+<!ENTITY synckolab.contactConflict.Phones.box		"Phones">
+<!ENTITY synckolab.contactConflict.Home.box			"Home">
+<!ENTITY synckolab.contactConflict.Notes.box			"Notes">
+<!ENTITY synckolab.contactConflict.Other.box			"Other">
 
 <!ENTITY synckolab.settings.Account		"Account">
 <!ENTITY synckolab.settings.abook		"Address Book">

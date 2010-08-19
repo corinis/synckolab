@@ -7,6 +7,11 @@
 
 <!ENTITY synckolab.contactConflict.dialogTitle		"Confitto contatti">
 <!ENTITY synckolab.contactConflict.dialogMessage	"Confitto trovato. Seleziona quale versione usare per ogni campo.">
+<!ENTITY synckolab.contactConflict.Internet.box		"Internet">
+<!ENTITY synckolab.contactConflict.Phones.box		"Telefoni">
+<!ENTITY synckolab.contactConflict.Home.box			"Casa">
+<!ENTITY synckolab.contactConflict.Notes.box			"Note">
+<!ENTITY synckolab.contactConflict.Other.box			"Other">
 
 <!ENTITY synckolab.settings.Account		"Account">
 <!ENTITY synckolab.settings.abook		"Rubrica">

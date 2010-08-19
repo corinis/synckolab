@@ -1132,7 +1132,7 @@ com.synckolab.addressbookTools.equalsContact = function(a, b) {
 		"WorkPhone","HomePhone","FaxNumber","PagerNumber","CellularNumber",
 		"HomeAddress","HomeAddress2","HomeCity","HomeState","HomeZipCode","HomeCountry","WebPage2",
 		"JobTitle","Department","Company","WorkAddress","WorkAddress2","WorkCity","WorkState","WorkZipCode","WorkCountry","WebPage1",
-		"Custom1","Custom2","Custom3","Custom4","Notes");
+		"Custom1","Custom2","Custom3","Custom4","Notes","PhotoURI"); // PhotoType, PhotoName
 	// remember the numeric field
 	var numericFieldCount = 6;
 	
@@ -2304,19 +2304,74 @@ com.synckolab.addressbookTools.contactConflictTest = function(serverCard,localCa
 	var conflictArray = new Array(); //conflictArray.length
 
 	//Fields to look for
+	//Fields to look for
 	var fieldsArray = new Array(
-		"firstName","lastName","displayName","nickName",
-		"primaryEmail","secondEmail","preferMailFormat","aimScreenName",
-		"workPhone","homePhone","faxNumber","pagerNumber","cellularNumber",
-		"homeAddress","homeAddress2","homeCity","homeState","homeZipCode","homeCountry","webPage2",
-		"jobTitle","department","company","workAddress","workAddress2","workCity","workState","workZipCode","workCountry","webPage1",
-		"birthYear", "birthMonth", "birthDay",
-		"custom1","custom2","custom3","custom4","notes","PhotoURI"); //"PhotoType","PhotoName"
+		// these are numbers
+		"BirthYear", "BirthMonth", "BirthDay", 
+		"AnniversaryYear", "AnniversaryMonth", "AnniversaryDay",
+		// now for stings
+		"FirstName","LastName","DisplayName","NickName",
+		"PrimaryEmail","SecondEmail","AimScreenName","PreferMailFormat",
+		"WorkPhone","HomePhone","FaxNumber","PagerNumber","CellularNumber",
+		"HomeAddress","HomeAddress2","HomeCity","HomeState","HomeZipCode","HomeCountry","WebPage2",
+		"JobTitle","Department","Company","WorkAddress","WorkAddress2","WorkCity","WorkState","WorkZipCode","WorkCountry","WebPage1",
+		"Custom1","Custom2","Custom3","Custom4","Notes");
+	// remember the numeric field
+	var numericFieldCount = 6;
 
-	for( i=0 ; i < fieldsArray.length ; i++ ) {
-		if ( this.getCardProperty(localCard, fieldsArray[i]) != this.getCardProperty(serverCard, fieldsArray[i]) )
+	for(var i=0 ; i < fieldsArray.length ; i++ ) {
+		var sa = this.getCardProperty(a, fieldsArray[i]);
+		var sb = this.getCardProperty(b, fieldsArray[i]);
+				
+		// empty field is the same as null
+		if (sa == '')
+			sa = null;
+		if (sb == '')
+			sb = null;
+		// zero equals not set (so set to null) - for comparison only
+		if (sa == 0)
+			sa = null;
+		if (sb == 0)
+			sb = null;
+
+		// in case the fields are below a certain limit they should be treated as numeric
+		if (i < numericFieldCount) {
+			if (sa != null)
+				sa = Number(sa);
+			if (sb != null)
+				sb = Number(sb);
+		}
+
+		var conflict = false;
+		
+		// null check
+		if (sa == null || sb == null)
+		{
+			if (sa == null && sb == null)
+				continue;
+			else
+			{
+				conflict = true;
+			}
+		}
+
+		// check if not equals 
+		if (sa != sb)
+		{
+			// if we got strings... maybe they only differ in whitespace
+			if (sa.replace)
+				// if they are equals without whitespace.. continue
+				if (sa.replace(/\s|(\\n)| /g, "") == sb.replace(/\s|(\\n)| /g, ""))
+					continue;
+		
+			conflict = true;
+		}
+		
+		if(conflict == true)
 			conflictArray.push(fieldsArray[i]);
+		
 	}
+
 	
 	return conflictArray;
 };

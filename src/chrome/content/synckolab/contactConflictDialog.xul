@@ -4,6 +4,8 @@
 <!DOCTYPE dialog [
 <!ENTITY % abncdDTD SYSTEM "chrome://messenger/locale/addressbook/abNewCardDialog.dtd" >
 %abncdDTD;
+<!ENTITY % abcoDTD SYSTEM "chrome://messenger/locale/addressbook/abCardOverlay.dtd" >
+%abcoDTD;
 <!ENTITY % synckolabDTD SYSTEM "chrome://synckolab/locale/synckolab.dtd" >
 %synckolabDTD;
 ]>
@@ -26,7 +28,7 @@
 
 <scrollbox orient="vertical" flex="1" style="overflow: auto;">
 	<groupbox id="nameBox">
-		<caption label="&Name.box;"/>
+		<caption label="&synckolab.contactConflict.Name.box;"/>
 		<grid>
 			<columns>
 				<column/>
@@ -59,7 +61,7 @@
 	</groupbox>
 	
 	<groupbox id="internetBox" hidden="true">
-		<caption label="&Internet.box;"/>
+		<caption label="&synckolab.contactConflict.Internet.box;"/>
 		<grid>
 			<columns>
 				<column/>
@@ -87,7 +89,7 @@
 	</groupbox>
 	
 	<groupbox id="phonesBox" hidden="true">
-		<caption label="&Phones.box;"/>
+		<caption label="&synckolab.contactConflict.Phones.box;"/>
 		<grid>
 			<columns>
 				<column/>
@@ -120,7 +122,7 @@
 	</groupbox>
 	
 	<groupbox id="homeAddressMainBox" hidden="true">
-		<caption label="&Home.box;"/>
+		<caption label="&synckolab.contactConflict.Home.box;"/>
 		<grid>
 			<columns>
 				<column/>
@@ -161,7 +163,7 @@
 	</groupbox>
 	
 	<groupbox id="workAddressMainBox" hidden="true">
-		<caption label="&Work.box;"/>
+		<caption label="&synckolab.contactConflict.Work.box;"/>
 		<grid>
 			<columns>
 				<column/>
@@ -214,7 +216,7 @@
 	</groupbox>
 	
 	<groupbox id="otherBox" hidden="true">
-		<caption label="&Other.tab;"/>
+		<caption label="&synckolab.contactConflict.Other.box;"/>
 		<grid>
 			<columns>
 				<column/>

@@ -99,10 +99,10 @@ com.synckolab.contactConflict = {
 		this.localCard = window.arguments[3];
 			
 		//Show static elements for the following so that we always know who's record we are looking at	
-		document.getElementById("firstNameStatic").value = this.localCard.firstName;
-		document.getElementById("lastNameStatic").value = this.localCard.lastName;
-		document.getElementById("displayNameStatic").value = this.localCard.displayName;
-		document.getElementById("nickNameStatic").value = this.localCard.nickName;
+		document.getElementById("firstNameStatic").value = com.synckolab.addressbookTools.getCardProperty(this.localCard, 'FirstName');;
+		document.getElementById("lastNameStatic").value = com.synckolab.addressbookTools.getCardProperty(this.localCard, 'LastName');;
+		document.getElementById("displayNameStatic").value = com.synckolab.addressbookTools.getCardProperty(this.localCard, 'DisplayName');;
+		document.getElementById("nickNameStatic").value = com.synckolab.addressbookTools.getCardProperty(this.localCard, 'NickName');;
 		
 		var serverValue;
 		var localValue;

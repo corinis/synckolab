@@ -492,14 +492,22 @@ com.synckolab.AddressBook = {
 						conflictResolution.result = 0;
 
 						//Open the contact conflict dialog
-						if (this.gConflictResolve = 'server')
-							conflictResolution.result = 1;
-						else
-						if (this.gConflictResolve = 'client')
-							conflictResolution.result = 2;
-						else
+						switch (this.gConflictResolve) {
+							case 'server':
+								conflictResolution.result = 1;
+								break;
+	
+							case 'client':
+								conflictResolution.result = 2;
+								break;
+	
+							case 'ask':
+							default:
+								conflictResolution.result = 0;
 							var conflictDlg = window.openDialog("chrome://synckolab/content/contactConflictDialog.xul","conflictDlg","chrome,modal,resizable=1,width=600,height=400",conflicts,conflictResolution,newCard,aCard);
-						
+							break;
+						}
+						 
 						
 						var bUpdateLocal = false;
 						var bUpdateServer = false;

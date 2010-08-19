@@ -7,6 +7,11 @@
 
 <!ENTITY synckolab.contactConflict.dialogTitle		"コンタクトの競合">
 <!ENTITY synckolab.contactConflict.dialogMessage	"競合が見つかりました．残すものを選んでください．">
+<!ENTITY synckolab.contactConflict.Internet.box		"インターネット">
+<!ENTITY synckolab.contactConflict.Phones.box		"携帯電話">
+<!ENTITY synckolab.contactConflict.Home.box			"ホーム">
+<!ENTITY synckolab.contactConflict.Notes.box			"ノート">
+<!ENTITY synckolab.contactConflict.Other.box			"Other">
 
 <!ENTITY synckolab.settings.Account		"アカウント">
 <!ENTITY synckolab.settings.abook		"アドレス帳">

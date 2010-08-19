@@ -7,6 +7,11 @@
 
 <!ENTITY synckolab.contactConflict.dialogTitle		"Konflikt kontaktů">
 <!ENTITY synckolab.contactConflict.dialogMessage	"Zjištěn konflikt. Zvolte, prosím, jakou verzi použít pro jednotlivá pole.">
+<!ENTITY synckolab.contactConflict.Internet.box		"Internet">
+<!ENTITY synckolab.contactConflict.Phones.box		"Telefony">
+<!ENTITY synckolab.contactConflict.Home.box			"Domácí">
+<!ENTITY synckolab.contactConflict.Notes.box			"Poznámky">
+<!ENTITY synckolab.contactConflict.Other.box			"Other">
 
 <!ENTITY synckolab.settings.Account		"Účet">
 <!ENTITY synckolab.settings.abook		"Adresář">
