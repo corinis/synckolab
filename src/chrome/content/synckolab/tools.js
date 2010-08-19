@@ -458,8 +458,12 @@ generateMail: function (cid, mail, adsubject, mime, part, content, hr, image){
 			file.append("Photos");
 			if (!file.exists())
 				file.create(1, 0775);
+			
+			// fix newName: we can have C:\ - file:// and more - remove all that and put it in the photos folder
+			var imageName = image.replace(/[^A-Za-z0-9._ -]/g, "");
+			imageName = imageName.replace(/ /g, "_");
 	
-			file.append(image);
+			file.append(imageName);
 			// file actually exists - we can try to read it and attach it
 			if (file.exists() && file.isReadable())
 			{

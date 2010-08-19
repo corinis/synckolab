@@ -818,6 +818,7 @@ com.synckolab.addressbookTools.copyImage = function(newName) {
 	// wrong name - forget it
 	if (newName == null || newName == "" || newName == "null")
 		return;
+	
 	var file = Components.classes["@mozilla.org/file/directory_service;1"].
 	   getService(Components.interfaces.nsIProperties).
 	   get("TmpD", Components.interfaces.nsIFile);
@@ -833,6 +834,11 @@ com.synckolab.addressbookTools.copyImage = function(newName) {
 	fileTo.append("Photos");
 	if (!fileTo.exists())
 		fileTo.create(1, 0775);
+	
+	// fix newName: we can have C:\ - file:// and more - remove all that and put it in the photos folder
+	newName = newName.replace(/[^A-Za-z0-9._ -]/g, "");
+	newName = newName.replace(/ /g, "_");
+	
 	try
 	{
 		file.moveTo(fileTo, newName);
