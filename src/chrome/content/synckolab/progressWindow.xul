@@ -10,19 +10,19 @@
   <script type="application/x-javascript" src="synckolab.js"/>
 
 <script>
-var gPauseSync = false;
-var gStopSync = false;
+com.synckolab.global.wnd.gPauseSync = false;
+com.synckolab.global.wnd.gStopSync = false;
 
 function pauseSync ()
 {
-	if (gPauseSync == true)
+	if (com.synckolab.global.wnd.gPauseSync == true)
 	{
-		gPauseSync = false;
+		com.synckolab.global.wnd.gPauseSync = false;
 		document.getElementById("pause-button").label = "&synckolab.progress.Pause;";
 	}
 	else
 	{
-		gPauseSync = true;
+		com.synckolab.global.wnd.gPauseSync = true;
 		document.getElementById("pause-button").label = "&synckolab.progress.UnPause;";
 	}
 }
@@ -71,7 +71,7 @@ function pauseSync ()
 		  <progressmeter mode="determined" id="totalProgress" value="0%" flex="1" style="margin: 4px; border: 1px solid;"/>
 		  <spacer flex="1"/>
 		  <button id="pause-button" default="false" oncommand="pauseSync()" label="&synckolab.progress.Pause;"/>
-		  <button id="cancel-button" default="true" oncommand="gStopSync=true;window.close();" label="&synckolab.progress.Cancel;"/>
+		  <button id="cancel-button" default="true" oncommand="com.synckolab.global.running=false;com.synckolab.global.wnd.gStopSync=true;window.close();" label="&synckolab.progress.Cancel;"/>
 		</hbox>
 	</vbox>
 </window>

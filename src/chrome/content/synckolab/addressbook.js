@@ -447,8 +447,35 @@ com.synckolab.AddressBook = {
 				// make sure to ONLY read the info.. do not get the extra fields from there
 				var cCard = this.tools.parseMessage(com.synckolab.tools.readSyncDBFile(cEntry), null, this.gCardDB);
 				
+				var cCard_equals_aCard, cCard_equals_newCard, aCard_equals_newCard;
+				
+				// Streamline card comparisons
+				if (this.tools.equalsContact(cCard, aCard)) {
+					cCard_equals_aCard = true;
+					com.synckolab.tools.logMessage("In parse Message in addressbook.js cCard equals aCard", com.synckolab.global.LOG_DEBUG);
+				} else {
+					cCard_equals_aCard = false;
+					com.synckolab.tools.logMessage("In parse Message in addressbook.js cCard DOES NOT equal aCard", com.synckolab.global.LOG_DEBUG);
+				}
+				
+				if (this.tools.equalsContact(cCard, newCard)) {
+					cCard_equals_newCard = true;
+					com.synckolab.tools.logMessage("In parse Message in addressbook.js cCard equals newCard", com.synckolab.global.LOG_DEBUG);
+				} else {
+					cCard_equals_newCard = false;
+					com.synckolab.tools.logMessage("In parse Message in addressbook.js cCard DOES NOT equal newCard", com.synckolab.global.LOG_DEBUG);
+				}
+
+				if (this.tools.equalsContact(aCard, newCard)) {
+					aCard_equals_newCard = true;
+					com.synckolab.tools.logMessage("In parse Message in addressbook.js aCard equals newCard", com.synckolab.global.LOG_DEBUG);
+				} else {
+					aCard_equals_newCard = false;
+					com.synckolab.tools.logMessage("In parse Message in addressbook.js aCard DOES NOT equal newCard", com.synckolab.global.LOG_DEBUG);
+				}
+				
 				// compare each card with each other
-				if (cEntry.exists() && !this.tools.equalsContact(cCard, aCard) && !this.tools.equalsContact(cCard, newCard) )
+				if (cEntry.exists() && !cCard_equals_aCard && !cCard_equals_newCard )
 				{
 					//local and server were both updated, ut oh, what do we want to do?
 					com.synckolab.tools.logMessage("Conflicts detected, testing for autoresolve.", com.synckolab.global.LOG_WARNING + com.synckolab.global.LOG_AB);
@@ -568,8 +595,12 @@ com.synckolab.AddressBook = {
 				}
 				else
 				// we got that already, see which to update (server change if db == local != server)
-				if (!cEntry.exists() || (this.tools.equalsContact(cCard, aCard) && !this.tools.equalsContact(cCard, newCard)))
+				if (!cEntry.exists() || (cCard_equals_aCard && !cCard_equals_newCard))
 				{
+					if (!cEntry.exists()) {
+						com.synckolab.tools.logMessage("In parse Message in addressbook.js cEntry does not exist", com.synckolab.global.LOG_DEBUG);
+					}
+					
 					com.synckolab.tools.logMessage("server changed: " + this.tools.getUID(aCard), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 					
 					// server changed - update local
@@ -627,7 +658,7 @@ com.synckolab.AddressBook = {
 						
 					}
 
-					com.synckolab.tools.logMessage("updated local" + this.tools.getUID(aCard), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+					com.synckolab.tools.logMessage("updated local " + this.tools.getUID(aCard), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 					
 					// write the current content in the sync-db file
 					//com.synckolab.tools.writeSyncDBFile (cEntry, com.synckolab.tools.stripMailHeader(this.tools.card2Message(newCard, this.email, this.format)));
@@ -646,7 +677,7 @@ com.synckolab.AddressBook = {
 				}
 				else
 				// is the db file equals server, but not local.. we got a local change
-				if (cEntry.exists() && !this.tools.equalsContact(cCard, aCard) && this.tools.equalsContact(cCard, newCard))
+					if (cEntry.exists() && !cCard_equals_aCard && cCard_equals_newCard)
 				{
 					com.synckolab.tools.logMessage("client changed " + this.tools.getUID(aCard) + " - " + cCard.primaryEmail, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 					
