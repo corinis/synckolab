@@ -305,7 +305,7 @@ com.synckolab.main.groupwareActions = function () {
 		this.logMessage("In groupware Actions selected Calendar folder", com.synckolab.global.LOG_DEBUG);
 
 			if (versionChecker.compare(Application.version, "3.0b4") >= 0) {
-				document.getElementById('tabmail').openTab('calendar', { title: document.getElementById('calendar-tab-button').getAttribute('tooltiptext') })
+				document.getElementById('tabmail').openTab('calendar', { title: document.getElementById('calendar-tab-button').getAttribute('tooltiptext') });
 				SelectFolder(inbox);
 			}
 
@@ -320,7 +320,7 @@ com.synckolab.main.groupwareActions = function () {
 		this.logMessage("In groupware Actions selected Task folder", com.synckolab.global.LOG_DEBUG);
 
 			if (versionChecker.compare(Application.version, "3.0b4") >= 0) {
-				document.getElementById('tabmail').openTab('tasks', { title: document.getElementById('task-tab-button').getAttribute('tooltiptext') })
+				document.getElementById('tabmail').openTab('tasks', { title: document.getElementById('task-tab-button').getAttribute('tooltiptext') });
 				SelectFolder(inbox);
 			}
 
@@ -344,7 +344,7 @@ com.synckolab.main.groupwareActions = function () {
 		}
 	}
 
-}
+};
 
 
 /**
@@ -362,7 +362,6 @@ var addLines; // an array that saves the added lines one the content
 var addLinesNum; // element is where to add the line (Number)
 
 // hold window elements
-var gWnd; 	// the message window
 var meter;	// the progress meter
 var totalMeter; // the total progress meter
 var statusMsg;	// the status message
@@ -412,12 +411,12 @@ var timer = Components.classes["@mozilla.org/timer;1"].createInstance(Components
 	com.synckolab.global.strBundle = document.getElementById("synckolabBundle");
 
 	if (this.doHideWindow)
-		gWnd = null;
+		com.synckolab.global.wnd = null;
 	else
-		gWnd = window.open("chrome://synckolab/content/progressWindow.xul", "bmarks", "chrome,width=500,height=350,resizable=1");
+		com.synckolab.global.wnd = window.open("chrome://synckolab/content/progressWindow.xul", "bmarks", "chrome,width=500,height=350,resizable=1");
 	
 	// remember it global as well
-	com.synckolab.global.wnd = gWnd;
+	com.synckolab.global.wnd = com.synckolab.global.wnd;
 	
 	try {
 		var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
@@ -450,7 +449,7 @@ var timer = Components.classes["@mozilla.org/timer;1"].createInstance(Components
 	com.synckolab.tools.logMessage("Debug Level set to: " + com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL, com.synckolab.global.LOG_WARNING);
 
 	// wait until loaded
-	timer.initWithCallback({notify:function(){goWindow(gWnd);}}, com.synckolab.config.SWITCH_TIME, 0);
+	timer.initWithCallback({notify:function(){goWindow(com.synckolab.global.wnd);}}, com.synckolab.config.SWITCH_TIME, 0);
 	
 
 
@@ -532,7 +531,7 @@ function startSync(event) {
 	
 	
 	meter.setAttribute("value", "0%");
-	if (gWnd != null)
+	if (com.synckolab.global.wnd != null)
 		totalMeter.setAttribute("value", "0%");
 
 	// get temp file
@@ -572,7 +571,7 @@ function startSync(event) {
 function nextSync()
 {
 
-	if (gWnd != null)
+	if (com.synckolab.global.wnd != null)
 		totalMeter.setAttribute("value", (((curConConfig+curCalConfig+curTaskConfig)*100)/(syncConfigs.length*3)) +"%");
 
 	if (curConConfig < syncConfigs.length)
@@ -609,10 +608,10 @@ function nextSync()
 			com.synckolab.AddressBook.name = com.synckolab.tools.getAccountName(com.synckolab.AddressBook.serverKey);
 						
 			// display stuff
-			if (gWnd != null)
+			if (com.synckolab.global.wnd != null)
 			{
 				com.synckolab.AddressBook.itemList = itemList;
-				com.synckolab.AddressBook.doc = gWnd.document;
+				com.synckolab.AddressBook.doc = com.synckolab.global.wnd.document;
 			}
 			else
 			{
@@ -673,10 +672,10 @@ function nextSync()
 						"\nMessage Folder: " + com.synckolab.Calendar.folderMsgURI, com.synckolab.global.LOG_DEBUG);
 
 				// display stuff
-				if (gWnd != null)
+				if (com.synckolab.global.wnd != null)
 				{
 					com.synckolab.Calendar.itemList = itemList;
-					com.synckolab.Calendar.doc = gWnd.document;
+					com.synckolab.Calendar.doc = com.synckolab.global.wnd.document;
 				}
 				else
 				{
@@ -746,10 +745,10 @@ function nextSync()
 				
 		
 				// display stuff
-				if (gWnd != null)
+				if (com.synckolab.global.wnd != null)
 				{
 					com.synckolab.Calendar.itemList = itemList;
-					com.synckolab.Calendar.doc = gWnd.document;
+					com.synckolab.Calendar.doc = com.synckolab.global.wnd.document;
 				}
 				else
 				{
@@ -783,17 +782,18 @@ function nextSync()
 	{
 		com.synckolab.tools.logMessage("Done syncing resetting" , com.synckolab.global.LOG_DEBUG);
 		
-		if (gWnd != null)
+		if (com.synckolab.global.wnd != null)
 			totalMeter.setAttribute("value", "100%");
 		
 		meter.setAttribute("value", "100%");
-		if (gWnd != null)
+		if (com.synckolab.global.wnd != null)
 			statusMsg.value = com.synckolab.global.strBundle.getString("syncfinished");
 		else
 			statusMsg.setAttribute("label", com.synckolab.global.strBundle.getString("syncfinished"));
 		
-		if (gWnd != null)
-			gWnd.document.getElementById('cancel-button').label = com.synckolab.global.strBundle.getString("close"); 
+		if (com.synckolab.global.wnd != null)
+			com.synckolab.global.wnd.document.getElementById('cancel-button').label = com.synckolab.global.strBundle.getString("close");
+		
 		// delete the temp file
 		var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
 		sfile.initWithPath(gTmpFile);
@@ -801,11 +801,11 @@ function nextSync()
 			sfile.remove(true);
 			
 		// close the status window
-		if (gCloseWnd && gWnd != null)
-			gWnd.close();
+		if (gCloseWnd && com.synckolab.global.wnd != null)
+			com.synckolab.global.wnd.close();
 
 		// remove all status bar elements
-		if (gWnd == null)
+		if (com.synckolab.global.wnd == null)
 		{
 			var sb = document.getElementById("status-bar");
 		
@@ -828,7 +828,7 @@ function nextSync()
 	}
 	
 	// Step 3
-	if (gWnd != null)
+	if (com.synckolab.global.wnd != null)
 	{
 		statusMsg.value = com.synckolab.global.strBundle.getString("getContent");
 	}
@@ -923,7 +923,7 @@ function getContent ()
 	updateMessages = new Array(); // saves the the message url to delete
 	updateMessagesContent = new Array(); // saves the card to use to update
 	
-	if (gWnd != null)
+	if (com.synckolab.global.wnd != null)
 		statusMsg.value = com.synckolab.global.strBundle.getString("syncEntries");
 	else
 		statusMsg.setAttribute("label", com.synckolab.global.strBundle.getString("syncEntries"));
@@ -937,12 +937,12 @@ var gLastMessageDBHdr; // save last message header
 function getMessage ()
 {
 	// pause sync...
-	if (gWnd != null && gWnd.gPauseSync)
+	if (com.synckolab.global.wnd != null && com.synckolab.global.wnd.gPauseSync)
 	{
 		timer.initWithCallback({notify:function(){getMessage();}}, com.synckolab.config.SWITCH_TIME, 0);
 		return;
 	}
-	if (gWnd != null && gWnd.gStopSync)
+	if (com.synckolab.global.wnd != null && com.synckolab.global.wnd.gStopSync)
 	{
 		alert("Stopped SyncKolab...");
 		return;
@@ -1015,7 +1015,7 @@ function getMessage ()
 			{
 				var curpointer = 5 + (55*(curMessage/totalMessages));
 				meter.setAttribute("value", curpointer + "%");
-				if (gWnd != null)
+				if (com.synckolab.global.wnd != null)
 					curCounter.setAttribute("value", curMessage + "/" + totalMessages);
 				else
 					curCounter.setAttribute("label", curMessage + "/" + totalMessages);
@@ -1152,12 +1152,12 @@ var syncKolabStreamListener = {
 function parseMessageRunner ()
 {
 	// pause sync...
-	if (gWnd != null && gWnd.gPauseSync)
+	if (com.synckolab.global.wnd != null && com.synckolab.global.wnd.gPauseSync)
 	{
 		timer.initWithCallback({notify:function(){parseMessageRunner();}}, com.synckolab.config.SWITCH_TIME, 0);
 		return;
 	}
-	if (gWnd != null && gWnd.gStopSync)
+	if (com.synckolab.global.wnd != null && com.synckolab.global.wnd.gStopSync)
 	{
 		alert("Stopped SyncKolab...");
 		return;
@@ -1215,7 +1215,7 @@ function parseMessageRunner ()
 		var curpointer = 5 + (55*((curMessage + gLaterMessages.pointer)/(totalMessages + gLaterMessages.msgs.length)));
 		meter.setAttribute("value", curpointer + "%");
 
-		curCounter.setAttribute((gWnd != null)?"value":"label", (curMessage + gLaterMessages.pointer) + "/" + (totalMessages + gLaterMessages.msgs.length));
+		curCounter.setAttribute((com.synckolab.global.wnd != null)?"value":"label", (curMessage + gLaterMessages.pointer) + "/" + (totalMessages + gLaterMessages.msgs.length));
 
 		if (curMessage%20 == 0)
 		{
@@ -1250,7 +1250,7 @@ function parseFolderToAddressFinish ()
 	syncMessageDb.write();
 
 	meter.setAttribute("value", "60%");
-	if (gWnd != null)
+	if (com.synckolab.global.wnd != null)
 	{
 		statusMsg.value = com.synckolab.global.strBundle.getString("writeChangedEntries");
 		curCounter.setAttribute("value", "0/0");
@@ -1272,13 +1272,13 @@ function parseFolderToAddressFinish ()
 function updateContent()
 {
 	// pause sync...
-	if (gWnd != null && gWnd.gPauseSync)
+	if (com.synckolab.global.wnd != null && com.synckolab.global.wnd.gPauseSync)
 	{
 		timer.initWithCallback({notify:function(){updateContent();}}, com.synckolab.config.SWITCH_TIME, 0);
 		return;
 	}
 		
-	if (gWnd != null && gWnd.gStopSync)
+	if (com.synckolab.global.wnd != null && com.synckolab.global.wnd.gStopSync)
 	{
 		alert("Stopped SyncKolab...");
 		return;
@@ -1333,13 +1333,13 @@ function updateContent()
 function updateContentWrite ()
 {
 	// pause sync...
-	if (gWnd != null && gWnd.gPauseSync)
+	if (com.synckolab.global.wnd != null && com.synckolab.global.wnd.gPauseSync)
 	{
 		timer.initWithCallback({notify:function(){updateContentWrite();}}, com.synckolab.config.SWITCH_TIME, 0);
 		return;
 	}
 		
-	if (gWnd != null && gWnd.gStopSync)
+	if (com.synckolab.global.wnd != null && com.synckolab.global.wnd.gStopSync)
 	{
 		alert("Stopped SyncKolab...");
 		return;
@@ -1396,7 +1396,7 @@ function updateContentAfterSave ()
 	}
 
 	meter.setAttribute("value", "80%");
-	if (gWnd != null)
+	if (com.synckolab.global.wnd != null)
 	{
 		statusMsg.value = com.synckolab.global.strBundle.getString("writeNewEntries");
 		curCounter.setAttribute("value", "...");
@@ -1415,13 +1415,13 @@ function updateContentAfterSave ()
 function writeContent ()
 {
 	// pause sync...
-	if (gWnd != null && gWnd.gPauseSync)
+	if (com.synckolab.global.wnd != null && com.synckolab.global.wnd.gPauseSync)
 	{
 		timer.initWithCallback({notify:function(){writeContent();}}, com.synckolab.config.SWITCH_TIME, 0);
 		return;
 	}
 		
-	if (gWnd != null && gWnd.gStopSync)
+	if (com.synckolab.global.wnd != null && com.synckolab.global.wnd.gStopSync)
 	{
 		alert("Stopped SyncKolab...");
 		return;
@@ -1476,12 +1476,12 @@ function writeContent ()
 function writeContentAfterSave ()
 {
 	// pause sync...
-	if (gWnd != null && gWnd.gPauseSync)
+	if (com.synckolab.global.wnd != null && com.synckolab.global.wnd.gPauseSync)
 	{
 		timer.initWithCallback({notify:function(){writeContentAfterSave();}}, com.synckolab.config.SWITCH_TIME, 0);
 		return;
 	}
-	if (gWnd != null && gWnd.gStopSync)
+	if (com.synckolab.global.wnd != null && com.synckolab.global.wnd.gStopSync)
 	{
 		alert("Stopped SyncKolab...");
 		return;

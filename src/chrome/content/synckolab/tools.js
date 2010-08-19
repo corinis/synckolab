@@ -90,9 +90,10 @@ logMessage: function (msg, level) {
 
 	// pause the sync on error if defined by globals
 	if (com.synckolab.config.PAUSE_ON_ERROR && clvl == com.synckolab.global.LOG_ERROR)
-		// TODO this will NOT work...
-		if (synckolab && synckolab.gWnd && synckolab.gWnd.pauseSync)
-			synckolab.gWnd.pauseSync();
+
+	// TODO this will NOT work...
+	if (synckolab && com.synckolab.global.wnd && com.synckolab.global.wnd.pauseSync)
+		com.synckolab.global.wnd.pauseSync();
 },
 
 scrollToBottom : function ()
