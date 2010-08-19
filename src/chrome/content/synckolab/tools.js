@@ -98,9 +98,9 @@ logMessage: function (msg, level) {
 
 scrollToBottom : function ()
 {
-	if (com.synckolab.global.wnd != null)
+	if (com.synckolab.global.wnd != null && com.synckolab.global.document != null)
 	{
-		// select and deselect the newly appended item (makes it scroll to the bottom)				
+		// select and deselect the newly appended item (makes it scroll to the bottom)
 		var lastItemPos = com.synckolab.global.wnd.document.getElementById('itemList').getRowCount() - 1;
 		if (lastItemPos > 0)
 		{

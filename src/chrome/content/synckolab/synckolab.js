@@ -89,7 +89,7 @@ com.synckolab.main = {
 				this.syncConfigs[i].gSyncTimer = 0;
 				try
 				{
-					this.syncConfigs[i].gAutoRun = pref.getIntPref("SyncKolab."+configs[i]+".autoSync");
+					this.syncConfigs[i].gAutoRun = pref.getIntPref("SyncKolab."+configs[i]+".autoSync");					
 				}catch (ex)
 				{
 					com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab."+configs[i]+".autoSync' failed: " + ex, com.synckolab.global.LOG_WARNING);
@@ -107,7 +107,14 @@ com.synckolab.main = {
 				this.syncConfigs[i].startOnce = false;
 				try
 				{
-					this.syncConfigs[i].startOnce = pref.getBoolPref("SyncKolab."+configs[i]+".syncOnStart");
+					if(pref.getBoolPref("SyncKolab."+configs[i]+".syncOnStart") == true)
+					{
+						com.synckolab.tools.logMessage("Run on Startup for "+configs[i], com.synckolab.global.LOG_DEBUG);
+						// hide the window 
+						this.doHideWindow = this.syncConfigs[i].gAutoHideWindow;
+						com.synckolab.main.forceConfig = this.syncConfigs[i].configName;
+						com.synckolab.main.sync("timer");
+					}
 				}catch (ex)
 				{
 					com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab."+configs[i]+".syncOnStart' failed: " + ex, com.synckolab.global.LOG_WARNING);
@@ -147,23 +154,16 @@ com.synckolab.main = {
 				com.synckolab.tools.logMessage("synctimer: checking: "+this.syncConfigs[i].configName+" ("+this.syncConfigs[i].gAutoRun+")....", com.synckolab.global.LOG_DEBUG);
 
 				// skip all configurations which dont have autorun
-				if (this.syncConfigs[i].gAutoRun == 0 && this.syncConfigs[i].startOnce != true)
+				if (this.syncConfigs[i].gAutoRun == 0)
 				{
 					continue;
 				}
 				
 				this.syncConfigs[i].gSyncTimer++;
 				// lets start (make sure no other auto config is running right now)
-				if (this.syncConfigs[i].startOnce == true || this.syncConfigs[i].gSyncTimer >= this.syncConfigs[i].gAutoRun)
+				if (this.syncConfigs[i].gSyncTimer >= this.syncConfigs[i].gAutoRun)
 				{
-					if(this.syncConfigs[i].startOnce == true)
-					{
-						com.synckolab.tools.logMessage("autorun on start: syncKolab configuration "+this.syncConfigs[i].configName, com.synckolab.global.LOG_INFO);
-						// set to false - once is more than enough
-						this.syncConfigs[i].startOnce = false;
-					}
-					else
-						com.synckolab.tools.logMessage("running syncKolab configuration "+this.syncConfigs[i].configName+" ("+this.syncConfigs[i].gAutoRun+")", com.synckolab.global.LOG_INFO);
+					com.synckolab.tools.logMessage("running syncKolab configuration "+this.syncConfigs[i].configName+" ("+this.syncConfigs[i].gAutoRun+")", com.synckolab.global.LOG_INFO);
 					this.syncConfigs[i].gSyncTimer = 0;
 					// hide the window 
 					this.doHideWindow = this.syncConfigs[i].gAutoHideWindow;
@@ -505,6 +505,8 @@ function goWindow (wnd)
 		meter.setAttribute("style", "width:100px");
 		meter.setAttribute("id", "progress");
 
+		wnd.gStopSync = false;
+		wnd.gPauseSync = false;
 
 		statusMsg = document.getElementById('current-action');		
 		if (statusMsg == null)
@@ -958,12 +960,14 @@ function getMessage ()
 		timer.initWithCallback({notify:function(){getMessage();}}, com.synckolab.config.SWITCH_TIME, 0);
 		return;
 	}
-	if (com.synckolab.global.wnd != null && com.synckolab.global.wnd.gStopSync)
+	
+	if (com.synckolab.global.wnd != null && (com.synckolab.global.wnd.document == null || com.synckolab.global.wnd.gStopSync == true))
 	{
 		alert("Stopped SyncKolab...");
+		com.synckolab.global.running = false;
 		return;
 	}
-		
+	
 	var cur = null;
 	try
 	{
@@ -1173,9 +1177,11 @@ function parseMessageRunner ()
 		timer.initWithCallback({notify:function(){parseMessageRunner();}}, com.synckolab.config.SWITCH_TIME, 0);
 		return;
 	}
-	if (com.synckolab.global.wnd != null && com.synckolab.global.wnd.gStopSync)
+	
+	if (com.synckolab.global.wnd != null && (com.synckolab.global.wnd.document == null || com.synckolab.global.wnd.gStopSync == true))
 	{
 		alert("Stopped SyncKolab...");
+		com.synckolab.global.running = false;
 		return;
 	}
 
@@ -1294,12 +1300,13 @@ function updateContent()
 		return;
 	}
 		
-	if (com.synckolab.global.wnd != null && com.synckolab.global.wnd.gStopSync)
+	if (com.synckolab.global.wnd != null && (com.synckolab.global.wnd.document == null || com.synckolab.global.wnd.gStopSync == true))
 	{
 		alert("Stopped SyncKolab...");
+		com.synckolab.global.running = false;
 		return;
 	}
-
+	
 	com.synckolab.tools.logMessage("updating content:", com.synckolab.global.LOG_DEBUG);
 	// first lets delete the old messages
 	if (gSync.gSaveImap && updateMessages.length > 0) 
@@ -1355,12 +1362,12 @@ function updateContentWrite ()
 		return;
 	}
 		
-	if (com.synckolab.global.wnd != null && com.synckolab.global.wnd.gStopSync)
+	if (com.synckolab.global.wnd != null && (com.synckolab.global.wnd.document == null || com.synckolab.global.wnd.gStopSync == true))
 	{
 		alert("Stopped SyncKolab...");
+		com.synckolab.global.running = false;
 		return;
 	}
-
 	curCounter.setAttribute("value", curMessage + "/" + updateMessagesContent.length);
 
 	curMessage++;
@@ -1437,12 +1444,13 @@ function writeContent ()
 		return;
 	}
 		
-	if (com.synckolab.global.wnd != null && com.synckolab.global.wnd.gStopSync)
+	if (com.synckolab.global.wnd != null && (com.synckolab.global.wnd.document == null || com.synckolab.global.wnd.gStopSync == true))
 	{
 		alert("Stopped SyncKolab...");
+		com.synckolab.global.running = false;
 		return;
 	}
-
+	
 	// if there happens an exception, we are done
 	var content = gSync.nextUpdate();
 	if (content == "done")
@@ -1497,12 +1505,14 @@ function writeContentAfterSave ()
 		timer.initWithCallback({notify:function(){writeContentAfterSave();}}, com.synckolab.config.SWITCH_TIME, 0);
 		return;
 	}
-	if (com.synckolab.global.wnd != null && com.synckolab.global.wnd.gStopSync)
+	
+	if (com.synckolab.global.wnd != null && (com.synckolab.global.wnd.document == null || com.synckolab.global.wnd.gStopSync == true))
 	{
 		alert("Stopped SyncKolab...");
+		com.synckolab.global.running = false;
 		return;
 	}
-
+	
 	com.synckolab.tools.logMessage("Setting all messages to read...", com.synckolab.global.LOG_INFO);
 	// before done, set all unread messages to read in the sync folder
 	if (gSync.folder.getMessages)

@@ -10,21 +10,25 @@
   <script type="application/x-javascript" src="synckolab.js"/>
 
 <script>
-com.synckolab.global.wnd.gPauseSync = false;
-com.synckolab.global.wnd.gStopSync = false;
+var gPauseSync = false;
+var gStopSync = false;
 
-function pauseSync ()
-{
-	if (com.synckolab.global.wnd.gPauseSync == true)
+function pauseSync () {
+	if (gPauseSync == true)
 	{
-		com.synckolab.global.wnd.gPauseSync = false;
+		gPauseSync = false;
 		document.getElementById("pause-button").label = "&synckolab.progress.Pause;";
 	}
 	else
 	{
-		com.synckolab.global.wnd.gPauseSync = true;
+		gPauseSync = true;
 		document.getElementById("pause-button").label = "&synckolab.progress.UnPause;";
 	}
+}
+
+function closeSync() {
+	gStopSync=true;
+	window.close();
 }
 </script>
   <vbox flex="1">
@@ -71,7 +75,7 @@ function pauseSync ()
 		  <progressmeter mode="determined" id="totalProgress" value="0%" flex="1" style="margin: 4px; border: 1px solid;"/>
 		  <spacer flex="1"/>
 		  <button id="pause-button" default="false" oncommand="pauseSync()" label="&synckolab.progress.Pause;"/>
-		  <button id="cancel-button" default="true" oncommand="com.synckolab.global.running=false;com.synckolab.global.wnd.gStopSync=true;window.close();" label="&synckolab.progress.Cancel;"/>
+		  <button id="cancel-button" default="true" oncommand="closeSync()" label="&synckolab.progress.Cancel;"/>
 		</hbox>
 	</vbox>
 </window>

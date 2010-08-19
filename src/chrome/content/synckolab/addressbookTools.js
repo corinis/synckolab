@@ -1533,7 +1533,7 @@ com.synckolab.addressbookTools.parseMessage = function(message, extraFields, car
 		message = com.synckolab.tools.text.quoted.decode(message);
 	else
 		if (message.indexOf("=C3=") != -1)
-			message = com.synckolab.tools.text.quoted.decode(message);
+			message = com.synckolab.tools.text.utf8.decode(com.synckolab.tools.text.quoted.decode(message));
 	// make an array of all lines for easier parsing
 	var lines = message.split("\n");
 
