@@ -131,7 +131,7 @@ com.synckolab.calendarTools = {
 				break;
 			// endDate might be untilDate
 			case "endDate":
-				if (endDate)
+				if (item.endDate)
 					item.endDate = value;
 				else
 					item.untilDate = value;
@@ -162,7 +162,7 @@ com.synckolab.calendarTools = {
 			}
 		}
 		catch (ex){
-			com.synckolab.tools.logMessage("unable set property: " + propertyName + " with value " + value, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_ERROR);
+			com.synckolab.tools.logMessage("unable to set property: " + propertyName + " with value " + value, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_ERROR);
 		}
 	},
 
