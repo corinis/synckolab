@@ -2326,8 +2326,8 @@ com.synckolab.addressbookTools.contactConflictTest = function(serverCard,localCa
 	var numericFieldCount = 6;
 
 	for(var i=0 ; i < fieldsArray.length ; i++ ) {
-		var sa = this.getCardProperty(a, fieldsArray[i]);
-		var sb = this.getCardProperty(b, fieldsArray[i]);
+		var sa = this.getCardProperty(serverCard, fieldsArray[i]);
+		var sb = this.getCardProperty(localCard, fieldsArray[i]);
 				
 		// empty field is the same as null
 		if (sa == '')

@@ -252,6 +252,9 @@ stripMailHeader: function (content) {
 		if (contTypeIdx != -1)
 		{
 			content = content.substring(contTypeIdx); // cut everything before this part
+			
+			// handle multi-line 
+			content = content.replace(/[\n\r]+ /, "");
 			// there might be a second boundary... remove that as well
 			var endcontentIdx = content.indexOf(boundary);
 			if (endcontentIdx != -1)
