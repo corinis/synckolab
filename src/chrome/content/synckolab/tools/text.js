@@ -549,7 +549,7 @@ com.synckolab.tools.text.quoted = {
 				NOSKIP,   SKIP,   SKIP,   SKIP,   SKIP,   NOSKIP,   NOSKIP,   NOSKIP,
 				NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
 				NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
-				NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   SKIP,   NOSKIP,   NOSKIP,   NOSKIP,
+				NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   SKIP,   SKIP,   NOSKIP,   NOSKIP,
 				SKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
 				NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
 				NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,   NOSKIP,
@@ -610,6 +610,8 @@ com.synckolab.tools.text.quoted = {
 		// TYPE=FAX
 		s = s.replace("TYPE=CELL", "TYPE=3DCELL");
 		s = s.replace("TYPE=FAX", "TYPE=3DFAX");
+		s = s.replace("=FALSE", "=3DFALSE");
+		s = s.replace("=ACCEPTED", "=3DACCEPTED");
 		
 		return s.replace(/=[0-9A-F]{2}/gi,
 				function(v){ return String.fromCharCode(parseInt(v.substr(1),16)); });
