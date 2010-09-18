@@ -68,11 +68,15 @@ com.synckolab.addressbookTools = {
 						return card.dirName;
 					return card.displayName;
 				}
-				var prop = card.getProperty(prop, null);
+				var value = card.getProperty(prop, null);
+				// generic image equals none set
+				if (prop == "PhotoURI" && value == "chrome://messenger/skin/addressbook/icons/contact-generic.png")
+					prop = null;
+				
 				// fix for "null" as string
-				if (prop == "null" || prop == null)
+				if (value == "null" || value == null)
 					return def;
-				return prop;
+				return value;
 			}
 			else
 			{
