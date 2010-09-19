@@ -71,7 +71,11 @@ com.synckolab.addressbookTools = {
 				var value = card.getProperty(prop, null);
 				// generic image equals none set
 				if (prop == "PhotoURI" && value == "chrome://messenger/skin/addressbook/icons/contact-generic.png")
-					prop = null;
+					value = null;
+				
+				// custom4 fix
+				if (prop == "Custom4" && value == card.getProperty("UUID", null))
+					value = null;
 				
 				// fix for "null" as string
 				if (value == "null" || value == null)
