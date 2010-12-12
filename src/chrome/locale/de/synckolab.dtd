@@ -20,6 +20,7 @@
 <!ENTITY synckolab.settings.Contact		"Kontakte">
 <!ENTITY synckolab.settings.Calendar	"Kalender">
 <!ENTITY synckolab.settings.Tasks		"Aufgaben">
+<!ENTITY synckolab.settings.hideFolder		"Verwendete Folder verstecken (Startet stattdessen Kalender/Adressbuch)">
 
 <!ENTITY synckolab.settings.ContactFolder	"Verzeichnis">
 <!ENTITY synckolab.settings.ContactFormat	"Format">

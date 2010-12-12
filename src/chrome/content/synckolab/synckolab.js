@@ -194,10 +194,21 @@ var groupwareNoteFolders = new Array();
 var groupwareConfigs = new Array();
 
 com.synckolab.main.groupwareActions = function () {
+	// ignore this if we dont want to
+	
+	try {
+		var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+		if(!pref.getBoolPref("SyncKolab.hideFolder")) {
+			this.logMessage("Skipping groupware Actions function", com.synckolab.global.LOG_DEBUG);
+			return;
+		}
+	} catch (ex) {
+	}
+
 	this.logMessage = com.synckolab.tools.logMessage;
 	this.logMessage("Starting groupware Actions function", com.synckolab.global.LOG_DEBUG);
 
-   // Grab the selected folder and figure out what the INBOX is so we can switch to that later
+	// Grab the selected folder and figure out what the INBOX is so we can switch to that later
 	var selected_foldername = gFolderDisplay.displayedFolder.URI;
 	var index = selected_foldername.indexOf('INBOX',0);
 	var email_account = selected_foldername.substring(0, index);

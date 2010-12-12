@@ -603,6 +603,8 @@ com.synckolab.tools.text.quoted = {
 	
 	decode: function (s) {
 		s = s.replace(/=[\r\n]+/g, "");
+		// very bad - double =3D3D
+		s = s.replace("=3D3D", "=3D");
 
 		// in order to avoid problematic decoding prepare the string
 		// known problems might arise with:

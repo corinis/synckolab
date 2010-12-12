@@ -292,6 +292,8 @@ com.synckolab.Calendar = {
 
 		// parse the content
 		var parsedEvent = this.calTools.message2Event(fileContent, messageFields, this.syncTasks);
+		this.tools.logMessage("parsed event (message2Event)", this.global.LOG_CAL + this.global.LOG_DEBUG);
+		
 		
 		if (parsedEvent == null)
 		{
@@ -352,12 +354,21 @@ com.synckolab.Calendar = {
 				lastAckTime.jsDate = new Date();
 				parsedEvent.alarmLastAck = lastAckTime;
 				
+				// if we dont have a timezone - set it
+				if(parsedEvent.timezone == null || parsedEvent.timezone.icalComponent == null) {
+					//parsedEvent.timezone = lastAckTime.timezone;
+				}
+				
 				// add the new event
-				this.gCalendar.addItem(parsedEvent, this.gEvents);
-				// also add to the hash-database
-				this.gCalDB.put(parsedEvent.id, parsedEvent);
-
-				this.tools.logMessage("added locally:" + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
+				try {
+					this.gCalendar.addItem(parsedEvent, this.gEvents);
+					// also add to the hash-database
+					this.gCalDB.put(parsedEvent.id, parsedEvent);
+					this.tools.logMessage("added locally:" + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
+				} catch(addEx) {
+					this.tools.logMessage("unable to add item:" + parsedEvent.id + "\n"+addEx, this.global.LOG_CAL + this.global.LOG_ERR);
+					this.curItemInListStatus.setAttribute("label", "ERROR");
+				}
 			}
 			else
 			{

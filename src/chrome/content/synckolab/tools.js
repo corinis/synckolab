@@ -142,10 +142,23 @@ stripMailHeader: function (content) {
 			startPos = content.indexOf("\n\n");
 
 		if (startPos == -1 || startPos > content.length - 10)
-			startPos = 0;			
+			startPos = 0;
 
-		return com.synckolab.tools.text.trim(content.substring(startPos, content.length));
+		var isQP = content.search(/Content-Transfer-Encoding:[ \t\r\n]+quoted-printable/i);
+		this.logMessage("Stripping header from Message (QP=" + isQP + ")", com.synckolab.global.LOG_DEBUG);
+		if(isQP != -1 || content.indexOf("=3D") != -1)
+		{
+			content = com.synckolab.tools.text.quoted.decode(content.substring(startPos, content.length));
+			this.logMessage("unquoted content: " + content, com.synckolab.global.LOG_DEBUG);
+			
+		}
+		else
+			content = content.substring(startPos, content.length);
+
+		return com.synckolab.tools.text.trim(content);
 	}
+
+	this.logMessage("Stripping header from multipart message", com.synckolab.global.LOG_DEBUG);
 
 	// we got a multipart message - strip it apart
 
@@ -353,8 +366,11 @@ stripMailHeader: function (content) {
 	
 	// content might still be quotted printable... doublecheck
 	// check if we have to decode quoted printable
-	if (content.indexOf(" version=3D") != -1) // we know from the version
+	if (content.indexOf(" version=3D") != -1 || content.indexOf("TZID=3D")) // we know from the version (or in case of citadel from the tzid)
+	{
+		this.logMessage("Message is quoted", com.synckolab.global.LOG_INFO);
 		content = com.synckolab.tools.text.quoted.decode(content);
+	}
 
 
 	return com.synckolab.tools.text.trim(content);

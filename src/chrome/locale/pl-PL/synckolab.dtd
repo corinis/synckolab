@@ -18,6 +18,7 @@
 <!ENTITY synckolab.settings.Contact		"Kontakt">
 <!ENTITY synckolab.settings.Calendar	"Kalendarz">
 <!ENTITY synckolab.settings.Tasks		"Zadania">
+<!ENTITY synckolab.settings.hideFolder		"Hide selected folders (opens calendar/addressbook instead)">
 
 <!ENTITY synckolab.settings.ContactFolder	"Folder Kontaktów">
 <!ENTITY synckolab.settings.ContactFormat	"Format Kontaktów">

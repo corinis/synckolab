@@ -18,6 +18,7 @@
 <!ENTITY synckolab.settings.Contact		"コンタクト">
 <!ENTITY synckolab.settings.Calendar		"カレンダー">
 <!ENTITY synckolab.settings.Tasks		"タスクリスト">
+<!ENTITY synckolab.settings.hideFolder		"Hide selected folders (opens calendar/addressbook instead)">
 
 <!ENTITY synckolab.settings.ContactFolder	"コンタクトを保存するフォルダ">
 <!ENTITY synckolab.settings.ContactFormat	"コンタクトの保存形式">

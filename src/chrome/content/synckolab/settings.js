@@ -74,6 +74,7 @@ com.synckolab.settings = {
 			this.CONFIG_FIELD_TYPES["saveToCalendarImap"] = this.FIELD_TYPE_BOOL;
 			this.CONFIG_FIELD_TYPES["saveToTaskImap"] = this.FIELD_TYPE_BOOL;
 			this.CONFIG_FIELD_TYPES["hiddenWindow"] = this.FIELD_TYPE_BOOL;
+			this.CONFIG_FIELD_TYPES["hideFolder"] = this.FIELD_TYPE_BOOL;
 			this.CONFIG_FIELD_TYPES["IncomingServer"] = this.FIELD_TYPE_CHAR;
 			this.CONFIG_FIELD_TYPES["ContactIncomingServer"] = this.FIELD_TYPE_CHAR;
 			this.CONFIG_FIELD_TYPES["CalendarIncomingServer"] = this.FIELD_TYPE_CHAR;
@@ -229,6 +230,13 @@ com.synckolab.settings = {
 				cfgDbgLevel = pref.getIntPref("SyncKolab.debugLevel");
 			} catch (ex) {
 				com.synckolab.tools.logMessage("WARNING: failed to read SyncKolab.debugLevel: " + ex, com.synckolab.global.LOG_WARNING);
+			}
+			
+			document.getElementById("hideFolder").checked = true;
+			try {
+				document.getElementById("hideFolder").checked = pref.getBoolPref("SyncKolab.hideFolder");
+			} catch (ex) {
+				com.synckolab.tools.logMessage("WARNING: failed to read SyncKolab.hideFolder: " + ex, com.synckolab.global.LOG_WARNING);
 			}
 			
 			var debugEle = document.getElementById("skDebugLevel");
@@ -1465,7 +1473,7 @@ com.synckolab.settings = {
 				pref.setBoolPref("SyncKolab."+config+".syncOnStart", document.getElementById ("syncOnStart").checked);
 			else
 				pref.setBoolPref("SyncKolab."+config+".syncOnStart", false);
-
+			
 			pref.setCharPref("SyncKolab."+config+".AddressBook", document.getElementById ("conURL").value);
 			pref.setCharPref("SyncKolab."+config+".AddressBookFormat", document.getElementById ("conFormat").value);
 			pref.setBoolPref("SyncKolab."+config+".saveToContactImap", document.getElementById ("saveToContactImap").checked);
@@ -1507,6 +1515,10 @@ com.synckolab.settings = {
 				
 				pref.setIntPref("SyncKolab.debugLevel", document.getElementById ("skDebugLevel").value);
 				
+				if(document.getElementById("hideFolder"))
+					pref.setBoolPref("SyncKolab.hideFolder", document.getElementById("hideFolder").checked);
+				else
+					pref.setBoolPref("SyncKolab.hideFolder", false);
 			} catch ( ex ) {
 				com.synckolab.tools.logMessage("Error: failed to set prefs value: " + ex, com.synckolab.global.LOG_ERROR);
 			};

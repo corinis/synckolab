@@ -18,6 +18,7 @@
 <!ENTITY synckolab.settings.Contact		"Kapcsolat">
 <!ENTITY synckolab.settings.Calendar	"Naptár">
 <!ENTITY synckolab.settings.Tasks		"Feladatok">
+<!ENTITY synckolab.settings.hideFolder		"Hide selected folders (opens calendar/addressbook instead)">
 
 <!ENTITY synckolab.settings.ContactFolder	"Kapcsolat mappa">
 <!ENTITY synckolab.settings.ContactFormat	"Kapcsolat formátum">

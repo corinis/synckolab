@@ -18,6 +18,7 @@
 <!ENTITY synckolab.settings.Contact		"Kontakt">
 <!ENTITY synckolab.settings.Calendar	"Kalendář">
 <!ENTITY synckolab.settings.Tasks		"Úkoly">
+<!ENTITY synckolab.settings.hideFolder		"Hide selected folders (opens calendar/addressbook instead)">
 
 <!ENTITY synckolab.settings.ContactFolder	"Složka kontaktů">
 <!ENTITY synckolab.settings.ContactFormat	"Formát kontaktů">
