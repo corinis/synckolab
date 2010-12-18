@@ -2,7 +2,7 @@ if(!com) var com={};
 if(!com.synckolab) com.synckolab={};
 
 com.synckolab.config = {
-		version: "1.5.1",
+		version: "1.5.2",
 		
 		// Global debug setting (on)
 		DEBUG_SYNCKOLAB: true,

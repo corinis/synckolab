@@ -12,6 +12,7 @@
 <!ENTITY synckolab.contactConflict.Home.box			"Maison">
 <!ENTITY synckolab.contactConflict.Notes.box			"Notes">
 <!ENTITY synckolab.contactConflict.Other.box			"Other">
+<!ENTITY synckolab.contactConflict.Name.box				"Name">
 
 <!ENTITY synckolab.settings.Account		"Compte">
 <!ENTITY synckolab.settings.abook		"Carnet d'adresse">
