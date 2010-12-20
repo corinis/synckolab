@@ -516,9 +516,10 @@ function goWindow (wnd)
 		meter.setAttribute("style", "width:100px");
 		meter.setAttribute("id", "progress");
 
-		wnd.gStopSync = false;
-		wnd.gPauseSync = false;
-
+		if(wnd != null) {
+			wnd.gStopSync = false;
+			wnd.gPauseSync = false;
+		}
 		statusMsg = document.getElementById('current-action');		
 		if (statusMsg == null)
 			statusMsg = document.createElement("statusbarpanel");
