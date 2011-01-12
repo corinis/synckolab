@@ -236,6 +236,7 @@ com.synckolab.addressbookTools.setCardProperty = function(card, prop, value) {
 			case	"Custom2":	card.custom2 = value; break;
 			case	"Custom3":	card.custom3 = value; break;
 			case	"UID":	card.custom4 = value; break;
+			case	"UUID":	card.custom4 = value; break;
 			case	"Department":	card.department = value; break;
 			case	"DisplayName":	card.displayName = value; break;
 			case	"FamilyName":	card.familyName = value; break;
