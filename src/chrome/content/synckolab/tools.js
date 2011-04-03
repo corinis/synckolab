@@ -1229,6 +1229,9 @@ com.synckolab.Node.prototype.getChildNode = function (name)
  */
 com.synckolab.Node.prototype.getAttribute = function (attrName)
 {
+	if (!this.node)
+		return null;
+	
 	if (this.node.hasAttributes())
 	{
 		var attrList = this.node.attributes;

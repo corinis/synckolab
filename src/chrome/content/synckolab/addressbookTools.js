@@ -2371,10 +2371,10 @@ com.synckolab.addressbookTools.contactConflictTest = function(serverCard,localCa
 		}
 
 		// check if not equals 
-		if (sa != sb)
+		if (conflict == false && sa != sb)
 		{
 			// if we got strings... maybe they only differ in whitespace
-			if (sa.replace)
+			if (sa && sa.replace)
 				// if they are equals without whitespace.. continue
 				if (sa.replace(/\s|(\\n)| /g, "") == sb.replace(/\s|(\\n)| /g, ""))
 					continue;

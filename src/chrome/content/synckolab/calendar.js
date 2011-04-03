@@ -493,13 +493,13 @@ com.synckolab.Calendar = {
 						{
 							
 							msg = com.synckolab.tools.generateMail(cur.id, this.email, "iCal", "text/todo", 
-								false, com.synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
+								false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
 						}
 						else
 						{
 							
 							msg = com.synckolab.tools.generateMail(cur.id, this.email, "iCal", "text/calendar", 
-								false, com.synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
+								false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
 						}
 					}
 
@@ -574,12 +574,12 @@ com.synckolab.Calendar = {
 						if (this.syncTasks)
 						{
 							msg = com.synckolab.tools.generateMail(parsedEvent.id, this.email, "iCal", "text/todo", 
-								false, com.synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
+								false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
 						}
 						else
 						{
 							msg = com.synckolab.tools.generateMail(parsedEvent.id, this.email, "iCal", "text/calendar", 
-								false, com.synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
+								false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
 						}
 					}
 					
@@ -751,13 +751,13 @@ com.synckolab.Calendar = {
 					if (this.syncTasks)
 					{
 						msg = com.synckolab.tools.generateMail(cur.id, this.email, "iCal", "text/todo", 
-							false, com.synckolab.tools.text.utf8.encode(com.synckolab.tools.text.quoted.encode(calComp.serializeToICS())), null);
+							false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
 					}
 					else
 					{
 
 						msg = com.synckolab.tools.generateMail(cur.id, this.email, "iCal", "text/calendar", 
-							false, com.synckolab.tools.text.utf8.encode(com.synckolab.tools.text.quoted.encode(calComp.serializeToICS())), null);
+							false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
 					}					
 				}
 				

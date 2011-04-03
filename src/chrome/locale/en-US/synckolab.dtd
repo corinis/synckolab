@@ -79,7 +79,7 @@
 
 <!-- New Config Wizard -->
 <!ENTITY synckolab.newwizard.title 		"SyncKolab Setup Wizard">
-<!ENTITY synckolab.wizard.LongDescription	"In the following pages you can choose for each type (calendar, adressbook, tasks) the folder on the imap server with which to sync. Yoou can also specify if you want to use the read only mode (nothing is written back to the imap server - for shared folders) and the type (xml for Kolab2 or vcard/ical).">
+<!ENTITY synckolab.wizard.LongDescription	"In the following pages you can choose for each type (calendar, addressbook, tasks) the folder on the imap server with which to sync. Yoou can also specify if you want to use the read only mode (nothing is written back to the imap server - for shared folders) and the type (xml for Kolab2 or vcard/ical).">
 <!ENTITY synckolab.newwizard.intro 		"SyncKolab allows you to synchronize your contacts and your calendar entries over multiple machines using only an imap server.">
 <!ENTITY synckolab.newwizard.selectAccount	"Please select an IMAP Account for the synchronization">
 <!ENTITY synckolab.newwizard.configName	"Display-name">
@@ -90,7 +90,7 @@
 <!ENTITY synckolab.wizard.typePageContact	"Activate this if you want to sync contacts from an imap folder with a local thunderbird address-book">
 <!ENTITY synckolab.wizard.typePageCalendar	"Activate this if you want to sync events from an imap folder with a local calendar">
 <!ENTITY synckolab.wizard.typePageTasks		"Activate this if you want to sync tasks from an imap folder with a local calendar's task list">
-<!ENTITY synckolab.wizard.conPageInfo	"Select the adress book and the folder to be synchronized. ">
+<!ENTITY synckolab.wizard.conPageInfo	"Select the address book and the folder to be synchronized. ">
 <!ENTITY synckolab.wizard.calPageInfo	"Select the calendar and the folder to be synchronized.">
 <!ENTITY synckolab.wizard.taskPageInfo	"Select the calendar for tasks and the folder to be synchronized.">
 <!ENTITY synckolab.newwizard.DoneText	"You successfully setup a new configuration with SyncKolab. You can now start the sync by choosing 'Tools-Start SyncKolab'.">
