@@ -200,7 +200,7 @@ com.synckolab.main.groupwareActions = function () {
 		var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 		if(!pref.getBoolPref("SyncKolab.hideFolder")) {
 			this.logMessage("Skipping groupware Actions function", com.synckolab.global.LOG_DEBUG);
-			return;
+			return true;
 		}
 	} catch (ex) {
 	}

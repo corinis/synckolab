@@ -52,7 +52,12 @@
 
 	<script type="application/x-javascript">
 		window.addEventListener("load", com.synckolab.main.syncKolabTimer, false);
-		window.document.getElementById('folderTree').addEventListener("click", com.synckolab.main.groupwareActions, false);  
+		// detect and disable event listener for seamonkey
+		try {
+		if((Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo)).name != "SeaMonkey")
+			window.document.getElementById('folderTree').addEventListener("click", com.synckolab.main.groupwareActions, true);
+		
+		} catch (ex) { /* ignore */ }  
 	</script>
     
     <!-- calendar -->
