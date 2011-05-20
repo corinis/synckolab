@@ -1670,7 +1670,10 @@ com.synckolab.addressbookTools.message2Card = function(lines, card, extraFields,
 		if (tok[1] == null || tok[1] == '' || tok[1] == ';' || tok[1] == ';;;;;;')
 			continue;
 			
-		switch (tok[0].toUpperCase())
+		// remove some tok0 stuff
+		var field = tok[0].toUpperCase();
+		field = field.replace(/TYPE=/g, "").replace(/,/g, ";");
+		switch (field)
 		{
 			case "DATE":
 				// now we gotta check times... convert the message first
@@ -1713,12 +1716,10 @@ com.synckolab.addressbookTools.message2Card = function(lines, card, extraFields,
 				this.setCardProperty(card, "Company", tok[1]);
 				found = true;
 				break;
-			case "EMAIL;TYPE=PREF":
-			case "EMAIL;TYPE=PREF,HOME":
-			case "EMAIL;TYPE=INTERNET,PREF":
-			case "EMAIL;PREF;TYPE=INTERNET":
-			case "EMAIL;TYPE=PREF;HOME":
-			case "EMAIL;TYPE=INTERNET;PREF":
+			case "EMAIL;PREF":
+			case "EMAIL;PREF;HOME":
+			case "EMAIL;INTERNET;PREF":
+			case "EMAIL;PREF;INTERNET":
 				// the "preferred" email is the primary
 				if (!gotEmailPrimary)
 				{
@@ -1739,7 +1740,6 @@ com.synckolab.addressbookTools.message2Card = function(lines, card, extraFields,
 				
 				found = true;
 				break;
-			case "EMAIL;TYPE=INTERNET":
 			case "EMAIL;INTERNET":
 			case "EMAIL": //This is here to limit compact to existing vcards
 				// make sure to fill all email fields
@@ -1782,45 +1782,36 @@ com.synckolab.addressbookTools.message2Card = function(lines, card, extraFields,
 				this.setCardProperty(card, "AimScreenName", tok[1]);
 				found = true;
 			break;
-			case "TEL;TYPE=MOBILE;TYPE=VOICE":
-			case "TEL;TYPE=VOICE;TYPE=MOBILE":
-			case "TEL;TYPE=MOBILE":
+			case "TEL;MOBILE;VOICE":
+			case "TEL;VOICE;MOBILE":
 			case "TEL;MOBILE":
-			case "TEL;TYPE=CELL;TYPE=VOICE":
-			case "TEL;TYPE=VOICE;TYPE=CELL":
-			case "TEL;TYPE=CELL":
+			case "TEL;CELL;VOICE":
+			case "TEL;VOICE;CELL":
+			case "TEL;PREF;CELL;VOICE":
 			case "TEL;CELL":
 				this.setCardProperty(card, "CellularNumber", tok[1]);
 				found = true;
 				break;
-			case "TEL;TYPE=VOICE;TYPE=HOME":
-			case "TEL;TYPE=HOME;TYPE=VOICE":
-			case "TEL;VOICE":
-			case "TEL;HOME;VOICE":
 			case "TEL;VOICE;HOME":
-			case "TEL;TYPE=VOICE":
-			case "TEL;TYPE=HOME":
+			case "TEL;HOME;VOICE":
+			case "TEL;VOICE":
+			case "TEL;PREF;HOME;VOICE":
 			case "TEL;HOME":
 			case "TEL":
 				this.setCardProperty(card, "HomePhone", tok[1]);
 				found = true;
 				break;
-			case "TEL;TYPE=WORK;TYPE=VOICE":
-			case "TEL;TYPE=VOICE;TYPE=WORK":
 			case "TEL;VOICE;WORK":
 			case "TEL;WORK;VOICE":
-			case "TEL;TYPE=WORK":
+			case "TEL;PREF;WORK;VOICE":
 			case "TEL;WORK":
 				this.setCardProperty(card, "WorkPhone", tok[1]);
 				found = true;
 				break;
-			case "TEL;TYPE=FAX":
 			case "TEL;FAX":
 				this.setCardProperty(card, "FaxNumber", tok[1]);	
  				found = true;
 				break;
-			case "TEL;TYPE=PAGER":
-			case "TEL;TYPE=PAGE":
 			case "TEL;PAGER":
 			case "TEL;PAGE":
 				this.setCardProperty(card, "PagerNumber", tok[1]);
@@ -1861,8 +1852,7 @@ com.synckolab.addressbookTools.message2Card = function(lines, card, extraFields,
 				}
 				break;
 			
-			case "ADR;TYPE=HOME,POSTAL":
-			case "ADR;TYPE=HOME":
+			case "ADR;HOME;POSTAL":
 			case "ADR;HOME":
 			case "ADR":
 				// ADR:POBox;Ext. Address;Address;City;State;Zip Code;Country
@@ -1875,9 +1865,8 @@ com.synckolab.addressbookTools.message2Card = function(lines, card, extraFields,
 				this.setCardProperty(card, "HomeCountry", cur[6]);
 				found = true;
 				break;
-			case "ADR;TYPE=WORK,POSTAL":
+			case "ADR;WORK;POSTAL":
 			case "ADR;WORK":
-			case "ADR;TYPE=WORK":
 				var cur = tok[1].split(";");
 				this.setCardProperty(card, "WorkAddress2", cur[1]);
 				this.setCardProperty(card, "WorkAddress", cur[2]);
@@ -1912,14 +1901,14 @@ com.synckolab.addressbookTools.message2Card = function(lines, card, extraFields,
 				found = true;
 				break;
 
-			case "URL;TYPE=WORK":
+			case "URL;WORK":
 			case "URL":
 				// WebPage1 is work web page
 				this.setCardProperty(card, "WebPage1", this.decodeCardField(tok[1])); // decode to convert the : char hex codes back to ascii
 				found = true;
 				break;
-			case "URL;TYPE=PRIVATE":
-			case "URL;TYPE=PERSONAL":
+			case "URL;PRIVATE":
+			case "URL;PERSONAL":
 				// WebPage2 is home web page
 				this.setCardProperty(card, "WebPage2", this.decodeCardField(tok[1])); // decode to convert the : char hex codes back to ascii
 				found = true;

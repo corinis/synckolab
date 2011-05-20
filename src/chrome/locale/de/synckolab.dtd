@@ -15,6 +15,7 @@
 <!ENTITY synckolab.contactConflict.Notes.box			"Notes">
 <!ENTITY synckolab.contactConflict.Other.box			"Andere">
 <!ENTITY synckolab.contactConflict.Name.box				"Name">
+<!ENTITY synckolab.contactConflict.Work.box				"Arbeit">
 
 <!ENTITY synckolab.settings.Account		"Konto">
 <!ENTITY synckolab.settings.abook		"Adressbuch">

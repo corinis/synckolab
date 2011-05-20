@@ -13,6 +13,7 @@
 <!ENTITY synckolab.contactConflict.Notes.box			"Jegyzetek">
 <!ENTITY synckolab.contactConflict.Other.box			"Other">
 <!ENTITY synckolab.contactConflict.Name.box				"Name">
+<!ENTITY synckolab.contactConflict.Work.box				"Work">
 
 <!ENTITY synckolab.settings.Account		"Felhasználó">
 <!ENTITY synckolab.settings.abook		"Címjegyzék">
