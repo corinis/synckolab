@@ -237,7 +237,7 @@
 					<radiogroup id="custom3" orient="horizontal"/>
 				</row>
 				<row id="notesBox" hidden="true">
-					<label value="&Notes.box;"/>
+					<label value="&synckolab.contactConflict.Notes.box;"/>
 					<radiogroup id="notes" orient="horizontal"/>
 				</row>
 			</rows>
