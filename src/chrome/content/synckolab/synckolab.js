@@ -1198,15 +1198,19 @@ function parseMessageRunner ()
 	}
 
 	
-	com.synckolab.tools.logMessage("parsing message... ", com.synckolab.global.LOG_DEBUG);
-	
-	// fix the message for line truncs (last char in line is =)
-	fileContent = fileContent.replace(/=\n(\S)/g, "$1");
-	
+
 	var content = null;
 
-	content = gSync.parseMessage(fileContent, updateMessagesContent, (gLaterMessages.pointer == 0));
+	// unparsable message... content is null and so it will skip
+	if(fileConent != null) {
+		com.synckolab.tools.logMessage("parsing message... ", com.synckolab.global.LOG_DEBUG);
+
+		// fix the message for line truncs (last char in line is =)
+		fileContent = fileContent.replace(/=\n(\S)/g, "$1");
+		
 	
+		content = gSync.parseMessage(fileContent, updateMessagesContent, (gLaterMessages.pointer == 0));
+	}
 	
 	if (content == "LATER") {
 		var cMsg = {};
