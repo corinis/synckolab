@@ -480,52 +480,129 @@ com.synckolab.tools.text = {
  *	result = com.synckolab.text.utf8.decode(String); / encode(String);
  */
 com.synckolab.tools.text.utf8 = {
-	decode: function (utftext) {
-		var plaintext = ""; var i=0; var c=c1=c2=0;
-	
-		while(i<utftext.length)
-		{
-			c = utftext.charCodeAt(i);
-			if (c<128) {
-				plaintext += String.fromCharCode(c);
-				i++;}
-			else if((c>191) && (c<224)) {
-				c2 = utftext.charCodeAt(i+1);
-				plaintext += String.fromCharCode(((c&31)<<6) | (c2&63));
-				i+=2;}
-			else {
-				c2 = utftext.charCodeAt(i+1); c3 = utftext.charCodeAt(i+2);
-				plaintext += String.fromCharCode(((c&15)<<12) | ((c2&63)<<6) | (c3&63));
-				i+=3;}
+		decode: function (utftext) {
+			
+			var checkFollowingByte = function(b)
+			{
+				if (b < 128 || b >=192)
+				{
+					throw "Illegal UTF-8 following byte: " + b + " - must be in >= 128 and < 192";
+				}
+			};
+			
+			var plaintext = "";
+			var i = 0;
+			
+			while(i < utftext.length)
+			{
+				var c = utftext.charCodeAt(i);
+				// 0xxxxxxx - ascii
+				if (c >= 0 && c < 128)
+				{
+					plaintext += String.fromCharCode(c);
+					i++;
+				}
+				// 110xxxxx - one following byte
+				else if (c >= 192 && c < 224)
+				{
+					var c2 = utftext.charCodeAt(i+1);
+					checkFollowingByte(c2);
+					var codePoint = ((c & 31) << 6) | (c2 & 63);
+					if (codePoint < 128)
+					{
+						throw "Illegal UTF-8 encoding: code point < 128 was encoded in 2 bytes: " + codePoint;
+					}
+					plaintext += String.fromCharCode(codePoint);
+					i+=2;
+				}
+				// 1110xxxx - two following bytes
+				else if (c >= 224 && c < 240)
+				{
+					var c2 = utftext.charCodeAt(i+1);
+					checkFollowingByte(c2);
+					var c3 = utftext.charCodeAt(i+2);
+					checkFollowingByte(c3);
+					var codePoint = ((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63);
+					if (codePoint < 2048)
+					{
+						throw "Illegal UTF-8 encoding: code point < 2048 was encoded in 3 bytes: " + codePoint;
+					}
+					plaintext += String.fromCharCode(codePoint);
+					i+=3;
+				}
+				// 11110xxx - three following bytes
+				else if (c >= 240 && c < 248)
+				{
+					var c2 = utftext.charCodeAt(i+1);
+					checkFollowingByte(c2);
+					var c3 = utftext.charCodeAt(i+2);
+					checkFollowingByte(c3);
+					var c4 = utftext.charCodeAt(i+3);
+					checkFollowingByte(c4);
+					var codePoint = ((c & 7) << 18) | ((c2 & 63) << 12) | ((c3 & 63) << 6) | (c4 & 63);
+					if (codePoint < 65536)
+					{
+						throw "Illegal UTF-8 encoding: code point < 65536 was encoded in 4 bytes: " + codePoint;
+					}
+					if (codePoint > 1114112)
+					{
+						throw "Illegal UTF-8 encoding: not a unicode code point (> 1,114,111 = 0x10FFFF): " + codePoint;
+					}
+					plaintext += String.fromCharCode(codePoint);
+					i+=3;
+				}
+				else
+				{
+					throw "Illegal UTF-8 starting byte: " + b + " - must be < 240";
+				}
+			}
+			return plaintext;
+		},
+		
+		encode: function (rohtext) {
+			if (rohtext == null)
+				return null;
+		
+			// check for newline
+			//rohtext = rohtext.replace(/\r\n/g, '\n');
+			var utftext = "";
+			for(var n=0; n<rohtext.length; n++)
+			{
+				// get the unicode
+				var c = rohtext.charCodeAt(n);
+				// code points from 0 to 127 - 1 byte
+				if (c >= 0 && c < 128)
+				{
+					utftext += String.fromCharCode(c);
+				}
+				// code points from 127 to 2047 - 2 bytes
+				else if(c >= 127 && c < 2048)
+				{
+					utftext += String.fromCharCode((c >> 6) | 192);
+					utftext += String.fromCharCode((c & 63) | 128);
+				}
+				// code points from 2048 to 65535 - 3 bytes
+				else if (c >= 2048 && c < 65536)
+				{
+					utftext += String.fromCharCode((c >> 12) | 224);
+					utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+					utftext += String.fromCharCode((c & 63) | 128);
+				}
+				// code points from 65536 to 1114111 - 4 bytes
+				else if (c >= 65536 && c < 1114112)
+				{
+					utftext += String.fromCharCode((c >> 18) | 240);
+					utftext += String.fromCharCode(((c >> 12) & 63) | 128);
+					utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+					utftext += String.fromCharCode((c & 63) | 128);
+				}
+				else
+				{
+					throw "UTF-8 encoding error: not a unicode code point (> 1,114,111 = 0x10FFFF): " + c;
+				}
+			}
+			return utftext;
 		}
-		return plaintext;
-	},
-	
-	encode: function (rohtext) {
-		if (rohtext == null)
-			return null;
-	
-		// check for newline
-		rohtext = rohtext.replace(/\r\n/g,"\n");
-		var utftext = "";
-		for(var n=0; n<rohtext.length; n++)
-		{
-			// get the unicode
-			var c=rohtext.charCodeAt(n);
-			// all chars from 0-127 => 1byte
-			if (c<128)
-				utftext += String.fromCharCode(c);
-			// all chars from 127 bis 2047 => 2byte
-			else if((c>127) && (c<2048)) {
-				utftext += String.fromCharCode((c>>6)|192);
-				utftext += String.fromCharCode((c&63)|128);}
-			// all chars from 2048 bis 66536 => 3byte
-			else {
-				utftext += String.fromCharCode((c>>12)|224);
-				utftext += String.fromCharCode(((c>>6)&63)|128);
-				utftext += String.fromCharCode((c&63)|128);}
-		}
-		return utftext;
 	}
 };
 
