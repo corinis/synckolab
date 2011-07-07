@@ -1202,7 +1202,7 @@ function parseMessageRunner ()
 	var content = null;
 
 	// unparsable message... content is null and so it will skip
-	if(fileConent != null) {
+	if(fileContent != null) {
 		com.synckolab.tools.logMessage("parsing message... ", com.synckolab.global.LOG_DEBUG);
 
 		// fix the message for line truncs (last char in line is =)
