@@ -2340,18 +2340,18 @@ com.synckolab.addressbookTools.contactConflictTest = function(serverCard,localCa
 
 		// in case the fields are below a certain limit they should be treated as numeric
 		if (i < numericFieldCount) {
-			if (sa != null)
+			if (sa)
 				sa = Number(sa);
-			if (sb != null)
+			if (sb)
 				sb = Number(sb);
 		}
 
 		var conflict = false;
 		
 		// null check
-		if (sa == null || sb == null)
+		if (!sa || !sb)
 		{
-			if (sa == null && sb == null)
+			if (!sa && !sb)
 				continue;
 			else
 			{
