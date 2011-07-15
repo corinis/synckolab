@@ -11,7 +11,7 @@
     <description>
             Sync your contacts with imap
     </description>
-	<property name="version" value="1.5.0"/>	
+	<property name="version" value="1.5.2"/>	
 
     <!-- ================================= 
           target: default              
