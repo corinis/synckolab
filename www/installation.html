@@ -1,7 +1,7 @@
 <!-- MAIN CONTENT -->
 <h5 class="page-header"><a id="content" name="content">Download</a></h5>
 <h6>Latest stable</h6>
-<p><a href="http://downloads.mozdev.org/synckolab/synckolab-1.5.0.xpi">SyncKolab 1.5.0</a></p>
+<p><a href="http://downloads.mozdev.org/synckolab/synckolab-1.5.2.xpi">SyncKolab 1.5.2</a></p>
 <h6>Latest Nightly</h6>
 <p><a href="http://www.gargan.org/extensions/synckolab-NIGHTLY.xpi">SyncKolab NIGHTLY</a></p>
 <h6>Previous Releases</h6>
@@ -9,25 +9,20 @@
 
 <h5 class="page-header">Release Notes</h5>
 <h6>For updated release notes see <a href="http://www.gargan.org/extensions/synckolab.html">www.gargan.org</a></h6>
-
-<h3>synckolab 1.5.0</h3>
+<h3>synckolab 1.5.2</h3>
 <p><pre>
-* fixed bugs: 
-	<a href="https://www.mozdev.org/bugs/show_bug.cgi?id=22557">#22557</a>
-	<a href="https://www.mozdev.org/bugs/show_bug.cgi?id=22552">#22552</a>
-* conversion errors from 1.0.4: #22389 #22411 #22370 #22365 #22428 #22429 #22432
-* rewrote calendar sync to really get all calendars
-* contacts sync picture (at least picture url)
-* alarm handling updated to lightning 1.0 interface
-* when updating an event/task synckolab will make sure the lastAlarmAck will be remembered (this should avoid multiple popups of the same alarm)
-* better handling of nonexistant fields (should get rid of the 'null' in mails)
-* redid encoding of vcards
-* more extensive check for character encoding
- pictures will be synced now (only for kolab/xml!!)
-* autoclean custom4 field in tbird3
-* use base64 encoding for attachments instead of quoted
-* tbird3 mailing list support
+* Compatibility with Thunderbird 5 (and higher)
+* Bugs fixed:
+<ul>
+		<li><a target="_ext" href="https://www.mozdev.org/bugs/show_bug.cgi?id=23280">#23280</a> - Nicht definierte Entität</li>
+		<li><a target="_ext" href="https://www.mozdev.org/bugs/show_bug.cgi?id=23551">#23551</a> - Automatic Sync error when Hide Status Window Option selected</li>
+		<li><a target="_ext" href="https://www.mozdev.org/bugs/show_bug.cgi?id=23621">#23621</a> - Synkolab and Postbox (based on TB)</li>
+		<li><a target="_ext" href="https://www.mozdev.org/bugs/show_bug.cgi?id=23484">#23484</a> - synckolab nightly causes seamonkey mail client to be unusable.</li>
+		<li><a target="_ext" href="https://www.mozdev.org/bugs/show_bug.cgi?id=24017">#24017</a> - Axigen incompatibility		</li>
+		<li><a target="_ext" href="https://www.mozdev.org/bugs/show_bug.cgi?id=24020">#24020</a> - undefined entity "synckolab.contactConflict.Work.box"</li>
+	</ul>
 </pre></p>
+
 
 
 <a href="javascript:" onclick="document.getElementById('older').style.display='block';">display older releases</a>
@@ -116,6 +111,24 @@ Step 1: from 0.3.0 to 0.4.19 <b>calendar is required</b>. <a href="http://www.mo
 </p>
 <h5 class="page-header">Release Notes</h5>
 <h6>For updated release notes see <a href="http://www.gargan.org/extensions/synckolab.html">www.gargan.org</a></h6>
+<h3>synckolab 1.5.0</h3>
+<p><pre>
+* fixed bugs: 
+	<a href="https://www.mozdev.org/bugs/show_bug.cgi?id=22557">#22557</a>
+	<a href="https://www.mozdev.org/bugs/show_bug.cgi?id=22552">#22552</a>
+* conversion errors from 1.0.4: #22389 #22411 #22370 #22365 #22428 #22429 #22432
+* rewrote calendar sync to really get all calendars
+* contacts sync picture (at least picture url)
+* alarm handling updated to lightning 1.0 interface
+* when updating an event/task synckolab will make sure the lastAlarmAck will be remembered (this should avoid multiple popups of the same alarm)
+* better handling of nonexistant fields (should get rid of the 'null' in mails)
+* redid encoding of vcards
+* more extensive check for character encoding
+ pictures will be synced now (only for kolab/xml!!)
+* autoclean custom4 field in tbird3
+* use base64 encoding for attachments instead of quoted
+* tbird3 mailing list support
+</pre></p>
 
 <h3>synckolab 1.0.4</h3>
 <p><pre>
