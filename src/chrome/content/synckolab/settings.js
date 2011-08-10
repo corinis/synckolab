@@ -105,7 +105,7 @@ com.synckolab.settings = {
 				var Config = pref.getCharPref("SyncKolab.Configs");
 				configs = Config.split(';');
 			} catch(ex) {
-				com.synckolab.tools.logMessage("ERROR: Reading 'SyncKolab.Configs' failed: " + ex, com.synckolab.global.LOG_ERROR);
+				com.synckolab.tools.logMessage("ERROR: Reading 'SyncKolab.Configs' failed: " + ex, com.synckolab.global.LOG_WARNING);
 			}
 
 			try {
@@ -123,7 +123,7 @@ com.synckolab.settings = {
 					var conConfig = pref.getCharPref("SyncKolab.AddressBookConfigs");
 					oldConfigs = conConfig.split(';');
 				} catch(ex) {
-					com.synckolab.tools.logMessage("ERROR: Reading 'SyncKolab.AddressBookConfigs' failed: " + ex, com.synckolab.global.LOG_ERROR);
+					com.synckolab.tools.logMessage("ERROR: Reading 'SyncKolab.AddressBookConfigs' failed: " + ex, com.synckolab.global.LOG_WARING);
 				}
 				try {
 					configStateLocked = pref.prefIsLocked("SyncKolab.AddressBookConfigs");
@@ -166,7 +166,7 @@ com.synckolab.settings = {
 			
 			if (configs.length == 0)
 			{
-				this.addConfig();
+				com.synckolab.settings.addConfig();
 				return;
 			}
 
@@ -1562,7 +1562,10 @@ com.synckolab.settings = {
 		
 		addConfig: function()
 		{
-			window.open('chrome://synckolab/content/newWizard.xul', 'newWizard', 'chrome,resizable=0');
+		    if (window.opener)
+				 window.opener.open('chrome://synckolab/content/newWizard.xul', 'newWizard', 'chrome,resizable=0');
+		    else
+		    	window.open('chrome://synckolab/content/newWizard.xul', 'newWizard', 'chrome,resizable=0');
 			// close the current window
 			window.close();
 		},

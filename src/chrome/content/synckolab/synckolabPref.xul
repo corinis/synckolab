@@ -2,10 +2,10 @@
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 <?xml-stylesheet href="chrome://synckolab/skin/synckolab.css" type="text/css"?>
 
-<?xul-overlay href="chrome://messenger/content/msgFolderPickerOverlay.xul"?>
+<!-- ?xul-overlay href="chrome://messenger/content/msgFolderPickerOverlay.xul"? -->
 <!DOCTYPE loc SYSTEM "chrome://synckolab/locale/synckolab.dtd">
 
-<dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" onload="com.synckolab.settings.init();" buttons="accept,cancel" ondialogaccept="com.synckolab.settings.savePrefs();" persist="screenX screenY" width="00" title="SyncKolab 1.5.1">
+<dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" onload="com.synckolab.settings.init();" buttons="accept,cancel" ondialogaccept="com.synckolab.settings.savePrefs();" persist="screenX screenY" width="00" title="SyncKolab 1.5.2">
 
 	<script type="application/x-javascript" src="chrome://synckolab/content/settings.js" />
 	<script type="application/x-javascript" src="chrome://synckolab/content/calendarTools.js" />
