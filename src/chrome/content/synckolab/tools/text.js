@@ -486,17 +486,26 @@ com.synckolab.tools.text.utf8 = {
 		while(i<utftext.length)
 		{
 			c = utftext.charCodeAt(i);
-			if (c<128) {
+			if (c<191) {
 				plaintext += String.fromCharCode(c);
 				i++;}
-			else if((c>191) && (c<224)) {
+			else if(c<224) {
 				c2 = utftext.charCodeAt(i+1);
 				plaintext += String.fromCharCode(((c&31)<<6) | (c2&63));
 				i+=2;}
-			else {
-				c2 = utftext.charCodeAt(i+1); c3 = utftext.charCodeAt(i+2);
+			else if(c<240) {
+				c2 = utftext.charCodeAt(i+1); 
+				c3 = utftext.charCodeAt(i+2);
 				plaintext += String.fromCharCode(((c&15)<<12) | ((c2&63)<<6) | (c3&63));
-				i+=3;}
+				i+=3;
+			} if (c<248) {
+				c2 = utftext.charCodeAt(i+1); 
+				c3 = utftext.charCodeAt(i+2);
+				c4 = utftext.charCodeAt(i+3);
+				var codePoint = ((c & 7) << 18) | ((c2 & 63) << 12) | ((c3 & 63) << 6) | (c4 & 63);
+				plaintext += String.fromCharCode(55296 | (codePoint >>> 10), 56320 | (codePoint & 1023));
+				i+=4;
+			}
 		}
 		return plaintext;
 	},
@@ -512,18 +521,55 @@ com.synckolab.tools.text.utf8 = {
 		{
 			// get the unicode
 			var c=rohtext.charCodeAt(n);
+			
+			if (c >= 55296 && c < 57344)
+			{
+				// high or low surrogate
+				var illegal = true;
+				if (c < 56320)
+				{
+					// high surrogate
+					if (i + 1 < str.length)
+					{
+						var c2 = str.charCodeAt(i + 1);
+						if (c2 >= 55296 && c2 < 57344)
+						{
+							// high or low surrogate
+							++i;
+							if (c2 >= 56320)
+							{
+								// low surrogate
+								c = ((c & 1023) << 10) | (c2 & 1023);
+								illegal = false;
+							}
+						}
+					}
+				}
+				if (illegal)
+				{
+					c = 65533; // 0xFFFD "illegal character"
+				}
+			}
+			
 			// all chars from 0-127 => 1byte
 			if (c<128)
 				utftext += String.fromCharCode(c);
 			// all chars from 127 bis 2047 => 2byte
-			else if((c>127) && (c<2048)) {
+			else if(c<2048) {
 				utftext += String.fromCharCode((c>>6)|192);
 				utftext += String.fromCharCode((c&63)|128);}
 			// all chars from 2048 bis 66536 => 3byte
-			else {
+			else  if (c < 65536) {
 				utftext += String.fromCharCode((c>>12)|224);
 				utftext += String.fromCharCode(((c>>6)&63)|128);
 				utftext += String.fromCharCode((c&63)|128);}
+			else 
+				{
+					utftext += String.fromCharCode((c >> 18) | 240);
+					utftext += String.fromCharCode(((c >> 12) & 63) | 128);
+					utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+					utftext += String.fromCharCode((c & 63) | 128);
+				}
 		}
 		return utftext;
 	}
