@@ -1537,12 +1537,14 @@ com.synckolab.addressbookTools.parseMessage = function(message, extraFields, car
 	// decode utf8
 	message = com.synckolab.tools.text.utf8.decode(message);
 	
-	// check for encoded:
+	// check for errors in the decoded message
 	if (message.indexOf("TYPE=3D") != -1)
 		message = com.synckolab.tools.text.quoted.decode(message);
 	else
+		// that still looks double decoded
 		if (message.indexOf("=C3=") != -1)
-			message = com.synckolab.tools.text.utf8.decode(com.synckolab.tools.text.quoted.decode(message));
+				message = com.synckolab.tools.text.utf8.decode(com.synckolab.tools.text.quoted.decode(message));
+	
 	// make an array of all lines for easier parsing
 	var lines = message.split("\n");
 
@@ -2085,6 +2087,9 @@ com.synckolab.addressbookTools.card2Human = function(card) {
 	return msg;
 };
 
+/**
+ * this returns a quoted encoded vcard
+ */
 com.synckolab.addressbookTools.card2Vcard = function(card, fields) {
 	// save the date in microseconds
 	// Date: Fri, 17 Dec 2004 15:06:42 +0100

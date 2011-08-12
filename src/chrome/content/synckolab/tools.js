@@ -466,7 +466,7 @@ generateMail: function (cid, mail, adsubject, mime, part, content, hr, image){
 	}
 	else
 		// add the content
-		msg += com.synckolab.tools.text.quoted.encode(content) + '\n';
+		msg += content + '\n';
 	
 	// if we have an image try to read it and create a new part (ONLY for xml)
 	if (part && image) {
