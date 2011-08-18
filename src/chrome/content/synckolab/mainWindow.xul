@@ -54,9 +54,12 @@
 		window.addEventListener("load", com.synckolab.main.syncKolabTimer, false);
 		// detect and disable event listener for seamonkey
 		try {
-		if((Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo)).name != "SeaMonkey")
-			window.document.getElementById('folderTree').addEventListener("click", com.synckolab.main.groupwareActions, true);
-		
+			if((Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo)).name != "SeaMonkey")
+			{
+				setTimeout(function()	{
+				   window.document.getElementById('folderTree').addEventListener("click",	com.synckolab.main.groupwareActions, true);
+				}, 1500);
+			}
 		} catch (ex) { /* ignore */ }  
 	</script>
     
