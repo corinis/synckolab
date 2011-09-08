@@ -498,7 +498,7 @@ com.synckolab.tools.text.utf8 = {
 				c3 = utftext.charCodeAt(i+2);
 				plaintext += String.fromCharCode(((c&15)<<12) | ((c2&63)<<6) | (c3&63));
 				i+=3;
-			} if (c<248) {
+			} else if (c<248) {
 				c2 = utftext.charCodeAt(i+1); 
 				c3 = utftext.charCodeAt(i+2);
 				c4 = utftext.charCodeAt(i+3);
