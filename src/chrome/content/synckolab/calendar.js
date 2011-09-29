@@ -121,7 +121,13 @@ com.synckolab.Calendar = {
 			if (this.syncTasks == true)
 			{
 				// task config
-				this.gSync = pref.getBoolPref("SyncKolab."+config+".syncTasks");
+				try {
+					this.gSync = pref.getBoolPref("SyncKolab."+config+".syncTasks");
+				} catch (ex) {
+					// better not to sync
+					this.gSync = false;
+				}
+				
 				if (this.gSync == false)
 					return;
 				this.folderPath = pref.getCharPref("SyncKolab."+config+".TaskFolderPath");
@@ -141,7 +147,12 @@ com.synckolab.Calendar = {
 			else
 			{
 				// calendar config
-				this.gSync = pref.getBoolPref("SyncKolab."+config+".syncCalendar");
+				try {
+					this.gSync = pref.getBoolPref("SyncKolab."+config+".syncCalendar");
+				} catch (ex) {
+					// beter not to sync
+					this.gSync = false;
+				}
 				com.synckolab.tools.logMessage("Calendar sync? " + this.gSync, com.synckolab.global.LOG_DEBUG);
 
 				if (this.gSync == false)
