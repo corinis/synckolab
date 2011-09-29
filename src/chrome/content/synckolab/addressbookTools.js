@@ -198,9 +198,27 @@ com.synckolab.addressbookTools = {
 		}
 };
 
+/**
+ * get the address books form the address-book provider
+ * @return a collection of address books
+ */
+com.synckolab.addressbookTools.getABDirectory = function() {
+	// tbird >= 7
+	try {
+		var abm = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager),
+		return abm.directories;
+	} catch (ex) {
+		// tbird < 7
+		var directory = com.synckolab.global.rdf.GetResource("moz-abdirectory://").QueryInterface(Components.interfaces.nsIAbDirectory);
+		return directory.childNodes;
+	}
+}
 
-
-
+/**
+ * @param card the card to change
+ * @prop the name of the property (String)
+ * @value the value to set the property to, null will be changed to an empty string ("")
+ */
 com.synckolab.addressbookTools.setCardProperty = function(card, prop, value) {
 	// make sure not write "null" anywhere
 	if (value == null || value == "null")

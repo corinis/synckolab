@@ -115,9 +115,7 @@ com.synckolab.AddressBook = {
 		
 		// get the rdf for the Addresbook list
 		// for configuration
-		var directory = com.synckolab.global.rdf.GetResource("moz-abdirectory://").QueryInterface(Components.interfaces.nsIAbDirectory);
-		
-		var cn = directory.childNodes;
+		var cn = com.synckolab.addressbookTools.getABDirectory();
 		var ABook = cn.getNext();
 		
 		this.gAddressBook = null;

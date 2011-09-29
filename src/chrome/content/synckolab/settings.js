@@ -86,7 +86,6 @@ com.synckolab.settings = {
 			var sCurFolder = "";
 			var rdf = Components.classes["@mozilla.org/rdf/rdf-service;1"].getService(Components.interfaces.nsIRDFService);
 
-			var directory = rdf.GetResource("moz-abdirectory://").QueryInterface(Components.interfaces.nsIAbDirectory);
 			var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 
 			// set the debug level
@@ -465,9 +464,8 @@ com.synckolab.settings = {
 			// the adress book list
 			// fill the contact selection
 			var rdf = Components.classes["@mozilla.org/rdf/rdf-service;1"].getService(Components.interfaces.nsIRDFService);
-			var directory = rdf.GetResource("moz-abdirectory://").QueryInterface(Components.interfaces.nsIAbDirectory);
+			var cn = com.synckolab.addressbookTools.getABDirectory();
 		
-			var cn = directory.childNodes;
 			var ABook = cn.getNext();
 			var abList = document.getElementById("conURL");
 			var abpopup = document.createElement("menupopup");
