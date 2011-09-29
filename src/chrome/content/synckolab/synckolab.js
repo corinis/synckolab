@@ -692,7 +692,13 @@ function nextSync()
 			else
 			{
 				com.synckolab.main.curCalConfig++;
-				com.synckolab.Calendar.folder = com.synckolab.tools.getMsgFolder(com.synckolab.Calendar.serverKey, com.synckolab.Calendar.folderPath);		
+				com.synckolab.Calendar.folder = com.synckolab.tools.getMsgFolder(com.synckolab.Calendar.serverKey, com.synckolab.Calendar.folderPath);
+				// skip if we do not have a folder
+				if(com.synckolab.Calendar.folder == null) {
+					com.synckolab.tools.logMessage("Skipping calendar config because of empty foler: " + com.synckolab.main.syncConfigs[com.synckolab.main.curCalConfig], com.synckolab.global.LOG_DEBUG);
+					timer.initWithCallback({notify:function(){nextSync(com.synckolab.Calendar);}}, com.synckolab.config.SWITCH_TIME, 0);
+					return;
+				}
 				com.synckolab.Calendar.folderMsgURI = com.synckolab.Calendar.folder.baseMessageURI;
 				com.synckolab.Calendar.email = com.synckolab.tools.getAccountEMail(com.synckolab.Calendar.serverKey);
 				com.synckolab.Calendar.name = com.synckolab.tools.getAccountName(com.synckolab.Calendar.serverKey);
@@ -767,7 +773,15 @@ function nextSync()
 			}
 			else
 			{		
-				com.synckolab.Calendar.folder = com.synckolab.tools.getMsgFolder(com.synckolab.Calendar.serverKey, com.synckolab.Calendar.folderPath);		
+				com.synckolab.Calendar.folder = com.synckolab.tools.getMsgFolder(com.synckolab.Calendar.serverKey, com.synckolab.Calendar.folderPath);
+				
+				// skip if we do not have a folder
+				if(com.synckolab.Calendar.folder == null) {
+					com.synckolab.tools.logMessage("Skipping calendar config because of empty foler: " + com.synckolab.main.syncConfigs[com.synckolab.main.curCalConfig], com.synckolab.global.LOG_DEBUG);
+					timer.initWithCallback({notify:function(){nextSync(com.synckolab.Calendar);}}, com.synckolab.config.SWITCH_TIME, 0);
+					return;
+				}
+
 				com.synckolab.Calendar.folderMsgURI = com.synckolab.Calendar.folder.baseMessageURI;
 				com.synckolab.Calendar.email = com.synckolab.tools.getAccountEMail(com.synckolab.Calendar.serverKey);
 				com.synckolab.Calendar.name = com.synckolab.tools.getAccountName(com.synckolab.Calendar.serverKey);
