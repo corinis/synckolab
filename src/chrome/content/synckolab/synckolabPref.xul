@@ -9,6 +9,7 @@
 
 	<script type="application/x-javascript" src="chrome://synckolab/content/settings.js" />
 	<script type="application/x-javascript" src="chrome://synckolab/content/calendarTools.js" />
+	<script type="application/x-javascript" src="chrome://synckolab/content/addressbookTools.js"/>
 	<script type="application/x-javascript" src="chrome://synckolab/content/config.js" />
 	<script type="application/x-javascript" src="chrome://synckolab/content/tools.js" />
 	<script type="application/x-javascript" src="chrome://synckolab/content/tools/text.js" />
