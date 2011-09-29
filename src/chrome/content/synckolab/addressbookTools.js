@@ -205,8 +205,8 @@ com.synckolab.addressbookTools = {
 com.synckolab.addressbookTools.getABDirectory = function() {
 	// tbird >= 7
 	try {
-		var abm = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager),
-		return abm.directories;
+		var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+		return abManager.directories;
 	} catch (ex) {
 		// tbird < 7
 		var directory = com.synckolab.global.rdf.GetResource("moz-abdirectory://").QueryInterface(Components.interfaces.nsIAbDirectory);
