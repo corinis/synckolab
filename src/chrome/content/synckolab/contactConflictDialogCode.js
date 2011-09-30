@@ -86,7 +86,10 @@ com.synckolab.contactConflict = {
 	keepLocal: function ()
 	{
 		for ( i=0 ; i < this.conflictsArray.length ; i++ ) {
-			document.getElementById(this.conflictsArray[i]).selectedIndex = 1;
+			var e = document.getElementById(this.conflictsArray[i]);
+			if (!e)
+				continue;
+			e.selectedIndex = 1;
 		}
 		return false;
 	},
@@ -113,6 +116,8 @@ com.synckolab.contactConflict = {
 			localValue = com.synckolab.addressbookTools.getCardProperty(this.localCard, this.conflictsArray[i]);
 			
 			var e = document.getElementById(this.conflictsArray[i]); //Field Element
+			if(!e)
+				continue;
 			var innerBox = e.parentNode;
 			//var outerBox = e.parentNode.parentNode; If it wasnt a grid then it would be this simple
 			var outerBox = e.parentNode.parentNode.parentNode.parentNode;
