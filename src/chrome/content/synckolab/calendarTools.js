@@ -1326,7 +1326,7 @@ com.synckolab.calendarTools.event2Human = function(event, syncTasks)
 		{
 			txt += "Start date: " + com.synckolab.tools.text.calDateTime2String(event.startDate, isAllDay) + "\n";
 			var endDate = event.endDate;
-			if (event.endDate)		
+			if (event.endDate && !isAllDay)		
 				txt += "End date: " + com.synckolab.tools.text.calDateTime2String(endDate, isAllDay) + "\n\n";
 		}
 	}

@@ -271,14 +271,21 @@ com.synckolab.tools.text = {
 		},
 
 		// produces: 2005-03-30
-		date2String: function (datetime)
+		date2String: function (datetime, normal)
 		{
 			if (!datetime)
 				return '';
-			return datetime.getUTCFullYear() + "-" +
-			(datetime.getUTCMonth()+1 < 10 ? "0" : "") + (datetime.getUTCMonth()+1) + "-" +
-			(datetime.getUTCDate() < 10 ? "0" : "") + datetime.getUTCDate();
+			
+			if(normal)
+				return datetime.getFullYear() + "-" +
+					(datetime.getMonth()+1 < 10 ? "0" : "") + (datetime.getMonth()+1) + "-" +
+					(datetime.getDate() < 10 ? "0" : "") + datetime.getDate();
+			else
+				return datetime.getUTCFullYear() + "-" +
+					(datetime.getUTCMonth()+1 < 10 ? "0" : "") + (datetime.getUTCMonth()+1) + "-" +
+					(datetime.getUTCDate() < 10 ? "0" : "") + datetime.getUTCDate();
 		},
+
 		// produces 15:28:52
 		time2String: function (datetime)
 		{
@@ -295,10 +302,12 @@ com.synckolab.tools.text = {
 				return "";
 
 			var datetime = (val instanceof Date) ? val : val.jsDate;
-			var resultstring = this.date2String(datetime);
+			//alert("EVENT TIME: " + datetime);
+			
+			// make sure not to use UTC for all-day events
+			var resultstring = this.date2String(datetime, allday);
 			if (!allday)
 			{
-				resultstring = this.date2String(datetime);
 				resultstring += 'T';
 				resultstring += this.time2String(datetime);
 				resultstring += 'Z';
