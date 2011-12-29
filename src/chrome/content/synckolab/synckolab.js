@@ -762,7 +762,7 @@ function nextSync()
 			// sync tasks
 			com.synckolab.Calendar.syncTasks = true;
 			com.synckolab.Calendar.init(com.synckolab.main.syncConfigs[com.synckolab.main.curTaskConfig]);
-			curTaskConfig++;
+			 com.synckolab.main.curTaskConfig++;
 			
 			// maybe we do not want to sync calendar in this config
 			if (!com.synckolab.Calendar.gSync)
