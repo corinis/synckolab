@@ -21,6 +21,7 @@
 
 <script type="application/x-javascript" src="chrome://synckolab/content/contactConflictDialogCode.js"/>
 <script type="application/x-javascript" src="chrome://synckolab/content/addressbookTools.js"/>
+<script type="application/x-javascript" src="chrome://synckolab/content/tools.js"/>
 
 <vbox>
 	<label value="&synckolab.contactConflict.dialogMessage;"/>

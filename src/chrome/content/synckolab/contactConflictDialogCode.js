@@ -79,7 +79,10 @@ com.synckolab.contactConflict = {
 	keepServer: function ()
 	{
 		for ( i=0 ; i < this.conflictsArray.length ; i++ ) {
-			document.getElementById(this.conflictsArray[i]).selectedIndex = 0;
+			if(document.getElementById(this.conflictsArray[i]))
+				document.getElementById(this.conflictsArray[i]).selectedIndex = 0;
+			else
+				com.synckolab.tools.logMessage("unable to find element for conflict " + this.conflictsArray[i], com.synckolab.global.LOG_ERROR + com.synckolab.global.LOG_AB);
 		}
 		return false;
 	},

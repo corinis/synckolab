@@ -69,13 +69,13 @@ function closeSync() {
   <spacer style="height: 10px"/>
 		<hbox>
 			<label value="&synckolab.progress.CurrentProgress;"/>
-		  <progressmeter mode="determined" id="progress" value="0%" flex="1" style="margin: 4px; border: 1px solid; width: 200px"/>
+			<progressmeter mode="determined" id="progress" value="0%" flex="1" style="margin: 4px; border: 1px solid; width: 200px"/>
 		</hbox>
 		<hbox>
-		  <progressmeter mode="determined" id="totalProgress" value="0%" flex="1" style="margin: 4px; border: 1px solid;"/>
-		  <spacer flex="1"/>
-		  <button id="pause-button" default="false" oncommand="pauseSync()" label="&synckolab.progress.Pause;"/>
-		  <button id="cancel-button" default="true" oncommand="closeSync()" label="&synckolab.progress.Cancel;"/>
+			<progressmeter mode="determined" id="totalProgress" value="0%" flex="1" style="margin: 4px; border: 1px solid;"/>
+			<spacer flex="1"/>
+			<button id="pause-button" default="false" oncommand="pauseSync()" label="&synckolab.progress.Pause;"/>
+			<button id="cancel-button" default="true" oncommand="closeSync()" label="&synckolab.progress.Cancel;"/>
 		</hbox>
 	</vbox>
 </window>

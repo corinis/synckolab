@@ -295,7 +295,7 @@ com.synckolab.Calendar = {
 		if (this.itemList != null)
 		{
 			this.itemList.appendChild(this.curItemInList);
-			com.synckolab.tools.scrollToBottom();
+			com.synckolab.tools.scrollToBottom(this.itemList);
 		}
 		
 		// this is an array of arrays that hold fieldname+fielddata of until-now-unknown fields
@@ -708,7 +708,7 @@ com.synckolab.Calendar = {
 					if (this.itemList != null)
 					{
 						this.itemList.appendChild(this.curItemInList);
-						com.synckolab.tools.scrollToBottom();
+						com.synckolab.tools.scrollToBottom(this.itemList);
 					}
 					
 				}
@@ -730,7 +730,7 @@ com.synckolab.Calendar = {
 					if (this.itemList != null)
 					{
 						this.itemList.appendChild(this.curItemInList);
-						com.synckolab.tools.scrollToBottom();
+						com.synckolab.tools.scrollToBottom(this.itemList);
 					}
 				}
 			}

@@ -312,7 +312,7 @@ com.synckolab.AddressBook = {
 		if (this.itemList != null)
 		{
 			this.itemList.appendChild(this.curItemInList);
-			com.synckolab.tools.scrollToBottom();
+			com.synckolab.tools.scrollToBottom(this.itemList);
 		}
 				
 		// this is an array of arrays that hold fieldname+fielddata of until-now-unknown fields
@@ -871,7 +871,7 @@ com.synckolab.AddressBook = {
 			if (this.itemList != null)
 			{
 				this.itemList.appendChild(this.curItemInList);
-				com.synckolab.tools.scrollToBottom();
+				com.synckolab.tools.scrollToBottom(this.itemList);
 			}
 			
 			// and write the message
@@ -942,7 +942,7 @@ com.synckolab.AddressBook = {
 					if (this.itemList != null)
 					{
 						this.itemList.appendChild(this.curItemInList);
-						com.synckolab.tools.scrollToBottom();
+						com.synckolab.tools.scrollToBottom(this.itemList);
 					}
 					
 					// also remove the local db file since we deleted the contact on the server
@@ -972,7 +972,7 @@ com.synckolab.AddressBook = {
 					if (this.itemList != null)
 					{
 						this.itemList.appendChild(this.curItemInList);
-						com.synckolab.tools.scrollToBottom();
+						com.synckolab.tools.scrollToBottom(this.itemList);
 					}
 					
 					// and write the message

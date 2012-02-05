@@ -85,7 +85,7 @@ logMessage: function (msg, level) {
 		if (clvl == com.synckolab.global.LOG_ERROR && Components.utils.reportError)
 			Components.utils.reportError("" + msg);
 		else
-			com.synckolab.global.consoleService.logStringMessage(msg);		
+			com.synckolab.global.consoleService.logStringMessage(msg);
 	}
 
 	// pause the sync on error if defined by globals
@@ -96,16 +96,21 @@ logMessage: function (msg, level) {
 		com.synckolab.global.wnd.pauseSync();
 },
 
-scrollToBottom : function ()
+scrollToBottom : function (itemList)
 {
-	if (com.synckolab.global.wnd != null && com.synckolab.global.document != null)
+	if (!itemList && com.synckolab.global.wnd != null && com.synckolab.global.document != null)
+		itemList = com.synckolab.global.wnd.document.getElementById('itemList')
+	com.synckolab.tools.logMessage("checking itemlist: " + itemList)
+	if (itemList)
 	{
 		// select and deselect the newly appended item (makes it scroll to the bottom)
-		var lastItemPos = com.synckolab.global.wnd.document.getElementById('itemList').getRowCount() - 1;
+		var lastItemPos = itemList.itemCount ? itemList.itemCount - 1 :itemList.getRowCount() - 1;
+		com.synckolab.tools.logMessage("got itemlist : " + lastItemPos, com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
 		if (lastItemPos > 0)
 		{
-			com.synckolab.global.wnd.document.getElementById('itemList').scrollToIndex(lastItemPos);
-			com.synckolab.global.wnd.document.getElementById('itemList').ensureIndexIsVisible(lastItemPos);
+			itemList.selectedIndex = lastItemPos;
+			itemList.scrollToIndex(lastItemPos);
+			itemList.ensureIndexIsVisible(lastItemPos);
 		}
 	}
 },
