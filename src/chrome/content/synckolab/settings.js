@@ -54,6 +54,8 @@ com.synckolab.settings = {
 
 		init: function() {
 			// init field type array
+			this.CONFIG_FIELD_TYPES["Configs"] = this.FIELD_TYPE_CHAR;
+			this.CONFIG_FIELD_TYPES["syncOnStart"] = this.FIELD_TYPE_BOOL;
 			this.CONFIG_FIELD_TYPES["AddressBook"] = this.FIELD_TYPE_CHAR;
 			this.CONFIG_FIELD_TYPES["AddressBookFormat"] = this.FIELD_TYPE_CHAR;
 			this.CONFIG_FIELD_TYPES["calSyncTimeframe"] = this.FIELD_TYPE_INT;
@@ -1720,9 +1722,9 @@ com.synckolab.settings = {
 		
 				var s = "# SyncKolab V"+com.synckolab.config.version+" Configuration File\n";
 				stream.write(s, s.length);
-				writeLine(stream, "SyncKolab.Configs", configName+";");
+				this.writeLine(stream, "SyncKolab.Configs", configName+";");
 				
-				writeConfig(configName, stream);
+				this.writeConfig(configName, stream);
 				
 				s = "\n\n";
 				stream.write(s, s.length);
@@ -1796,11 +1798,25 @@ com.synckolab.settings = {
 						var value = cPref[1];
 						for (var j=2; j < cPref.length; j++)
 							value += "=" + cPref[j];
-							
-						if (value == "true" || value == "false")
-							pref.setBoolPref(value, 'true');
-						else
-							pref.setCharPref(name, value);				
+
+						var match = name.match("([^.]+)$", "gi");
+						var keyType = this.CONFIG_FIELD_TYPES[match[0]];
+
+						switch (keyType)
+						{
+						case this.FIELD_TYPE_BOOL:
+							pref.setBoolPref(name, (value == 'true' ? true : false) );
+							break;
+						case this.FIELD_TYPE_CHAR:
+							pref.setCharPref(name, value);
+							break;
+						case this.FIELD_TYPE_INT:
+							pref.setIntPref(name, parseInt(value));
+							break;
+						default:
+							com.synckolab.tools.logMessage("ERROR: Unknown field/type '" + name + "/" + keyType + "'", com.synckolab.global.LOG_ERROR);
+						break;
+						}
 					}
 				}
 				else
@@ -1867,7 +1883,7 @@ com.synckolab.settings = {
 							value += "=" + cPref[j];
 							
 						try {
-							loadConfigItem(pref, name, value);
+							this.loadConfigItem(pref, name, value);
 						}
 						catch (ex) {
 							com.synckolab.tools.logMessage("WARNING: Unable to set pref-value of '" + name + "':" + ex, com.synckolab.global.LOG_WARNING);
@@ -1879,7 +1895,7 @@ com.synckolab.settings = {
 			
 			// reopen config dialog
 			window.open('chrome://synckolab/content/synckolabPref.xul', '', 'chrome,resizable=1');
-			this.close();	
+			window.close();	
 		},
 		
 		/**
@@ -1965,9 +1981,9 @@ com.synckolab.settings = {
 				for (var i=0; i < configs.length; i++)
 				{
 					s += configs[i] + ';';
-					writeConfig(configs[i], stream);
+					this.writeConfig(configs[i], stream);
 				}
-				writeLine(stream, "SyncKolab.Configs", s);
+				this.writeLine(stream, "SyncKolab.Configs", s);
 				
 				// global prefs items:
 				var fieldsArray = new Array(
@@ -1977,7 +1993,7 @@ com.synckolab.settings = {
 				for(var i=0 ; i < fieldsArray.length ; i++ ) {
 					try
 					{
-						writeConfigItem(stream, pref, "SyncKolab", fieldsArray[i]);
+						this.writeConfigItem(stream, pref, "SyncKolab", fieldsArray[i]);
 					}
 					catch (exw) {
 						com.synckolab.tools.logMessage("WARNING: Writing 'SyncKolab." + fieldsArray[i] + "' failed: " + exw, com.synckolab.global.LOG_WARNING);
@@ -2006,13 +2022,13 @@ com.synckolab.settings = {
 			var keyType = this.CONFIG_FIELD_TYPES[keyName];
 			switch (keyType)
 			{
-				case FIELD_TYPE_BOOL:
+				case this.FIELD_TYPE_BOOL:
 					config.setBoolPref(keyName, paramValue);
 					break;
-				case FIELD_TYPE_CHAR:
+				case this.FIELD_TYPE_CHAR:
 					config.setCharPref(keyName, paramValue);
 					break;
-				case FIELD_TYPE_INT:
+				case this.FIELD_TYPE_INT:
 					config.setIntPref(keyName, paramValue);
 					break;
 				default:
@@ -2027,20 +2043,20 @@ com.synckolab.settings = {
 			var keyType = this.CONFIG_FIELD_TYPES[keyName];
 			switch (keyType)
 			{
-				case FIELD_TYPE_BOOL:
+				case this.FIELD_TYPE_BOOL:
 					keyValue = config.getBoolPref(keyPrefix+"."+keyName)?'true':'false';
 					break;
-				case FIELD_TYPE_CHAR:
+				case this.FIELD_TYPE_CHAR:
 					keyValue = config.getCharPref(keyPrefix+"."+keyName);
 					break;
-				case FIELD_TYPE_INT:
+				case this.FIELD_TYPE_INT:
 					keyValue = config.getIntPref(keyPrefix+"."+keyName);
 					break;
 				default:
 					com.synckolab.tools.logMessage("ERROR: Unknown field/type '"+keyName+"/"+keyType+"'", com.synckolab.global.LOG_ERROR);
 					break;
 			}
-			writeLine(file, keyPrefix+"."+keyName, keyValue);
+			this.writeLine(file, keyPrefix+"."+keyName, keyValue);
 		},
 		
 		writeLine: function (file, key, value)
@@ -2055,6 +2071,9 @@ com.synckolab.settings = {
 		 */
 		writeConfig: function (config, file)
 		{
+			if(!config || config == '')
+				return;
+			
 			var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 				
 			var act = null;
@@ -2083,7 +2102,7 @@ com.synckolab.settings = {
 				}
 			}
 			
-			writeLine(file, "SyncKolab."+config+".IncomingServer", act);
+			this.writeLine(file, "SyncKolab."+config+".IncomingServer", act);
 			
 			
 			// prefs items (type will be looked up later):
@@ -2107,13 +2126,14 @@ com.synckolab.settings = {
 				"syncCalendar",
 				"saveToTaskImap",
 				"syncTasks",
-				"hiddenWindow"
+				"hiddenWindow",
+				"syncOnStart"
 				);
 		
 			for(var i=0 ; i < fieldsArray.length ; i++ ) {
 				try
 				{
-					writeConfigItem(file, pref, "SyncKolab."+config, fieldsArray[i]);
+					this.writeConfigItem(file, pref, "SyncKolab."+config, fieldsArray[i]);
 				}
 				catch (exw) {
 					com.synckolab.tools.logMessage("WARNING: Writing of configuration item 'SyncKolab."+config+"."+fieldsArray[i]+" failed" , com.synckolab.global.LOG_WARNING);
