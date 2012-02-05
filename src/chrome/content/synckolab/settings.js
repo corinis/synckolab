@@ -300,7 +300,7 @@ com.synckolab.settings = {
 			tItem.appendChild(tRow);
 			var tCell = document.createElement("treecell");
 			tRow.appendChild(tCell);
-			tItem.setAttribute("id", configuration + "-AcctID");
+			tItem.setAttribute("id", configuration + "-AcctId");
 			tCell.setAttribute("label", configuration);
 			tCell.setAttribute("value", configuration + "-Acct");
 
@@ -347,7 +347,7 @@ com.synckolab.settings = {
 		{
 			if (viewName.indexOf("-") == -1)
 			{
-				alert("Fatal ERROR");
+				alert("Fatal ERROR - unable to get view");
 				return;
 			}
 			var opts = viewName.split("-");
@@ -637,18 +637,18 @@ com.synckolab.settings = {
 					com.synckolab.tools.logMessage("WARNING: failed to set state of target-account: " + ex, com.synckolab.global.LOG_WARNING);
 				}
 				// default is 0
-				document.getElementById ("syncInterval").setAttribute("value", 0);
+				document.getElementById("syncInterval").value = "0";
 				try
 				{
 					// update sync settings
-					document.getElementById ("syncInterval").setAttribute("value", pref.getIntPref("SyncKolab."+config+".autoSync"));
+					document.getElementById("syncInterval").value = pref.getIntPref("SyncKolab."+config+".autoSync") + "";
 				}
 				catch (ex)
 				{
 					com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab."+config+".autoSync' failed: " + ex, com.synckolab.global.LOG_WARNING);
 				}
 				
-				// check for autosync
+				// check for sync on start
 				document.getElementById ("syncOnStart").checked = false;
 				try
 				{
@@ -656,7 +656,7 @@ com.synckolab.settings = {
 				}
 				catch (ex)
 				{
-					com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab."+config+".startOnSync' failed: " + ex, com.synckolab.global.LOG_WARNING);
+					com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab."+config+".syncOnStart' failed: " + ex, com.synckolab.global.LOG_WARNING);
 				}
 
 				// default do hide the window
