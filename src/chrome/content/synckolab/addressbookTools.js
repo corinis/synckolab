@@ -1258,6 +1258,8 @@ com.synckolab.addressbookTools.equalsContact = function(a, b) {
 			com.synckolab.tools.logMessage ("not equals  '" + aCount + "' vs. '" + bCount + "'", this.global.LOG_DEBUG + this.global.LOG_AB);
 			return false;
 		}
+		// listst are equals
+		return true;
 	}
 
 	for(var i=0 ; i < fieldsArray.length ; i++ ) {
