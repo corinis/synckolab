@@ -105,13 +105,13 @@ com.synckolab.calendarTools = {
 	 */
 	getEndDate: function (cur, tasks)
 	{
-		if (tasks == true && cur.startDate !=null && cur.dueDate)
+		if (tasks == true && cur.dueDate){
 			return cur.dueDate.jsDate;
-
-		if (tasks == false && cur.startDate !=null && cur.untilDate)
+		}
+		if (tasks == false  && cur.untilDate)
 			return cur.untilDate.jsDate;
 
-		if (tasks == false && cur.startDate !=null && cur.endDate)
+		if (tasks == false && cur.endDate)
 			return cur.endDate.jsDate;
 			
 		return null;
@@ -147,7 +147,7 @@ com.synckolab.calendarTools = {
 				item.isCompleted = value;
 				break;
 			case "status":
-				item.status = this.getTaskStatus(value,false);
+				item.status = com.synckolab.calendarTools.getTaskStatus(value,false);
 				break;
 			case "title":
 				item.title = value;
@@ -948,7 +948,7 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
  */
 com.synckolab.calendarTools.event2xml = function (event, syncTasks, email)
 {
-	return this.cnv_event2xml( event, false, syncTasks, email);
+	return com.synckolab.calendarTools.cnv_event2xml( event, false, syncTasks, email);
 };
 
 
@@ -957,11 +957,11 @@ com.synckolab.calendarTools.event2xml = function (event, syncTasks, email)
  * task status mapping from Lightning to xml
  * Kolabs "deferred" will be Lightning "CANCELLED"
  */
-
 /* return the task status */
 com.synckolab.calendarTools.getTaskStatus = function(tstatus, xmlvalue) {
 	arrstatus = new Array();
 	arrstatus["IN-PROCESS"] = "in-progress";
+	arrstatus["in-progress"] = "in-progress";
 	arrstatus["NEEDS-ACTION"]="waiting-on-someone-else";
 	arrstatus["NONE"]="not-started";
 	arrstatus["CANCELLED"]="deferred";
@@ -990,7 +990,7 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
 	//	- yearly recurrence
 	
 	var isAllDay = (syncTasks==true)?false:(event.startDate?event.startDate.isDate:false);
-	var endDate = this.getEndDate(event, syncTasks);
+	var endDate = com.synckolab.calendarTools.getEndDate(event, syncTasks);
 
 	// correct the end date for all day events before writing the XML object
 	// Kolab uses for 1-day-event:
@@ -1017,10 +1017,10 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
 		
 		// tasks have a status
 		if (event.isCompleted || event.percentComplete == 100) {
-			xml += " <completed>100</completed>\n";	
+			xml += " <completed>100</completed>\n";
 			xml += " <status>completed</status>\n";
 		}
-		else	{
+		else {
 			xml += " <status>" + this.getTaskStatus(event.status, true) + "</status>\n";
 			xml += " <completed>" + event.percentComplete +"</completed>\n";
 		}
@@ -1122,7 +1122,7 @@ com.synckolab.calendarTools.cnv_event2xml = function(event, skipVolatiles, syncT
 	}
 
 	var recInfo = event.recurrenceInfo;
-	if (syncTasks != true && recInfo && recInfo.countRecurrenceItems() >= 1)
+	if (recInfo && recInfo.countRecurrenceItems() >= 1)
 	{
 		// read the first recurrence rule and process it
 		recRule = recInfo.getRecurrenceItemAt(0);
