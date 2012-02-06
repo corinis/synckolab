@@ -4,7 +4,7 @@ locale synckolab en-US jar:chrome/synckolab.jar!/locale/en-US/
 locale synckolab fr-FR jar:chrome/synckolab.jar!/locale/fr-FR/
 locale synckolab hu-HU jar:chrome/synckolab.jar!/locale/hu-HU/
 locale synckolab it jar:chrome/synckolab.jar!/locale/it/
-locale synckolab ja-JA jar:chrome/synckolab.jar!/locale/ja-JA/
+locale synckolab ja-JP jar:chrome/synckolab.jar!/locale/ja-JP/
 locale synckolab pl-PL jar:chrome/synckolab.jar!/locale/pl-PL/
 content synckolab jar:chrome/synckolab.jar!/content/synckolab/
 skin synckolab classic/1.0 jar:chrome/synckolab.jar!/skin/classic/synckolab/
