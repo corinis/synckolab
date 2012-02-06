@@ -86,7 +86,6 @@ com.synckolab.settings = {
 			this.isCalendar = com.synckolab.calendarTools.isCalendarAvailable();
 
 			var sCurFolder = "";
-			var rdf = Components.classes["@mozilla.org/rdf/rdf-service;1"].getService(Components.interfaces.nsIRDFService);
 
 			var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 
@@ -465,13 +464,8 @@ com.synckolab.settings = {
 			
 			// the adress book list
 			// fill the contact selection
-			var rdf = Components.classes["@mozilla.org/rdf/rdf-service;1"].getService(Components.interfaces.nsIRDFService);
 			var cn = com.synckolab.addressbookTools.getABDirectory();
-		
 			var ABook = cn.getNext();
-			var abList = document.getElementById("conURL");
-			var abpopup = document.createElement("menupopup");
-			abList.appendChild(abpopup);
 			
 			// we only have ONE address book - means a fresh install - notify the user
 			if(ABook == null) {
@@ -480,7 +474,68 @@ com.synckolab.settings = {
 				window.close();
 			}
 			
-			isFirst = true;
+			this.fillAddressBook(cn, ABook);
+			
+			// the calendar
+			// if we do not have a calendar, we can easily skip this
+			if (this.isCalendar)
+			{
+				var calendars = com.synckolab.calendarTools.getCalendars();
+		
+				var abList = document.getElementById("calURL");		
+				var abpopup = document.createElement("menupopup");
+				abList.appendChild(abpopup);
+				
+				var taskList = document.getElementById("taskURL");
+				var taskpopup = document.createElement("menupopup");
+				taskList.appendChild(taskpopup);
+				
+				// get the calendar manager to find the right files
+				for( var i = 0; i < calendars.length; i++ )
+				{
+					// only non-remote calendars - hey we are already doin remote sync here :)
+					var abchild = document.createElement("menuitem");
+					abpopup.appendChild(abchild);
+					abchild.setAttribute("label", calendars[i].name);
+					abchild.setAttribute("value", com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
+					if (i == 0)
+					{
+						abchild.setAttribute("selected", "true");
+						abList.setAttribute("label", calendars[i].name);
+						abList.setAttribute("value", com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
+					}
+		
+					abchild = document.createElement("menuitem");
+					taskpopup.appendChild(abchild);
+					abchild.setAttribute("label", calendars[i].name);
+					abchild.setAttribute("value", com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
+					if (i == 0)
+					{
+						abchild.setAttribute("selected", "true");
+						taskList.setAttribute("label", calendars[i].name);
+						taskList.setAttribute("value", com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
+					}
+				}
+			}	
+		},
+		
+		fillAddressBook: function(cn, ABook) {
+			var abList = document.getElementById("conURL");
+			// delete the childs of the list
+			var cnode = abList.firstChild;
+			while (cnode != null)
+			{
+				if (cnode.nodeName == "menupopup")
+				{
+					abList.removeChild(cnode);
+				}
+				cnode = cnode.nextSibling;
+			}
+
+			var abpopup = document.createElement("menupopup");
+			abList.appendChild(abpopup);
+
+			var isFirst = true;
 			while (ABook != null)
 			{
 				var cur = ABook.QueryInterface(Components.interfaces.nsIAbDirectory);
@@ -528,48 +583,6 @@ com.synckolab.settings = {
 					break;
 				}
 			}
-			
-			// the calendar
-			// if we do not have a calendar, we can easily skip this
-			if (this.isCalendar)
-			{
-				var calendars = com.synckolab.calendarTools.getCalendars();
-		
-				var abList = document.getElementById("calURL");		
-				var abpopup = document.createElement("menupopup");
-				abList.appendChild(abpopup);
-				
-				var taskList = document.getElementById("taskURL");
-				var taskpopup = document.createElement("menupopup");
-				taskList.appendChild(taskpopup);
-				
-				// get the calendar manager to find the right files
-				for( var i = 0; i < calendars.length; i++ )
-				{
-					// only non-remote calendars - hey we are already doin remote sync here :)
-					var abchild = document.createElement("menuitem");
-					abpopup.appendChild(abchild);
-					abchild.setAttribute("label", calendars[i].name);
-					abchild.setAttribute("value", com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
-					if (i == 0)
-					{
-						abchild.setAttribute("selected", "true");
-						abList.setAttribute("label", calendars[i].name);
-						abList.setAttribute("value", com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
-					}
-		
-					abchild = document.createElement("menuitem");
-					taskpopup.appendChild(abchild);
-					abchild.setAttribute("label", calendars[i].name);
-					abchild.setAttribute("value", com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
-					if (i == 0)
-					{
-						abchild.setAttribute("selected", "true");
-						taskList.setAttribute("label", calendars[i].name);
-						taskList.setAttribute("value", com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
-					}
-				}
-			}	
 		},
 		
 		changeConfig: function (config)
@@ -731,6 +744,7 @@ com.synckolab.settings = {
 					com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab."+config+".AddressBook' failed: " + ex, com.synckolab.global.LOG_WARNING);
 				}
 		
+				var findAddressBook = false;
 				actList = document.getElementById("conURL");
 				// go through the items
 				if (actList.firstChild != null)
@@ -743,6 +757,7 @@ com.synckolab.settings = {
 							actList.selectedItem = cur;
 							actList.setAttribute("label", cur.getAttribute("label"));
 							actList.setAttribute("value", cur.getAttribute("value"));
+							findAddressBook = true;
 							break;
 						}
 						cur = cur.nextSibling;
@@ -752,6 +767,21 @@ com.synckolab.settings = {
 						actList.setAttribute("disabled", pref.prefIsLocked("SyncKolab."+config+".AddressBook"));
 					} catch (ex) {
 						com.synckolab.tools.logMessage("WARNING: failed to read state of SyncKolab."+config+".AddressBook: " + ex, com.synckolab.global.LOG_WARNING);
+					}
+				}
+				
+				if(!findAddressBook) {
+					if(confirm("Do you want me to create " + ab + "?")) {
+						var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+						abManager.newAddressBook(ab, "", 2); // const kPABDirectory = 2; - defined in nsDirPrefs.h
+						// create it and rerun
+						var cn = com.synckolab.addressbookTools.getABDirectory();
+						var ABook = cn.getNext();
+						this.fillAddressBook(cn, ABook);
+						// reload the config
+						this.curConfig = null;
+						this.changeConfig(config);
+						return;
 					}
 				}
 		
@@ -1809,7 +1839,7 @@ com.synckolab.settings = {
 				for (var i=0; i < lePrefs.length; i++)
 				{
 					if (lePrefs[i].indexOf("SyncKolab.Configs") != -1)
-						fullPref = true;		
+						fullPref = true;
 				}
 				
 				if (fullPref)
