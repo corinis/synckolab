@@ -93,6 +93,7 @@ com.synckolab.main = {
 					continue;
 				com.synckolab.main.syncConfigs[i] = new Object;
 				com.synckolab.main.syncConfigs[i].gSyncTimer = 0;
+				com.synckolab.main.syncConfigs[i].configName = configs[i];
 				try
 				{
 					com.synckolab.main.syncConfigs[i].gAutoRun = pref.getIntPref("SyncKolab."+configs[i]+".autoSync");					
@@ -138,6 +139,12 @@ com.synckolab.main = {
 			// go through all configs
 			for (var i=0; i < com.synckolab.main.syncConfigs.length; i++)
 			{
+				if( typeof(com.synckolab.main.syncConfigs[i]) == 'string'){
+					var configName = com.synckolab.main.syncConfigs[i];
+					com.synckolab.main.syncConfigs[i] = new Object;
+					com.synckolab.main.syncConfigs[i].gSyncTimer = 0;
+					com.synckolab.main.syncConfigs[i].configName = configName;
+				}
 				// re-read the settings
 				try
 				{
