@@ -118,7 +118,7 @@ com.synckolab.main = {
 					{
 						com.synckolab.tools.logMessage("Run on Startup for "+configs[i], com.synckolab.global.LOG_DEBUG);
 						// hide the window 
-						this.doHideWindow = com.synckolab.main.syncConfigs[i].gAutoHideWindow;
+						com.synckolab.main.doHideWindow = com.synckolab.main.syncConfigs[i].gAutoHideWindow;
 						com.synckolab.main.forceConfig = com.synckolab.main.syncConfigs[i].configName;
 						com.synckolab.main.sync("timer");
 					}
@@ -179,7 +179,7 @@ com.synckolab.main = {
 					com.synckolab.tools.logMessage("running syncKolab configuration "+com.synckolab.main.syncConfigs[i].configName+" ("+com.synckolab.main.syncConfigs[i].gAutoRun+")", com.synckolab.global.LOG_INFO);
 					com.synckolab.main.syncConfigs[i].gSyncTimer = 0;
 					// hide the window 
-					this.doHideWindow = com.synckolab.main.syncConfigs[i].gAutoHideWindow;
+					com.synckolab.main.doHideWindow = com.synckolab.main.syncConfigs[i].gAutoHideWindow;
 					com.synckolab.main.forceConfig = com.synckolab.main.syncConfigs[i].configName;
 					com.synckolab.main.sync("timer");
 					
@@ -428,7 +428,7 @@ var timer = Components.classes["@mozilla.org/timer;1"].createInstance(Components
 		configName: null
 };
 */
-	com.synckolab.global.consoleService.logStringMessage("running synckolab V "+com.synckolab.config.version+" with debug level " + com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL);
+	com.synckolab.global.consoleService.logStringMessage("running synckolab V "+com.synckolab.config.version+" with debug level " + com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL + " in " + event + " mode (hideWindow: " + com.synckolab.main.doHideWindow +")");
 
   
 
