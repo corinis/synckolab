@@ -473,6 +473,13 @@ com.synckolab.settings = {
 			var abpopup = document.createElement("menupopup");
 			abList.appendChild(abpopup);
 			
+			// we only have ONE address book - means a fresh install - notify the user
+			if(ABook == null) {
+				alert(this.strBundle.getString("noAddressBook"));
+				// close the window
+				window.close();
+			}
+			
 			isFirst = true;
 			while (ABook != null)
 			{
@@ -1621,6 +1628,33 @@ com.synckolab.settings = {
 				
 				var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 				pref.setCharPref("SyncKolab.Configs", configs);
+				
+				// remove all entries for this config
+				try {
+					pref.clearUserPref("SyncKolab."+config+".IncomingServer");
+					pref.clearUserPref("SyncKolab."+config+".Resolve");
+					pref.clearUserPref("SyncKolab."+config+".autoSync");
+					pref.clearUserPref("SyncKolab."+config+".hiddenWindow");
+					pref.clearUserPref("SyncKolab."+config+".syncOnStart");
+					
+					pref.clearUserPref("SyncKolab."+config+".AddressBook");
+					pref.clearUserPref("SyncKolab."+config+".AddressBookFormat");
+					pref.clearUserPref("SyncKolab."+config+".saveToContactImap");
+					pref.clearUserPref("SyncKolab."+config+".syncContacts");
+				
+					pref.clearUserPref("SyncKolab."+config+".Calendar");
+					pref.clearUserPref("SyncKolab."+config+".CalendarFormat");
+					pref.clearUserPref("SyncKolab."+config+".saveToCalendarImap");
+					pref.clearUserPref("SyncKolab."+config+".syncCalendar");
+					pref.clearUserPref("SyncKolab."+config+".calSyncTimeframe");
+
+					pref.clearUserPref("SyncKolab."+config+".Tasks");
+					pref.clearUserPref("SyncKolab."+config+".TaskFormat");
+					pref.clearUserPref("SyncKolab."+config+".saveToTaskImap");
+					pref.clearUserPref("SyncKolab."+config+".syncTasks");
+					pref.clearUserPref("SyncKolab."+config+".taskSyncTimeframe");
+				} catch(ex) { }
+				
 				this.curConfig = null;
 		
 				if (delNode != null)
