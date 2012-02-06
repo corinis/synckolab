@@ -233,6 +233,9 @@ com.synckolab.Calendar = {
 		ready: false,
 		onOperationComplete: function(aCalendar, aStatus, aOperator, aId, aDetail) {
 			com.synckolab.tools.logMessage("operation "+(this.syncTasks == true?"tasks":"calendar")+": status="+aStatus + " Op=" + aOperator + " Detail=" + aDetail, com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_CAL);
+			if(aStatus == 2152333316) {
+				com.synckolab.tools.logMessage((this.syncTasks == true?"tasks":"calendar")+": duplicate id - for additem", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_CAL);
+			}
 			this.ready = true;
 			},
 		onGetResult: function(aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {
@@ -331,7 +334,7 @@ com.synckolab.Calendar = {
 		this.folderMessageUids.push(parsedEvent.id);
 		
 		// ok lets see if we have this one already 
-		var foundEvent = this.calTools.findEvent (this.gCalDB, parsedEvent.id);
+		var foundEvent = this.calTools.findEvent(this.gCalDB, parsedEvent.id);
 		this.tools.logMessage("findevent returned :" + foundEvent + "(" + (foundEvent == null?'null':foundEvent.id) + ") for " + parsedEvent.id + " caching " + this.gCalDB.length() + " events", this.global.LOG_CAL + this.global.LOG_DEBUG);
 				
 		// get the dbfile from the local disk

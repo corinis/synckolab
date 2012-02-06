@@ -519,33 +519,35 @@ function goWindow (wnd)
 	{
 		var sb = document.getElementById("status-bar");
 
-
-		meter = document.getElementById('progress');
-		if (meter == null)
-			meter = document.createElement("progressmeter");
-		meter.setAttribute("mode", "determined");
-		meter.setAttribute("value", "0");
-		meter.setAttribute("style", "width:100px");
-		meter.setAttribute("id", "progress");
-
 		if(wnd != null) {
 			wnd.gStopSync = false;
 			wnd.gPauseSync = false;
 		}
-		statusMsg = document.getElementById('current-action');		
-		if (statusMsg == null)
+		statusMsg = document.getElementById('current-action-sk');		
+		if (statusMsg == null) {
 			statusMsg = document.createElement("statusbarpanel");
-		statusMsg.setAttribute("id", "current-action");
+			statusMsg.setAttribute("id", "current-action-sk");
+			sb.appendChild(statusMsg);
+		}
 
-		curCounter = document.getElementById('current-counter');		
-		if (curCounter == null)
+		meter = document.getElementById('progress');
+		if (meter == null) {
+			meter = document.createElement("progressmeter");
+			sb.appendChild(meter);
+			meter.setAttribute("id", "progress-sk");
+		}
+		meter.setAttribute("mode", "determined");
+		meter.setAttribute("value", "0");
+		meter.setAttribute("style", "width:100px");
+
+
+		curCounter = document.getElementById('current-counter-sk');		
+		if (curCounter == null) {
 			curCounter = document.createElement("statusbarpanel");
-		curCounter.setAttribute("id", "current-counter");
+			curCounter.setAttribute("id", "current-counter-sk");
+			sb.appendChild(curCounter);
+		}
 		curCounter.setAttribute("label", "-/-");
-		
-		sb.appendChild(statusMsg);
-		sb.appendChild(meter);
-		sb.appendChild(curCounter);
 		
 		processMsg = null;
 		totalMeter = null;

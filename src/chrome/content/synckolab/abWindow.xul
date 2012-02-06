@@ -50,19 +50,6 @@
 	<script type="application/x-javascript" src="chrome://messenger/content/am-smtp.js"/>
 	<script type="application/x-javascript" src="chrome://messenger/content/AccountManager.js"/>
 
-	<script type="application/x-javascript">
-		window.addEventListener("load", com.synckolab.main.syncKolabTimer, false);
-		// detect and disable event listener for seamonkey
-		try {
-			if((Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo)).name != "SeaMonkey")
-			{
-				setTimeout(function()	{
-				   window.document.getElementById('folderTree').addEventListener("click",	com.synckolab.main.groupwareActions, true);
-				}, 1500);
-			}
-		} catch (ex) { /* ignore */ }  
-	</script>
-    
     <!-- calendar -->
 <script type="application/x-javascript">
   var gCalendarBundle = {
@@ -76,7 +63,9 @@
 		<menuitem id="SyncKolab-Sync" command="cmd_synckolab_sync" label="&synckolab.syncMenu.label;"/>
 		<menuitem id="SyncKolab-Options" command="cmd_synckolab_options" label="&synckolab.optionMenu.label;"/>
 	</menupopup>
-    <toolbarpalette id="MailToolbarPalette">
-        <toolbarbutton id="SyncKolab-button" command="cmd_synckolab_sync" class="toolbarbutton-1" label="&synckolab.sync.label;"/>
+
+    <toolbarpalette id="AddressBookToolbarPalette">
+        <toolbarbutton id="SyncKolab-button-ab" command="cmd_synckolab_sync" class="toolbarbutton-1" label="&synckolab.sync.label;"/>
     </toolbarpalette>
+    
 </overlay>

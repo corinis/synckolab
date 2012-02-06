@@ -1,38 +1,40 @@
 /* Sync Kolab */
 
-#SyncKolab-button {
+#SyncKolab-button, #SyncKolab-button-ab {
   list-style-image: url("chrome://synckolab/skin/selectsmtp.png");
   -moz-image-region: rect(0px 24px 24px 0px);
 }
 
-#SyncKolab-button:hover {
+#SyncKolab-button:hover, #SyncKolab-button-ab:hover {
   -moz-image-region: rect(24px 24px 48px 0px);
 } 
 
-#SyncKolab-button:hover:active,
+#SyncKolab-button:hover:active, #SyncKolab-button-ab:hover:active,
 #SyncKolab[open] {
   -moz-image-region: rect(24px 24px 48px 0px);
 } 
 
-#SyncKolab-button[disabled] {
+#SyncKolab-button[disabled], #SyncKolab-button-ab[disabled] {
   -moz-image-region: rect(48px 24px 72px 0px);
 } 
 
-toolbar[iconsize="small"] #SyncKolab-button {
+toolbar[iconsize="small"] #SyncKolab-button, toolbar[iconsize="small"] #SyncKolab-button-ab {
   list-style-image: url("chrome://synckolab/skin/selectsmtp-small.png");
   -moz-image-region: rect(0px 16px 16px 0px);
 }
 
-toolbar[iconsize="small"] #SyncKolab-button:hover {
+toolbar[iconsize="small"] #SyncKolab-button:hover, toolbar[iconsize="small"] #SyncKolab-button-ab:hover {
   -moz-image-region: rect(16px 16px 32px 0px);
 } 
 
 toolbar[iconsize="small"] #SyncKolab-button:hover:active,
-toolbar[iconsize="small"] #SyncKolab-button[open] {
+toolbar[iconsize="small"] #SyncKolab-button[open],
+toolbar[iconsize="small"] #SyncKolab-button-ab:hover:active,
+toolbar[iconsize="small"] #SyncKolab-button-ab[open] {
   -moz-image-region: rect(16px 16px 32px 0px);
 } 
 
-toolbar[iconsize="small"] #SyncKolab-button[disabled] {
+toolbar[iconsize="small"] #SyncKolab-button[disabled], toolbar[iconsize="small"] #SyncKolab-button-ab[disabled] {
   -moz-image-region: rect(32px 16px 48px 0px);
 }
 
@@ -49,18 +51,4 @@ toolbar[iconsize="small"] #SyncKolab-button[disabled] {
 	list-style-image: url(chrome://synckolab/skin/trash.png);
 }
 
-/* Progress window */
-/*
-progressmeter#progress { color: blue; }
-progressmeter#progress[mode="undetermined"] {
-  	color: blue;
-   -moz-binding:url("chrome://global/content/bindings/progressmeter.xml#progressmeter-undetermined");
-}
 
-treechildren::-moz-tree-row(selected) {
-  background-color: #DDD;
-}
-treechildren::-moz-tree-row(selected, focus) {
-  background-color: #E8E8E8;
-}
-*/

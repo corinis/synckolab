@@ -348,6 +348,23 @@ com.synckolab.calendarTools.message2Event = function(fileContent, extraFields, s
 		 // this.format == 'iCal'
 		parsedEvent = this.ical2event(fileContent, syncTasks);
 	}
+
+	if(parsedEvent == null)
+		return null;
+	
+	// check type
+	if (syncTasks == true && com.synckolab.tools.instanceOf(parsedEvent, Components.interfaces.calIEvent))
+	{
+		com.synckolab.tools.logMessage("There is an event in the task folder! skipping.", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_WARNING);
+		return null;
+	}
+
+	if (syncTasks == false && !com.synckolab.tools.instanceOf(parsedEvent, Components.interfaces.calIEvent))
+	{
+		com.synckolab.tools.logMessage("There is a task in the calendar folder! skipping.", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_WARNING);
+		return null;
+	}
+
 	return parsedEvent;
 };
 
@@ -406,13 +423,13 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 	if (topNode.nodeName.toUpperCase() == "TASK")
 		syncTasks = true;
 		
-	if (syncTasks == true && event instanceof Components.interfaces.calIEvent)
+	if (syncTasks == true && com.synckolab.tools.instanceOf(event, Components.interfaces.calIEvent))
 	{
 		com.synckolab.tools.logMessage("There is an event in the task folder! skipping\n" + event, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_WARNING);
 		return false;
 	}
 
-	if (syncTasks == false && ! (event instanceof Components.interfaces.calIEvent))
+	if (syncTasks == false && !com.synckolab.tools.instanceOf(event, Components.interfaces.calIEvent))
 	{
 		com.synckolab.tools.logMessage("There is a task in the calendar folder! skipping\n" + event, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_WARNING);
 		return false;
