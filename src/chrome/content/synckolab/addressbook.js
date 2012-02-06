@@ -354,7 +354,7 @@ com.synckolab.AddressBook = {
 			else
 				this.curItemInListContent.setAttribute("label", newCard.firstName + " " + newCard.lastName + " <" + newCard.primaryEmail + ">");
 
-			// ok lets see if we have this one already (remember custom4=UID except for mailing list)
+			// ok lets see if we have this one already
 			var aCard = this.gCardDB.get(this.tools.getUID(newCard));
 			com.synckolab.tools.logMessage("findCard.. done " , com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);	
 

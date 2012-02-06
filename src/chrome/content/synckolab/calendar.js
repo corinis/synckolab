@@ -330,6 +330,17 @@ com.synckolab.Calendar = {
 		}
 		this.curItemInListContent.setAttribute("label", info);
 		
+		// check for duplicate events
+		for (var i = 0; i < this.folderMessageUids.length; i++)
+		{
+			if (parsedEvent.id == this.folderMessageUids[i])
+			{
+				this.tools.logMessage("event is is already parsed.. deleting duplicate: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
+				this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("deleteOnServer"));
+				return "DELETEME";
+			}
+		}
+		
 		// remember that we did this uid already
 		this.folderMessageUids.push(parsedEvent.id);
 		
@@ -667,8 +678,7 @@ com.synckolab.Calendar = {
 
 			// check if we have this uid in the messages, skip it if it
 			// has been processed already when reading the IMAP msgs
-			var i;
-			for (i = 0; i < this.folderMessageUids.length; i++)
+			for (var i = 0; i < this.folderMessageUids.length; i++)
 			{
 				if (cur.id == this.folderMessageUids[i])
 				{
