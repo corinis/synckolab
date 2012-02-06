@@ -55,10 +55,37 @@ com.synckolab.addressbookTools = {
 		 * @return the property value 
 		 */
 		getCardProperty: function(card, prop, def) {
-			if (!def)
+			if (typeof def == "undefined")
 				def = null;
 			
-			
+			// fix from syncgb
+			if (card.isMailList && !card.getProperty)
+			{
+				switch (prop)
+				{
+				case "Name":
+					if(card.listNickName)
+						prop = "listNickName";
+					else if (card.dirName)
+						prop = "dirName";
+					else
+						prop = "displayName";
+					break;
+				case "NickName": prop = "listNickName"; break;
+				case "DisplayName": prop = "dirName"; break;
+				case "Notes": prop = "description"; break;
+				case "listNickName":
+				case "dirName":
+				case "description": break;
+				default:
+					var err = new Error("card.getProperty is not a function");
+				com.synccgp.tools.logMessage ("ERROR in getCardProperty called on a list: \n" + err.stack, com.synccgp.global.LOG_DEBUG);
+				throw err;
+				}
+
+				return card[prop] || def;
+			}
+
 			// tbird 3
 			if (card.getProperty)
 			{
@@ -84,18 +111,6 @@ com.synckolab.addressbookTools = {
 			}
 			else
 			{
-				if (card.isMailList)
-				{
-					switch (prop) {
-						case "Name":
-							if (card.dirName)
-								return card.dirName;
-							return card.displayName;
-						case "NickName": return card.listNickName;
-						case "Notes": return card.description;
-					}
-				}
-				
 				switch (prop)
 				{
 					case	"AimScreenName":	return (card.aimScreenName?card.aimScreenName:card.aim_screen_name);
@@ -167,12 +182,22 @@ com.synckolab.addressbookTools = {
 		 * This has to externalized because uids in lists are != uids in contacts
 		 */
 		getUID: function(card) {
-			if (card == null)
+			if (!card)
 				return null;
 
 			// for mailing lists
-			if (card.isMailList)
-				return com.synckolab.tools.sha1.hex_sha1(this.getCardProperty(card, "Name"));
+			if (card.isMailList) {
+				try
+				{
+					return this.getCardProperty(card, "Name");
+				}
+				catch (err)
+				{
+					com.synckolab.tools.logMessage ("Error in getUID. ListNickName: '" + card.listNickName + "'\n\nStack:\n" + err.stack, com.synckolab.global.LOG_DEBUG);
+					throw err;
+				}
+			}
+				
 			
 			// tbird 3: we can use custom fields!!!
 			var uid = this.getCardProperty(card, "UUID");
@@ -221,10 +246,7 @@ com.synckolab.addressbookTools.getABDirectory = function() {
  */
 com.synckolab.addressbookTools.setCardProperty = function(card, prop, value) {
 	// make sure not write "null" anywhere
-	if (value == null || value == "null")
-		value = "";
-	// autoclean contacts
-	if (prop == "Custom4" && (value.indexOf("pas-id-") == 0 || value.indexOf("sk-") == 0))
+	if (value == null || value == "null" || prop == "Custom4" && (!value.indexOf("pas-id-") || !value.indexOf("sk-")))
 		value = "";
 	
 	// tbird 3
@@ -1147,121 +1169,37 @@ com.synckolab.addressbookTools.genConSha1 = function(card) {
  *
  */
 com.synckolab.addressbookTools.equalsContact = function(a, b) {
+	//Fields to look for
+	var fieldsArray 
+	// remember the numeric field
+	var numericFieldCount = 0;
 	
 	if (a.isMailList != b.isMailList)
 	{
-		com.synckolab.tools.logMessage("Both are not mailing lists returning false!", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
+		com.synckolab.tools.logMessage("not equals isMailList: '" + (a.isMailList ? "true" : "false")  + "' vs. '" + (b.isMailList ? "true" : "false") + "'", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
 		return false;
 	}
 		
-	//Fields to look for
-	var fieldsArray = new Array(
-		// these are numbers
-		"BirthYear", "BirthMonth", "BirthDay", 
-		"AnniversaryYear", "AnniversaryMonth", "AnniversaryDay",
-		// now for stings
-		"FirstName","LastName","DisplayName","NickName",
-		"PrimaryEmail","SecondEmail","AimScreenName","PreferMailFormat",
-		"WorkPhone","HomePhone","FaxNumber","PagerNumber","CellularNumber",
-		"HomeAddress","HomeAddress2","HomeCity","HomeState","HomeZipCode","HomeCountry","WebPage2",
-		"JobTitle","Department","Company","WorkAddress","WorkAddress2","WorkCity","WorkState","WorkZipCode","WorkCountry","WebPage1",
-		"Custom1","Custom2","Custom3","Custom4","Notes","PhotoURI"); // PhotoType, PhotoName
-	// remember the numeric field
-	var numericFieldCount = 6;
-	
-
 	if (a.isMailList)
 	{
-		com.synckolab.tools.logMessage("start comparing mailing lists!", this.global.LOG_DEBUG + this.global.LOG_AB);
-		
-		
-		// update fieldsArray for second run
-		fieldsArray = new Array("Notes", "Nickname");
-
-		let abManager = Components.classes["@mozilla.org/abmanager;1"]
-		                                   .getService(Components.interfaces.nsIAbManager);
-		com.synckolab.tools.logMessage ("aUri:" + a.mailListURI + "(if: "+(a instanceof Components.interfaces.nsIAbDirectory)+")" +
-					" b.uri: " + b.mailListURI  + "(if: "+(b instanceof Components.interfaces.nsIAbDirectory)+")", this.global.LOG_DEBUG + this.global.LOG_AB);
-		
-		// to get a list(hashmap) of all cards there is either: .childCards (if it is already saved) or Array addressLists
-		var aList=a;
-		var bList=b;
-		var aCards = null;
-		var bCards = null;
-		
-		if (!(a instanceof Components.interfaces.nsIAbDirectory))
-		{
-			aList = abManager.getDirectory(a.mailListURI);
-			aCards = aList.childCards;
-		}
-		else
-			aCards = aList.addressLists.enumerate();
-			
-		if (!(b instanceof Components.interfaces.nsIAbDirectory))
-		{
-			bList = abManager.getDirectory(b.mailListURI);
-			bCards = bList.childCards;
-		}
-		else
-			bCards = bList.addressLists.enumerate();
-
-		// put the childs in a hashmap
-		var aMap = new com.synckolab.hashMap();
-		aMap.clear();
-
-		
-		var aCount = 0;
-		if (aCards != null)
-		{
-			if (aCards.hasMoreElements)
-			{
-				var card = null;
-				while (aCards.hasMoreElements() && (card = aCards.getNext ()) != null)
-				{
-					// get the right interface
-					cur = card.QueryInterface(Components.interfaces.nsIAbCard);
-					// get the uid or generate it
-					aMap.put(this.getUID(cur), cur);
-					aCount++;
-				}
-			}
-		}
-		
-		// now do a compare
-		var bCount = 0;
-		if (bCards != null)
-		{
-			if (bCards.hasMoreElements)
-			{
-				var card = null;
-				while (bCards.hasMoreElements() && (card = bCards.getNext ()) != null)
-				{
-					// get the right interface
-					cur = card.QueryInterface(Components.interfaces.nsIAbCard);
-					// get the uid or generate it
-					var cUID = this.getUID(cur);
-					com.synckolab.tools.logMessage ("check " + cUID + "", this.global.LOG_DEBUG + this.global.LOG_AB);
-					
-					if (!aMap.get(cUID))
-					{
-						com.synckolab.tools.logMessage ("not equals " + cUID + " not found", this.global.LOG_DEBUG + this.global.LOG_AB);
-						return false;
-					}
-					bCount++;
-				}
-			}
-		}
-		
-		// if there are any childcards left - return
-		if (aCount != bCount)
-		{
-			com.synckolab.tools.logMessage ("not equals  '" + aCount + "' vs. '" + bCount + "'", this.global.LOG_DEBUG + this.global.LOG_AB);
-			return false;
-		}
-		// listst are equals
-		return true;
+		fieldsArray = ["NickName", "DisplayName", "Notes"];
 	}
-
+	else
+	{
+		fieldsArray = new Array(
+			// these are numbers
+			"BirthYear", "BirthMonth", "BirthDay", 
+			"AnniversaryYear", "AnniversaryMonth", "AnniversaryDay",
+			// now for strings
+			"FirstName","LastName","DisplayName","NickName",
+			"PrimaryEmail","SecondEmail","AimScreenName","PreferMailFormat",
+			"WorkPhone","HomePhone","FaxNumber","PagerNumber","CellularNumber",
+			"HomeAddress","HomeAddress2","HomeCity","HomeState","HomeZipCode","HomeCountry","WebPage2",
+			"JobTitle","Department","Company","WorkAddress","WorkAddress2","WorkCity","WorkState","WorkZipCode","WorkCountry","WebPage1",
+			"Custom1","Custom2","Custom3","Custom4","Notes","PhotoURI"); // PhotoType, PhotoName
+		numericFieldCount = 6;
+	}
+	
 	for(var i=0 ; i < fieldsArray.length ; i++ ) {
 		var sa = this.getCardProperty(a, fieldsArray[i]);
 		var sb = this.getCardProperty(b, fieldsArray[i]);
@@ -1304,13 +1242,101 @@ com.synckolab.addressbookTools.equalsContact = function(a, b) {
 			// if we got strings... maybe they only differ in whitespace
 			if (sa.replace)
 				// if they are equals without whitespace.. continue
-				if (sa.replace(/\s|(\\n)| /g, "") == sb.replace(/\s|(\\n)| /g, ""))
+				if (sa.replace(/\s|(\\n)|\n|\r/gm, "") == sb.replace(/\s|(\\n)|\n|\r/gm, ""))
 					continue;
 		
 			com.synckolab.tools.logMessage ("not equals " + fieldsArray[i] + " '" + sa + "' vs. '" + sb + "'", this.global.LOG_DEBUG + this.global.LOG_AB);
 			return false;
 		}
 	}
+
+	if (a.isMailList)
+	{
+		com.synckolab.tools.logMessage("start comparing mailing lists!", this.global.LOG_DEBUG + this.global.LOG_AB);
+		
+		
+		// update fieldsArray for second run
+		fieldsArray = new Array("Notes", "Nickname");
+
+		let abManager = Components.classes["@mozilla.org/abmanager;1"]
+		                                   .getService(Components.interfaces.nsIAbManager);
+		com.synckolab.tools.logMessage ("aUri:" + a.mailListURI + "(if: "+(a instanceof Components.interfaces.nsIAbDirectory)+")" +
+					" b.uri: " + b.mailListURI  + "(if: "+(b instanceof Components.interfaces.nsIAbDirectory)+")", this.global.LOG_DEBUG + this.global.LOG_AB);
+		
+		// to get a list(hashmap) of all cards there is either: .childCards (if it is already saved) or Array addressLists
+		var aList=a;
+		var bList=b;
+		var aCards = null;
+		var bCards = null;
+		
+		if (!(a instanceof Components.interfaces.nsIAbDirectory))
+		{
+			aList = abManager.getDirectory(a.mailListURI);
+			aCards = aList.childCards;
+		}
+		else
+			aCards = aList.addressLists.enumerate();
+			
+		if (!(b instanceof Components.interfaces.nsIAbDirectory))
+		{
+			bList = abManager.getDirectory(b.mailListURI);
+			bCards = bList.childCards;
+		}
+		else
+			bCards = bList.addressLists.enumerate();
+
+		// put the childs in a hashmap
+		var aMap = new com.synckolab.hashMap();
+		aMap.clear();
+
+		
+		var aCount = 0;
+		if (aCards != null && aCards.hasMoreElements)
+		{
+			var card = null;
+			while (aCards.hasMoreElements() && (card = aCards.getNext ()))
+			{
+				// get the right interface
+				cur = card.QueryInterface(Components.interfaces.nsIAbCard);
+				// get the uid or generate it
+				aMap.put(this.getUID(cur), cur);
+				aCount++;
+			}
+		}
+		
+		// now do a compare
+		var bCount = 0;
+		if (bCards != null && bCards.hasMoreElements)
+		{
+			var card = null;
+			while (bCards.hasMoreElements() && (card = bCards.getNext ()))
+			{
+				// get the right interface
+				cur = card.QueryInterface(Components.interfaces.nsIAbCard);
+				// get the uid or generate it
+				var cUID = this.getUID(cur);
+				com.synckolab.tools.logMessage ("check " + cUID + "", this.global.LOG_DEBUG + this.global.LOG_AB);
+				
+				if (!aMap.get(cUID))
+				{
+					com.synckolab.tools.logMessage ("not equals " + cUID + " not found", this.global.LOG_DEBUG + this.global.LOG_AB);
+					return false;
+				}
+				bCount++;
+			}
+		}
+		
+		// if there are any childcards left - return
+		if (aCount != bCount)
+		{
+			com.synckolab.tools.logMessage ("not equals  '" + aCount + "' vs. '" + bCount + "'", this.global.LOG_DEBUG + this.global.LOG_AB);
+			return false;
+		}
+		// listst are equals
+		return true;
+	}
+
+	
 	
 	return true;
 };
