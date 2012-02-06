@@ -640,6 +640,11 @@ com.synckolab.Calendar = {
 		
 			this.tools.logMessage ("nextUpdate for "+ ((this.syncTasks==true)?"task":"event") +":" + cur.id, this.global.LOG_CAL + this.global.LOG_DEBUG);
 
+			if(cur.id == null) {
+				this.tools.logMessage("no id found for this element! skipping.", this.global.LOG_CAL + this.global.LOG_WARNING);
+				return null;
+			}
+			
 			// check if we can skip this entry	(make sure we got a start and enddate.. otherwise it will fail)
 			var endDate = this.calTools.getEndDate(cur, this.syncTasks);		
 				
