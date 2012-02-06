@@ -133,34 +133,34 @@ isString: function (s) {
  * Removes a possible mail header and extracts only the "real" content.
  * This also trims the message and removes some common problems (like -- at the end)
  */
-stripMailHeader: function (content) {
-	if (content == null)
+stripMailHeader: function (skcontent) {
+	if (skcontent == null)
 		return null;
 
-	var isMultiPart = content.search(/boundary=/i) != -1;
+	var isMultiPart = skcontent.search(/boundary=/i) != -1;
 
 	// seems we go us a vcard/ical when no xml is found
 	if (!isMultiPart)
 	{
-		var startPos = content.indexOf("\r\n\r\n");
-		if (startPos == -1 || startPos > content.length - 10)
-			startPos = content.indexOf("\n\n");
+		var startPos = skcontent.indexOf("\r\n\r\n");
+		if (startPos == -1 || startPos > skcontent.length - 10)
+			startPos = skcontent.indexOf("\n\n");
 
 		if (startPos == -1 || startPos > content.length - 10)
 			startPos = 0;
 
-		var isQP = content.search(/Content-Transfer-Encoding:[ \t\r\n]+quoted-printable/i);
+		var isQP = skcontent.search(/Content-Transfer-Encoding:[ \t\r\n]+quoted-printable/i);
 		this.logMessage("Stripping header from Message (QP=" + isQP + ")", com.synckolab.global.LOG_DEBUG);
-		if(isQP != -1 || content.indexOf("=3D") != -1)
+		if(isQP != -1 || skcontent.indexOf("=3D") != -1)
 		{
-			content = com.synckolab.tools.text.quoted.decode(content.substring(startPos, content.length));
-			this.logMessage("unquoted content: " + content, com.synckolab.global.LOG_DEBUG);
+			skcontent = com.synckolab.tools.text.quoted.decode(skcontent.substring(startPos, skcontent.length));
+			this.logMessage("unquoted content: " + skcontent, com.synckolab.global.LOG_DEBUG);
 			
 		}
 		else
-			content = content.substring(startPos, content.length);
+			skcontent = skcontent.substring(startPos, skcontent.length);
 
-		return com.synckolab.tools.text.trim(content);
+		return com.synckolab.tools.text.trim(skcontent);
 	}
 
 	this.logMessage("Stripping header from multipart message", com.synckolab.global.LOG_DEBUG);
@@ -169,7 +169,7 @@ stripMailHeader: function (content) {
 
 	// XXXboundary="XXX" or XXXboundary=XXX\n
 	var boundary = null;
-	boundary = content.substring(content.search(/boundary=/)+9);
+	boundary = skcontent.substring(skcontent.search(/boundary=/)+9);
 
 	// lets trim boundary (in case we have whitespace after the =
 	boundary = com.synckolab.tools.text.trim(boundary);
@@ -208,7 +208,7 @@ stripMailHeader: function (content) {
 		file.remove(true);
 	
 	// check if we have an image attachment
-	var imgC = content;
+	var imgC = skcontent;
 	var imgIdx = imgC.search(/Content-Type:[ \t\r\n]+image/i);
 	
 	if (imgIdx != -1)
@@ -245,42 +245,42 @@ stripMailHeader: function (content) {
 	
 	// check kolab XML first
 	var contentIdx = -1;
-	var contTypeIdx = content.search(/Content-Type:[ \t\r\n]+application\/x-vnd.kolab./i);
+	var contTypeIdx = skcontent.search(/Content-Type:[ \t\r\n]+application\/x-vnd.kolab./i);
 	if (contTypeIdx != -1)
 	{
-		content = content.substring(contTypeIdx); // cut everything before this part
+		skcontent = skcontent.substring(contTypeIdx); // cut everything before this part
 		// there might be a second boundary... remove that as well
-		var endcontentIdx = content.indexOf(boundary);
+		var endcontentIdx = skcontent.indexOf(boundary);
 		if (endcontentIdx != -1)
-			content = content.substring(0, endcontentIdx);
-		if ((new RegExp ("--$")).test(content))
-			content = content.substring(0, content.length - 2);
+			skcontent = skcontent.substring(0, endcontentIdx);
+		if ((new RegExp ("--$")).test(skcontent))
+			skcontent = skcontent.substring(0, skcontent.length - 2);
 		
-		contentIdx = content.indexOf("<?xml");
+		contentIdx = skcontent.indexOf("<?xml");
 	}
 	else
 	{
 		// check for vcard | ical
-		contTypeIdx = content.search(/Content-Type:[ \t\r\n]+text\/x-vcard/i);
+		contTypeIdx = skcontent.search(/Content-Type:[ \t\r\n]+text\/x-vcard/i);
 		if (contTypeIdx == -1)
-			contTypeIdx = content.search(/Content-Type:[ \t\r\n]+text\/x-ical/i);
+			contTypeIdx = skcontent.search(/Content-Type:[ \t\r\n]+text\/x-ical/i);
 		if (contTypeIdx == -1)
-			contTypeIdx = content.search(/Content-Type:[ \t\r\n]+text\/calendar/i);
+			contTypeIdx = skcontent.search(/Content-Type:[ \t\r\n]+text\/calendar/i);
 
 		if (contTypeIdx != -1)
 		{
-			content = content.substring(contTypeIdx); // cut everything before this part
+			skcontent = skcontent.substring(contTypeIdx); // cut everything before this part
 			
 			// handle multi-line 
-			content = content.replace(/[\n\r]+ /, "");
+			skcontent = skcontent.replace(/[\n\r]+ /, "");
 			// there might be a second boundary... remove that as well
-			var endcontentIdx = content.indexOf(boundary);
+			var endcontentIdx = skcontent.indexOf(boundary);
 			if (endcontentIdx != -1)
-				content = content.substring(0, endcontentIdx);
-			if ((new RegExp ("--$")).test(content))
-				content = content.substring(0, content.length - 2);
+				skcontent = skcontent.substring(0, endcontentIdx);
+			if ((new RegExp ("--$")).test(skcontent))
+				skcontent = skcontent.substring(0, skcontent.length - 2);
 
-			contentIdx = content.indexOf("BEGIN:");
+			contentIdx = skcontent.indexOf("BEGIN:");
 		}
 	}
 
@@ -289,8 +289,8 @@ stripMailHeader: function (content) {
 	if (contentIdx == -1)
 	{
 		
-		var isQP = content.search(/Content-Transfer-Encoding:[ \t\r\n]+quoted-printable/i);
-		var isBase64 = content.search(/Content-Transfer-Encoding:[ \t\r\n]+base64/i);
+		var isQP = skcontent.search(/Content-Transfer-Encoding:[ \t\r\n]+quoted-printable/i);
+		var isBase64 = skcontent.search(/Content-Transfer-Encoding:[ \t\r\n]+base64/i);
 
 		this.logMessage("contentIdx == -1: looks like its encoded: QP=" + isQP + " B64=" + isBase64);
 		
@@ -298,38 +298,38 @@ stripMailHeader: function (content) {
 		{
 			this.logMessage("Base64 Decoding message. (Boundary: "+boundary+")", com.synckolab.global.LOG_INFO);
 			// get rid of the header
-			content = content.substring(isBase64, content.length);
-			var startPos = content.indexOf("\r\n\r\n");
-			var startPos2 = content.indexOf("\n\n");
+			skcontent = skcontent.substring(isBase64, skcontent.length);
+			var startPos = skcontent.indexOf("\r\n\r\n");
+			var startPos2 = skcontent.indexOf("\n\n");
 			if (startPos2 != -1 && (startPos2 < startPos || startPos == -1))
 				startPos = startPos2;
 
-			var endPos = content.indexOf("--"); // we could check for "--"+boundary but its not necessary since base64 doesnt allow it anyways
+			var endPos = skcontent.indexOf("--"); // we could check for "--"+boundary but its not necessary since base64 doesnt allow it anyways
 			// we probably removed the -- already, but to make sure
 			if (endPos == -1)
-				endPos = content.length;
+				endPos = skcontent.length;
 
-			content = content.substring(startPos, endPos).replace(/[\r\n \t]+/g, "");
+			skcontent = skcontent.substring(startPos, endPos).replace(/[\r\n \t]+/g, "");
 
-			this.logMessage("Base64 message: " + content, com.synckolab.global.LOG_DEBUG);
+			this.logMessage("Base64 message: " + skcontent, com.synckolab.global.LOG_DEBUG);
 
 			// for base64 we use a two storied approach
 			// first: use atob 
 			// if that gives us an outofmemoryexception use the slow but working javascript
 			// engine
 			try {
-				content = atob(content);
+				skcontent = atob(skcontent);
 			} catch (e) {
 				// out of memory error... this can be handled :)
 				if (e.result == Components.results.NS_ERROR_OUT_OF_MEMORY)
 				{
-					content = com.synckolab.text.base64.decode(content);
-					this.logMessage("decoded base64: " + content, com.synckolab.global.LOG_DEBUG);
+					skcontent = com.synckolab.text.base64.decode(skcontent);
+					this.logMessage("decoded base64: " + skcontent, com.synckolab.global.LOG_DEBUG);
 
 				}
 				else
 				{
-					this.logMessage("Error decoding base64 (" + e + "): " + content, com.synckolab.global.LOG_ERROR);
+					this.logMessage("Error decoding base64 (" + e + "): " + skcontent, com.synckolab.global.LOG_ERROR);
 					return null;
 				}
 			}
@@ -339,8 +339,8 @@ stripMailHeader: function (content) {
 
 		if (isQP != -1)
 		{
-			content = content.substring(isQP, content.length);
-			content = com.synckolab.tools.text.quoted.decode(content);
+			skcontent = skcontent.substring(isQP, skcontent.length);
+			skcontent = com.synckolab.tools.text.quoted.decode(skcontent);
 		}
 		
 		
@@ -348,37 +348,37 @@ stripMailHeader: function (content) {
 		if (isQP == -1 && isBase64 == -1)
 		{
 			// so this message has no <xml>something</xml> area
-			this.logMessage("Error parsing this message: no xml segment found\n" + content, com.synckolab.global.LOG_ERROR);
+			this.logMessage("Error parsing this message: no xml segment found\n" + skcontent, com.synckolab.global.LOG_ERROR);
 			return null;
 		}
 		
 		// with the decoded content - check for the real start
-		contentIdx = content.indexOf("<?xml");
+		contentIdx = skcontent.indexOf("<?xml");
 		if (contentIdx == -1)
-			contentIdx = content.indexOf("BEGIN:");
+			contentIdx = skcontent.indexOf("BEGIN:");
 
 		
 		if (contentIdx != -1)
-			content = content.substring(contentIdx);
+			skcontent = skcontent.substring(contentIdx);
 	}
 	else
 	{
-		content = content.substring(contentIdx);
+		skcontent = skcontent.substring(contentIdx);
 		// until the boundary = end of xml|vcard/ical
-		if (content.indexOf(boundary) != -1)
-			content = content.substring(0, content.indexOf("--"+boundary));
+		if (skcontent.indexOf(boundary) != -1)
+			skcontent = skcontent.substring(0, skcontent.indexOf("--"+boundary));
 	}
 	
 	// content might still be quotted printable... doublecheck
 	// check if we have to decode quoted printable
-	if (content.indexOf(" version=3D") != -1 || content.indexOf("TZID=3D")) // we know from the version (or in case of citadel from the tzid)
+	if (skcontent.indexOf(" version=3D") != -1 || skcontent.indexOf("TZID=3D")) // we know from the version (or in case of citadel from the tzid)
 	{
 		this.logMessage("Message is quoted", com.synckolab.global.LOG_INFO);
-		content = com.synckolab.tools.text.quoted.decode(content);
+		skcontent = com.synckolab.tools.text.quoted.decode(skcontent);
 	}
 
 
-	return com.synckolab.tools.text.trim(content);
+	return com.synckolab.tools.text.trim(skcontent);
 },
 
 /**
@@ -392,9 +392,9 @@ stripMailHeader: function (content) {
  * hr: human Readable Part (optional)
  * profileimage: optional image attachment (the name of the image - it always resides in profile/Photos/XXX.jpg!)
  */
-generateMail: function (cid, mail, adsubject, mime, part, content, hr, image){
+generateMail: function (cid, mail, adsubject, mime, part, skcontent, hr, image){
 	// sometime we just do not want a new message :)
-	if (content == null)
+	if (skcontent == null)
 		return null;
 
 	var msg = "";
@@ -457,7 +457,7 @@ generateMail: function (cid, mail, adsubject, mime, part, content, hr, image){
 		msg += 'Content-Transfer-Encoding: base64\n';
 		msg += 'Content-Disposition: attachment;\n filename="kolab.xml"\n\n';
 		// keep lines at 80 chars
-		var acontent = btoa(content);
+		var acontent = btoa(skcontent);
 		var n = 0;
 		for (n= 0; n < acontent.length; )
 		{
@@ -471,7 +471,7 @@ generateMail: function (cid, mail, adsubject, mime, part, content, hr, image){
 	}
 	else
 		// add the content
-		msg += content + '\n';
+		msg += skcontent + '\n';
 	
 	// if we have an image try to read it and create a new part (ONLY for xml)
 	if (part && image) {
@@ -792,9 +792,9 @@ com.synckolab.tools.file = {
 /**
  * writes a sync file
  */
-com.synckolab.tools.writeSyncDBFile = function (file, content)
+com.synckolab.tools.writeSyncDBFile = function (file, skcontent)
 {
-	if (content == null)
+	if (skcontent == null)
 		return;
 
 	if (file.exists()) 
@@ -802,7 +802,7 @@ com.synckolab.tools.writeSyncDBFile = function (file, content)
 	file.create(file.NORMAL_FILE_TYPE, 0666);
 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
 	stream.init(file, 2, 0x200, false); // open as "write only"
-	stream.write(content, content.length);
+	stream.write(skcontent, skcontent.length);
 	stream.close();
 };
 

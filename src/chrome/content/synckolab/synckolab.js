@@ -1221,7 +1221,7 @@ function parseMessageRunner ()
 
 	
 
-	var content = null;
+	var skcontent = null;
 
 	// unparsable message... content is null and so it will skip
 	if(fileContent != null) {
@@ -1231,10 +1231,10 @@ function parseMessageRunner ()
 		fileContent = fileContent.replace(/=\n(\S)/g, "$1");
 		
 	
-		content = com.synckolab.main.gSync.parseMessage(fileContent, com.synckolab.main.updateMessagesContent, (com.synckolab.main.gLaterMessages.pointer == 0));
+		skcontent = com.synckolab.main.gSync.parseMessage(fileContent, com.synckolab.main.updateMessagesContent, (com.synckolab.main.gLaterMessages.pointer == 0));
 	}
 	
-	if (content == "LATER") {
+	if (skcontent == "LATER") {
 		var cMsg = {};
 		cMsg.content = fileContent;
 		cMsg.hdr = gLastMessageDBHdr;
@@ -1245,15 +1245,15 @@ function parseMessageRunner ()
 	else {
 		// just to make sure there REALLY isnt any content left :)
 		fileContent = "";
-		if (content != null)
+		if (skcontent != null)
 		{
-			if (content == "DELETEME")
+			if (skcontent == "DELETEME")
 				com.synckolab.tools.logMessage("updating and/or deleting [" + com.synckolab.main.gSync.folderMsgURI +"#"+com.synckolab.main.gcurMessageKey + "]", com.synckolab.global.LOG_INFO);
 			else
 				com.synckolab.tools.logMessage("updating [" + com.synckolab.main.gSync.folderMsgURI +"#"+com.synckolab.main.gcurMessageKey + "]", com.synckolab.global.LOG_INFO);
 			// adding message to list of to-delete messages - com.synckolab.main.gSync.folderMsgURI +"#"+
 			com.synckolab.main.updateMessages.push(gLastMessageDBHdr); 
-			com.synckolab.main.updateMessagesContent.push(content); 
+			com.synckolab.main.updateMessagesContent.push(skcontent); 
 			com.synckolab.tools.logMessage("changed msg #" + com.synckolab.main.updateMessages.length, com.synckolab.global.LOG_INFO);
 		}
 		// no change... remember that :)
@@ -1410,13 +1410,13 @@ function updateContentWrite ()
 	com.synckolab.main.curMessage++;
 	if (com.synckolab.main.curMessage < com.synckolab.main.updateMessagesContent.length)
 	{
-		var content = com.synckolab.main.updateMessagesContent[com.synckolab.main.curMessage];
+		var skcontent = com.synckolab.main.updateMessagesContent[com.synckolab.main.curMessage];
 		// write the message
-		if (com.synckolab.main.gSync.gSaveImap && content != "DELETEME" && content != null && content.length > 1)
+		if (com.synckolab.main.gSync.gSaveImap && skcontent!= "DELETEME" && skcontent!= null && content.length > 1)
 		{
 			// write the message in the temp file
 			var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
-			com.synckolab.tools.logMessage("adding [" + content + "] to messages", com.synckolab.global.LOG_DEBUG);
+			com.synckolab.tools.logMessage("adding [" + skcontent + "] to messages", com.synckolab.global.LOG_DEBUG);
 			// temp path
 			sfile.initWithPath(gTmpFile);
 			if (sfile.exists()) 
@@ -1424,7 +1424,7 @@ function updateContentWrite ()
 			sfile.create(sfile.NORMAL_FILE_TYPE, 0600);
 		
 			// make the message rfc compatible (make sure all lines en with \r\n)
-			content = content.replace(/\r\n|\n|\r/g, "\r\n");
+			skcontent = content.replace(/\r\n|\n|\r/g, "\r\n");
 			
 			// create a new message in there
 			var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
@@ -1489,15 +1489,15 @@ function writeContent ()
 	}
 	
 	// if there happens an exception, we are done
-	var content = com.synckolab.main.gSync.nextUpdate();
-	if (content == "done")
+	var skcontent = com.synckolab.main.gSync.nextUpdate();
+	if (skcontent == "done")
 	{
 		com.synckolab.tools.logMessage("content is 'done'", com.synckolab.global.LOG_INFO);
 		writeContentAfterSave ();
 		return;
 	}
 	
-	if (content == null)
+	if (skcontent == null)
 	{
 		com.synckolab.tools.logMessage("content is null - continue", com.synckolab.global.LOG_WARNING);
 		timer.initWithCallback({notify:function(){writeContent();}}, com.synckolab.config.SWITCH_TIME, 0);
@@ -1515,12 +1515,12 @@ function writeContent ()
 		sfile.create(sfile.NORMAL_FILE_TYPE, 0600);
 	
 		// make the message rfc compatible (make sure all lines en with \r\n)
-		content = content.replace(/\r\n|\n\r|\n|\r/g, "\r\n");
+		skcontent = skcontent.replace(/\r\n|\n\r|\n|\r/g, "\r\n");
 
 		// create a new message in there
 	 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
 	 	stream.init(sfile, 2, 0x200, false); // open as "write only"
-		stream.write(content, content.length);
+		stream.write(skcontent, skcontent.length);
 		stream.close();
 		
 		// write the temp file back to the original directory
