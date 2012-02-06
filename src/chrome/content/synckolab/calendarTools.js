@@ -638,7 +638,8 @@ com.synckolab.calendarTools.xml2Event = function(xml, extraFields, event)
 					if (cur.firstChild)
 					{
 						var cData = cur.getFirstData();
-						var alarmOffset = com.synckolab.tools.text.createDuration(Number(cData));
+						// fix for #24507 make sure the alarm is BEFORE the event not after
+						var alarmOffset = com.synckolab.tools.text.createDuration(-1 * Number(cData));
 						
 						// tbird 3 uses multiple alarms (using addAlarm)
 						if (event.addAlarm)
