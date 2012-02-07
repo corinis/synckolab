@@ -1,3 +1,57 @@
+SynKolab 1.5.3
+==============
+    #24281 encoding issues
+    #24210 encoding issues
+    #24191 Thunderbird 5 Status Bar fails to display correctly with Sync Kolab Nightly installed.
+    #24446 Compatibilty with TB 7.0
+    #24106 Message "folder not found"
+    #22767#24382 Moving date when usign all-day events
+    #24572 - tasks not synced
+    #23299 - tasks are missing recurrance and due-date
+    #23157 -settings not correctly per configuration
+    #23262 - problem with scrolling
+    #23312- config not working
+    #23737 - problem with mailing lists
+    #24008 - fix problem with startup
+    #24485 Add Sync Kolab button to Address Book Toolbar
+    #24507 moved appointment to the correct time
+    #23747 delete duplicate items
+    #24633 Fix error with japan locale
+    #24425 Settings are correctly delted when removing a configuration
+    #24602 Show a message if no address book is found
+    #19679 Create address books if not existant
+    #24428 Hidden window now works also with sync on start enabled
+
+
+SynKolab 1.5.2
+==============
+    #23280 - Nicht definierte Entität
+    #23551 - Automatic Sync error when Hide Status Window Option selected
+    #23621 - Synkolab and Postbox (based on TB)
+    #23484 - synckolab nightly causes seamonkey mail client to be unusable.
+    #24017 - Axigen incompatibility
+    #24020 - undefined entity "synckolab.contactConflict.Work.box"
+
+
+SynKolab 1.5.1
+==============
+    #22681 - Address book sync hangs at one object
+    #22762 - SyncKolab hangs during Calendar Sync
+    #22766 - little flaw in equalsContact
+    #22969 - Disabling Task sync causes resync of other objects
+    #22961 - SyncKolab is now compatible with Thunderbird 3.1 (had to create a manifest)
+    #22952 - calendarTools.js getSyncDbFile and getSyncFieldFile are in com.synckolab.tools.file not com.synckolab.tools
+    #22926 - Make Groupware IMAP folders open associated programs rather than the IMAP message store
+    #22804 - Unable to use the SyncKolab Options to set up 'Tasks' correctly. 
+    #22669 - encoding problems
+    #22727 - run on start
+    #22740 - summary is null
+    #22854 - problem with untilDate
+    #23003 - streamline comparison
+    #23005 - fix conflict dialog
+    #23087 - image path fixed
+    #23242 - fix for generic image
+
 1.0.4 -> 1.5.0
 ==============
 
