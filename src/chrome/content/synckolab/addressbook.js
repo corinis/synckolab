@@ -684,7 +684,7 @@ com.synckolab.AddressBook = {
 				}
 				else
 				// is the db file equals server, but not local.. we got a local change
-					if (cEntry.exists() && !cCard_equals_aCard && cCard_equals_newCard)
+				if (cEntry.exists() && !cCard_equals_aCard && cCard_equals_newCard)
 				{
 					com.synckolab.tools.logMessage("client changed " + this.tools.getUID(aCard) + " - " + cCard.primaryEmail, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 					
@@ -693,12 +693,11 @@ com.synckolab.AddressBook = {
 					
 					// remember this message for update - generate mail message (incl. extra fields)
 					this.messageFields = new com.synckolab.dataBase(fEntry);
-					var cContent = this.tools.card2Message(aCard, this.email, this.format, messageFields);
-
+					var abcontent = this.tools.card2Message(aCard, this.email, this.format, messageFields);
 					// write the current content in the sync-db file
-					com.synckolab.tools.writeSyncDBFile (cEntry, com.synckolab.tools.stripMailHeader(cContent));
+					com.synckolab.tools.writeSyncDBFile (cEntry, com.synckolab.tools.stripMailHeader(abcontent));
 					
-					return cContent;
+					return abcontent;
 				}
 				
 				this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("noChange"));

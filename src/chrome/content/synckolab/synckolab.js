@@ -403,9 +403,9 @@ var addLines; // an array that saves the added lines one the content
 var addLinesNum; // element is where to add the line (Number)
 
 // hold window elements
-var meter;	// the progress meter
+var meter; // the progress meter
 var totalMeter; // the total progress meter
-var statusMsg;	// the status message
+var statusMsg; // the status message
 var processMsg; // process message
 var curCounter;
 var itemList; // display all processed items
@@ -566,8 +566,6 @@ function goWindow (wnd)
 
 
 function startSync(event) {
-	
-	
 	meter.setAttribute("value", "0%");
 	if (com.synckolab.global.wnd != null)
 		totalMeter.setAttribute("value", "0%");
@@ -1248,7 +1246,7 @@ function parseMessageRunner ()
 		if (skcontent != null)
 		{
 			if (skcontent == "DELETEME")
-				com.synckolab.tools.logMessage("updating and/or deleting [" + com.synckolab.main.gSync.folderMsgURI +"#"+com.synckolab.main.gcurMessageKey + "]", com.synckolab.global.LOG_INFO);
+				com.synckolab.tools.logMessage("deleting [" + com.synckolab.main.gSync.folderMsgURI +"#"+com.synckolab.main.gcurMessageKey + "]", com.synckolab.global.LOG_INFO);
 			else
 				com.synckolab.tools.logMessage("updating [" + com.synckolab.main.gSync.folderMsgURI +"#"+com.synckolab.main.gcurMessageKey + "]", com.synckolab.global.LOG_INFO);
 			// adding message to list of to-delete messages - com.synckolab.main.gSync.folderMsgURI +"#"+
@@ -1412,7 +1410,7 @@ function updateContentWrite ()
 	{
 		var skcontent = com.synckolab.main.updateMessagesContent[com.synckolab.main.curMessage];
 		// write the message
-		if (com.synckolab.main.gSync.gSaveImap && skcontent!= "DELETEME" && skcontent!= null && content.length > 1)
+		if (com.synckolab.main.gSync.gSaveImap && skcontent!= "DELETEME" && skcontent!= null && skcontent.length > 1)
 		{
 			// write the message in the temp file
 			var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
@@ -1424,12 +1422,12 @@ function updateContentWrite ()
 			sfile.create(sfile.NORMAL_FILE_TYPE, 0600);
 		
 			// make the message rfc compatible (make sure all lines en with \r\n)
-			skcontent = content.replace(/\r\n|\n|\r/g, "\r\n");
+			skcontent = skcontent.replace(/\r\n|\n|\r/g, "\r\n");
 			
 			// create a new message in there
 			var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
 			stream.init(sfile, 2, 0x200, false); // open as "write only"
-			stream.write(content, content.length);
+			stream.write(skcontent, skcontent.length);
 			stream.close();
 			
 			// write the temp file back to the original directory
