@@ -27,23 +27,24 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+"use strict";
 
 if(!com) var com={};
 if(!com.synckolab) com.synckolab={};
 if(!com.synckolab.tools) com.synckolab.tools={};
 
 com.synckolab.tools.kolab={
-	/**
-	 * return the name of the week day like it is expected
-	 * by the Kolab 2 XML format
-	 *
-	 * @param index The index of the day in the week starting with 1 => Sunday
-	 * @return a string with the name of the week day
-	 */
-	getXmlDayName: function(index) {
-		var name = "sunday";
-		switch (index)
-		{
+		/**
+		 * return the name of the week day like it is expected
+		 * by the Kolab 2 XML format
+		 *
+		 * @param index The index of the day in the week starting with 1 => Sunday
+		 * @return a string with the name of the week day
+		 */
+		getXmlDayName: function(index) {
+			var name = "sunday";
+			switch (index)
+			{
 			case 1:
 				name = "sunday";
 				break;
@@ -65,22 +66,22 @@ com.synckolab.tools.kolab={
 			case 7:
 				name = "saturday";
 				break;
-		}
-		return name;
-	},
+			}
+			return name;
+		},
 
 
-	/**
-	 * return the index for name of the week day used by the Kolab 2 XML format
-	 *
-	 * @param name a string with the name of the week day
-	 * @return The index of the day in the week starting with 1 => Sunday
-	 */
-	getDayIndex: function (name)
-	{
-		var index = 1;
-		switch (name.toLowerCase())
+		/**
+		 * return the index for name of the week day used by the Kolab 2 XML format
+		 *
+		 * @param name a string with the name of the week day
+		 * @return The index of the day in the week starting with 1 => Sunday
+		 */
+		getDayIndex: function (name)
 		{
+			var index = 1;
+			switch (name.toLowerCase())
+			{
 			case "sunday":
 				index = 1;
 				break;
@@ -102,7 +103,7 @@ com.synckolab.tools.kolab={
 			case "saturday":
 				index = 7;
 				break;
+			}
+			return index;
 		}
-		return index;
-	}
 };

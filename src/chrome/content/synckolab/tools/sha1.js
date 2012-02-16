@@ -7,6 +7,7 @@
  * Distributed under the BSD License
  * See http://pajhome.org.uk/crypt/md5 for details.
  */
+"use strict";
 
 if(!com) var com={};
 if(!com.synckolab) com.synckolab={};

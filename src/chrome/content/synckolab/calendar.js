@@ -85,16 +85,16 @@ com.synckolab.Calendar = {
 	
 	syncTasks: false,	// sync tasks if true, otherwise sync events
 	
-	isCal: function() {
+	isCal: function () {
 		return true;
 	},
 	
 	// return tasks/calendar for correct foldernames
-	getType: function() {
-		return (this.syncTasks == true?"tasks":"calendar");
+	getType: function () {
+		return (this.syncTasks === true?"tasks":"calendar");
 	},
 
-	init: function(config) {
+	init: function (config) {
 		// package shortcuts:
 		this.global = com.synckolab.global;
 		this.tools = com.synckolab.tools;
@@ -118,7 +118,7 @@ com.synckolab.Calendar = {
 			catch (ignore) 
 			{	}
 
-			if (this.syncTasks == true)
+			if (this.syncTasks === true)
 			{
 				// task config
 				try {
@@ -128,7 +128,7 @@ com.synckolab.Calendar = {
 					this.gSync = false;
 				}
 				
-				if (this.gSync == false)
+				if (this.gSync === false)
 					return;
 				this.folderPath = pref.getCharPref("SyncKolab."+config+".TaskFolderPath");
 				this.gCalendarName = pref.getCharPref("SyncKolab."+config+".Tasks");
@@ -155,7 +155,7 @@ com.synckolab.Calendar = {
 				}
 				com.synckolab.tools.logMessage("Calendar sync? " + this.gSync, com.synckolab.global.LOG_DEBUG);
 
-				if (this.gSync == false)
+				if (this.gSync === false)
 					return;
 				this.folderPath = pref.getCharPref("SyncKolab."+config+".CalendarFolderPath");
 				this.gCalendarName = pref.getCharPref("SyncKolab."+config+".Calendar");
@@ -181,8 +181,8 @@ com.synckolab.Calendar = {
 		var calendars = this.calTools.getCalendars();
 		for( var i = 0; i < calendars.length; i++ )
 		{
-			if (calendars[i].name == this.gCalendarName || 
-					com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name) == com.synckolab.tools.text.fixNameToMiniCharset(this.gCalendarName))
+			if (calendars[i].name === this.gCalendarName || 
+					com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name) === com.synckolab.tools.text.fixNameToMiniCharset(this.gCalendarName))
 			{
 				this.gCalendar = calendars[i];
 				break;
@@ -206,7 +206,7 @@ com.synckolab.Calendar = {
 	
 	init2: function (nextFunc, sync)	{
 
-		this.tools.logMessage("Init2 for " + (this.syncTasks == true?"tasks":"calendar"), this.global.LOG_DEBUG);
+		this.tools.logMessage("Init2 for " + (this.syncTasks === true?"tasks":"calendar"), this.global.LOG_DEBUG);
 		// get ALL the items from calendar - when done call nextfunc
 		this.gEvents.nextFunc = nextFunc;
 		this.gEvents.events = new Array();
@@ -215,7 +215,7 @@ com.synckolab.Calendar = {
 		
 		// gCalendar might be invalid if no calendar is selected in the settings
 		if (this.gCalendar) {
-			if (this.syncTasks == true)
+			if (this.syncTasks === true)
 				this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_TODO | this.gCalendar.ITEM_FILTER_COMPLETED_ALL, 0, null, null, this.gEvents);
 			else
 				this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_EVENT, 0, null, null, this.gEvents);
@@ -231,14 +231,14 @@ com.synckolab.Calendar = {
 		events: new Array(),
 		sync: '',
 		ready: false,
-		onOperationComplete: function(aCalendar, aStatus, aOperator, aId, aDetail) {
-			com.synckolab.tools.logMessage("operation "+(this.syncTasks == true?"tasks":"calendar")+": status="+aStatus + " Op=" + aOperator + " Detail=" + aDetail, com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_CAL);
-			if(aStatus == 2152333316) {
-				com.synckolab.tools.logMessage((this.syncTasks == true?"tasks":"calendar")+": duplicate id - for additem", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_CAL);
+		onOperationComplete: function (aCalendar, aStatus, aOperator, aId, aDetail) {
+			com.synckolab.tools.logMessage("operation "+(this.syncTasks === true?"tasks":"calendar")+": status="+aStatus + " Op=" + aOperator + " Detail=" + aDetail, com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_CAL);
+			if(aStatus === 2152333316) {
+				com.synckolab.tools.logMessage((this.syncTasks === true?"tasks":"calendar")+": duplicate id - for additem", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_CAL);
 			}
 			this.ready = true;
 			},
-		onGetResult: function(aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {
+		onGetResult: function (aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {
 				com.synckolab.tools.logMessage("got results: " + aCount + " items", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_CAL);
 				for (var i = 0; i < aCount; i++) {
 					this.events.push(aItems[i]);
@@ -248,9 +248,9 @@ com.synckolab.Calendar = {
 	/**
 	 * a callback function for synckolab.js - synckolab will only start with the sync when this returns true
 	 */
-	dataReady: function() {
+	dataReady: function () {
 		// check if we got the data already
-		if (this.gEvents.ready == false)
+		if (this.gEvents.ready === false)
 			return false;
 		
 		// make sure not to doublefill the map
@@ -263,14 +263,14 @@ com.synckolab.Calendar = {
 		}
 		this.tools.logMessage("Indexed " + this.gCalDB.length() + " Entries", this.global.LOG_CAL + this.global.LOG_DEBUG);
 		
-		this.tools.logMessage("Getting items for " + (this.syncTasks == true?"tasks":"calendar"), this.global.LOG_CAL + this.global.LOG_DEBUG);
+		this.tools.logMessage("Getting items for " + (this.syncTasks === true?"tasks":"calendar"), this.global.LOG_CAL + this.global.LOG_DEBUG);
 		
 		return true;
 	},
 	/**
 	 * Returns the number of cards in the adress book
 	 */
-	itemCount: function() {
+	itemCount: function () {
 		return this.gEvents.events.length;
 	},
 	
@@ -279,7 +279,7 @@ com.synckolab.Calendar = {
 	 * new message content is returned otherwise null
 	 * The content is already parsed and stripped of any headers
 	 */	
-	parseMessage: function(fileContent) {
+	parseMessage: function (fileContent) {
 		
 		// create a new item in the itemList for display
 		this.curItemInList = this.doc.createElement("listitem");
@@ -295,7 +295,7 @@ com.synckolab.Calendar = {
 		this.curItemInList.appendChild(this.curItemInListStatus);
 		this.curItemInList.appendChild(this.curItemInListContent);
 		
-		if (this.itemList != null)
+		if (this.itemList !== null)
 		{
 			this.itemList.appendChild(this.curItemInList);
 			com.synckolab.tools.scrollToBottom(this.itemList);
@@ -309,7 +309,7 @@ com.synckolab.Calendar = {
 		this.tools.logMessage("parsed event (message2Event)", this.global.LOG_CAL + this.global.LOG_DEBUG);
 		
 		
-		if (parsedEvent == null)
+		if (parsedEvent === null)
 		{
 			this.curItemInListId.setAttribute("label", com.synckolab.global.strBundle.getString("unparseable"));
 			return null;
@@ -333,7 +333,7 @@ com.synckolab.Calendar = {
 		// check for duplicate events
 		for (var i = 0; i < this.folderMessageUids.length; i++)
 		{
-			if (parsedEvent.id == this.folderMessageUids[i])
+			if (parsedEvent.id === this.folderMessageUids[i])
 			{
 				this.tools.logMessage("event is is already parsed.. deleting duplicate: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
 				this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("deleteOnServer"));
@@ -346,7 +346,7 @@ com.synckolab.Calendar = {
 		
 		// ok lets see if we have this one already 
 		var foundEvent = this.calTools.findEvent(this.gCalDB, parsedEvent.id);
-		this.tools.logMessage("findevent returned :" + foundEvent + "(" + (foundEvent == null?'null':foundEvent.id) + ") for " + parsedEvent.id + " caching " + this.gCalDB.length() + " events", this.global.LOG_CAL + this.global.LOG_DEBUG);
+		this.tools.logMessage("findevent returned :" + foundEvent + "(" + (foundEvent === null?'null':foundEvent.id) + ") for " + parsedEvent.id + " caching " + this.gCalDB.length() + " events", this.global.LOG_CAL + this.global.LOG_DEBUG);
 				
 		// get the dbfile from the local disk
 		var idxEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, this.getType(), parsedEvent.id);
@@ -356,7 +356,7 @@ com.synckolab.Calendar = {
 		this.tools.logMessage("idxEntry:" + idxEntry, this.global.LOG_CAL + this.global.LOG_DEBUG);
 		
 		// always add if the forceLocalCopy flag is set (happens when you change the configuration)
-		if (foundEvent == null || this.forceLocalCopy)
+		if (foundEvent === null || this.forceLocalCopy)
 		{
 			// a new event
 			this.tools.logMessage("a new event, locally unknown:" + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_DEBUG);
@@ -380,7 +380,7 @@ com.synckolab.Calendar = {
 				parsedEvent.alarmLastAck = lastAckTime;
 				
 				// if we dont have a timezone - set it
-				if(parsedEvent.timezone == null || parsedEvent.timezone.icalComponent == null) {
+				if(parsedEvent.timezone === null || parsedEvent.timezone.icalComponent === null) {
 					//parsedEvent.timezone = lastAckTime.timezone;
 				}
 				
@@ -424,7 +424,7 @@ com.synckolab.Calendar = {
 			
 			var cEvent = this.calTools.message2Event(com.synckolab.tools.readSyncDBFile(idxEntry), null, this.syncTasks);
 
-			var hasEntry = idxEntry.exists() && (cEvent != null);
+			var hasEntry = idxEntry.exists() && (cEvent !== null);
 			// make sure cEvent is not null, else the comparision will fail
 			this.tools.logMessage("Start comparing events....", this.global.LOG_CAL + this.global.LOG_DEBUG);
 			var equal2parsed = hasEntry && this.calTools.equalsEvent(cEvent, parsedEvent, this.syncTasks, this.email);
@@ -454,7 +454,7 @@ com.synckolab.Calendar = {
 				else
 					conflictResolution.result = 2;
 				
-				if (conflictResolution.result == 1)
+				if (conflictResolution.result === 1)
  				{
  					// take event from server
 					this.tools.logMessage("Take event from server: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
@@ -467,7 +467,7 @@ com.synckolab.Calendar = {
 	
 					for (var i = 0; i < this.gEvents.events.length; i++)
 					{
-						if (this.gEvents.events[i].id == parsedEvent.id)
+						if (this.gEvents.events[i].id === parsedEvent.id)
 						{
 							// if we change a local event make sure to set alarmLastAck
 							if (parsedEvent.alarmLastAck)
@@ -495,11 +495,11 @@ com.synckolab.Calendar = {
 					
 					// first check privacy info
 					var foundEvent = this.calTools.checkEventOnDeletion(foundEvent, parsedEvent, this);
-					if (!foundEvent || foundEvent == "DELETEME")
+					if (!foundEvent || foundEvent === "DELETEME")
 						return foundEvent;
 					
 					var msg = null;
-					if (this.format == "Xml")
+					if (this.format === "Xml")
 					{
 						msg = this.calTools.event2kolabXmlMsg(foundEvent, this.email, this.syncTasks);
 					} 
@@ -551,7 +551,7 @@ com.synckolab.Calendar = {
 	
 					for (var i = 0; i < this.gEvents.events.length; i++)
 					{
-						if (this.gEvents.events[i].id == parsedEvent.id)
+						if (this.gEvents.events[i].id === parsedEvent.id)
 						{
 							// if we change a local event make sure to set alarmLastAck
 							if (parsedEvent.alarmLastAck)
@@ -578,11 +578,11 @@ com.synckolab.Calendar = {
 					this.tools.logMessage("event on client changed: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
 	
 					var foundEvent = this.calTools.checkEventOnDeletion(foundEvent, parsedEvent, this);
-					if (!foundEvent || foundEvent == "DELETEME")
+					if (!foundEvent || foundEvent === "DELETEME")
 						return foundEvent;
 					
 					var msg = null;
-					if (this.format == "Xml")
+					if (this.format === "Xml")
 					{
 						msg = this.calTools.event2kolabXmlMsg(foundEvent, this.email, this.syncTasks);
 					} 
@@ -638,7 +638,7 @@ com.synckolab.Calendar = {
 	nextUpdate: function () {
 		this.tools.logMessage("next update...", this.global.LOG_CAL + this.global.LOG_DEBUG);
 		// if there happens an exception, we are done
-		if ((this.gEvents == null || this.gCurEvent >= this.gEvents.events.length))
+		if ((this.gEvents === null || this.gCurEvent >= this.gEvents.events.length))
 		{
 			this.tools.logMessage("done update...", this.global.LOG_CAL + this.global.LOG_INFO);
 			// we are done
@@ -646,7 +646,7 @@ com.synckolab.Calendar = {
 		}
 		this.tools.logMessage("get event ( "+this.gCurEvent+" of "+this.gEvents.events.length+")", this.global.LOG_CAL + this.global.LOG_DEBUG);
 		
-		if (this.gEvents != null && this.gCurEvent <= this.gEvents.events.length )
+		if (this.gEvents !== null && this.gCurEvent <= this.gEvents.events.length )
 		{
 			var cur = this.gEvents.events[this.gCurEvent++];
 			var msg = null;
@@ -654,7 +654,7 @@ com.synckolab.Calendar = {
 		
 			this.tools.logMessage ("nextUpdate for "+ ((this.syncTasks==true)?"task":"event") +":" + cur.id, this.global.LOG_CAL + this.global.LOG_DEBUG);
 
-			if(cur.id == null) {
+			if(cur.id === null) {
 				this.tools.logMessage("no id found for this element! skipping.", this.global.LOG_CAL + this.global.LOG_WARNING);
 				return null;
 			}
@@ -662,7 +662,7 @@ com.synckolab.Calendar = {
 			// check if we can skip this entry	(make sure we got a start and enddate.. otherwise it will fail)
 			var endDate = this.calTools.getEndDate(cur, this.syncTasks);		
 				
-			if (endDate != null && this.gSyncTimeFrame > 0 && (endDate.getTime() + (this.gSyncTimeFrame * 86400000) < (new Date()).getTime()))
+			if (endDate !== null && this.gSyncTimeFrame > 0 && (endDate.getTime() + (this.gSyncTimeFrame * 86400000) < (new Date()).getTime()))
 			{
 					this.tools.logMessage("skipping event because its too old: " + cur.id, this.global.LOG_CAL + this.global.LOG_INFO);
 					return null;
@@ -680,7 +680,7 @@ com.synckolab.Calendar = {
 			// has been processed already when reading the IMAP msgs
 			for (var i = 0; i < this.folderMessageUids.length; i++)
 			{
-				if (cur.id == this.folderMessageUids[i])
+				if (cur.id === this.folderMessageUids[i])
 				{
 					this.tools.logMessage("event is known from IMAP lookup: " + cur.id, this.global.LOG_CAL + this.global.LOG_INFO);
 					writeCur = false;
@@ -723,7 +723,7 @@ com.synckolab.Calendar = {
 					this.curItemInList.appendChild(this.curItemInListStatus);
 					this.curItemInList.appendChild(this.curItemInListContent);
 					
-					if (this.itemList != null)
+					if (this.itemList !== null)
 					{
 						this.itemList.appendChild(this.curItemInList);
 						com.synckolab.tools.scrollToBottom(this.itemList);
@@ -745,7 +745,7 @@ com.synckolab.Calendar = {
 					this.curItemInList.appendChild(this.curItemInListStatus);
 					this.curItemInList.appendChild(this.curItemInListContent);
 					
-					if (this.itemList != null)
+					if (this.itemList !== null)
 					{
 						this.itemList.appendChild(this.curItemInList);
 						com.synckolab.tools.scrollToBottom(this.itemList);
@@ -763,7 +763,7 @@ com.synckolab.Calendar = {
 				var clonedEvent = cur;
 				clonedEvent = this.calTools.modifyEventOnExport(cur, this);
 
-				if (this.format == "Xml")
+				if (this.format === "Xml")
 				{
 					msg = this.calTools.event2kolabXmlMsg(clonedEvent, this.email, this.syncTasks);
 				} 

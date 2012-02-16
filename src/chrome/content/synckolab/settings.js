@@ -52,7 +52,7 @@ com.synckolab.settings = {
 		// string bundle use: strBundle.getString("KEYNAME")
 		strBundle: null,
 
-		init: function() {
+		init: function () {
 			// init field type array
 			this.CONFIG_FIELD_TYPES["Configs"] = this.FIELD_TYPE_CHAR;
 			this.CONFIG_FIELD_TYPES["syncOnStart"] = this.FIELD_TYPE_BOOL;
@@ -116,7 +116,7 @@ com.synckolab.settings = {
 			
 			// in case we did not find anything - check if there are "old" configurations
 			// and use them (like an importer)
-			if (configs.length == 0)
+			if (configs.length === 0)
 			{
 				var oldConfigs = new Array();
 				try {
@@ -149,7 +149,7 @@ com.synckolab.settings = {
 				{
 					var addMe = true;
 					for (var j=0; j < configs.length; j++)
-						if (configs[j] == oldConfigs[i])
+						if (configs[j] === oldConfigs[i])
 						{
 							addMe = false;
 							break;
@@ -164,7 +164,7 @@ com.synckolab.settings = {
 			document.getElementById("loadConfig").setAttribute("disabled", configStateLocked);
 			document.getElementById("delConfig").setAttribute("disabled", configStateLocked);
 			
-			if (configs.length == 0)
+			if (configs.length === 0)
 			{
 				com.synckolab.settings.addConfig();
 				return;
@@ -177,9 +177,9 @@ com.synckolab.settings = {
 			var ctree = null;
 			
 			var cnode = tree.firstChild;
-			while (cnode != null)
+			while (cnode !== null)
 			{
-				if (cnode.nodeName == "treechildren")
+				if (cnode.nodeName === "treechildren")
 				{
 					ctree = cnode;
 					break;
@@ -187,7 +187,7 @@ com.synckolab.settings = {
 				cnode = cnode.nextSibling;
 			}
 			
-			if (ctree == null)
+			if (ctree === null)
 				return null;
 
 			var tItem = document.createElement("treeitem");
@@ -249,7 +249,7 @@ com.synckolab.settings = {
 				var sCLabel = "skDebugLevel"+iCLabel;
 				var cLabel = document.getElementById(sCLabel);
 				// get the label
-				if (cLabel != null)
+				if (cLabel !== null)
 					debugEle.setAttribute("label", cLabel.getAttribute("label"));
 				else
 					com.synckolab.tools.logMessage("WARNING: could not find Label " + sCLabel, com.synckolab.global.LOG_WARNING);
@@ -271,7 +271,7 @@ com.synckolab.settings = {
 		generateConfigTree: function (configuration)
 		{
 			// skip bad config names
-			if (configuration == null || configuration == "" || configuration.indexOf(" ") != -1)
+			if (configuration === null || configuration === "" || configuration.indexOf(" ") !== -1)
 				return;
 			
 			// get the root tree element
@@ -280,9 +280,9 @@ com.synckolab.settings = {
 			var ctree = null;
 			
 			var cnode = tree.firstChild;
-			while (cnode != null)
+			while (cnode !== null)
 			{
-				if (cnode.nodeName == "treechildren")
+				if (cnode.nodeName === "treechildren")
 				{
 					ctree = cnode;
 					break;
@@ -290,7 +290,7 @@ com.synckolab.settings = {
 				cnode = cnode.nextSibling;
 			}
 			
-			if (ctree == null)
+			if (ctree === null)
 				return null;
 
 			var tItem = document.createElement("treeitem");
@@ -344,9 +344,9 @@ com.synckolab.settings = {
 			}	
 		},
 
-		setSyncPrefView: function(viewName)
+		setSyncPrefView: function (viewName)
 		{
-			if (viewName.indexOf("-") == -1)
+			if (viewName.indexOf("-") === -1)
 			{
 				alert("Fatal ERROR - unable to get view");
 				return;
@@ -381,7 +381,7 @@ com.synckolab.settings = {
 		},
 
 
-		prefillFields: function() {
+		prefillFields: function () {
 		
 		
 			// the format selection boxes:
@@ -444,7 +444,7 @@ com.synckolab.settings = {
 			{
 				var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
 				com.synckolab.tools.logMessage("Account found: " + account.rootMsgFolder.baseMessageURI, com.synckolab.global.LOG_DEBUG);		
-				if (account.rootMsgFolder.baseMessageURI.toLowerCase().indexOf("imap") == -1)
+				if (account.rootMsgFolder.baseMessageURI.toLowerCase().indexOf("imap") === -1)
 				{
 					com.synckolab.tools.logMessage("Account " + account.rootMsgFolder.baseMessageURI + " is not an imap account - skipping!", com.synckolab.global.LOG_INFO);
 					continue;
@@ -468,7 +468,7 @@ com.synckolab.settings = {
 			var ABook = cn.getNext();
 			
 			// we only have ONE address book - means a fresh install - notify the user
-			if(ABook == null) {
+			if(ABook === null) {
 				alert(this.strBundle.getString("noAddressBook"));
 				// close the window
 				window.close();
@@ -498,7 +498,7 @@ com.synckolab.settings = {
 					abpopup.appendChild(abchild);
 					abchild.setAttribute("label", calendars[i].name);
 					abchild.setAttribute("value", com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
-					if (i == 0)
+					if (i === 0)
 					{
 						abchild.setAttribute("selected", "true");
 						abList.setAttribute("label", calendars[i].name);
@@ -509,7 +509,7 @@ com.synckolab.settings = {
 					taskpopup.appendChild(abchild);
 					abchild.setAttribute("label", calendars[i].name);
 					abchild.setAttribute("value", com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
-					if (i == 0)
+					if (i === 0)
 					{
 						abchild.setAttribute("selected", "true");
 						taskList.setAttribute("label", calendars[i].name);
@@ -519,13 +519,13 @@ com.synckolab.settings = {
 			}	
 		},
 		
-		fillAddressBook: function(cn, ABook) {
+		fillAddressBook: function (cn, ABook) {
 			var abList = document.getElementById("conURL");
 			// delete the childs of the list
 			var cnode = abList.firstChild;
-			while (cnode != null)
+			while (cnode !== null)
 			{
-				if (cnode.nodeName == "menupopup")
+				if (cnode.nodeName === "menupopup")
 				{
 					abList.removeChild(cnode);
 				}
@@ -536,7 +536,7 @@ com.synckolab.settings = {
 			abList.appendChild(abpopup);
 
 			var isFirst = true;
-			while (ABook != null)
+			while (ABook !== null)
 			{
 				var cur = ABook.QueryInterface(Components.interfaces.nsIAbDirectory);
 				var abchild = document.createElement("menuitem");
@@ -589,10 +589,10 @@ com.synckolab.settings = {
 		{
 			
 			// didnt change anything
-			if (config == this.curConfig)
+			if (config === this.curConfig)
 				return;
 				
-			if (this.curConfig != null)
+			if (this.curConfig !== null)
 				this.saveAllPrefs();
 				
 			this.curConfig = config;
@@ -632,7 +632,7 @@ com.synckolab.settings = {
 				}
 		
 				// if no account config found - preselect the first one
-				if (act == null)
+				if (act === null)
 				{
 					alert("No account found");
 				}
@@ -641,9 +641,9 @@ com.synckolab.settings = {
 				var actList = document.getElementById("ImapAcct");
 				// go through the items
 				var cur = actList.firstChild.firstChild;
-				while (cur != null)
+				while (cur !== null)
 				{
-					if (cur.getAttribute("value") == act)
+					if (cur.getAttribute("value") === act)
 					{
 						actList.selectedItem = cur;
 						actList.setAttribute("label", cur.getAttribute("label"));
@@ -714,9 +714,9 @@ com.synckolab.settings = {
 				actList = document.getElementById("DefaultResolve");
 				// go through the items
 				cur = actList.firstChild.firstChild;
-				while (cur != null)
+				while (cur !== null)
 				{
-					if (cur.getAttribute("value") == resolve)
+					if (cur.getAttribute("value") === resolve)
 					{
 						actList.selectedItem = cur;
 						actList.setAttribute("label", cur.getAttribute("label"));
@@ -747,12 +747,12 @@ com.synckolab.settings = {
 				var findAddressBook = false;
 				actList = document.getElementById("conURL");
 				// go through the items
-				if (actList.firstChild != null)
+				if (actList.firstChild !== null)
 				{
 					var cur = actList.firstChild.firstChild;
-					while (cur != null)
+					while (cur !== null)
 					{
-						if (cur.getAttribute("value") == ab)
+						if (cur.getAttribute("value") === ab)
 						{
 							actList.selectedItem = cur;
 							actList.setAttribute("label", cur.getAttribute("label"));
@@ -795,9 +795,9 @@ com.synckolab.settings = {
 				actList = document.getElementById("conFormat");
 				// go through the items
 				var cur = actList.firstChild.firstChild;
-				while (cur != null)
+				while (cur !== null)
 				{
-					if (cur.getAttribute("value") == abFormat)
+					if (cur.getAttribute("value") === abFormat)
 					{
 						actList.selectedItem = cur;
 						actList.setAttribute("label", cur.getAttribute("label"));
@@ -855,12 +855,12 @@ com.synckolab.settings = {
 				this.updateFolder (act);
 				this.updateFolder (act);
 		
-				if (sCurFolder != null)
+				if (sCurFolder !== null)
 				{
 					var tree = document.getElementById ("conImapFolder");
 					
 					// make sure we have the correct folder in the view
-					if (document.getElementById(sCurFolder) != null)
+					if (document.getElementById(sCurFolder) !== null)
 					{			
 						var treei = tree.view.getIndexOfItem(document.getElementById(sCurFolder));
 						if (treei < 0)
@@ -889,9 +889,9 @@ com.synckolab.settings = {
 					actList = document.getElementById("calURL");
 					// go through the items
 					var cur = actList.firstChild.firstChild;
-					while (cur != null)
+					while (cur !== null)
 					{
-						if (cur.getAttribute("value") == ab)
+						if (cur.getAttribute("value") === ab)
 						{
 							actList.selectedItem = cur;
 							actList.setAttribute("label", cur.getAttribute("label"));
@@ -918,9 +918,9 @@ com.synckolab.settings = {
 					actList = document.getElementById("calFormat");
 					// go through the items
 					var cur = actList.firstChild.firstChild;
-					while (cur != null)
+					while (cur !== null)
 					{
-						if (cur.getAttribute("value") == calFormat)
+						if (cur.getAttribute("value") === calFormat)
 						{
 							actList.selectedItem = cur;
 							actList.setAttribute("label", cur.getAttribute("label"));
@@ -987,11 +987,11 @@ com.synckolab.settings = {
 					}
 					this.updateCalFolder (act);
 					this.updateCalFolder (act);
-					if (sCurFolder != null)
+					if (sCurFolder !== null)
 					{
 						var tree= document.getElementById ("calImapFolder");
 						// make sure we have the correct folder in the view
-						if (document.getElementById(sCurFolder+"c") != null)
+						if (document.getElementById(sCurFolder+"c") !== null)
 						{			
 							var treei = tree.view.getIndexOfItem(document.getElementById(sCurFolder+"c"));
 							if (treei < 0)
@@ -1024,9 +1024,9 @@ com.synckolab.settings = {
 					actList = document.getElementById("taskURL");
 					// go through the items
 					var cur = actList.firstChild.firstChild;
-					while (cur != null)
+					while (cur !== null)
 					{
-						if (cur.getAttribute("value") == ab)
+						if (cur.getAttribute("value") === ab)
 						{
 							actList.selectedItem = cur;
 							actList.setAttribute("label", cur.getAttribute("label"));
@@ -1053,9 +1053,9 @@ com.synckolab.settings = {
 					actList = document.getElementById("taskFormat");
 					// go through the items
 					var cur = actList.firstChild.firstChild;
-					while (cur != null)
+					while (cur !== null)
 					{
-						if (cur.getAttribute("value") == calFormat)
+						if (cur.getAttribute("value") === calFormat)
 						{
 							actList.selectedItem = cur;
 							actList.setAttribute("label", cur.getAttribute("label"));
@@ -1128,11 +1128,11 @@ com.synckolab.settings = {
 					}
 					this.updateTaskFolder (act);
 					this.updateTaskFolder (act);
-					if (sCurFolder != null)
+					if (sCurFolder !== null)
 					{
 						var tree= document.getElementById ("taskImapFolder");
 						// make sure we have the correct folder in the view
-						if (document.getElementById(sCurFolder+"t") != null)
+						if (document.getElementById(sCurFolder+"t") !== null)
 						{			
 							var treei = tree.view.getIndexOfItem(document.getElementById(sCurFolder+"t"));
 							if (treei < 0) {
@@ -1161,7 +1161,7 @@ com.synckolab.settings = {
 		/**
 		 * set all folders after an account change
 		 */
-		setFolders: function(act) {
+		setFolders: function (act) {
 			this.updateFolder(act);
 			this.updateCalFolder(act);
 			this.updateTaskFolder(act);
@@ -1175,15 +1175,15 @@ com.synckolab.settings = {
 				try
 				{
 					var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-					if (account.rootMsgFolder.baseMessageURI == act || com.synckolab.tools.text.accountNameFix(account.prettyName) == act)
+					if (account.rootMsgFolder.baseMessageURI === act || com.synckolab.tools.text.accountNameFix(account.prettyName) === act)
 					{
 									
 						var cfold = document.getElementById ("conImapFolder");
 						// delete the treechildren if exist
 						var cnode = cfold.firstChild;
-						while (cnode != null)
+						while (cnode !== null)
 						{
-							if (cnode.nodeName == "treechildren")
+							if (cnode.nodeName === "treechildren")
 							{
 								cfold.removeChild(cnode);
 								break;
@@ -1211,7 +1211,7 @@ com.synckolab.settings = {
 		 * @param config the config name
 		 * @param type CALENDAR|TASK|CONTACT + FOLDER
 		 */
-		resetConfiguration: function(config, type)
+		resetConfiguration: function (config, type)
 		{
 			var file = Components.classes["@mozilla.org/file/directory_service;1"].
 			   getService(Components.interfaces.nsIProperties).
@@ -1284,9 +1284,9 @@ com.synckolab.settings = {
 			
 		},
 		
-		setFolder: function(uri)
+		setFolder: function (uri)
 		{
-			if (this.curConfig == null)
+			if (this.curConfig === null)
 			{
 				return;
 			}
@@ -1334,7 +1334,7 @@ com.synckolab.settings = {
 					return;
 				}
 				
-				while (subfolders != null)
+				while (subfolders !== null)
 				{
 					var cur = null;
 					// tbird < 3
@@ -1343,7 +1343,7 @@ com.synckolab.settings = {
 					else
 						cur = subfolders.getNext();
 					
-					if (cur == null)
+					if (cur === null)
 						break;
 					
 					cur = cur.QueryInterface(Components.interfaces.nsIMsgFolder);
@@ -1373,9 +1373,9 @@ com.synckolab.settings = {
 			}
 		},
 		
-		setCalFolder: function(uri)
+		setCalFolder: function (uri)
 		{
-			if (this.curConfig == null)
+			if (this.curConfig === null)
 			{
 				return;
 			}
@@ -1385,9 +1385,9 @@ com.synckolab.settings = {
 			this.resetConfiguration(this.curConfig, "CALENDARFOLDER");
 		},
 		
-		setTaskFolder: function(uri)
+		setTaskFolder: function (uri)
 		{
-			if (this.curConfig == null)
+			if (this.curConfig === null)
 			{
 				return;
 			}
@@ -1407,14 +1407,14 @@ com.synckolab.settings = {
 				try
 				{
 					var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-					if (account.rootMsgFolder.baseMessageURI == act || com.synckolab.tools.text.accountNameFix(account.prettyName) == act)
+					if (account.rootMsgFolder.baseMessageURI === act || com.synckolab.tools.text.accountNameFix(account.prettyName) === act)
 					{
 						var cfold = document.getElementById ("calImapFolder");
 						// delete the treechildren if exist
 						var cnode = cfold.firstChild;
-						while (cnode != null)
+						while (cnode !== null)
 						{
-							if (cnode.nodeName == "treechildren")
+							if (cnode.nodeName === "treechildren")
 							{
 								cfold.removeChild(cnode);
 								break;
@@ -1448,14 +1448,14 @@ com.synckolab.settings = {
 				try
 				{
 					var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-					if (account.rootMsgFolder.baseMessageURI == act || com.synckolab.tools.text.accountNameFix(account.prettyName) == act)
+					if (account.rootMsgFolder.baseMessageURI === act || com.synckolab.tools.text.accountNameFix(account.prettyName) === act)
 					{
 						var cfold = document.getElementById ("taskImapFolder");
 						// delete the treechildren if exist
 						var cnode = cfold.firstChild;
-						while (cnode != null)
+						while (cnode !== null)
 						{
-							if (cnode.nodeName == "treechildren")
+							if (cnode.nodeName === "treechildren")
 							{
 								cfold.removeChild(cnode);
 								break;
@@ -1479,12 +1479,12 @@ com.synckolab.settings = {
 		},
 		
 		saveAllPrefs: function (configName) {
-			if (this.curConfig == null && (!configName || configName == null))
+			if (this.curConfig === null && (!configName || configName === null))
 				return;
 			
 			var config = this.curConfig;
 			
-			if (config == null)
+			if (config === null)
 				config = configName;
 				
 			var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
@@ -1496,7 +1496,7 @@ com.synckolab.settings = {
 			else
 				pref.setCharPref("SyncKolab."+config+".Resolve", "ask");
 		
-			if (document.getElementById("syncInterval") && parseInt(document.getElementById ("syncInterval").value) != 'NaN')
+			if (document.getElementById("syncInterval") && parseInt(document.getElementById ("syncInterval").value) !== 'NaN')
 				pref.setIntPref("SyncKolab."+config+".autoSync", parseInt(document.getElementById ("syncInterval").value));
 			else
 				pref.setIntPref("SyncKolab."+config+".autoSync", 0);
@@ -1523,7 +1523,7 @@ com.synckolab.settings = {
 				pref.setCharPref("SyncKolab."+config+".CalendarFormat", document.getElementById ("calFormat").value);
 				pref.setBoolPref("SyncKolab."+config+".saveToCalendarImap", document.getElementById ("saveToCalendarImap").checked);
 				pref.setBoolPref("SyncKolab."+config+".syncCalendar", document.getElementById ("syncCalendar").checked);
-				if (document.getElementById("calSyncTimeframe") != null && parseInt(document.getElementById("calSyncTimeframe").value) != 'NaN')
+				if (document.getElementById("calSyncTimeframe") !== null && parseInt(document.getElementById("calSyncTimeframe").value) !== 'NaN')
 					pref.setIntPref("SyncKolab."+config+".calSyncTimeframe", parseInt(document.getElementById("calSyncTimeframe").value));
 				else
 					pref.setIntPref("SyncKolab."+config+".calSyncTimeframe", 180);
@@ -1532,7 +1532,7 @@ com.synckolab.settings = {
 				pref.setCharPref("SyncKolab."+config+".TaskFormat", document.getElementById ("taskFormat").value);
 				pref.setBoolPref("SyncKolab."+config+".saveToTaskImap", document.getElementById ("saveToTaskImap").checked);
 				pref.setBoolPref("SyncKolab."+config+".syncTasks", document.getElementById ("syncTasks").checked);
-				if (document.getElementById("taskSyncTimeframe") && parseInt(document.getElementById("taskSyncTimeframe").value) != 'NaN')
+				if (document.getElementById("taskSyncTimeframe") && parseInt(document.getElementById("taskSyncTimeframe").value) !== 'NaN')
 					pref.setIntPref("SyncKolab."+config+".taskSyncTimeframe", parseInt(document.getElementById("taskSyncTimeframe").value));
 				else
 					pref.setIntPref("SyncKolab."+config+".taskSyncTimeframe", 180);
@@ -1541,7 +1541,7 @@ com.synckolab.settings = {
 		
 		
 		// called when closed (OK)
-		savePrefs: function() {
+		savePrefs: function () {
 			var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 		
 			try {
@@ -1564,9 +1564,9 @@ com.synckolab.settings = {
 			// get the treechildren item
 			var ctree;
 			var cnode = tree.firstChild;
-			while (cnode != null)
+			while (cnode !== null)
 			{
-				if (cnode.nodeName == "treechildren")
+				if (cnode.nodeName === "treechildren")
 				{
 					ctree = cnode;
 					break;
@@ -1574,17 +1574,17 @@ com.synckolab.settings = {
 				cnode = cnode.nextSibling;
 			}
 			
-			if (ctree == null)
+			if (ctree === null)
 				return null;
 		
 			// first menuitem
 			var cur = ctree.firstChild;
 			var configs = "";
-			while (cur != null)
+			while (cur !== null)
 			{
-				if (cur.nodeName == "treeitem")
+				if (cur.nodeName === "treeitem")
 				{
-					if (cur.firstChild.firstChild.getAttribute("id") != "Welcome-Welcome" && cur.firstChild.firstChild.getAttribute("label") != this.strBundle.getString("aboutSyncKolab"))
+					if (cur.firstChild.firstChild.getAttribute("id") !== "Welcome-Welcome" && cur.firstChild.firstChild.getAttribute("label") !== this.strBundle.getString("aboutSyncKolab"))
 						configs += cur.firstChild.firstChild.getAttribute("label") + ";";
 				}
 				cur = cur.nextSibling;
@@ -1597,7 +1597,7 @@ com.synckolab.settings = {
 					
 		},
 		
-		addConfig: function()
+		addConfig: function ()
 		{
 		    if (window.opener)
 				 window.opener.open('chrome://synckolab/content/newWizard.xul', 'newWizard', 'chrome,resizable=0');
@@ -1607,7 +1607,7 @@ com.synckolab.settings = {
 			window.close();
 		},
 		
-		delConfig: function()
+		delConfig: function ()
 		{
 			var config = this.curConfig;
 			if (confirm(this.strBundle.getFormattedString("configDelete", [config])))
@@ -1616,9 +1616,9 @@ com.synckolab.settings = {
 				var tree = document.getElementById("configTree");
 				var ctree;
 				var cnode = tree.firstChild;
-				while (cnode != null)
+				while (cnode !== null)
 				{
-					if (cnode.nodeName == "treechildren")
+					if (cnode.nodeName === "treechildren")
 					{
 						ctree = cnode;
 						break;
@@ -1626,24 +1626,24 @@ com.synckolab.settings = {
 					cnode = cnode.nextSibling;
 				}
 				
-				if (ctree == null)
+				if (ctree === null)
 					return null;
 		
 				// first menuitem
 				var cur = ctree.firstChild;
 				var configs = "";
 				var delNode = null;
-				while (cur != null)
+				while (cur !== null)
 				{
-					if (cur.nodeName == "treeitem")
+					if (cur.nodeName === "treeitem")
 					{
-						if (config == cur.firstChild.firstChild.getAttribute("label"))
+						if (config === cur.firstChild.firstChild.getAttribute("label"))
 						{
 							delNode = cur;
 						}
 						else
 						{
-							if (cur.firstChild.firstChild.getAttribute("id") != "Welcome-Welcome" && cur.firstChild.firstChild.getAttribute("label") != this.strBundle.getString("aboutSyncKolab"))
+							if (cur.firstChild.firstChild.getAttribute("id") !== "Welcome-Welcome" && cur.firstChild.firstChild.getAttribute("label") !== this.strBundle.getString("aboutSyncKolab"))
 							{
 								// skip this node
 								cur = cur.nextSibling;
@@ -1687,7 +1687,7 @@ com.synckolab.settings = {
 				
 				this.curConfig = null;
 		
-				if (delNode != null)
+				if (delNode !== null)
 				{
 					try
 					{
@@ -1700,7 +1700,7 @@ com.synckolab.settings = {
 		/**
 		 * Enables/disables the controls on the page
 		 */
-		setControlStateContacts: function(active) 
+		setControlStateContacts: function (active) 
 		{
 			var fieldsArray = new Array(
 				"conURL",
@@ -1718,7 +1718,7 @@ com.synckolab.settings = {
 		/**
 		 * Enables/disables the autosync on start
 		 */
-		setSyncOnStart: function(active) 
+		setSyncOnStart: function (active) 
 		{
 			
 		},
@@ -1726,7 +1726,7 @@ com.synckolab.settings = {
 		/**
 		 * Enables/disables the controls on the page
 		 */
-		setControlStateCalendar: function(active) 
+		setControlStateCalendar: function (active) 
 		{
 			var fieldsArray = new Array(
 				"calURL",
@@ -1738,7 +1738,7 @@ com.synckolab.settings = {
 		
 			
 			for(var i=0 ; i < fieldsArray.length ; i++ ) {
-				if (document.getElementById(fieldsArray[i]) != null)
+				if (document.getElementById(fieldsArray[i]) !== null)
 					document.getElementById(fieldsArray[i]).disabled = !active;
 			}
 		},
@@ -1746,7 +1746,7 @@ com.synckolab.settings = {
 		/**
 		 * Enables/disables the controls on the page
 		 */
-		setControlStateTasks: function(active) 
+		setControlStateTasks: function (active) 
 		{
 			var fieldsArray = new Array(
 				"taskURL",
@@ -1758,7 +1758,7 @@ com.synckolab.settings = {
 		
 			
 			for(var i=0 ; i < fieldsArray.length ; i++ ) {
-				if (document.getElementById(fieldsArray[i]) != null)
+				if (document.getElementById(fieldsArray[i]) !== null)
 					document.getElementById(fieldsArray[i]).disabled = !active;
 			}
 		},
@@ -1767,7 +1767,7 @@ com.synckolab.settings = {
 		/**
 		 * Save a single Configuration
 		 */
-		saveSingleConfig: function()
+		saveSingleConfig: function ()
 		{
 			var configName = this.curConfig;
 			var nsIFilePicker = Components.interfaces.nsIFilePicker;
@@ -1777,7 +1777,7 @@ com.synckolab.settings = {
 			fp.defaultString = configName + ".config";
 			fp.defaultExtension = "config";
 			var res = fp.show();
-			if (res == nsIFilePicker.returnOK){
+			if (res === nsIFilePicker.returnOK){
 				var thefile = fp.file;
 				// open the file
 				thefile.create(thefile.NORMAL_FILE_TYPE, 0600);
@@ -1799,7 +1799,7 @@ com.synckolab.settings = {
 		/**
 		 * Load a configuration from a file
 		 */
-		loadConfig: function()
+		loadConfig: function ()
 		{
 			var nsIFilePicker = Components.interfaces.nsIFilePicker;
 			var fp = Components.classes["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
@@ -1808,7 +1808,7 @@ com.synckolab.settings = {
 			fp.defaultString = "SyncKolab.config";
 			fp.defaultExtension = "config";
 			var res = fp.show();
-			if (res == nsIFilePicker.returnOK){
+			if (res === nsIFilePicker.returnOK){
 				var file = fp.file;
 		
 				if ((!file.exists()) || (!file.isReadable()))
@@ -1824,7 +1824,7 @@ com.synckolab.settings = {
 				istream.QueryInterface(Components.interfaces.nsILineInputStream); 
 				var fileContent = "";
 				var csize = 0; 
-				while ((csize = fileScriptableIO.available()) != 0)
+				while ((csize = fileScriptableIO.available()) !== 0)
 				{
 					fileContent += fileScriptableIO.read( csize );
 				}
@@ -1838,7 +1838,7 @@ com.synckolab.settings = {
 				var fullPref = false;
 				for (var i=0; i < lePrefs.length; i++)
 				{
-					if (lePrefs[i].indexOf("SyncKolab.Configs") != -1)
+					if (lePrefs[i].indexOf("SyncKolab.Configs") !== -1)
 						fullPref = true;
 				}
 				
@@ -1851,7 +1851,7 @@ com.synckolab.settings = {
 					{
 						var cLine = lePrefs[i].trim();
 						// skip comments
-						if (cLine.indexOf("#") == 0)
+						if (cLine.indexOf("#") === 0)
 							continue;
 						if (cLine.length < 4)
 							continue;
@@ -1869,7 +1869,7 @@ com.synckolab.settings = {
 						switch (keyType)
 						{
 						case this.FIELD_TYPE_BOOL:
-							pref.setBoolPref(name, (value == 'true' ? true : false) );
+							pref.setBoolPref(name, (value === 'true' ? true : false) );
 							break;
 						case this.FIELD_TYPE_CHAR:
 							pref.setCharPref(name, value);
@@ -1889,11 +1889,11 @@ com.synckolab.settings = {
 					for (var i=0; i < lePrefs.length; i++)
 					{
 						var cLine = lePrefs[i].trim();
-						if (cLine.indexOf("Configuration") == 0)
+						if (cLine.indexOf("Configuration") === 0)
 							prefName = cLine.split('=')[1].trim();
 					}
 					
-					if (prefName == null)
+					if (prefName === null)
 					{
 						alert(this.strBundle.getString("configInvalid"));
 						return;
@@ -1912,7 +1912,7 @@ com.synckolab.settings = {
 					var haveConfig = false;			
 					for (var i=0; i < configs.length; i++)
 					{
-						if (configs[i] == prefName)
+						if (configs[i] === prefName)
 						{
 							if (!confirm(this.strBundle.getString("configOverwrite") + prefName))
 								return;
@@ -1932,9 +1932,9 @@ com.synckolab.settings = {
 					{
 						var cLine = lePrefs[i].trim();
 						// skip comments
-						if (cLine.indexOf("#") == 0)
+						if (cLine.indexOf("#") === 0)
 							continue;
-						if (cLine.indexOf("Configuration") == 0)
+						if (cLine.indexOf("Configuration") === 0)
 							continue;
 						if (cLine.length < 4)
 							continue;
@@ -1965,7 +1965,7 @@ com.synckolab.settings = {
 		/**
 		 * Save all Configurations (incl. global options)
 		 */
-		saveAllConfig: function()
+		saveAllConfig: function ()
 		{
 			var nsIFilePicker = Components.interfaces.nsIFilePicker;
 			var fp = Components.classes["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
@@ -1974,7 +1974,7 @@ com.synckolab.settings = {
 			fp.defaultString = "SyncKolab.config";
 			fp.defaultExtension = "config";
 			var res = fp.show();
-			if (res == nsIFilePicker.returnOK || res == nsIFilePicker.returnReplace){
+			if (res === nsIFilePicker.returnOK || res === nsIFilePicker.returnReplace){
 				var thefile = fp.file;
 		
 			 	// write basics
@@ -1992,7 +1992,7 @@ com.synckolab.settings = {
 			
 				// in case we did not find anything - check if there are "old" configurations
 				// and use them (like an importer)
-				if (configs.length == 0)
+				if (configs.length === 0)
 				{
 					var oldConfigs = new Array();
 					try {
@@ -2015,7 +2015,7 @@ com.synckolab.settings = {
 					{
 						var addMe = true;
 						for (var j=0; j < configs.length; j++)
-							if (configs[j] == oldConfigs[i])
+							if (configs[j] === oldConfigs[i])
 							{
 								addMe = false;
 								break;
@@ -2025,7 +2025,7 @@ com.synckolab.settings = {
 					}
 				}
 			
-				if (configs.length == 0)
+				if (configs.length === 0)
 				{
 					return;
 				}
@@ -2070,7 +2070,7 @@ com.synckolab.settings = {
 			}
 		},
 		
-		loadConfigItem: function(config, paramName, paramValue)
+		loadConfigItem: function (config, paramName, paramValue)
 		{
 			var paramParts = new Array();
 			paramParts = paramName.split('.');
@@ -2101,7 +2101,7 @@ com.synckolab.settings = {
 			}
 		},
 		
-		writeConfigItem: function(file, config, keyPrefix, keyName)
+		writeConfigItem: function (file, config, keyPrefix, keyName)
 		{
 			var keyValue = null;
 			var keyType = this.CONFIG_FIELD_TYPES[keyName];
@@ -2125,7 +2125,7 @@ com.synckolab.settings = {
 		
 		writeLine: function (file, key, value)
 		{
-			if (value == null || key == null)
+			if (value === null || key === null)
 				return;
 			var s = key + "=" + value + "\n";
 			file.write(s, s.length);
@@ -2135,7 +2135,7 @@ com.synckolab.settings = {
 		 */
 		writeConfig: function (config, file)
 		{
-			if(!config || config == '')
+			if(!config || config === '')
 				return;
 			
 			var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);

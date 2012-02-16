@@ -39,7 +39,7 @@ com.synckolab.contactConflict = {
 	conflictsArray: null,
 	conflictResolution: null,
 
-	doOK: function()
+	doOK: function ()
 	{
 		//User submitted, now check, did user accept only server, only local, or combination of both
 		var bServerOnly = true;
@@ -60,7 +60,7 @@ com.synckolab.contactConflict = {
 			for ( i=0 ; i < this.conflictsArray.length ; i++ ) {
 				serverValue = com.synckolab.addressbookTools.getCardProperty(this.serverCard, conflictsArray[i]);
 				localValue = com.synckolab.addressbookTools.getCardProperty(this.localCard, conflictsArray[i]);
-				if ( document.getElementById(this.conflictsArray[i]).selectedIndex == 0 )
+				if ( document.getElementById(this.conflictsArray[i]).selectedIndex === 0 )
 					com.synckolab.addressbookTools.setCardProperty(this.localCard,this.conflictsArray[i], serverValue);
 				else
 					com.synckolab.addressbookTools.setCardProperty(this.serverCard,this.conflictsArray[i], localValue);
@@ -70,7 +70,7 @@ com.synckolab.contactConflict = {
 		return true;
 	},
 
-	doCancel: function()
+	doCancel: function ()
 	{
 		this.conflictResolution.result = 0;
 		return true;
@@ -134,29 +134,29 @@ com.synckolab.contactConflict = {
 				document.getElementById(this.conflictsArray[i]+"Static").hidden = true;
 			
 			e.hidden = false; //Name is hidden by default, so always unhide just in case
-			if ( conflictsArray[i] == "preferMailFormat" ) {
+			if ( conflictsArray[i] === "preferMailFormat" ) {
 				//Handling the special case of Email format preference
 				switch ( serverValue ) {
-					case 1 :
-						e.appendItem("Plain Text [Server]",1);
-						break;
-					case 2 :
-						e.appendItem("HTML [Server]",2);
-						break;
-					default :
-						e.appendItem("Unknown [Server]",0);
-						break;
+				case 1 :
+					e.appendItem("Plain Text [Server]",1);
+					break;
+				case 2 :
+					e.appendItem("HTML [Server]",2);
+					break;
+				default :
+					e.appendItem("Unknown [Server]",0);
+				break;
 				}
 				switch ( localValue ) {
-					case 1 :
-						e.appendItem("Plain Text [Local]",1);
-						break;
-					case 2 :
-						e.appendItem("HTML [Local]",2);
-						break;
-					default :
-						e.appendItem("Unknown [Local]",0);
-						break;
+				case 1 :
+					e.appendItem("Plain Text [Local]",1);
+					break;
+				case 2 :
+					e.appendItem("HTML [Local]",2);
+					break;
+				default :
+					e.appendItem("Unknown [Local]",0);
+				break;
 				}
 			} else {
 				e.appendItem(serverValue +" [Server]",serverValue);

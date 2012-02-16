@@ -14,7 +14,7 @@ com.synckolab.config = {
 
 		//set this to true and on every error there will be a pause so you can check the logs
 		PAUSE_ON_ERROR: false
-};
+	};
 
 com.synckolab.global = {
 		// log settings
@@ -39,4 +39,4 @@ com.synckolab.global = {
 		ios: Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService),
 		folderDatasource: Components.classes["@mozilla.org/rdf/datasource;1?name=mailnewsfolders"].createInstance(Components.interfaces.nsIRDFDataSource),
 		messageService: Components.classes["@mozilla.org/messenger/messageservice;1?type=imap"].getService(Components.interfaces.nsIMsgMessageService) 
-};
+	};
