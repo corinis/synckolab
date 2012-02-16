@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Contributor(s): Niko Berger <niko.berger@corinis.com>
+ * Contributor(s): Niko Berger <niko.berger(at)corinis.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -26,7 +26,7 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-
+"use strict";
 if(!com) var com={};
 if(!com.synckolab) com.synckolab={};
 
@@ -71,11 +71,11 @@ com.synckolab.main = {
 			};
 
 			// create a thread for each configuration
-			var configs = new Array();
+			var configs = [];
 			try {
 				var Config = pref.getCharPref("SyncKolab.Configs");
 				configs = Config.split(';');
-			} catch(ex) {
+			} catch(ex2) {
 				com.synckolab.tools.logMessage("ERROR: Reading 'SyncKolab.Configs' failed: " + ex, com.synckolab.global.LOG_ERROR);
 			}
 
@@ -83,21 +83,22 @@ com.synckolab.main = {
 			{
 				return;
 			}
-			com.synckolab.main.syncConfigs = new Array();
+			com.synckolab.main.syncConfigs = [];
 			
 			// fill the configs
 			for (var i=0; i < configs.length; i++)
 			{
 				// skip empty congis
-				if (configs[i] === '')
+				if (configs[i] === '') {
 					continue;
+				}
 				com.synckolab.main.syncConfigs[i] = new Object;
 				com.synckolab.main.syncConfigs[i].gSyncTimer = 0;
 				com.synckolab.main.syncConfigs[i].configName = configs[i];
 				try
 				{
 					com.synckolab.main.syncConfigs[i].gAutoRun = pref.getIntPref("SyncKolab."+configs[i]+".autoSync");					
-				}catch (ex)
+				}catch (ex3)
 				{
 					com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab."+configs[i]+".autoSync' failed: " + ex, com.synckolab.global.LOG_WARNING);
 					com.synckolab.main.syncConfigs[i].gAutoRun = 0;
@@ -106,7 +107,7 @@ com.synckolab.main = {
 				try
 				{
 					com.synckolab.main.syncConfigs[i].gAutoHideWindow = pref.getBoolPref("SyncKolab."+configs[i]+".hiddenWindow");
-				}catch (ex)
+				}catch (ex4)
 				{
 					com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab."+configs[i]+".hiddenWindow' failed: " + ex, com.synckolab.global.LOG_WARNING);
 					com.synckolab.main.syncConfigs[i].gAutoHideWindow = false;
@@ -122,7 +123,7 @@ com.synckolab.main = {
 						com.synckolab.main.forceConfig = com.synckolab.main.syncConfigs[i].configName;
 						com.synckolab.main.sync("timer");
 					}
-				}catch (ex)
+				}catch (ex5)
 				{
 					com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab."+configs[i]+".syncOnStart' failed: " + ex, com.synckolab.global.LOG_WARNING);
 					com.synckolab.main.syncConfigs[i].gAutoHideWindow = false;
@@ -200,11 +201,11 @@ com.synckolab.main = {
 };
 
 
-com.synckolab.main.groupwareContactFolders = new Array();
-com.synckolab.main.groupwareCalendarFolders = new Array();
-com.synckolab.main.groupwareTaskFolders = new Array();
-com.synckolab.main.groupwareNoteFolders = new Array();
-com.synckolab.main.groupwareConfigs = new Array();
+com.synckolab.main.groupwareContactFolders = [];
+com.synckolab.main.groupwareCalendarFolders = [];
+com.synckolab.main.groupwareTaskFolders = [];
+com.synckolab.main.groupwareNoteFolders = [];
+com.synckolab.main.groupwareConfigs = [];
 
 com.synckolab.main.groupwareActions = function () {
 	// ignore this if we dont want to
@@ -229,8 +230,8 @@ com.synckolab.main.groupwareActions = function () {
 
 	var versionChecker = Components.classes["@mozilla.org/xpcom/version-comparator;1"].getService(Components.interfaces.nsIVersionComparator);  
 		
-	var currentConfigs = new Array();
-	var syncConfigs = new Array();
+	var currentConfigs = [];
+	var syncConfigs = [];
 	var configChanged = 0;
 	
 	try {
@@ -578,7 +579,7 @@ function startSync(event) {
 	file.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0600);
 	gTmpFile = file.path;
 	
-	com.synckolab.main.syncConfigs = new Array();
+	com.synckolab.main.syncConfigs = [];
 	com.synckolab.main.curConConfig = 0;
 	com.synckolab.main.curCalConfig = 0;
 	com.synckolab.main.curTaskConfig = 0;
@@ -594,7 +595,7 @@ function startSync(event) {
 	// called from timer - we force ONE configuration
 	if (com.synckolab.main.forceConfig !== null && com.synckolab.main.forceConfig !== "MANUAL-SYNC")
 	{
-		com.synckolab.main.syncConfigs = new Array();
+		com.synckolab.main.syncConfigs = [];
 		com.synckolab.main.syncConfigs.push(com.synckolab.main.forceConfig);
 	}
 
@@ -957,7 +958,7 @@ function getContent ()
 	
 	// prepare empty later list
 	com.synckolab.main.gLaterMessages = {};
-	com.synckolab.main.gLaterMessages.msgs = new Array();
+	com.synckolab.main.gLaterMessages.msgs = [];
 	com.synckolab.main.gLaterMessages.pointer = 0;
 	
 	// get the message keys
@@ -970,8 +971,8 @@ function getContent ()
 	syncMessageDb = new com.synckolab.dataBase(com.synckolab.main.gSync.dbFile);
 		
 	com.synckolab.main.curMessage = 0;
-	com.synckolab.main.updateMessages = new Array(); // saves the the message url to delete
-	com.synckolab.main.updateMessagesContent = new Array(); // saves the card to use to update
+	com.synckolab.main.updateMessages = []; // saves the the message url to delete
+	com.synckolab.main.updateMessagesContent = []; // saves the card to use to update
 	
 	if (com.synckolab.global.wnd !== null)
 		statusMsg.value = com.synckolab.global.strBundle.getString("syncEntries");
@@ -1020,7 +1021,7 @@ function getMessage ()
 	{
 		if (com.synckolab.main.gLaterMessages.pointer >= com.synckolab.main.gLaterMessages.msgs.length)
 		{
-			com.synckolab.main.gLaterMessages.msgs = new Array();
+			com.synckolab.main.gLaterMessages.msgs = [];
 			// done with messages go on...
 			parseFolderToAddressFinish ();
 			return;

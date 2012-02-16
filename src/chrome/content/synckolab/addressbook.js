@@ -394,11 +394,11 @@ com.synckolab.AddressBook = {
 					com.synckolab.tools.writeSyncDBFile(cEntry, fileContent);
 					
 					// also copy the image
-					var pName = this.tools.getCardProperty(newCard, "PhotoName");
-					if (pName !== null && pName !== "" && pName !== "null")
+					var pNameA = this.tools.getCardProperty(newCard, "PhotoName");
+					if (pNameA !== null && pNameA !== "" && pNameA !== "null")
 					{
 						// in case the copy failed - clear the photoname
-						if (this.tools.copyImage(pName) === false) {
+						if (this.tools.copyImage(pNameA) === false) {
 							this.tools.setCardProperty(newCard, "PhotoName", "");
 						}
 					}
@@ -750,8 +750,7 @@ com.synckolab.AddressBook = {
 		else
 		// tbird 3
 		{
-			this.deleteList = Components.classes["@mozilla.org/array;1"].
-					createInstance(Components.interfaces.nsIMutableArray);
+			this.deleteList = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
 		}
 
 

@@ -11,9 +11,9 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Contributor(s):	Niko Berger <niko.berger@corinis.com>
- *               	Andreas Gungl <a.gungl@gmx.de>
- *					Arsen Stasic <arsen.stasic@wu-wien.ac.at>
+ * Contributor(s):	Niko Berger <niko.berger(at)corinis.com>
+ *					Andreas Gungl <a.gungl(at)gmx.de>
+ *					Arsen Stasic <arsen.stasic(at)wu-wien.ac.at>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -30,7 +30,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 //////////////////////////////////HELP FUNCTIONS /////////////////////////////////////////
-
+"use strict";
 if(!com) var com={};
 if(!com.synckolab) com.synckolab={};
 if(!com.synckolab.tools) com.synckolab.tools={};
@@ -47,8 +47,9 @@ com.synckolab.tools = {
 	 * Also prints out performance related stuff
 	 */
 logMessage: function (msg, level) {
-	if (!level)
+	if (!level) {
 		level = com.synckolab.global.LOG_INFO;
+	}
 
 	var infolvl = com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL%4;
 	var infostate = com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL - infolvl;
@@ -56,8 +57,9 @@ logMessage: function (msg, level) {
 	var cstate = level - clvl;
 
 	// check if we are talking about the same loglevle: ERROR|WARN|INFO|DEBUG
-	if (clvl > infolvl)
+	if (clvl > infolvl) {
 		return;
+	}
 
 	// now lets see if we want the same type of error NORMAL|CALENDAR|ADRESSBOOK|ALL		
 
@@ -82,18 +84,20 @@ logMessage: function (msg, level) {
 			}
 		}
 		// report errors as error
-		if (clvl === com.synckolab.global.LOG_ERROR && Components.utils.reportError)
+		if (clvl === com.synckolab.global.LOG_ERROR && Components.utils.reportError) {
 			Components.utils.reportError("" + msg);
-		else
+		} else {
 			com.synckolab.global.consoleService.logStringMessage(msg);
+		}
 	}
 
 	// pause the sync on error if defined by globals
-	if (com.synckolab.config.PAUSE_ON_ERROR && clvl === com.synckolab.global.LOG_ERROR)
-
-	// TODO this will NOT work...
-	if (synckolab && com.synckolab.global.wnd && com.synckolab.global.wnd.pauseSync)
-		com.synckolab.global.wnd.pauseSync();
+	if (com.synckolab.config.PAUSE_ON_ERROR && clvl === com.synckolab.global.LOG_ERROR) {
+		// TODO this will NOT work...
+		if (synckolab && com.synckolab.global.wnd && com.synckolab.global.wnd.pauseSync) {
+			com.synckolab.global.wnd.pauseSync();
+		}
+	}
 },
 
 scrollToBottom : function (itemList)
@@ -156,9 +160,9 @@ stripMailHeader: function (skcontent) {
 			skcontent = com.synckolab.tools.text.quoted.decode(skcontent.substring(startPos, skcontent.length));
 			this.logMessage("unquoted content: " + skcontent, com.synckolab.global.LOG_DEBUG);
 			
-		}
-		else
+		} else {
 			skcontent = skcontent.substring(startPos, skcontent.length);
+		}
 
 		return com.synckolab.tools.text.trim(skcontent);
 	}
@@ -204,8 +208,9 @@ stripMailHeader: function (skcontent) {
 	   getService(Components.interfaces.nsIProperties).
 	   get("TmpD", Components.interfaces.nsIFile);
 	file.append("syncKolab.img");
-	if (file.exists()) 
+	if (file.exists()) {
 		file.remove(true);
+	}
 	
 	// check if we have an image attachment
 	var imgC = skcontent;
@@ -245,12 +250,13 @@ stripMailHeader: function (skcontent) {
 	
 	// check kolab XML first
 	var contentIdx = -1;
+	var endcontentIdx;
 	var contTypeIdx = skcontent.search(/Content-Type:[ \t\r\n]+application\/x-vnd.kolab./i);
 	if (contTypeIdx !== -1)
 	{
 		skcontent = skcontent.substring(contTypeIdx); // cut everything before this part
 		// there might be a second boundary... remove that as well
-		var endcontentIdx = skcontent.indexOf(boundary);
+		endcontentIdx = skcontent.indexOf(boundary);
 		if (endcontentIdx !== -1)
 			skcontent = skcontent.substring(0, endcontentIdx);
 		if ((new RegExp ("--$")).test(skcontent))
@@ -274,7 +280,7 @@ stripMailHeader: function (skcontent) {
 			// handle multi-line 
 			skcontent = skcontent.replace(/[\n\r]+ /, "");
 			// there might be a second boundary... remove that as well
-			var endcontentIdx = skcontent.indexOf(boundary);
+			endcontentIdx = skcontent.indexOf(boundary);
 			if (endcontentIdx !== -1)
 				skcontent = skcontent.substring(0, endcontentIdx);
 			if ((new RegExp ("--$")).test(skcontent))
@@ -1055,7 +1061,7 @@ com.synckolab.hashMap = function ()
 	this.array = new Array(this.seed);
 	// fill the array
 	for (var k = 0; k < this.seed; k++)
-		this.array[k] = new Array();
+		this.array[k] = [];
 };
 
 // starts an iteration
@@ -1126,7 +1132,7 @@ com.synckolab.hashMap.prototype.put = function ( key, value )
 com.synckolab.hashMap.prototype.clear = function ()
 {
 	for (var k = 0; k < this.seed; k++)
-		this.array[k] = new Array();
+		this.array[k] = [];
 	this.len = 0;		
 };
 

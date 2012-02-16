@@ -12,8 +12,8 @@
  * for the specific language governing rights and limitations under the 
  * License. 
  * 
- * Contributor(s): Steven D Miller (Copart) <stevendm@rellims.com>
- *                 Niko Berger <niko.berger@corinis.com> 
+ * Contributor(s): Steven D Miller (Copart) <stevendm(at)rellims.com>
+ *                 Niko Berger <niko.berger(at)corinis.com> 
  * 
  * Alternatively, the contents of this file may be used under the terms of 
  * either the GNU General Public License Version 2 or later (the "GPL"), or 
@@ -29,6 +29,7 @@
  * 
  * 
  ***** END LICENSE BLOCK ***** */
+"use strict";
 if(!com) var com={};
 if(!com.synckolab) com.synckolab={};
 
@@ -44,26 +45,29 @@ com.synckolab.contactConflict = {
 		//User submitted, now check, did user accept only server, only local, or combination of both
 		var bServerOnly = true;
 		var bLocalOnly = true;
+		var i;
 		for ( i=0 ; i < this.conflictsArray.length ; i++ ) {
-			if ( document.getElementById(this.conflictsArray[i]).selectedIndex != 0 )
+			if (document.getElementById(this.conflictsArray[i]).selectedIndex !== 0 ) {
 				bServerOnly = false;
-			if ( document.getElementById(this.conflictsArray[i]).selectedIndex != 1 )
+			}
+			if (document.getElementById(this.conflictsArray[i]).selectedIndex !== 1 ) {
 				bLocalOnly = false;
-
+			}
 		}
-		if ( bServerOnly )
+		if ( bServerOnly ) {
 			this.conflictResolution.result = 1;
-		else if ( bLocalOnly )
+		} else if ( bLocalOnly ) {
 			this.conflictResolution.result = 2;
-		else {
+		} else {
 			//Updating both copies with new values
 			for ( i=0 ; i < this.conflictsArray.length ; i++ ) {
-				serverValue = com.synckolab.addressbookTools.getCardProperty(this.serverCard, conflictsArray[i]);
-				localValue = com.synckolab.addressbookTools.getCardProperty(this.localCard, conflictsArray[i]);
-				if ( document.getElementById(this.conflictsArray[i]).selectedIndex === 0 )
-					com.synckolab.addressbookTools.setCardProperty(this.localCard,this.conflictsArray[i], serverValue);
-				else
-					com.synckolab.addressbookTools.setCardProperty(this.serverCard,this.conflictsArray[i], localValue);
+				var serverValue = com.synckolab.addressbookTools.getCardProperty(this.serverCard, this.conflictsArray[i]);
+				var localValue = com.synckolab.addressbookTools.getCardProperty(this.localCard, this.conflictsArray[i]);
+				if (document.getElementById(this.conflictsArray[i]).selectedIndex === 0) {
+					com.synckolab.addressbookTools.setCardProperty(this.localCard, this.conflictsArray[i], serverValue);
+				} else {
+					com.synckolab.addressbookTools.setCardProperty(this.serverCard, this.conflictsArray[i], localValue);
+				}
 			}
 			this.conflictResolution.result = 3;
 		}
@@ -78,25 +82,29 @@ com.synckolab.contactConflict = {
 
 	keepServer: function ()
 	{
+		var i;
 		for ( i=0 ; i < this.conflictsArray.length ; i++ ) {
-			if(document.getElementById(this.conflictsArray[i]))
+			if(document.getElementById(this.conflictsArray[i])) {
 				document.getElementById(this.conflictsArray[i]).selectedIndex = 0;
-			else
+			}
+			else {
 				com.synckolab.tools.logMessage("unable to find element for conflict " + this.conflictsArray[i], com.synckolab.global.LOG_ERROR + com.synckolab.global.LOG_AB);
+			}
 		}
 		return false;
 	},
 	keepLocal: function ()
 	{
-		for ( i=0 ; i < this.conflictsArray.length ; i++ ) {
+		for (var i=0 ; i < this.conflictsArray.length ; i++ ) {
 			var e = document.getElementById(this.conflictsArray[i]);
-			if (!e)
+			if (!e) {
 				continue;
+			}
 			e.selectedIndex = 1;
 		}
 		return false;
 	},
-
+	
 	init: function ()
 	{
 		this.conflictsArray = window.arguments[0];
@@ -105,22 +113,23 @@ com.synckolab.contactConflict = {
 		this.localCard = window.arguments[3];
 			
 		//Show static elements for the following so that we always know who's record we are looking at	
-		document.getElementById("firstNameStatic").value = com.synckolab.addressbookTools.getCardProperty(this.localCard, 'FirstName');;
-		document.getElementById("lastNameStatic").value = com.synckolab.addressbookTools.getCardProperty(this.localCard, 'LastName');;
-		document.getElementById("displayNameStatic").value = com.synckolab.addressbookTools.getCardProperty(this.localCard, 'DisplayName');;
-		document.getElementById("nickNameStatic").value = com.synckolab.addressbookTools.getCardProperty(this.localCard, 'NickName');;
+		document.getElementById("firstNameStatic").value = com.synckolab.addressbookTools.getCardProperty(this.localCard, 'FirstName');
+		document.getElementById("lastNameStatic").value = com.synckolab.addressbookTools.getCardProperty(this.localCard, 'LastName');
+		document.getElementById("displayNameStatic").value = com.synckolab.addressbookTools.getCardProperty(this.localCard, 'DisplayName');
+		document.getElementById("nickNameStatic").value = com.synckolab.addressbookTools.getCardProperty(this.localCard, 'NickName');
 		
 		var serverValue;
 		var localValue;
 		
 		//Loop through the conflicted fields, set their current values, unhide from the dialog
-		for ( i=0 ; i < this.conflictsArray.length ; i++ ) {
+		for (var i=0 ; i < this.conflictsArray.length ; i++ ) {
 			serverValue = com.synckolab.addressbookTools.getCardProperty(this.serverCard, this.conflictsArray[i]);
 			localValue = com.synckolab.addressbookTools.getCardProperty(this.localCard, this.conflictsArray[i]);
 			
 			var e = document.getElementById(this.conflictsArray[i]); //Field Element
-			if(!e)
+			if(!e) {
 				continue;
+			}
 			var innerBox = e.parentNode;
 			//var outerBox = e.parentNode.parentNode; If it wasnt a grid then it would be this simple
 			var outerBox = e.parentNode.parentNode.parentNode.parentNode;
@@ -130,11 +139,12 @@ com.synckolab.contactConflict = {
 			innerBox.hidden = false;
 			
 			//hide the static labels if any
-			if ( document.getElementById(this.conflictsArray[i]+"Static") )
+			if (document.getElementById(this.conflictsArray[i]+"Static")) {
 				document.getElementById(this.conflictsArray[i]+"Static").hidden = true;
+			}
 			
 			e.hidden = false; //Name is hidden by default, so always unhide just in case
-			if ( conflictsArray[i] === "preferMailFormat" ) {
+			if (this.conflictsArray[i] === "preferMailFormat" ) {
 				//Handling the special case of Email format preference
 				switch ( serverValue ) {
 				case 1 :
