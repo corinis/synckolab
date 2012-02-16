@@ -47,10 +47,7 @@
 
 	<script type="application/x-javascript" src="chrome://synckolab/content/jslib/jslib.js"/>
 
-	<script type="application/x-javascript" src="chrome://messenger/content/am-smtp.js"/>
-	<script type="application/x-javascript" src="chrome://messenger/content/AccountManager.js"/>
-
-	<script type="application/x-javascript">
+<script type="application/x-javascript">
 		window.addEventListener("load", com.synckolab.main.syncKolabTimer, false);
 		// detect and disable event listener for seamonkey
 		try {
@@ -61,15 +58,12 @@
 				}, 1500);
 			}
 		} catch (ex) { /* ignore */ }  
-	</script>
-    
-    <!-- calendar -->
-<script type="application/x-javascript">
-  var gCalendarBundle = {
-  	getString: function (s) { return s;
-  	}
-  };
-</script>  
+	<!-- calendar -->
+
+	var gCalendarBundle = {
+		getString: function (s) { return s; }
+	};
+</script>
 		
 	<menupopup id="taskPopup">
         <menuseparator/>

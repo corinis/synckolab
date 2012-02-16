@@ -1,5 +1,9 @@
-SynKolab 1.5.3
+SynKolab 1.5.5
 ==============
+
+
+SynKolab 1.5.3/1.5.4
+====================
     #24281 encoding issues
     #24210 encoding issues
     #24191 Thunderbird 5 Status Bar fails to display correctly with Sync Kolab Nightly installed.

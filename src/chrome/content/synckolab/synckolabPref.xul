@@ -5,7 +5,7 @@
 <!-- ?xul-overlay href="chrome://messenger/content/msgFolderPickerOverlay.xul"? -->
 <!DOCTYPE loc SYSTEM "chrome://synckolab/locale/synckolab.dtd">
 
-<dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" onload="com.synckolab.settings.init();" buttons="accept,cancel" ondialogaccept="com.synckolab.settings.savePrefs();" persist="screenX screenY" width="0" title="SyncKolab 1.5.3">
+<dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" onload="com.synckolab.settings.init();" buttons="accept,cancel" ondialogaccept="com.synckolab.settings.savePrefs();" persist="screenX screenY" width="0" title="SyncKolab 1.5.5">
 
 	<script type="application/x-javascript" src="chrome://synckolab/content/settings.js" />
 	<script type="application/x-javascript" src="chrome://synckolab/content/calendarTools.js" />
@@ -14,11 +14,6 @@
 	<script type="application/x-javascript" src="chrome://synckolab/content/tools.js" />
 	<script type="application/x-javascript" src="chrome://synckolab/content/tools/text.js" />
 	<script type="application/x-javascript" src="chrome://synckolab/content/tools/sha1.js" />
-	<script type="application/x-javascript" src="chrome://synckolab/content/jslib/jslib.js" />
-
-	<script type="application/x-javascript" src="chrome://synckolab/content/jslib/io/io.js" />
-	<script type="application/x-javascript" src="chrome://synckolab/content/jslib/rdf/rdf.js" />
-	<script type="application/x-javascript" src="chrome://synckolab/content/jslib/rdf/rdfFile.js" />
 
 	<stringbundleset id="stringbundleset">
 		<stringbundle id="bundle_messenger" src="chrome://messenger/locale/messenger.properties" />
@@ -53,7 +48,7 @@
 						<vbox>
 							<hbox>
 								<label value="&synckolab.settings.SyncKolabHeader;" style="font-size: 16pt;" />
-								<label value=" 1.5.4" />
+								<label value=" 1.5.5" />
 							</hbox>
 							<description style="width: 300px">
                                 &synckolab.settings.SyncKolabDescription;

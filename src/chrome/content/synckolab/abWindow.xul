@@ -45,27 +45,21 @@
 	<script type="application/x-javascript" src="chrome://synckolab/content/calendarTools.js"/>
 	<script type="application/x-javascript" src="chrome://synckolab/content/contactConflictTools.js"/>
 
-	<script type="application/x-javascript" src="chrome://synckolab/content/jslib/jslib.js"/>
-
-	<script type="application/x-javascript" src="chrome://messenger/content/am-smtp.js"/>
-	<script type="application/x-javascript" src="chrome://messenger/content/AccountManager.js"/>
-
-    <!-- calendar -->
+<!-- calendar -->
 <script type="application/x-javascript">
-  var gCalendarBundle = {
-  	getString: function (s) { return s;
-  	}
-  };
+	var gCalendarBundle = {
+		getString: function (s) { return s;}
+	};
 </script>  
 		
 	<menupopup id="taskPopup">
-        <menuseparator/>
+		<menuseparator/>
 		<menuitem id="SyncKolab-Sync" command="cmd_synckolab_sync" label="&synckolab.syncMenu.label;"/>
 		<menuitem id="SyncKolab-Options" command="cmd_synckolab_options" label="&synckolab.optionMenu.label;"/>
 	</menupopup>
 
-    <toolbarpalette id="AddressBookToolbarPalette">
-        <toolbarbutton id="SyncKolab-button-ab" command="cmd_synckolab_sync" class="toolbarbutton-1" label="&synckolab.sync.label;"/>
-    </toolbarpalette>
-    
+	<toolbarpalette id="AddressBookToolbarPalette">
+		<toolbarbutton id="SyncKolab-button-ab" command="cmd_synckolab_sync" class="toolbarbutton-1" label="&synckolab.sync.label;"/>
+	</toolbarpalette>
+
 </overlay>
