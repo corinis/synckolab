@@ -1,6 +1,8 @@
-SynKolab 1.5.5
+SynKolab 2.0.0
 ==============
-
+    Major Clean Up:
+     - change all functions into namespace functions
+     - clean up so jslint doesn't complain
 
 SynKolab 1.5.3/1.5.4
 ====================

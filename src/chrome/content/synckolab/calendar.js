@@ -290,7 +290,7 @@ com.synckolab.Calendar = {
 		this.curItemInList.appendChild(this.curItemInListStatus);
 		this.curItemInList.appendChild(this.curItemInListContent);
 
-		if (this.itemList !== null) {
+		if (this.itemList) {
 			this.itemList.appendChild(this.curItemInList);
 			com.synckolab.tools.scrollToBottom(this.itemList);
 		}
@@ -409,7 +409,7 @@ com.synckolab.Calendar = {
 
 			var cEvent = this.calTools.message2Event(com.synckolab.tools.readSyncDBFile(idxEntry), null, this.syncTasks);
 
-			var hasEntry = idxEntry.exists() && (cEvent !== null);
+			var hasEntry = idxEntry.exists() && (cEvent);
 			// make sure cEvent is not null, else the comparision will fail
 			this.tools.logMessage("Start comparing events....", this.global.LOG_CAL + this.global.LOG_DEBUG);
 			var equal2parsed = hasEntry && this.calTools.equalsEvent(cEvent, parsedEvent, this.syncTasks, this.email);
@@ -597,7 +597,7 @@ com.synckolab.Calendar = {
 		var msg = null;
 		var cEntry;
 		
-		if (this.gEvents !== null && this.gCurEvent <= this.gEvents.events.length) {
+		if (this.gEvents && this.gCurEvent <= this.gEvents.events.length) {
 			var cur = this.gEvents.events[this.gCurEvent++];
 			var writeCur = true;
 			msg = null;
@@ -612,7 +612,7 @@ com.synckolab.Calendar = {
 			// check if we can skip this entry	(make sure we got a start and enddate.. otherwise it will fail)
 			var endDate = this.calTools.getEndDate(cur, this.syncTasks);
 
-			if (endDate !== null && this.gSyncTimeFrame > 0 && (endDate.getTime() + (this.gSyncTimeFrame * 86400000) < (new Date()).getTime())) {
+			if (endDate && this.gSyncTimeFrame > 0 && (endDate.getTime() + (this.gSyncTimeFrame * 86400000) < (new Date()).getTime())) {
 				this.tools.logMessage("skipping event because its too old: " + cur.id, this.global.LOG_CAL + this.global.LOG_INFO);
 				return null;
 			}
@@ -668,7 +668,7 @@ com.synckolab.Calendar = {
 					this.curItemInList.appendChild(this.curItemInListStatus);
 					this.curItemInList.appendChild(this.curItemInListContent);
 
-					if (this.itemList !== null) {
+					if (this.itemList) {
 						this.itemList.appendChild(this.curItemInList);
 						com.synckolab.tools.scrollToBottom(this.itemList);
 					}
@@ -687,7 +687,7 @@ com.synckolab.Calendar = {
 					this.curItemInList.appendChild(this.curItemInListStatus);
 					this.curItemInList.appendChild(this.curItemInListContent);
 
-					if (this.itemList !== null) {
+					if (this.itemList) {
 						this.itemList.appendChild(this.curItemInList);
 						com.synckolab.tools.scrollToBottom(this.itemList);
 					}

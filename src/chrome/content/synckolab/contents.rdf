@@ -8,7 +8,7 @@
 
 <!-- package information -->
 <RDF:Description about="urn:mozilla:package:synckolab"
-	chrome:displayName="SyncKolab 1.5.5"
+	chrome:displayName="SyncKolab 2.0.0"
 	chrome:author="Niko Berger"
 	chrome:name="synckolab"
 	chrome:description="Synchronize an IMAP Folder with the mozilla Address Book and Calendar " 

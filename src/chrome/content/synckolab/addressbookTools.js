@@ -562,8 +562,7 @@ com.synckolab.addressbookTools.xml2Card = function (xml, extraFields, cards) {
 	var tok; // for tokenizer
 	var email = 0;
 
-	while (cur !== null) {
-
+	while (cur) {
 		if (cur.nodeType === Node.ELEMENT_NODE)//1
 		{
 			switch (cur.nodeName.toUpperCase()) {
@@ -1041,7 +1040,7 @@ com.synckolab.addressbookTools.copyImage = function (newName) {
 	var fileTo = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsIFile);
 	fileTo.append("Photos");
 	if (!fileTo.exists()) {
-		fileTo.create(1, 775);
+		fileTo.create(1, parseInt("0775", 8));
 	}
 
 	// fix newName: we can have C:\ - file:// and more - remove all that and put it in the photos folder
@@ -1277,11 +1276,11 @@ com.synckolab.addressbookTools.equalsContact = function (a, b) {
 	} else {
 		fieldsArray = [
 		// these are numbers
-		"BirthYear", "BirthMonth", "BirthDay", "AnniversaryYear", "AnniversaryMonth", "AnniversaryDay",
+		"PreferMailFormat", "BirthYear", "BirthMonth", "BirthDay", "AnniversaryYear", "AnniversaryMonth", "AnniversaryDay",
 		// now for strings
-		"FirstName", "LastName", "DisplayName", "NickName", "PrimaryEmail", "SecondEmail", "AimScreenName", "PreferMailFormat", "WorkPhone", "HomePhone", "FaxNumber", "PagerNumber", "CellularNumber", "HomeAddress", "HomeAddress2", "HomeCity", "HomeState", "HomeZipCode", "HomeCountry", "WebPage2",
+		"FirstName", "LastName", "DisplayName", "NickName", "PrimaryEmail", "SecondEmail", "AimScreenName", "WorkPhone", "HomePhone", "FaxNumber", "PagerNumber", "CellularNumber", "HomeAddress", "HomeAddress2", "HomeCity", "HomeState", "HomeZipCode", "HomeCountry", "WebPage2",
 				"JobTitle", "Department", "Company", "WorkAddress", "WorkAddress2", "WorkCity", "WorkState", "WorkZipCode", "WorkCountry", "WebPage1", "Custom1", "Custom2", "Custom3", "Custom4", "Notes", "PhotoURI"]; // PhotoType, PhotoName
-		numericFieldCount = 6;
+		numericFieldCount = 7;
 	}
 
 	for ( var i = 0; i < fieldsArray.length; i++) {
@@ -1321,7 +1320,7 @@ com.synckolab.addressbookTools.equalsContact = function (a, b) {
 		// check if not equals 
 		if (sa !== sb) {
 			// if we got strings... maybe they only differ in whitespace
-			if (sa.replace) {
+			if (sa && sb && sa.replace && sb.replace) {
 				// if they are equals without whitespace.. continue
 				if (sa.replace(/\s|(\\n)|\n|\r/gm, "") === sb.replace(/\s|(\\n)|\n|\r/gm, "")) {
 					continue;
@@ -1837,7 +1836,7 @@ com.synckolab.addressbookTools.message2Card = function (lines, card, extraFields
 				this.setCardProperty(card, "SecondEmail", tok[1]);
 				gotEmailSecondary = true;
 			} else {
-				if (extraFields !== null) {
+				if (extraFields) {
 					extraFields.addField(tok[0], tok[1]);
 				}
 			}
@@ -2026,7 +2025,7 @@ com.synckolab.addressbookTools.message2Card = function (lines, card, extraFields
 
 		default:
 			com.synckolab.tools.logMessage("VC FIELD not found: " + tok[0] + ":" + tok[1], this.global.LOG_WARNING + this.global.LOG_AB);
-			if (extraFields !== null) {
+			if (extraFields) {
 				extraFields.addField(tok[0], tok[1]);
 			}
 			break;
@@ -2462,7 +2461,7 @@ com.synckolab.addressbookTools.contactConflictTest = function (serverCard, local
 		// check if not equals 
 		if (conflict === false && sa !== sb) {
 			// if we got strings... maybe they only differ in whitespace
-			if (sa && sa.replace) {
+			if (sa && sa.replace && sb && sb.replace) {
 				// if they are equals without whitespace.. continue
 				if (sa.replace(/\s|(\\n)| /g, "") === sb.replace(/\s|(\\n)| /g, "")) {
 					continue;

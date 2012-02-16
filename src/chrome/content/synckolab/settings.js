@@ -868,7 +868,7 @@ com.synckolab.settings = {
 			this.updateFolder(act);
 			this.updateFolder(act);
 
-			if (sCurFolder !== null)
+			if (sCurFolder !== null && sCurFolder !== "")
 			{
 				tree = document.getElementById("conImapFolder");
 
@@ -1208,8 +1208,8 @@ com.synckolab.settings = {
 						// ok show some folders:
 						var tChildren = document.createElement("treechildren");
 						cfold.appendChild(tChildren);
-						this.updateFolderElements (account.rootFolder, tChildren, "");
-						return;			
+						this.updateFolderElements(account.rootFolder, tChildren, "");
+						return;
 
 					}
 				}
@@ -1482,8 +1482,8 @@ com.synckolab.settings = {
 						var tChildren = document.createElement("treechildren");
 						cfold.appendChild(tChildren);
 
-						this.updateFolderElements (account.rootFolder, tChildren, "t");
-						return;			
+						this.updateFolderElements(account.rootFolder, tChildren, "t");
+						return;
 
 					}
 				}
@@ -1743,7 +1743,9 @@ com.synckolab.settings = {
 
 
 			for(var i=0 ; i < fieldsArray.length ; i++ ) {
-				document.getElementById(fieldsArray[i]).disabled = !active;
+				if(fieldsArray[i] !== '') {
+					document.getElementById(fieldsArray[i]).disabled = !active;
+				}
 			}
 		},
 
@@ -1770,8 +1772,10 @@ com.synckolab.settings = {
 
 
 			for(var i=0 ; i < fieldsArray.length ; i++ ) {
-				if (document.getElementById(fieldsArray[i]) !== null) {
-					document.getElementById(fieldsArray[i]).disabled = !active;
+				if(fieldsArray[i] !== '') {
+					if (document.getElementById(fieldsArray[i]) !== null) {
+						document.getElementById(fieldsArray[i]).disabled = !active;
+					}
 				}
 			}
 		},
@@ -1791,8 +1795,10 @@ com.synckolab.settings = {
 
 
 			for(var i=0 ; i < fieldsArray.length ; i++ ) {
-				if (document.getElementById(fieldsArray[i]) !== null) {
-					document.getElementById(fieldsArray[i]).disabled = !active;
+				if(fieldsArray[i] !== '') {
+					if (document.getElementById(fieldsArray[i]) !== null) {
+						document.getElementById(fieldsArray[i]).disabled = !active;
+					}
 				}
 			}
 		},
@@ -1814,7 +1820,7 @@ com.synckolab.settings = {
 			if (res === nsIFilePicker.returnOK){
 				var thefile = fp.file;
 				// open the file
-				thefile.create(thefile.NORMAL_FILE_TYPE, 600);
+				thefile.create(thefile.NORMAL_FILE_TYPE, parseInt("0600", 8));
 				var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
 				stream.init(thefile, 2, 0x200, false); // open as "write only"
 
@@ -1842,8 +1848,12 @@ com.synckolab.settings = {
 			fp.defaultString = "SyncKolab.config";
 			fp.defaultExtension = "config";
 			var res = fp.show();
-			var i;
+			var i, j;
 			var cLine;
+			var cPref;
+			var name;
+			var value;
+
 			if (res === nsIFilePicker.returnOK){
 				var file = fp.file;
 
@@ -1897,11 +1907,11 @@ com.synckolab.settings = {
 							continue;
 						}
 
-						var cPref = cLine.split('=');
-						var name = cPref[0].trim();
+						cPref = cLine.split('=');
+						name = cPref[0].trim();
 
-						var value = cPref[1];
-						for (var j=2; j < cPref.length; j++) {
+						value = cPref[1];
+						for (j=2; j < cPref.length; j++) {
 							value += "=" + cPref[j];
 						}
 
@@ -1967,9 +1977,9 @@ com.synckolab.settings = {
 
 					if (!haveConfig)
 					{
-						var Config = configs.join(";");
-						Config += ";" + prefName;
-						pref.setCharPref("SyncKolab.Configs", Config);
+						var cconfig = configs.join(";");
+						cconfig += ";" + prefName;
+						pref.setCharPref("SyncKolab.Configs", cconfig);
 					}
 
 					for (i=0; i < lePrefs.length; i++)
@@ -1986,12 +1996,13 @@ com.synckolab.settings = {
 							continue;
 						}
 
-						var cPref = cLine.split('=');
-						var name = cPref[0].trim();
+						cPref = cLine.split('=');
+						name = cPref[0].trim();
 
-						var value = cPref[1];
-						for (var j=2; j < cPref.length; j++)
+						value = cPref[1];
+						for (j=2; j < cPref.length; j++) {
 							value += "=" + cPref[j];
+						}
 
 						try {
 							this.loadConfigItem(pref, name, value);
@@ -2082,7 +2093,7 @@ com.synckolab.settings = {
 
 				// open the file
 				if(!thefile.exists()) {
-					thefile.create(thefile.NORMAL_FILE_TYPE, 600);
+					thefile.create(thefile.NORMAL_FILE_TYPE, parseInt("0600", 8));
 				}
 				var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
 				stream.init(thefile, 2, 0x200, false); // open as "write only"

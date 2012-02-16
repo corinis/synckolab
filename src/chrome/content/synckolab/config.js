@@ -34,7 +34,7 @@ if(!com) var com={};
 if(!com.synckolab) com.synckolab={};
 
 com.synckolab.config = {
-		version: "1.5.4",
+		version: "2.0.0",
 		DEBUG_SYNCKOLAB: true,
 		
 		SWITCH_TIME: 20, //wait 20ms (enough so tbird wont get unresponsive)

@@ -250,9 +250,9 @@ com.synckolab.tools.text = {
 		var ctime = both[1].split(':');
 		var calDateTime = null;
 		// lightning 0.9pre fix (uses createDateTime)
-		if (createDateTime) {
+		if (typeof createDateTime !== 'undefined') {
 			calDateTime = new createDateTime();
-		} else if (CalDateTime) {
+		} else if (typeof CalDateTime !== 'undefined') {
 			calDateTime = new CalDateTime();
 		} else {
 			calDateTime = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
@@ -320,7 +320,7 @@ com.synckolab.tools.text = {
 		var calDateTime = null;
 
 		// lightning 0.9pre fix (uses createDateTime)
-		if (createDateTime) {
+		if (typeof createDateTime !== 'undefined') {
 			calDateTime = new createDateTime();
 		} else if (CalDateTime) {
 			calDateTime = new CalDateTime();

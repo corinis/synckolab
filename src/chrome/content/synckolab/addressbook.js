@@ -120,7 +120,7 @@ com.synckolab.AddressBook = {
 		var ABook = cn.getNext();
 		
 		this.gAddressBook = null;
-		while (ABook !== null)
+		while (ABook)
 		{
 			var cur = ABook.QueryInterface(Components.interfaces.nsIAbDirectory);
 			// tbird < 3: use directoryProperties			
@@ -180,13 +180,13 @@ com.synckolab.AddressBook = {
 		{
 			lCards = this.gAddressBook.Cards;
 		}
-		if (lCards !== null)
+		if (lCards)
 		{
 			var card = null;
 			// tbird 3 method:
 			if (lCards.hasMoreElements)
 			{
-				while (lCards.hasMoreElements() && (card = lCards.getNext()) !== null)
+				while (lCards.hasMoreElements() && (card = lCards.getNext()))
 				{
 					// get the right interface
 					card = card.QueryInterface(Components.interfaces.nsIAbCard);
@@ -208,12 +208,12 @@ com.synckolab.AddressBook = {
 			{
 				try {
 					card = lCards.first();
-					while ((card = lCards.currentItem()) !== null)
+					while ((card = lCards.currentItem()))
 					{
 						// get the right interface
 						card = card.QueryInterface(Components.interfaces.nsIAbCard);
 						// only save the cards that do have a custom4
-						if (this.tools.getUID(card) !== null && this.tools.getUID(card) !== "")
+						if (this.tools.getUID(card) && this.tools.getUID(card) !== "")
 						{
 							this.gCardDB.put(this.tools.getUID(card), card);
 						}
@@ -272,7 +272,7 @@ com.synckolab.AddressBook = {
 				return 0;
 			}
 			
-			while (cards.currentItem() !== null)
+			while (cards.currentItem())
 			{
 				i++;
 					
@@ -325,14 +325,14 @@ com.synckolab.AddressBook = {
 		this.curItemInList.appendChild(this.curItemInListStatus);
 		this.curItemInList.appendChild(this.curItemInListContent);
 		
-		if (this.itemList !== null)
+		if (this.itemList)
 		{
 			this.itemList.appendChild(this.curItemInList);
 			com.synckolab.tools.scrollToBottom(this.itemList);
 		}
 				
 		// this is an array of arrays that hold fieldname+fielddata of until-now-unknown fields
-		var messageFields = new com.synckolab.dataBase();
+		var messageFields = new com.synckolab.dataBase(null);
 		
 		// parse the new item
 		newItem = this.tools.parseMessage(fileContent, messageFields, this.gCardDB);
@@ -395,7 +395,7 @@ com.synckolab.AddressBook = {
 					
 					// also copy the image
 					var pNameA = this.tools.getCardProperty(newCard, "PhotoName");
-					if (pNameA !== null && pNameA !== "" && pNameA !== "null")
+					if (pNameA && pNameA !== "" && pNameA !== "null")
 					{
 						// in case the copy failed - clear the photoname
 						if (this.tools.copyImage(pNameA) === false) {
@@ -586,7 +586,7 @@ com.synckolab.AddressBook = {
 
 							// also copy the image
 							pName = this.tools.getCardProperty(newCard, "PhotoName");
-							if (pName !== null && pName !== "" && pName !== "null")
+							if (pName && pName !== "" && pName !== "null")
 							{
 								// in case the copy failed - clear the photoname
 								if (this.tools.copyImage(pName) === false) {
@@ -671,7 +671,7 @@ com.synckolab.AddressBook = {
 
 							// also copy the image
 							pName = this.tools.getCardProperty(newCard, "PhotoName");
-							if (pName !== null && pName !== "" && pName !== "null")
+							if (pName && pName !== "" && pName !== "null")
 							{
 								// in case the copy failed - clear the photoname
 								if (this.tools.copyImage(pName) === false) {
@@ -893,7 +893,7 @@ com.synckolab.AddressBook = {
 			this.curItemInList.appendChild(this.curItemInListStatus);
 			this.curItemInList.appendChild(this.curItemInListContent);
 			
-			if (this.itemList !== null)
+			if (this.itemList)
 			{
 				this.itemList.appendChild(this.curItemInList);
 				com.synckolab.tools.scrollToBottom(this.itemList);
@@ -916,7 +916,7 @@ com.synckolab.AddressBook = {
 			// check if we have this uid in the messages
 			for (var i = 0; i < this.folderMessageUids.length; i++)
 			{
-				if (this.tools.getUID(curItem) === this.folderMessageUids[i] && this.tools.getUID(curItem) !== null)
+				if (this.tools.getUID(curItem) === this.folderMessageUids[i] && this.tools.getUID(curItem))
 				{
 					com.synckolab.tools.logMessage("we got this contact already: " + this.tools.getUID(curItem), com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
 					alreadyProcessed = true;
@@ -965,7 +965,7 @@ com.synckolab.AddressBook = {
 					this.curItemInList.appendChild(this.curItemInListStatus);
 					this.curItemInList.appendChild(this.curItemInListContent);
 					
-					if (this.itemList !== null)
+					if (this.itemList)
 					{
 						this.itemList.appendChild(this.curItemInList);
 						com.synckolab.tools.scrollToBottom(this.itemList);
@@ -995,7 +995,7 @@ com.synckolab.AddressBook = {
 					this.curItemInList.appendChild(this.curItemInListStatus);
 					this.curItemInList.appendChild(this.curItemInListContent);
 					
-					if (this.itemList !== null)
+					if (this.itemList)
 					{
 						this.itemList.appendChild(this.curItemInList);
 						com.synckolab.tools.scrollToBottom(this.itemList);

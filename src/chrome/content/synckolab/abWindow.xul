@@ -9,19 +9,7 @@
 %window;
 ]>  
 
-<overlay id="synckolabTbOverlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-	<keyset id="mailKeys">
-		<key id="key_synckolab_sync" modifiers="shift,alt,control,accel" keycode="VK_SCROLL_LOCK" command="cmd_synckolab_sync"/>
-	</keyset>
-	
-	<commandset id="mailCommands">
-		<command id="cmd_synckolab_sync"
-			tooltiptext="&synckolab.sync.tip;"
-			oncommand="com.synckolab.main.sync('manual');"/>
-		<command id="cmd_synckolab_options"
-	        oncommand="window.open('chrome://synckolab/content/synckolabPref.xul', 'options', 'chrome,resizable=1');"/>
-	</commandset>
-
+<overlay id="synckolabAbOverlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 	<stringbundleset id="stringbundleset">
 		<stringbundle src="chrome://synckolab/locale/synckolab.properties" id="synckolabBundle" /> 
 	</stringbundleset>
@@ -54,12 +42,14 @@
 		
 	<menupopup id="taskPopup">
 		<menuseparator/>
-		<menuitem id="SyncKolab-Sync" command="cmd_synckolab_sync" label="&synckolab.syncMenu.label;"/>
-		<menuitem id="SyncKolab-Options" command="cmd_synckolab_options" label="&synckolab.optionMenu.label;"/>
+		<menuitem id="SyncKolab-Sync" oncommand="com.synckolab.main.sync('manual');" label="&synckolab.syncMenu.label;"/>
+		<menuitem id="SyncKolab-Options" 
+			oncommand="window.open('chrome://synckolab/content/synckolabPref.xul', 'options', 'chrome,resizable=1');"
+			label="&synckolab.optionMenu.label;"/>
 	</menupopup>
 
 	<toolbarpalette id="AddressBookToolbarPalette">
-		<toolbarbutton id="SyncKolab-button-ab" command="cmd_synckolab_sync" class="toolbarbutton-1" label="&synckolab.sync.label;"/>
+		<toolbarbutton id="SyncKolab-button-ab" oncommand="com.synckolab.main.sync('manual');" class="toolbarbutton-1" label="&synckolab.sync.label;"/>
 	</toolbarpalette>
 
 </overlay>

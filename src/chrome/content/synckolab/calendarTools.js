@@ -91,7 +91,7 @@ com.synckolab.calendarTools = {
 		isCalendarAvailable: function ()
 		{
 			var syncCals = this.getCalendars();
-			return syncCals !== [] && syncCals !== null;
+			return syncCals !== [] && syncCals;
 		},
 
 		/**
@@ -457,7 +457,7 @@ com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
 	var s;
 	var cDate;
 	// iterate over the DOM tree of the XML structure of the event
-	while(cur !== null)
+	while(cur)
 	{
 		if (cur.nodeType === Node.ELEMENT_NODE)
 		{
@@ -615,7 +615,7 @@ com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
 				if (cur.firstChild)
 				{
 					var data = cur.getFirstData();
-					if (data !== '' && data !== 'null' && data !== null) {
+					if (data !== '' && data !== 'null' && data) {
 						this.setKolabItemProperty(event, "title", cur.getFirstData());
 					}
 				}
@@ -684,13 +684,13 @@ com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
 						alarm.related = 1; // 1: related to startdate - 2: related to enddate
 						alarm.offset = alarmOffset;
 						// optional attributes
-						if (cur.getAttribute("description") !== null) {
+						if (cur.getAttribute("description")) {
 							alarm.description = cur.getAttribute("description");
 						}
-						if (cur.getAttribute("summary") !== null) {
+						if (cur.getAttribute("summary")) {
 							alarm.summary = cur.getAttribute("summary");
 						}
-						if (cur.getAttribute("action") !== null) {
+						if (cur.getAttribute("action")) {
 							alarm.action = cur.getAttribute("action");
 						}
 						event.addAlarm(alarm);
@@ -743,7 +743,7 @@ com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
 					var onDays = [];
 					var recur = cur.firstChild;
 					// iterate over the DOM subtre
-					while(recur !== null)
+					while(recur)
 					{
 						if ((recur.nodeType === Node.ELEMENT_NODE) && (recur.nodeName.toUpperCase() === "DAY"))
 						{
@@ -765,7 +765,7 @@ com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
 					case "DAYNUMBER":
 						// daynumber has <daynumber>
 						detail = cur.getChildNode("daynumber");
-						if ((detail !== null) && (detail.nodeType === Node.ELEMENT_NODE) && (detail.nodeName.toUpperCase() === "DAYNUMBER"))
+						if ((detail) && (detail.nodeType === Node.ELEMENT_NODE) && (detail.nodeName.toUpperCase() === "DAYNUMBER"))
 						{
 							daynumber = detail.firstChild.data;
 							recRule.setComponent("BYMONTHDAY", 1, [daynumber]);
@@ -774,7 +774,7 @@ com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
 					case "WEEKDAY":
 						// weekday has <daynumber> and <day>
 						detail = cur.firstChild;
-						while(detail !== null)
+						while(detail)
 						{
 							if ((detail.nodeType === Node.ELEMENT_NODE) && (detail.nodeName.toUpperCase() === "DAY"))
 							{
@@ -804,7 +804,7 @@ com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
 					case "YEARDAY":
 						// yearday has <daynumber>
 						detail = cur.firstChild;
-						if ((detail !== null) && (detail.nodeType === Node.ELEMENT_NODE) && (detail.nodeName.toUpperCase() === "DAYNUMBER"))
+						if ((detail) && (detail.nodeType === Node.ELEMENT_NODE) && (detail.nodeName.toUpperCase() === "DAYNUMBER"))
 						{
 							daynumber = detail.firstChild.data;
 							// FIXME this needs to be written to the event when supported by Lightning
@@ -813,7 +813,7 @@ com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
 					case "MONTHDAY":
 						// monthday has <daynumber> and <month>
 						detail = cur.firstChild;
-						while(detail !== null)
+						while(detail)
 						{
 							if ((detail.nodeType === Node.ELEMENT_NODE) && (detail.nodeName.toUpperCase() === "MONTH"))
 							{
@@ -830,7 +830,7 @@ com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
 					case "WEEKDAY":
 						// weekday has <day>, <daynumber> and <month>
 						detail = cur.firstChild;
-						while(detail !== null)
+						while(detail)
 						{
 							if ((detail.nodeType === Node.ELEMENT_NODE) && (detail.nodeName.toUpperCase() === "DAY"))
 							{
@@ -854,11 +854,11 @@ com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
 
 				recRule.interval = cur.getXmlResult("INTERVAL", "1");
 				var node = new com.synckolab.Node(cur.getChildNode("RANGE"));
-				if (node !== null)
+				if (node)
 				{
 					// read the "type" attribute of the range
 					var rangeType = node.getAttribute("type");
-					if (rangeType !== null)
+					if (rangeType)
 					{
 						var rangeSpec = cur.getXmlResult("RANGE", "dummy");
 						switch (rangeType.toUpperCase())
@@ -900,7 +900,7 @@ com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
 				recInfo.insertRecurrenceItemAt(recRule, 0);
 				// read 0..n exclusions
 				var node = cur.firstChild;
-				while(node !== null)
+				while(node)
 				{
 					if(node.nodeType === Node.ELEMENT_NODE && (node.nodeName.toUpperCase() === "EXCLUSION"))
 					{
@@ -1042,7 +1042,7 @@ com.synckolab.calendarTools.cnv_event2xml = function (event, skipVolatiles, sync
 	// startdate = day_x, enddate = day_x
 	// Sunbird uses for 1-day-event:
 	// startdate = day_x, enddate = day_x + 1
-	if (isAllDay && endDate && endDate !== null )
+	if (isAllDay && endDate && endDate )
 	{
 		var tmp_date = endDate;
 		tmp_date.setTime(tmp_date.getTime() - 24*60*60000);
@@ -1137,13 +1137,13 @@ com.synckolab.calendarTools.cnv_event2xml = function (event, skipVolatiles, sync
 
 			// tbird 3 has some other attributes which we should take care of
 			var att = "";
-			if (alarm.description !== null && alarm.description !== "") {
+			if (alarm.description && alarm.description !== "") {
 				att += 'description="' + alarm.description + '" ';
 			}
-			if (alarm.summary !== null && alarm.summary !== "") {
+			if (alarm.summary && alarm.summary !== "") {
 				att += 'summary="' + alarm.summary + '" ';
 			}
-			if (alarm.action !== null && alarm.action !== "") {
+			if (alarm.action && alarm.action !== "") {
 				att += 'action="' + alarm.action + '"';
 			}
 
@@ -1257,7 +1257,7 @@ com.synckolab.calendarTools.cnv_event2xml = function (event, skipVolatiles, sync
 			recInfo = null;
 		}
 		// we still might not have a reccurence :)
-		if (recInfo !== null)
+		if (recInfo)
 		{
 			xml += "  <interval>" + recRule.interval + "</interval>\n";
 			if (recRule.isByCount)
@@ -1390,7 +1390,7 @@ com.synckolab.calendarTools.cnv_event2xml = function (event, skipVolatiles, sync
 com.synckolab.calendarTools.event2Human = function (event, syncTasks)
 {
 	var txt = "";
-	if (event.title !== null) {
+	if (event.title) {
 		txt += "Summary: " + event.title +"\n";
 	}
 
