@@ -49,20 +49,16 @@ if (!com.synckolab)
 	com.synckolab = {};
 
 com.synckolab.Calendar = {
-
-	isTbird2 : true, // default: tbird 2 
 	gConflictResolve : "ask", // conflict resolution (default: ask what to do)
 
 	folderPath : '', // String - the path for the entries
 	serverKey : '', // the incoming server
 	gSaveImap : true, // write back to folder
 	gSync : true, // sync this configuration	
-	gConfig : '', // remember the configuration name
+	gConfig : null, // remember the configuration name
 	gCurUID : '', // save the last checked uid - for external use
 
 	gCurEvent : 0,
-	folder : '', // the contact folder type nsIMsgFolder
-	folderMsgURI : '', // the message uri
 	gSyncTimeFrame : 180, // time frame to take into account (all older than X days will be ignored completely) -1 just take all
 	gCalendarName : '', // the calendar name
 	gCalendar : '', // the calendar
@@ -70,9 +66,6 @@ com.synckolab.Calendar = {
 	gCalDB : '', // hashmap for all the events (faster than iterating on big numbers)
 	format : 'Xml', // the format iCal/Xml	
 	folderMessageUids : '',
-
-	email : '', // holds the account email
-	name : '', // holds the account name
 
 	dbFile : '', // the current sync database filen (a file with uid:size:date:localfile)
 
@@ -86,100 +79,105 @@ com.synckolab.Calendar = {
 	forceServerCopy : false,
 	forceLocalCopy : false,
 
-	syncTasks : false, // sync tasks if true, otherwise sync events
-
 	isCal : function () {
 		return true;
 	},
 
 	// return tasks/calendar for correct foldernames
 	getType : function () {
-		return (this.syncTasks === true ? "tasks" : "calendar");
+		return (this.gConfig.task === true ? "tasks" : "calendar");
 	},
 
+	/**
+	 * add the address book specific configuration to the config object
+	 * @param config the config object (name is already prefilled)
+	 * @param pref a nsIPrefBranch for reading of the configuration
+	 * @param task set to true to read the task configuration 
+	 */
+	readConfig: function(config, pref) {
+		if (!com.synckolab.calendarTools.isCalendarAvailable()) {
+			return;
+		}
+		com.synckolab.tools.logMessage("Reading Configuration:" + config.name, com.synckolab.global.LOG_WARNING);
+		config.forceServerCopy = false;
+		config.forceLocalCopy = false;
+
+		if (config.task === true) {
+			// task config
+			try {
+				config.sync = pref.getBoolPref("SyncKolab." + config.name + ".syncTasks");
+			} catch (ex) {
+				return;
+			}
+			
+			if(!config.sync)
+			{
+				return;
+			}
+
+			config.folderPath = pref.getCharPref("SyncKolab." + config.name + ".TaskFolderPath");
+			config.calendarName = pref.getCharPref("SyncKolab." + config.name + ".Tasks");
+			
+			config.format = pref.getCharPref("SyncKolab." + config.name + ".TaskFormat");
+			config.saveImap = pref.getBoolPref("SyncKolab." + config.name + ".saveToTaskImap");
+			// use default timeframe if not specified
+			try {
+				config.timeFrame = pref.getIntPref("SyncKolab." + config.name + ".taskSyncTimeframe");
+			} catch (tfignore) {
+				// per default take all
+				this.tools.logMessage("Sync Time frame is not specified. Syncing all.", this.global.LOG_WARNING);
+				config.timeFrame = -1;
+			}
+			// uid -> filename database - main functions needs to know the name
+			config.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config + ".task");
+		} else {
+			// calendar config
+			try {
+				config.sync = pref.getBoolPref("SyncKolab." + config.name + ".syncCalendar");
+			} catch (gcalex) {
+				return;
+			}
+
+			if(!config.sync)
+			{
+				return;
+			}
+
+			config.folderPath = pref.getCharPref("SyncKolab." + config.name + ".CalendarFolderPath");
+			config.calendarName = pref.getCharPref("SyncKolab." + config.name + ".Calendar");
+			config.format = pref.getCharPref("SyncKolab." + config.name + ".CalendarFormat");
+			config.saveImap = pref.getBoolPref("SyncKolab." + config.name + ".saveToCalendarImap");
+			
+			// use default timeframe if not specified
+			try {
+				config.syncTimeFrame = pref.getIntPref("SyncKolab." + config.name + ".calSyncTimeframe");
+			} catch (ignore2) {
+				// per default take all
+				this.tools.logMessage("Sync Time frame is not specified. Syncing all.", this.global.LOG_WARNING);
+				config.syncTimeFrame = -1;
+			}
+			// uid -> filename database - main functions needs to know the name
+			config.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config + ".cal");
+		}
+	},
+	
 	init : function (config) {
 		// package shortcuts:
 		this.global = com.synckolab.global;
 		this.tools = com.synckolab.tools;
 		this.calTools = com.synckolab.calendarTools;
 
-		if (!this.calTools.isCalendarAvailable()) {
-			return;
-		}
+		this.gConfig = config;
 
-		this.tools.logMessage("Initialising calendar...", this.global.LOG_INFO);
+		this.tools.logMessage("Initialising calendar config: " + this.gConfig.name, this.global.LOG_INFO);
 
 		this.forceServerCopy = false;
 		this.forceLocalCopy = false;
 
-		// initialize the configuration
-		try {
-			var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
-			this.serverKey = pref.getCharPref("SyncKolab." + config + ".IncomingServer");
-			try {
-				this.gConflictResolve = pref.getCharPref("SyncKolab." + config + ".Resolve");
-			} catch (ignore) {
-			}
-
-			if (this.syncTasks === true) {
-				// task config
-				try {
-					this.gSync = pref.getBoolPref("SyncKolab." + config + ".syncTasks");
-				} catch (ex) {
-					// better not to sync
-					this.gSync = false;
-				}
-
-				if (this.gSync === false) {
-					return;
-				}
-				this.folderPath = pref.getCharPref("SyncKolab." + config + ".TaskFolderPath");
-				this.gCalendarName = pref.getCharPref("SyncKolab." + config + ".Tasks");
-				this.format = pref.getCharPref("SyncKolab." + config + ".TaskFormat");
-				this.gSaveImap = pref.getBoolPref("SyncKolab." + config + ".saveToTaskImap");
-				// use default timeframe if not specified
-				try {
-					this.gSyncTimeFrame = pref.getIntPref("SyncKolab." + config + ".taskSyncTimeframe");
-				} catch (tfignore) {
-					this.tools.logMessage("Sync Time frame is not specified", this.global.LOG_WARNING);
-					// per default take all
-					this.gSyncTimeFrame = -1;
-				}
-			} else {
-				// calendar config
-				try {
-					this.gSync = pref.getBoolPref("SyncKolab." + config + ".syncCalendar");
-				} catch (gsex) {
-					// beter not to sync
-					this.gSync = false;
-				}
-				com.synckolab.tools.logMessage("Calendar sync? " + this.gSync, com.synckolab.global.LOG_DEBUG);
-
-				if (this.gSync === false) {
-					return;
-				}
-				this.folderPath = pref.getCharPref("SyncKolab." + config + ".CalendarFolderPath");
-				this.gCalendarName = pref.getCharPref("SyncKolab." + config + ".Calendar");
-				this.format = pref.getCharPref("SyncKolab." + config + ".CalendarFormat");
-				this.gSaveImap = pref.getBoolPref("SyncKolab." + config + ".saveToCalendarImap");
-				// use default timeframe if not specified
-				try {
-					this.gSyncTimeFrame = pref.getIntPref("SyncKolab." + config + ".calSyncTimeframe");
-				} catch (ignore2) {
-					this.tools.logMessage("Sync Time frame is not specified", this.global.LOG_WARNING);
-					// per default take all
-					this.gSyncTimeFrame = -1;
-				}
-			}
-		} catch (e) {
-			this.tools.logMessage("Error on reading config " + config + "\n" + e, this.global.LOG_ERROR);
-			return;
-		}
-
 		// get the correct calendar instance
 		var calendars = this.calTools.getCalendars();
 		for ( var i = 0; i < calendars.length; i++) {
-			if (calendars[i].name === this.gCalendarName || com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name) === com.synckolab.tools.text.fixNameToMiniCharset(this.gCalendarName)) {
+			if (calendars[i].name === config.calendarName || com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name) === com.synckolab.tools.text.fixNameToMiniCharset(config.calendarName)) {
 				this.gCalendar = calendars[i];
 				break;
 			}
@@ -187,22 +185,13 @@ com.synckolab.Calendar = {
 
 		this.folderMessageUids = []; // the checked uids - for better sync
 
-		// uid -> filename database - main functions needs to know the name
-		if (this.syncTasks) {
-			this.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config + ".task");
-		} else {
-			this.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config + ".cal");
-		}
-
-		this.gConfig = config;
-
 		// remember all the items we already worked with
 		this.gCalDB = new com.synckolab.hashMap();
 	},
 
 	init2 : function (nextFunc, sync) {
 
-		this.tools.logMessage("Init2 for " + (this.syncTasks === true ? "tasks" : "calendar"), this.global.LOG_DEBUG);
+		this.tools.logMessage("Init2 for " + (this.gConfig.task === true ? "tasks" : "calendar"), this.global.LOG_DEBUG);
 		// get ALL the items from calendar - when done call nextfunc
 		this.gEvents.nextFunc = nextFunc;
 		this.gEvents.events = [];
@@ -211,7 +200,7 @@ com.synckolab.Calendar = {
 
 		// gCalendar might be invalid if no calendar is selected in the settings
 		if (this.gCalendar) {
-			if (this.syncTasks === true) {
+			if (this.gConfig.task === true) {
 				this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_TODO | this.gCalendar.ITEM_FILTER_COMPLETED_ALL, 0, null, null, this.gEvents);
 			} else {
 				this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_EVENT, 0, null, null, this.gEvents);
@@ -228,9 +217,9 @@ com.synckolab.Calendar = {
 		sync : '',
 		ready : false,
 		onOperationComplete : function (aCalendar, aStatus, aOperator, aId, aDetail) {
-			com.synckolab.tools.logMessage("operation " + (this.syncTasks === true ? "tasks" : "calendar") + ": status=" + aStatus + " Op=" + aOperator + " Detail=" + aDetail, com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_CAL);
+			com.synckolab.tools.logMessage("operation " + (com.synckolab.Calendar.gConfig.task === true ? "tasks" : "calendar") + ": status=" + aStatus + " Op=" + aOperator + " Detail=" + aDetail, com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_CAL);
 			if (aStatus === 2152333316) {
-				com.synckolab.tools.logMessage((this.syncTasks === true ? "tasks" : "calendar") + ": duplicate id - for additem", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_CAL);
+				com.synckolab.tools.logMessage((com.synckolab.Calendar.gConfig.task === true ? "tasks" : "calendar") + ": duplicate id - for additem", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_CAL);
 			}
 			this.ready = true;
 		},
@@ -259,7 +248,7 @@ com.synckolab.Calendar = {
 		}
 		this.tools.logMessage("Indexed " + this.gCalDB.length() + " Entries", this.global.LOG_CAL + this.global.LOG_DEBUG);
 
-		this.tools.logMessage("Getting items for " + (this.syncTasks === true ? "tasks" : "calendar"), this.global.LOG_CAL + this.global.LOG_DEBUG);
+		this.tools.logMessage("Getting items for " + (this.gConfig.task === true ? "tasks" : "calendar"), this.global.LOG_CAL + this.global.LOG_DEBUG);
 
 		return true;
 	},
@@ -299,7 +288,7 @@ com.synckolab.Calendar = {
 		var messageFields = new com.synckolab.dataBase();
 
 		// parse the content
-		var parsedEvent = this.calTools.message2Event(fileContent, messageFields, this.syncTasks);
+		var parsedEvent = this.calTools.message2Event(fileContent, messageFields, this.gConfig.task);
 		this.tools.logMessage("parsed event (message2Event)", this.global.LOG_CAL + this.global.LOG_DEBUG);
 
 		if (parsedEvent === null) {
@@ -320,7 +309,7 @@ com.synckolab.Calendar = {
 		var foundEvent;
 		var calComp;
 
-		if (!this.syncTasks && parsedEvent.startDate) {
+		if (!this.gConfig.task && parsedEvent.startDate) {
 			info += " (" + com.synckolab.tools.text.date2String(parsedEvent.startDate.jsDate) + ")";
 		}
 		this.curItemInListContent.setAttribute("label", info);
@@ -371,9 +360,11 @@ com.synckolab.Calendar = {
 				parsedEvent.alarmLastAck = lastAckTime;
 
 				// if we dont have a timezone - set it
+				/*
 				if (parsedEvent.timezone === null || parsedEvent.timezone.icalComponent === null) {
-					//parsedEvent.timezone = lastAckTime.timezone;
+					parsedEvent.timezone = lastAckTime.timezone;
 				}
+				*/
 
 				// add the new event
 				try {
@@ -407,14 +398,14 @@ com.synckolab.Calendar = {
 			// event exists in local calendar
 			this.tools.logMessage("Event exists local: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_DEBUG);
 
-			var cEvent = this.calTools.message2Event(com.synckolab.tools.readSyncDBFile(idxEntry), null, this.syncTasks);
+			var cEvent = this.calTools.message2Event(com.synckolab.tools.readSyncDBFile(idxEntry), null, this.gConfig.task);
 
 			var hasEntry = idxEntry.exists() && (cEvent);
 			// make sure cEvent is not null, else the comparision will fail
 			this.tools.logMessage("Start comparing events....", this.global.LOG_CAL + this.global.LOG_DEBUG);
-			var equal2parsed = hasEntry && this.calTools.equalsEvent(cEvent, parsedEvent, this.syncTasks, this.email);
+			var equal2parsed = hasEntry && this.calTools.equalsEvent(cEvent, parsedEvent, this.gConfig.task, this.gConfig.email);
 			this.tools.logMessage("cEvent==parsedEvent: " + equal2parsed, this.global.LOG_CAL + this.global.LOG_DEBUG);
-			var equal2found = hasEntry && this.calTools.equalsEvent(cEvent, foundEvent, this.syncTasks, this.email);
+			var equal2found = hasEntry && this.calTools.equalsEvent(cEvent, foundEvent, this.gConfig.task, this.gConfig.email);
 			this.tools.logMessage("cEvent==foundEvent: " + equal2found, this.global.LOG_CAL + this.global.LOG_DEBUG);
 
 			if (hasEntry && !equal2parsed && !equal2found) {
@@ -481,18 +472,18 @@ com.synckolab.Calendar = {
 					}
 
 					msg = null;
-					if (this.format === "Xml") {
-						msg = this.calTools.event2kolabXmlMsg(foundEvent, this.email, this.syncTasks);
+					if (this.gConfig.format === "Xml") {
+						msg = this.calTools.event2kolabXmlMsg(foundEvent, this.gConfig.email, this.gConfig.task);
 					} else {
 						calComp = Components.classes["@mozilla.org/calendar/ics-service;1"].getService(Components.interfaces.calIICSService).createIcalComponent("VCALENDAR");
 						calComp.version = "2.0";
 						calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
 						calComp.addSubcomponent(foundEvent.icalComponent);
 
-						if (this.syncTasks) {
-							msg = com.synckolab.tools.generateMail(parsedEvent.id, this.email, "iCal", "text/todo", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
+						if (this.gConfig.task) {
+							msg = com.synckolab.tools.generateMail(parsedEvent.id, this.gConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
 						} else {
-							msg = com.synckolab.tools.generateMail(parsedEvent.id, this.email, "iCal", "text/calendar", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
+							msg = com.synckolab.tools.generateMail(parsedEvent.id, this.gConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
 						}
 					}
 
@@ -544,18 +535,18 @@ com.synckolab.Calendar = {
 					}
 
 					msg = null;
-					if (this.format === "Xml") {
-						msg = this.calTools.event2kolabXmlMsg(foundEvent, this.email, this.syncTasks);
+					if (this.gConfig.format === "Xml") {
+						msg = this.calTools.event2kolabXmlMsg(foundEvent, this.gConfig.email, this.gConfig.task);
 					} else {
 						calComp = Components.classes["@mozilla.org/calendar/ics-service;1"].getService(Components.interfaces.calIICSService).createIcalComponent("VCALENDAR");
 						calComp.version = "2.0";
 						calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
 						calComp.addSubcomponent(foundEvent.icalComponent);
 						
-						if (this.syncTasks) {
-							msg = com.synckolab.tools.generateMail(parsedEvent.id, this.email, "iCal", "text/todo", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
+						if (this.gConfig.task) {
+							msg = com.synckolab.tools.generateMail(parsedEvent.id, this.gConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
 						} else {
-							msg = com.synckolab.tools.generateMail(parsedEvent.id, this.email, "iCal", "text/calendar", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
+							msg = com.synckolab.tools.generateMail(parsedEvent.id, this.gConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
 						}
 					}
 
@@ -602,7 +593,7 @@ com.synckolab.Calendar = {
 			var writeCur = true;
 			msg = null;
 
-			this.tools.logMessage("nextUpdate for " + (this.syncTasks ? "task" : "event") + ":" + cur.id, this.global.LOG_CAL + this.global.LOG_DEBUG);
+			this.tools.logMessage("nextUpdate for " + (this.gConfig.task ? "task" : "event") + ":" + cur.id, this.global.LOG_CAL + this.global.LOG_DEBUG);
 
 			if (cur.id === null) {
 				this.tools.logMessage("no id found for this element! skipping.", this.global.LOG_CAL + this.global.LOG_WARNING);
@@ -610,7 +601,7 @@ com.synckolab.Calendar = {
 			}
 
 			// check if we can skip this entry	(make sure we got a start and enddate.. otherwise it will fail)
-			var endDate = this.calTools.getEndDate(cur, this.syncTasks);
+			var endDate = this.calTools.getEndDate(cur, this.gConfig.task);
 
 			if (endDate && this.gSyncTimeFrame > 0 && (endDate.getTime() + (this.gSyncTimeFrame * 86400000) < (new Date()).getTime())) {
 				this.tools.logMessage("skipping event because its too old: " + cur.id, this.global.LOG_CAL + this.global.LOG_INFO);
@@ -701,19 +692,19 @@ com.synckolab.Calendar = {
 				var clonedEvent = cur;
 				clonedEvent = this.calTools.modifyEventOnExport(cur, this);
 
-				if (this.format === "Xml") {
-					msg = this.calTools.event2kolabXmlMsg(clonedEvent, this.email, this.syncTasks);
+				if (this.gConfig.format === "Xml") {
+					msg = this.calTools.event2kolabXmlMsg(clonedEvent, this.gConfig.email, this.gConfig.task);
 				} else {
 					var calComp = Components.classes["@mozilla.org/calendar/ics-service;1"].getService(Components.interfaces.calIICSService).createIcalComponent("VCALENDAR");
 					calComp.version = "2.0";
 					calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
 					calComp.addSubcomponent(clonedEvent.icalComponent);
 
-					if (this.syncTasks) {
-						msg = com.synckolab.tools.generateMail(cur.id, this.email, "iCal", "text/todo", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
+					if (this.gConfig.task) {
+						msg = com.synckolab.tools.generateMail(cur.id, this.gConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
 					} else {
 
-						msg = com.synckolab.tools.generateMail(cur.id, this.email, "iCal", "text/calendar", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
+						msg = com.synckolab.tools.generateMail(cur.id, this.gConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
 					}
 				}
 

@@ -870,7 +870,6 @@ com.synckolab.tools.readSyncDBFile = function (file)
 com.synckolab.tools.file.getHashDataBaseFile = function (config)
 {
 	var file = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsIFile);
-
 	file.append(config+".hdb");
 	return file;
 };
@@ -1031,11 +1030,17 @@ com.synckolab.dataBase.prototype.toXmlString = function () {
  * @param file an optional new filename to write into
  */
 com.synckolab.dataBase.prototype.write = function (file) {
-	if (file && file) {
+	if (!file && !this.dbf) {
+		return;
+	}
+	
+	if(file)
+	{
 		this.dbf = file;
 	}
+	
 	// remove the old db
-	if (this.dbf.exists()) { 
+	if (this.dbf && this.dbf.exists()) { 
 		this.dbf.remove(true);
 	}
 	
