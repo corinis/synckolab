@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- ====================================================================== 
-     Dec 21, 2009 5:30:28 PM                                                        
+     Dec 21, 2009 5:30:28 PM
 
      SyncKolab    
      Sync your contacts with imap
                    
-     gargan                                                                
+     gargan
      ====================================================================== -->
 <project name="SyncKolab" default="default">
     <description>
             Sync your contacts with imap
     </description>
-	<property name="version" value="1.5.3"/>	
+	<property name="version" value="2.0.0"/>	
 
     <!-- ================================= 
           target: default              
@@ -25,6 +25,7 @@
         <copy todir="build">
         	<fileset dir="src">
         		<include name="**/*.*"/>
+        		<exclude name="**/*.orig"/>
         	</fileset>
         </copy>
     	<zip destfile="build/chrome/synckolab.jar" basedir="build/chrome"/>
