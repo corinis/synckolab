@@ -255,7 +255,7 @@ com.synckolab.addressbookTools = {
 
 		// tbird 3: we can use custom fields!!!
 		var uid = this.getCardProperty(card, "UUID");
-		if (uid !== "" && uid !== null) {
+		if (uid !== "" && uid) {
 			return uid;
 		}
 
@@ -497,14 +497,14 @@ com.synckolab.addressbookTools.setCardProperty = function (card, prop, value) {
 com.synckolab.addressbookTools.findCard = function (cards, vId, directory) {
 	// nothing found - try mailing lists
 	var card = cards.get(vId);
-	if (card !== null) {
+	if (card) {
 		return card;
 	}
 
-	if (directory !== null) {
+	if (directory) {
 		var cn = directory.childNodes;
 		var ABook = cn.getNext();
-		while (ABook !== null) {
+		while (ABook) {
 			var cur = ABook.QueryInterface(Components.interfaces.nsIAbDirectory);
 			if (cur.listNickName === vId) {
 				return cur;
@@ -647,7 +647,7 @@ com.synckolab.addressbookTools.xml2Card = function (xml, extraFields, cards) {
 					break;
 				default:
 					// remember other emails
-					if (extraFields !== null) {
+					if (extraFields) {
 						extraFields.addField("EMAIL", cur.getXmlResult("SMTP-ADDRESS", ""));
 					}
 					break;
@@ -697,7 +697,7 @@ com.synckolab.addressbookTools.xml2Card = function (xml, extraFields, cards) {
 					break;
 				default:
 					// remember other phone numbers
-					if (extraFields !== null) {
+					if (extraFields) {
 						extraFields.addField("PHONE:" + cur.getXmlResult("TYPE", "CELLULAR"), num);
 					}
 					break;
@@ -731,7 +731,7 @@ com.synckolab.addressbookTools.xml2Card = function (xml, extraFields, cards) {
 				break;
 			/* @deprecated
 			case "PREFERRED-ADDRESS":
-			if (cur.firstChild !== null)
+			if (cur.firstChild)
 				this.setCardProperty(card, "DefaultAddress", cur.getFirstData());
 			break;
 			*/
@@ -863,7 +863,7 @@ com.synckolab.addressbookTools.xml2Card = function (xml, extraFields, cards) {
 				if (cur.firstChild === null) {
 					break;
 				}
-				if (extraFields !== null && cur.nodeName !== "product-id" && cur.nodeName !== "sensitivity") {
+				if (extraFields && cur.nodeName !== "product-id" && cur.nodeName !== "sensitivity") {
 					com.synckolab.tools.logMessage("XC FIELD not found: " + cur.nodeName + ":" + cur.getFirstData(), this.global.LOG_WARNING + this.global.LOG_AB);
 					// remember other fields
 					extraFields.addField(cur.nodeName, cur.getFirstData());
@@ -918,10 +918,10 @@ com.synckolab.addressbookTools.list2Xml = function (card, fields) {
 	var	cList = abManager.getDirectory(card.mailListURI);
 
 	var lCards = cList.childCards;
-	if (lCards !== null) {
+	if (lCards) {
 		if (lCards.hasMoreElements) {
 			var curCard = null;
-			while (lCards.hasMoreElements() && (curCard = lCards.getNext()) !== null) {
+			while (lCards.hasMoreElements() && (curCard = lCards.getNext())) {
 				// get the right interface
 				var cur = curCard.QueryInterface(Components.interfaces.nsIAbCard);
 				// get the uid or generate it
@@ -1227,7 +1227,7 @@ com.synckolab.addressbookTools.card2Xml = function (card, fields) {
 	}
 
 	// add extra/missing fields
-	if (fields !== null) {
+	if (fields) {
 		xml += fields.toXmlString();
 	}
 
@@ -1298,10 +1298,10 @@ com.synckolab.addressbookTools.equalsContact = function (a, b) {
 
 		// in case the fields are below a certain limit they should be treated as numeric
 		if (i < numericFieldCount) {
-			if (sa !== null) {
+			if (sa) {
 				sa = Number(sa);
 			}
-			if (sb !== null) {
+			if (sb) {
 				sb = Number(sb);
 			}
 		}
@@ -1367,7 +1367,7 @@ com.synckolab.addressbookTools.equalsContact = function (a, b) {
 
 		var aCount = 0;
 		var cur, card;
-		if (aCards !== null && aCards.hasMoreElements) {
+		if (aCards && aCards.hasMoreElements) {
 			card = null;
 			while (aCards.hasMoreElements() && (card = aCards.getNext())) {
 				// get the right interface
@@ -1380,7 +1380,7 @@ com.synckolab.addressbookTools.equalsContact = function (a, b) {
 
 		// now do a compare
 		var bCount = 0;
-		if (bCards !== null && bCards.hasMoreElements) {
+		if (bCards && bCards.hasMoreElements) {
 			card = null;
 			while (bCards.hasMoreElements() && (card = bCards.getNext())) {
 				// get the right interface
@@ -1480,7 +1480,7 @@ com.synckolab.addressbookTools.vList2Card = function (uids, lines, card, cards) 
 			com.synckolab.addressbookTools.message2Card(lines, newCard, null, cStart, i);
 			// check if we know this card already :) - ONLY cards
 			var gotCard = com.synckolab.addressbookTools.findCard(cards, this.getUID(newCard), null);
-			if (gotCard !== null) {
+			if (gotCard) {
 				card.addressLists.appendElement(gotCard);
 			} else {
 				card.addressLists.appendElement(newCard);
@@ -1511,7 +1511,7 @@ com.synckolab.addressbookTools.Xml2List = function (topNode, extraFields, cards)
 	var found = false;
 	var email = 0;
 
-	while (cur !== null) {
+	while (cur) {
 		if (cur.nodeType === Node.ELEMENT_NODE)//1
 		{
 			switch (cur.nodeName.toUpperCase()) {
@@ -1561,7 +1561,7 @@ com.synckolab.addressbookTools.Xml2List = function (topNode, extraFields, cards)
 
 				// check if we have this card already in out internal db (should be there)
 				var cMember = cards.get(uid);
-				if (cMember !== null) {
+				if (cMember) {
 					com.synckolab.tools.logMessage("found existing card - adding to list!!!", this.global.LOG_DEBUG + this.global.LOG_AB);
 					card.addressLists.appendElement(cMember, false);
 				} else {
@@ -1854,7 +1854,7 @@ com.synckolab.addressbookTools.message2Card = function (lines, card, extraFields
 				gotEmailSecondary = true;
 			} else {
 				com.synckolab.tools.logMessage("additional email found: " + tok[1], this.global.LOG_WARNING + this.global.LOG_AB);
-				if (extraFields !== null) {
+				if (extraFields) {
 					extraFields.addField(tok[0], tok[1]);
 				}
 			}
@@ -2051,11 +2051,11 @@ com.synckolab.addressbookTools.list2Human = function (card) {
 	var cList = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager).getDirectory(card.mailListURI);
 
 	var lCards = cList.childCards;
-	if (lCards !== null) {
+	if (lCards) {
 		msg += "Members: \n\n";
 		var curCard = null;
 		if (lCards.hasMoreElements) {
-			while (lCards.hasMoreElements() && (curCard = lCards.getNext()) !== null) {
+			while (lCards.hasMoreElements() && (curCard = lCards.getNext())) {
 				// get the right interface
 				curCard = curCard.QueryInterface(Components.interfaces.nsIAbCard);
 				msg += this.getCardProperty(curCard, "DisplayName") + "<" + this.getCardProperty(curCard, "PrimaryEmail") + ">\n";
@@ -2339,7 +2339,7 @@ com.synckolab.addressbookTools.card2Vcard = function (card, fields) {
 	}
 	msg += "UID:" + this.getUID(card) + "\n";
 	// add extra/missing fields
-	if (fields !== null) {
+	if (fields) {
 		msg += fields.toString();
 	}
 	msg += "VERSION:3.0\n";
