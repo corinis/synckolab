@@ -93,6 +93,12 @@ com.synckolab.addressbookTools = {
 			return card[prop] || def;
 		}
 
+		// json synckolab object
+		if(card.synckolab) {
+			if(card[prop])	// TODO better check for undefined?
+				return card[prop];
+			return null;
+		}
 		// tbird 3
 		if (card.getProperty) {
 			if (card.isMailList && prop === "Name") {
@@ -252,18 +258,14 @@ com.synckolab.addressbookTools = {
 				throw err;
 			}
 		}
-
+		
 		// tbird 3: we can use custom fields!!!
 		var uid = this.getCardProperty(card, "UUID");
 		if (uid !== "" && uid) {
 			return uid;
 		}
 
-		// pre tbird 3 style
-		if (this.getCardProperty(card, "Custom4") === "") {
-			return null;
-		}
-		return this.getCardProperty(card, "Custom4");
+		return null;
 	},
 	setUID : function (card, uid) {
 		if (card === null) {
@@ -301,15 +303,20 @@ com.synckolab.addressbookTools.getABDirectory = function () {
  * @prop the name of the property (String)
  * @value the value to set the property to, null will be changed to an empty string ("")
  */
-com.synckolab.addressbookTools.setCardProperty = function (card, prop, value) {
+com.synckolab.addressbookTools.setCardProperty = function (card, prop, value, extra) {
 	// make sure not write "null" anywhere
 	if (value === null || value === "null" || prop === "Custom4" && (!value.indexOf("pas-id-") || !value.indexOf("sk-"))) {
 		value = "";
 	}
-
+	// special case: this is a json object for the synckolab cache
+	if(card.synckolab) {
+		card[prop] = value;
+	}
+	else
 	// tbird 3
 	if (card.setProperty) {
-		card.setProperty(prop, value);
+		if(!extra)
+			card.setProperty(prop, value);
 		return;
 	} else {
 		// translation switch - tbird 2 still has to use custom4
@@ -648,7 +655,7 @@ com.synckolab.addressbookTools.xml2Card = function (xml, extraFields, cards) {
 				default:
 					// remember other emails
 					if (extraFields) {
-						extraFields.addField("EMAIL", cur.getXmlResult("SMTP-ADDRESS", ""));
+						this.setCardProperty(card, "EMAIL" + email, cur.getXmlResult("SMTP-ADDRESS", ""), true);
 					}
 					break;
 
@@ -698,7 +705,7 @@ com.synckolab.addressbookTools.xml2Card = function (xml, extraFields, cards) {
 				default:
 					// remember other phone numbers
 					if (extraFields) {
-						extraFields.addField("PHONE:" + cur.getXmlResult("TYPE", "CELLULAR"), num);
+						this.setCardProperty(card, "PHONE_" + cur.getXmlResult("TYPE", "CELLULAR"), num, true);
 					}
 					break;
 				}
@@ -864,9 +871,9 @@ com.synckolab.addressbookTools.xml2Card = function (xml, extraFields, cards) {
 					break;
 				}
 				if (extraFields && cur.nodeName !== "product-id" && cur.nodeName !== "sensitivity") {
-					com.synckolab.tools.logMessage("XC FIELD not found: " + cur.nodeName + ":" + cur.getFirstData(), this.global.LOG_WARNING + this.global.LOG_AB);
 					// remember other fields
-					extraFields.addField(cur.nodeName, cur.getFirstData());
+					com.synckolab.tools.logMessage("XC FIELD not found: " + cur.nodeName + ":" + cur.getFirstData(), this.global.LOG_WARNING + this.global.LOG_AB);
+					this.setCardProperty(card, cur.nodeName, cur.getFirstData(), true);
 				}
 				break;
 
@@ -1837,7 +1844,7 @@ com.synckolab.addressbookTools.message2Card = function (lines, card, extraFields
 				gotEmailSecondary = true;
 			} else {
 				if (extraFields) {
-					extraFields.addField(tok[0], tok[1]);
+					this.setCardProperty(card, tok[0], tok[1], true);
 				}
 			}
 
@@ -1855,7 +1862,7 @@ com.synckolab.addressbookTools.message2Card = function (lines, card, extraFields
 			} else {
 				com.synckolab.tools.logMessage("additional email found: " + tok[1], this.global.LOG_WARNING + this.global.LOG_AB);
 				if (extraFields) {
-					extraFields.addField(tok[0], tok[1]);
+					this.setCardProperty(card, tok[0], tok[1], true);
 				}
 			}
 
@@ -2026,7 +2033,7 @@ com.synckolab.addressbookTools.message2Card = function (lines, card, extraFields
 		default:
 			com.synckolab.tools.logMessage("VC FIELD not found: " + tok[0] + ":" + tok[1], this.global.LOG_WARNING + this.global.LOG_AB);
 			if (extraFields) {
-				extraFields.addField(tok[0], tok[1]);
+				this.setCardProperty(card, tok[0], tok[1], true);
 			}
 			break;
 		} // end switch

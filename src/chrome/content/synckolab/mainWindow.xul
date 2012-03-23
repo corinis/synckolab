@@ -46,18 +46,15 @@
 	<script type="application/x-javascript" src="chrome://synckolab/content/contactConflictTools.js"/>
 
 <script type="application/x-javascript">
-		window.addEventListener("load", com.synckolab.main.syncKolabTimer, false);
-		// detect and disable event listener for seamonkey
-		try {
-			if((Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo)).name != "SeaMonkey")
-			{
-				setTimeout(function()	{
-				   window.document.getElementById('folderTree').addEventListener("click",	com.synckolab.main.groupwareActions, true);
-				}, 1500);
-			}
-		} catch (ex) { /* ignore */ }  
-	<!-- calendar -->
-
+	window.addEventListener("load", function load(event) {
+		window.removeEventListener("load", load, false); //remove listener, no longer needed
+		// init the timer
+		com.synckolab.main.syncKolabTimer();
+		// init the groupware 
+		com.synckolab.main.initGroupwareActions();
+	}, false);
+		
+	// calendar fix
 	var gCalendarBundle = {
 		getString: function (s) { return s; }
 	};

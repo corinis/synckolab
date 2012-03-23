@@ -61,8 +61,6 @@ com.synckolab.global = {
 		// pointer to the window
 		wnd : null, 
 		
-		isTbird3: true,
-		
 		// string bundle use: strBundle.getString("KEYNAME") (init in synckolab.js)
 		strBundle: {},
 		
@@ -84,7 +82,7 @@ com.synckolab.global = {
  * </ul>
  */
 com.synckolab.config.readConfiguration = function() {
-
+	com.synckolab.tools.logMessage("Checking configuration", com.synckolab.global.LOG_DEBUG);
 	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 	var i;
 	var configs = [];
@@ -97,21 +95,38 @@ com.synckolab.config.readConfiguration = function() {
 
 	if (configs.length === 0)
 	{
+		com.synckolab.tools.logMessage("No Configuration found - please run setup.", com.synckolab.global.LOG_ERROR);
 		return;
 	}
 
 	// check if we have an up-to-date config loaded
 	if (com.synckolab.main.syncConfigs && com.synckolab.main.syncConfigs.length > 0)
 	{
-		if (com.synckolab.main.syncConfigs.length === (configs.length - 1)) {
+		if (com.synckolab.main.syncConfigs.length === configs.length) {
 
 			// Check our previous configs against the current list of configs.
 			var configChanged = false;
 			for (i = 0; i < configs.length; i++) {
-				if (com.synckolab.main.syncConfigs[i].name !== configs[i]) {
+				// skip empty configs
+				if(configs[i] === '') {
+					continue;
+				}
+				
+				var found = false;
+				for(var j = 0; j < com.synckolab.main.syncConfigs.length; j++) {
+					if(com.synckolab.main.syncConfigs[j]) {
+						if (configs[i] === com.synckolab.main.syncConfigs[j].name) {
+							found = true;
+							break;
+						}
+					}
+				}
+				// the config name was not found
+				if(!found) {
+					com.synckolab.tools.logMessage("unable to find " + configs[i], com.synckolab.global.LOG_DEBUG);
 					configChanged = true;
 					break;
-				}			
+				}
 			}
 
 			// skip re-reading of config - nothing changed
@@ -189,37 +204,19 @@ com.synckolab.config.readConfiguration = function() {
 		// read the messagefolder and save the object in the config
 		
 		// add the contact configuration info
-		curConfig.contact = {
-				sync: false,
-				name: curConfig.name,
-				serverKey: curConfig.serverKey,
-				conflictResolve: curConfig.conflictResolve,
-				hide: com.synckolab.main.hideFolder
-		};
+		curConfig.contact = com.synckolab.config.createEmptyconfig(curConfig);
 		com.synckolab.AddressBook.readConfig(curConfig.contact, pref);
 		com.synckolab.config.fillMsgFolder(curConfig.contact);
 
 		// add the calendar configuration info
-		curConfig.cal = {
-				sync: false,
-				name: curConfig.name,
-				serverKey: curConfig.serverKey,
-				conflictResolve: curConfig.conflictResolve,
-				task: false,
-				hide: com.synckolab.main.hideFolder
-		};
+		curConfig.cal = com.synckolab.config.createEmptyconfig(curConfig);
+		curConfig.cal.task = false;
 		com.synckolab.Calendar.readConfig(curConfig.cal, pref);
 		com.synckolab.config.fillMsgFolder(curConfig.cal);
 
-		// smae for tasks
-		curConfig.task = {
-				sync: false,
-				name: curConfig.name,
-				serverKey: curConfig.serverKey,
-				conflictResolve: curConfig.conflictResolve,
-				task: true,
-				hide: com.synckolab.main.hideFolder
-		};
+		// same for tasks
+		curConfig.task = com.synckolab.config.createEmptyconfig(curConfig);
+		curConfig.cal.task = true;
 		com.synckolab.Calendar.readConfig(curConfig.task, pref);
 		com.synckolab.config.fillMsgFolder(curConfig.task);
 
@@ -240,6 +237,101 @@ com.synckolab.config.readConfiguration = function() {
 			curConfig.autoHideWindow = false;
 		}
 	}
+	
+	var msgNotificationService = Components.classes["@mozilla.org/messenger/msgnotificationservice;1"].getService(Components.interfaces.nsIMsgFolderNotificationService);
+	msgNotificationService.addListener(com.synckolab.config.folderListener, msgNotificationService.msgAdded | msgNotificationService.msgsDeleted | msgNotificationService.msgsMoveCopyCompleted);
+	
+};
+
+/**
+ * creates an empty config object
+ */
+com.synckolab.config.createEmptyconfig = function(baseConfig) {
+	return {
+		sync: false,
+		name: baseConfig.name,
+		serverKey: baseConfig.serverKey,
+		conflictResolve: baseConfig.conflictResolve,
+		hide: com.synckolab.main.hideFolder,
+		addListener: false,
+		triggerParseAddMessage: function(msg){},
+		triggerParseDeleteMessage: function(msg) {}
+	};
+};
+
+com.synckolab.config.folderListener = {
+	findConfig: function(folder) {
+		// search through the configs  
+		for(var j = 0; j < com.synckolab.main.syncConfigs.length; j++) {
+			if(com.synckolab.main.syncConfigs[j]) {
+				var curConfig = com.synckolab.main.syncConfigs[j];
+				if(!curConfig)
+					continue;
+				if(curConfig.contact && curConfig.contact.sync) {
+					if(config.contact.folderMsgURI === folder)
+						return config.contact;
+				}
+				if(curConfig.cal && curConfig.cal.sync) {
+					if(config.cal.folderMsgURI === folder)
+						return config.cal;
+				}
+				if(curConfig.task && curConfig.task.sync) {
+					if(config.task.folderMsgURI === folder)
+						return config.task;
+				}
+			}
+		}
+		
+	},
+	msgAdded: function(aMsg) {
+		
+		var msg = aMsg.QueryInterface(Components.interfaces.nsIMsgDBHdr);
+		//nsIMsgDBHdr - check folder
+		com.synckolab.tools.logMessage("ADDED to " + msg.folder.folderURL, com.synckolab.global.LOG_DEBUG);
+		// lets see if we have this folde rin the list
+		var curConfig = this.findConfig(msg.folder.folderURL);
+		if(curConfig) {
+			curConfig.triggerParseAddMessage(aMsg);
+		}
+	},
+	msgsClassified: function(aMsgs, aJunkProcessed, aTraitProcessed) {
+		// ignore
+	},
+	msgsDeleted: function(aMsgs) {
+		//nsiArray<nsIMsgDBHdr> - check folder
+		com.synckolab.tools.logMessage("GOT DELETE...", com.synckolab.global.LOG_DEBUG);
+		var e = aMsgs.enumerate();
+		while(e.hasMoreElements()) {
+			var msg = e.getNext().QueryInterface(Components.interfaces.nsIMsgDBHdr);
+			com.synckolab.tools.logMessage("DELETED from " + msg.folder.folderURL, com.synckolab.global.LOG_DEBUG);
+			var curConfig = this.findConfig(msg.folder.folderURL);
+			if(curConfig) {
+				curConfig.triggerParseDeleteMessage(aMsg);
+			}
+		}
+	},
+	msgsMoveCopyCompleted: function(aMove, aSrcMsgs, aDestFolder) {
+		//nsiArray<nsIMsgDBHdr> - check folder
+		com.synckolab.tools.logMessage("COPY/MOVE", com.synckolab.global.LOG_DEBUG);
+	},
+	msgKeyChanged: function(aOldMsgKey, aNewMsgHdr) {
+		// ignore
+	},
+	folderAdded: function(aFolder) {
+		// ignore
+	},
+	folderDeleted: function(aFolder) {
+		// ignore
+	},
+	folderMoveCopyCompleted: function(aMove, aSrcFolder, aDestFolder) {
+		// ignore
+	},
+	folderRenamed: function(aOrigFolder, aNewFolder) {
+		// ignore
+	},
+	itemEvent: function(aItem, aEvent, aData) {
+		com.synckolab.tools.logMessage("EVENT", com.synckolab.global.LOG_DEBUG);
+	}
 };
 
 /**
@@ -253,38 +345,18 @@ com.synckolab.config.fillMsgFolder = function(config) {
 	if(!config.sync) {
 		return;
 	}
-	
+
 	// get and set the message folder
 	config.folder = com.synckolab.tools.getMsgFolder(config.serverKey, config.folderPath);
 	config.folderMsgURI = config.folder.baseMessageURI;
 	config.email = com.synckolab.tools.getAccountEMail(config.serverKey);
 	config.mailname = com.synckolab.tools.getAccountName(config.serverKey);
 
-};
+	com.synckolab.tools.logMessage("check listener for "+ config.folderMsgURI, com.synckolab.global.LOG_DEBUG);
 
-/**
- * Folder Listener to check for new/changed/etc. items
- */
-com.synckolab.config.msgFolderServiceListener = {
-	OnItemAdded: function(msgfolder, item) {
-		alert("new item " + item.toSource());
-	},
-	OnItemRemoved: function(msgfolder, item) {
-		alert("item removed" + item.toSource());
-	},
-	OnItemPropertyChanged: function(msgfolder, prop, oldVal, newVal) {
-		alert("prop changed " + prop.toSource() + " from " + oldVal + " to " + newVal);
-	},
-	OnItemIntPropertyChanged: function(msgfolder, prop, oldVal, newVal) {
-		
-	},
-	OnItemBoolPropertyChanged: function(msgfolder, prop, oldVal, newVal) {
-		
-	},
-	OnItemUnicharPropertyChanged: function(msgfolder, prop, oldVal, newVal) {
-		
-	},
-	OnItemPropertyFlagChanged: function(msgfolder, prop, oldVal, newVal) {
-		
+	if(config.addListener) {
+		com.synckolab.tools.logMessage("adding listener for "+ config.folderMsgURI, com.synckolab.global.LOG_DEBUG);
 	}
 };
+
+
