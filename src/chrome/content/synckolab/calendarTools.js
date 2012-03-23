@@ -1122,6 +1122,7 @@ com.synckolab.calendarTools.cnv_event2xml = function (event, skipVolatiles, sync
 		// Alarms (only allow relative alarms)
 		var alarm;
 		var alarms = event.getAlarms({});
+		
 		for(i=0; i < alarms.length; i++) {
 			alarm = alarms[i];
 			// skip abolute ALARM_RELATED_ABSOLUTE = 0;

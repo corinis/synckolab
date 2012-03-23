@@ -333,7 +333,7 @@ com.synckolab.Calendar = {
 				// use the original content to write the snyc file 
 				// this makes it easier to compare later on and makes sure no info is 
 				// lost/changed
-				com.synckolab.tools.writeSyncDBFile(idxEntry, fileContent);
+				com.synckolab.tools.writeSyncDBFile(idxEntry, fileContent, true);
 
 				this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localAdd"));
 
@@ -376,7 +376,7 @@ com.synckolab.Calendar = {
 			// event exists in local calendar
 			this.tools.logMessage("Event exists local: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_DEBUG);
 
-			var cEvent = this.calTools.message2Event(com.synckolab.tools.readSyncDBFile(idxEntry), null, this.gConfig.task);
+			var cEvent = this.calTools.message2Event(com.synckolab.tools.readSyncDBFile(idxEntry, true), null, this.gConfig.task);
 
 			var hasEntry = idxEntry.exists() && (cEvent);
 			// make sure cEvent is not null, else the comparision will fail
@@ -411,7 +411,7 @@ com.synckolab.Calendar = {
 					// take event from server
 					this.tools.logMessage("Take event from server: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
 
-					com.synckolab.tools.writeSyncDBFile(idxEntry, fileContent);
+					com.synckolab.tools.writeSyncDBFile(idxEntry, fileContent, true);
 
 					for (i = 0; i < this.gEvents.events.length; i++) {
 						if (this.gEvents.events[i].id === parsedEvent.id) {
@@ -460,7 +460,7 @@ com.synckolab.Calendar = {
 						}
 					}
 
-					com.synckolab.tools.writeSyncDBFile(idxEntry, com.synckolab.tools.stripMailHeader(msg));
+					com.synckolab.tools.writeSyncDBFile(idxEntry, com.synckolab.tools.stripMailHeader(msg), true);
 
 					// update list item
 					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("updateOnServer"));
@@ -476,7 +476,7 @@ com.synckolab.Calendar = {
 				if (!hasEntry || (!equal2parsed && equal2found)) {
 					this.tools.logMessage("event on server changed: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
 
-					com.synckolab.tools.writeSyncDBFile(idxEntry, fileContent);
+					com.synckolab.tools.writeSyncDBFile(idxEntry, fileContent, true);
 
 					for (i = 0; i < this.gEvents.events.length; i++) {
 						if (this.gEvents.events[i].id === parsedEvent.id) {
@@ -526,7 +526,7 @@ com.synckolab.Calendar = {
 					// update list item
 					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("updateOnServer"));
 
-					com.synckolab.tools.writeSyncDBFile(idxEntry, com.synckolab.tools.stripMailHeader(msg));
+					com.synckolab.tools.writeSyncDBFile(idxEntry, com.synckolab.tools.stripMailHeader(msg), true);
 
 					// remember this message for update
 					return msg;
@@ -685,7 +685,7 @@ com.synckolab.Calendar = {
 
 				// add the new event into the db
 				cEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, cur.id);
-				com.synckolab.tools.writeSyncDBFile(cEntry, com.synckolab.tools.stripMailHeader(msg));
+				com.synckolab.tools.writeSyncDBFile(cEntry, com.synckolab.tools.stripMailHeader(msg), true);
 
 			}
 		}

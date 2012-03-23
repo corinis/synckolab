@@ -805,8 +805,9 @@ com.synckolab.tools.file = {
  * writes a sync file. 
  * @param file the file to write in. If it exists, it will be removed first.
  * @param data the data object that will be converted to json and written
+ * @param direct do not use json, write content as is
  */
-com.synckolab.tools.writeSyncDBFile = function (file, data)
+com.synckolab.tools.writeSyncDBFile = function (file, data, direct)
 {
 	if (data === null) {
 		return;
@@ -817,7 +818,11 @@ com.synckolab.tools.writeSyncDBFile = function (file, data)
 	}
 	
 	// create a json file out of it
-	var skcontent = JSON.stringify(data);
+	var skcontent = null;
+	if(direct)
+		skcontent = data;
+	else
+		skcontent = JSON.stringify(data);
 	
 	file.create(file.NORMAL_FILE_TYPE, parseInt("0666", 8));
 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
@@ -831,9 +836,10 @@ com.synckolab.tools.writeSyncDBFile = function (file, data)
  * reads a given sync file. 
  * The sync file contains the entry in a json format.
  * @param file the file to read from
+ * @param direct do not use json, write content as is
  * @returns the json object from the file
  */
-com.synckolab.tools.readSyncDBFile = function (file)
+com.synckolab.tools.readSyncDBFile = function (file, direct)
 {	
 	if (file === null)
 	{
@@ -865,6 +871,10 @@ com.synckolab.tools.readSyncDBFile = function (file)
 		istream.close();
 
 		// use json instead
+		if (direct) {
+			return fileContent;
+		}
+		
 		return JSON.parse(fileContent);
 	}
 	catch (ex)
