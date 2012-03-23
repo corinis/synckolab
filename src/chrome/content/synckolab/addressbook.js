@@ -72,15 +72,7 @@ com.synckolab.AddressBook = {
 	
 	forceServerCopy: false,
 	forceLocalCopy: false,
-	isCal: function () {
-		return false;
-	},
 
-	// return tasks/calendar for correct foldernames
-	getType: function () {
-		return "contact";
-	},
-	
 	/**
 	 * add the address book specific configuration to the config object
 	 * @param config the config object (name is already prefilled)
@@ -202,7 +194,6 @@ com.synckolab.AddressBook = {
 			}
 		}
 		// the new card might be a card OR a directory
-		var newItem = null;
 		var newCard = null;
 		var pName;	// temp for photos
 		
@@ -228,13 +219,8 @@ com.synckolab.AddressBook = {
 			com.synckolab.tools.scrollToBottom(this.itemList);
 		}
 				
-		// this is an array of arrays that hold fieldname+fielddata of until-now-unknown fields
-		var messageFields = new com.synckolab.dataBase(null);
-		
 		// parse the new item
-		newItem = this.tools.parseMessage(fileContent, messageFields, this.gCardDB);
-		
-		newCard = newItem;
+		newCard = this.tools.parseMessageContent(fileContent);
 		
 		/*
 		if (newCard && newCard.isMailList)
@@ -252,30 +238,31 @@ com.synckolab.AddressBook = {
 			this.gCurUID = this.tools.getUID(newCard);
 			
 			// remember that we did this uid already
-			this.folderMessageUids.push(this.tools.getUID(newCard));
-			com.synckolab.tools.logMessage("got card from message: " + this.tools.getUID(newCard), com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
+			this.folderMessageUids.push(this.gCurUID);
+			com.synckolab.tools.logMessage("got card from message: " + this.gCurUID, com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
 
 			// update list item
-			this.curItemInListId.setAttribute("label", this.tools.getUID(newCard));
+			this.curItemInListId.setAttribute("label", this.gCurUID);
 			this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("checking"));
+			
 			// since we disabled mailing list - wont come here
-			if (newCard.isMailList) {
+			if (newCard.type === "maillist") {
 				this.curItemInListContent.setAttribute("label", com.synckolab.global.strBundle.getString("mailingList") + " " + this.tools.getCardProperty(newCard, "Name"));
-			} else if (newCard.displayName !== "") {
-				this.curItemInListContent.setAttribute("label", newCard.displayName + " <" + newCard.primaryEmail + ">");
+			} else if (this.tools.getCardProperty(newCard, "DisplayName") !== "") {
+				this.curItemInListContent.setAttribute("label", this.tools.getCardProperty(newCard, "DisplayName") + 
+						" <" + this.tools.getCardProperty(newCard, "PrimaryEmail","---") + ">");
 			} else {
-				this.curItemInListContent.setAttribute("label", newCard.firstName + " " + newCard.lastName + " <" + newCard.primaryEmail + ">");
+				this.curItemInListContent.setAttribute("label", this.tools.getCardProperty(newCard, "FirstName") + " " + 
+						this.tools.getCardProperty(newCard, "LastName") + 
+						" <" + this.tools.getCardProperty(newCard, "PrimaryEmail","---") + ">");
 			}
 
 			// ok lets see if we have this one already
-			var aCard = this.gCardDB.get(this.tools.getUID(newCard));
-			com.synckolab.tools.logMessage("findCard.. done ", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);	
+			var aCard = this.gCardDB.get(this.gCurUID);
 
 			// get the dbfile from the local disk
-			var cEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, this.getType(), this.tools.getUID(newCard));
-			// ... and the field file
-			var fEntry = com.synckolab.tools.file.getSyncFieldFile(this.gConfig, this.getType(), this.tools.getUID(newCard));
-			com.synckolab.tools.logMessage("get sync db and field file ", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);	
+			var cEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, this.tools.getUID(newCard));
+			com.synckolab.tools.logMessage("got entry from db" + aCard, com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);	
 
 			// a new card or locally deleted 
 			if (aCard === null)
@@ -285,10 +272,8 @@ com.synckolab.AddressBook = {
 				// also do so if the forceLocalCopy flag is set (happens when you change the configuration)
 				if (!cEntry.exists() || this.forceLocalCopy)
 				{
-					// use the original content to write the sync file 
-					// this makes it easier to compare later on and makes sure no info is 
-					// lost/changed
-					com.synckolab.tools.writeSyncDBFile(cEntry, fileContent);
+					// write the pojo into a file for faster comparison in later sync
+					com.synckolab.tools.writeSyncDBFile(cEntry, newCard);
 					
 					// also copy the image
 					var pNameA = this.tools.getCardProperty(newCard, "PhotoName");
@@ -300,31 +285,27 @@ com.synckolab.AddressBook = {
 						}
 					}
 					
-					// also write the extra fields in a file
-					if (messageFields.length() > 0) {
-						messageFields.write(fEntry);
-					}
-
-					if (newCard.isMailList)
+					
+					com.synckolab.tools.logMessage("card is new, add to address book: " + this.tools.getUID(newCard), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+					// convert to a thunderbird object and add to the address book 
+					if (newCard.type === "maillist")
 					{
 						// skip mailing lists
-						this.gConfig.addressBook.addMailList(newCard);
+						this.gConfig.addressBook.addMailList(com.synckolab.addressbookTools.createTBirdObject(newCard, this.gCardDB));
 						// also add to the hash-database
 						this.gCardDB.put(this.tools.getUID(newCard), newCard);
 					}
 					else
 					{
-						this.gConfig.addressBook.addCard(newCard);
+						this.gConfig.addressBook.addCard(com.synckolab.addressbookTools.createTBirdObject(newCard));
 						// also add to the hash-database
 						this.gCardDB.put(this.tools.getUID(newCard), newCard);
 					}
-						
-						
-					com.synckolab.tools.logMessage("card is new, add to address book: " + this.tools.getUID(newCard), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);	
 					
 					//update list item
 					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localAdd"));
-					
+					// new card added - we are done
+					return null;
 				}
 				else
 				{
@@ -341,24 +322,16 @@ com.synckolab.AddressBook = {
 					catch (deleCEntry)
 					{ // ignore this - if the file does not exist
 					}
-
-					try
-					{
-						// delete extra file if we dont need it
-						fEntry.remove(false);
-					}
-					catch (deleFEntry)
-					{ // ignore this - if the file does not exist
-					}
 					
+					// make sure to delete the message
 					return "DELETEME";
 				}
 			}
 			else
 			// this card is already in the address book
 			{
-				// make sure to ONLY read the info.. do not get the extra fields from there
-				var cCard = this.tools.parseMessage(com.synckolab.tools.readSyncDBFile(cEntry), null, this.gCardDB);
+				// read the current card from the sync db (might be null)
+				var cCard = com.synckolab.tools.readSyncDBFile(cEntry);
 				
 				var cCard_equals_aCard, cCard_equals_newCard, aCard_equals_newCard;
 				
@@ -483,7 +456,7 @@ com.synckolab.AddressBook = {
 							}
 							
 							// add the new one
-							this.gConfig.addressBook.addCard(newCard);
+							this.gConfig.addressBook.addCard(com.synckolab.addressbookTools.createTBirdObject(newCard));
 						}
 						catch (de)
 						{
@@ -492,21 +465,10 @@ com.synckolab.AddressBook = {
 						
 						// write the current content in the sync-db file
 						com.synckolab.tools.writeSyncDBFile(cEntry, fileContent);
-						// also write the extra fields in a file (or remove if nothing there)
-						if (messageFields.length() > 0) {
-							messageFields.write(fEntry);
-						} else
-						{
-							try
-							{
-								fEntry.remove(false);
-							}
-							catch (e) {}
-						}
 					}
 
 					if (bUpdateServer) {
-						// update on server - leave local alone
+						// update on server
 						return this.tools.card2Message(aCard, this.gConfig.email, this.gConfig.format);
 					}
 					return null; // Return null, we either updated nothing or updated only local
@@ -531,7 +493,7 @@ com.synckolab.AddressBook = {
 							delMailListlist.appendElement(aCard, false);
 							this.gConfig.addressBook.deleteCards(delMailListlist);
 							//this.gConfig.addressBook.deleteDirectory(aCard);
-							this.gConfig.addressBook.addMailList(newCard);
+							this.gConfig.addressBook.addMailList(com.synckolab.addressbookTools.createTBirdObject(newCard, this.gCardDB));
 						} catch (delMailList)
 						{
 							com.synckolab.tools.logMessage("problem with local update for - skipping" + this.tools.getUID(aCard), com.synckolab.global.LOG_WARNING + com.synckolab.global.LOG_AB);
@@ -557,7 +519,7 @@ com.synckolab.AddressBook = {
 								}
 							}
 
-							this.gConfig.addressBook.addCard(newCard);
+							this.gConfig.addressBook.addCard(com.synckolab.addressbookTools.createTBirdObject(newCard));
 						}
 						catch (delocalUpdate)
 						{
@@ -570,17 +532,8 @@ com.synckolab.AddressBook = {
 					
 					// write the current content in the sync-db file
 					//com.synckolab.tools.writeSyncDBFile (cEntry, com.synckolab.tools.stripMailHeader(this.tools.card2Message(newCard, this.gConfig.email, this.gConfig.format)));
-					com.synckolab.tools.writeSyncDBFile(cEntry, fileContent);
+					com.synckolab.tools.writeSyncDBFile(cEntry, newCard);
 
-					// also write the extra fields in a file (or remove if nothing there)
-					if (messageFields.length() > 0) {
-						messageFields.write(fEntry);
-					}
-					else
-					if (fEntry.exists()) {
-						fEntry.remove(false);
-					}
-					
 					// update list item
 					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localUpdate"));
 					return null;
@@ -595,11 +548,9 @@ com.synckolab.AddressBook = {
 					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("updateOnServer"));
 					
 					// remember this message for update - generate mail message (incl. extra fields)
-					this.messageFields = new com.synckolab.dataBase(fEntry);
-					var abcontent = this.tools.card2Message(aCard, this.gConfig.email, this.gConfig.format, messageFields);
+					var abcontent = this.tools.card2Message(aCard, this.gConfig.email, this.gConfig.format);
 					// write the current content in the sync-db file
-					com.synckolab.tools.writeSyncDBFile(cEntry, com.synckolab.tools.stripMailHeader(abcontent));
-					
+					com.synckolab.tools.writeSyncDBFile(cEntry, newCard);
 					return abcontent;
 				}
 				
@@ -723,10 +674,9 @@ com.synckolab.AddressBook = {
 			com.synckolab.tools.logMessage("New Card " + this.tools.getUID(curItem), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 
 			// get the dbfile from the local disk
-			cEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, this.getType(), this.tools.getUID(curItem));
-			// write the current content in the sync-db file
-			com.synckolab.tools.writeSyncDBFile(cEntry, com.synckolab.tools.stripMailHeader(abcontent));
-			
+			cEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, this.tools.getUID(curItem));
+			// write the current content in the sync-db file (parse to json object first)
+			com.synckolab.tools.writeSyncDBFile(cEntry, this.tools.parseMessage(com.synckolab.tools.stripMailHeader(abcontent)));
 		}
 		else
 		{
@@ -749,7 +699,7 @@ com.synckolab.AddressBook = {
 			if (!alreadyProcessed)
 			{
 				// get the dbfile from the local disk
-				cEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, this.getType(), this.tools.getUID(curItem));
+				cEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, this.tools.getUID(curItem));
 				if (this.tools.getUID(curItem) === null)
 				{
 					alert("UID is NULL???" + curItem.custom4);
@@ -820,10 +770,10 @@ com.synckolab.AddressBook = {
 					com.synckolab.tools.logMessage("New Card " + this.tools.getUID(curItem), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 					
 					// get the dbfile from the local disk
-					cEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, this.getType(), this.tools.getUID(curItem));
+					cEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, this.tools.getUID(curItem));
 					// write the current content in the sync-db file
-					com.synckolab.tools.writeSyncDBFile(cEntry, com.synckolab.tools.stripMailHeader(abcontent));
-				}				
+					com.synckolab.tools.writeSyncDBFile(cEntry, this.tools.parseMessage(com.synckolab.tools.stripMailHeader(abcontent)));
+				}
 			}
 		}
 	

@@ -103,7 +103,7 @@ com.synckolab.main.syncKolabTimer = function () {
 	// wait a minute
 	com.synckolab.tools.logMessage("sync timer: sleep for one minute", com.synckolab.global.LOG_DEBUG);
 	com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.syncKolabTimer();}}, 60000, 0);
-}
+};
 
 com.synckolab.main.initGroupwareActions = function() {
 	// detect and disable event listener for seamonkey
@@ -899,7 +899,7 @@ com.synckolab.main.getMessage = function()
 			{
 				// get the content from the cached file and ignore the imap
 				com.synckolab.tools.logMessage("taking content from: " + com.synckolab.main.gSyncFileKey[3] + "/" + com.synckolab.main.gSyncFileKey[4], com.synckolab.global.LOG_DEBUG);
-				com.synckolab.main.fileContent = com.synckolab.tools.readSyncDBFile(com.synckolab.tools.file.getSyncDbFile(com.synckolab.main.gSyncFileKey[3], com.synckolab.main.gSync.getType(), com.synckolab.main.gSyncFileKey[4]));
+				com.synckolab.main.fileContent = com.synckolab.tools.readSyncDBFile(com.synckolab.tools.file.getSyncDbFile(com.synckolab.main.gConfig, com.synckolab.main.gSyncFileKey[4]));
 
 				// make sure we dont read an empty file
 				if (com.synckolab.main.fileContent && com.synckolab.main.fileContent !== "")

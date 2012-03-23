@@ -79,20 +79,10 @@ com.synckolab.Calendar = {
 	forceServerCopy : false,
 	forceLocalCopy : false,
 
-	isCal : function () {
-		return true;
-	},
-
-	// return tasks/calendar for correct foldernames
-	getType : function () {
-		return (this.gConfig.task === true ? "tasks" : "calendar");
-	},
-
 	/**
 	 * add the address book specific configuration to the config object
 	 * @param config the config object (name is already prefilled)
 	 * @param pref a nsIPrefBranch for reading of the configuration
-	 * @param task set to true to read the task configuration 
 	 */
 	readConfig: function(config, pref) {
 		if (!com.synckolab.calendarTools.isCalendarAvailable()) {
@@ -102,7 +92,7 @@ com.synckolab.Calendar = {
 		config.forceServerCopy = false;
 		config.forceLocalCopy = false;
 
-		if (config.task === true) {
+		if (config.type === "task") {
 			// task config
 			try {
 				config.sync = pref.getBoolPref("SyncKolab." + config.name + ".syncTasks");
@@ -191,7 +181,7 @@ com.synckolab.Calendar = {
 
 	init2 : function (nextFunc, sync) {
 
-		this.tools.logMessage("Init2 for " + (this.gConfig.task === true ? "tasks" : "calendar"), this.global.LOG_DEBUG);
+		this.tools.logMessage("Init2 for " + this.gConfig.type, this.global.LOG_DEBUG);
 		// get ALL the items from calendar - when done call nextfunc
 		this.gEvents.nextFunc = nextFunc;
 		this.gEvents.events = [];
@@ -200,7 +190,7 @@ com.synckolab.Calendar = {
 
 		// gCalendar might be invalid if no calendar is selected in the settings
 		if (this.gCalendar) {
-			if (this.gConfig.task === true) {
+			if (this.gConfig.type === "task") {
 				this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_TODO | this.gCalendar.ITEM_FILTER_COMPLETED_ALL, 0, null, null, this.gEvents);
 			} else {
 				this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_EVENT, 0, null, null, this.gEvents);
@@ -217,9 +207,9 @@ com.synckolab.Calendar = {
 		sync : '',
 		ready : false,
 		onOperationComplete : function (aCalendar, aStatus, aOperator, aId, aDetail) {
-			com.synckolab.tools.logMessage("operation " + (com.synckolab.Calendar.gConfig.task === true ? "tasks" : "calendar") + ": status=" + aStatus + " Op=" + aOperator + " Detail=" + aDetail, com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_CAL);
+			com.synckolab.tools.logMessage("operation " + com.synckolab.Calendar.gConfig.type + ": status=" + aStatus + " Op=" + aOperator + " Detail=" + aDetail, com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_CAL);
 			if (aStatus === 2152333316) {
-				com.synckolab.tools.logMessage((com.synckolab.Calendar.gConfig.task === true ? "tasks" : "calendar") + ": duplicate id - for additem", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_CAL);
+				com.synckolab.tools.logMessage(com.synckolab.Calendar.gConfig.type + ": duplicate id - for additem", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_CAL);
 			}
 			this.ready = true;
 		},
@@ -248,7 +238,7 @@ com.synckolab.Calendar = {
 		}
 		this.tools.logMessage("Indexed " + this.gCalDB.length() + " Entries", this.global.LOG_CAL + this.global.LOG_DEBUG);
 
-		this.tools.logMessage("Getting items for " + (this.gConfig.task === true ? "tasks" : "calendar"), this.global.LOG_CAL + this.global.LOG_DEBUG);
+		this.tools.logMessage("Getting items for " + this.gConfig.type, this.global.LOG_CAL + this.global.LOG_DEBUG);
 
 		return true;
 	},
@@ -331,9 +321,7 @@ com.synckolab.Calendar = {
 		this.tools.logMessage("findevent returned :" + foundEvent + "(" + (foundEvent === null ? 'null' : foundEvent.id) + ") for " + parsedEvent.id + " caching " + this.gCalDB.length() + " events", this.global.LOG_CAL + this.global.LOG_DEBUG);
 
 		// get the dbfile from the local disk
-		var idxEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, this.getType(), parsedEvent.id);
-		// ... and the field file
-		var fEntry = com.synckolab.tools.file.getSyncFieldFile(this.gConfig, this.getType(), parsedEvent.id);
+		var idxEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, parsedEvent.id);
 		
 		this.tools.logMessage("idxEntry:" + idxEntry, this.global.LOG_CAL + this.global.LOG_DEBUG);
 
@@ -346,11 +334,6 @@ com.synckolab.Calendar = {
 				// this makes it easier to compare later on and makes sure no info is 
 				// lost/changed
 				com.synckolab.tools.writeSyncDBFile(idxEntry, fileContent);
-
-				// also write the extra fields in a file
-				if (messageFields.length() > 0) {
-					messageFields.write(fEntry);
-				}
 
 				this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localAdd"));
 
@@ -386,11 +369,6 @@ com.synckolab.Calendar = {
 					idxEntry.remove(false);
 				}
 
-				try {
-					// delete extra file if we dont need it
-					fEntry.remove(false);
-				} catch (dele) { // ignore this - if the file does not exist
-				}
 
 				return "DELETEME";
 			}
@@ -434,11 +412,6 @@ com.synckolab.Calendar = {
 					this.tools.logMessage("Take event from server: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
 
 					com.synckolab.tools.writeSyncDBFile(idxEntry, fileContent);
-
-					// also write the extra fields in a file
-					if (messageFields.length() > 0) {
-						messageFields.write(fEntry);
-					}
 
 					for (i = 0; i < this.gEvents.events.length; i++) {
 						if (this.gEvents.events[i].id === parsedEvent.id) {
@@ -632,7 +605,7 @@ com.synckolab.Calendar = {
 			if (writeCur) {
 				this.tools.logMessage("nextUpdate decided to write event:" + cur.id, this.global.LOG_CAL + this.global.LOG_INFO);
 
-				cEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, this.getType(), cur.id);
+				cEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, cur.id);
 
 				if (cEntry.exists() && !this.forceServerCopy) {
 					// we have it in our database - don't write back to server but delete locally
@@ -711,7 +684,7 @@ com.synckolab.Calendar = {
 				this.tools.logMessage("New event:\n" + msg, this.global.LOG_CAL + this.global.LOG_DEBUG);
 
 				// add the new event into the db
-				cEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, this.getType(), cur.id);
+				cEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, cur.id);
 				com.synckolab.tools.writeSyncDBFile(cEntry, com.synckolab.tools.stripMailHeader(msg));
 
 			}

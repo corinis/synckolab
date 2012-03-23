@@ -204,19 +204,17 @@ com.synckolab.config.readConfiguration = function() {
 		// read the messagefolder and save the object in the config
 		
 		// add the contact configuration info
-		curConfig.contact = com.synckolab.config.createEmptyconfig(curConfig);
+		curConfig.contact = com.synckolab.config.createEmptyconfig(curConfig, "contact");
 		com.synckolab.AddressBook.readConfig(curConfig.contact, pref);
 		com.synckolab.config.fillMsgFolder(curConfig.contact);
 
 		// add the calendar configuration info
-		curConfig.cal = com.synckolab.config.createEmptyconfig(curConfig);
-		curConfig.cal.task = false;
+		curConfig.cal = com.synckolab.config.createEmptyconfig(curConfig, "cal");
 		com.synckolab.Calendar.readConfig(curConfig.cal, pref);
 		com.synckolab.config.fillMsgFolder(curConfig.cal);
 
 		// same for tasks
-		curConfig.task = com.synckolab.config.createEmptyconfig(curConfig);
-		curConfig.cal.task = true;
+		curConfig.task = com.synckolab.config.createEmptyconfig(curConfig, "task");
 		com.synckolab.Calendar.readConfig(curConfig.task, pref);
 		com.synckolab.config.fillMsgFolder(curConfig.task);
 
@@ -246,10 +244,11 @@ com.synckolab.config.readConfiguration = function() {
 /**
  * creates an empty config object
  */
-com.synckolab.config.createEmptyconfig = function(baseConfig) {
+com.synckolab.config.createEmptyconfig = function(baseConfig, confType) {
 	return {
 		sync: false,
 		name: baseConfig.name,
+		type: confType,
 		serverKey: baseConfig.serverKey,
 		conflictResolve: baseConfig.conflictResolve,
 		hide: com.synckolab.main.hideFolder,
@@ -265,19 +264,24 @@ com.synckolab.config.folderListener = {
 		for(var j = 0; j < com.synckolab.main.syncConfigs.length; j++) {
 			if(com.synckolab.main.syncConfigs[j]) {
 				var curConfig = com.synckolab.main.syncConfigs[j];
-				if(!curConfig)
+				if(!curConfig) {
 					continue;
+				}
 				if(curConfig.contact && curConfig.contact.sync) {
-					if(config.contact.folderMsgURI === folder)
-						return config.contact;
+					if(curConfig.contact.folderMsgURI === folder)
+					{
+						return curConfig.contact;
+					}
 				}
 				if(curConfig.cal && curConfig.cal.sync) {
-					if(config.cal.folderMsgURI === folder)
-						return config.cal;
+					if(curConfig.cal.folderMsgURI === folder) {
+						return curConfig.cal;
+					}
 				}
 				if(curConfig.task && curConfig.task.sync) {
-					if(config.task.folderMsgURI === folder)
-						return config.task;
+					if(curConfig.task.folderMsgURI === folder) {
+						return curConfig.task;
+					}
 				}
 			}
 		}

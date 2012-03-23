@@ -259,13 +259,9 @@ com.synckolab.calendarTools = {
 			if (!this.checkEventServerDeletion(fevent, pevent, lsyncCalendar)) {
 				return false;
 			}
-			var eventry = com.synckolab.tools.file.getSyncDbFile(lsyncCalendar.gConfig, lsyncCalendar.getType(), fevent.id);
-			var fentry = com.synckolab.tools.file.getSyncFieldFile(lsyncCalendar.gConfig, lsyncCalendar.getType(), fevent.id);
+			var eventry = com.synckolab.tools.file.getSyncDbFile(lsyncCalendar.gConfig, fevent.id);
 			if (eventry.exists()) {
 				eventry.remove(false);
-			}
-			if (fentry.exists()) {
-				fentry.remove(false);
 			}
 			lsyncCalendar.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("deleteOnServer"));
 			return true;
@@ -1036,6 +1032,7 @@ com.synckolab.calendarTools.cnv_event2xml = function (event, skipVolatiles, sync
 	var isAllDay = syncTasks?false:(event.startDate?event.startDate.isDate:false);
 	var endDate = com.synckolab.calendarTools.getEndDate(event, syncTasks);
 	var i, minutes;
+	var dayindex, daynumber;
 
 	// correct the end date for all day events before writing the XML object
 	// Kolab uses for 1-day-event:
@@ -1118,8 +1115,6 @@ com.synckolab.calendarTools.cnv_event2xml = function (event, skipVolatiles, sync
 	if (event.getProperty("LOCATION")) {
 		xml += " <location>" + com.synckolab.tools.text.encode4XML(event.getProperty("LOCATION")) +"</location>\n";
 	}
-	var dayindex, daynumber;
-	var endDate;
 	
 	// tbird 3: allow multiple alarms
 	if (event.getAlarms)

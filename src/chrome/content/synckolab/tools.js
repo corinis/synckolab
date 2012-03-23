@@ -111,7 +111,7 @@ scrollToBottom : function (itemList)
 	if (itemList)
 	{
 		// select and deselect the newly appended item (makes it scroll to the bottom)
-		var lastItemPos = itemList.itemCount ? itemList.itemCount - 1 :itemList.getRowCount() - 1;
+		var lastItemPos = itemList.getRowCount ? itemList.getRowCount() - 1 : itemList.itemCount - 1;
 		com.synckolab.tools.logMessage("got itemlist: " + lastItemPos, com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
 		if (lastItemPos > 0)
 		{
@@ -432,8 +432,8 @@ generateMail: function (cid, mail, adsubject, mime, part, skcontent, hr, image){
 	var sTime = (cdate.getHours()<10?"0":"") + cdate.getHours() + ":" + (cdate.getMinutes()<10?"0":"") + cdate.getMinutes() + ":" +
 	(cdate.getSeconds()<10?"0":"") + cdate.getSeconds();		
 	var sdate = "Date: " + com.synckolab.tools.text.getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " +
-		com.synckolab.tools.text.getMonthString (cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime
-		+ " " + ((cdate.getTimezoneOffset() < 0)?"+":"-") +
+		com.synckolab.tools.text.getMonthString(cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime +
+		" " + ((cdate.getTimezoneOffset() < 0)?"+":"-") +
 		(Math.abs(cdate.getTimezoneOffset()/60)<10?"0":"") + Math.abs(cdate.getTimezoneOffset()/60) +"00\n"; 
 
 	msg += "From: " + mail + "\n";
@@ -764,10 +764,10 @@ com.synckolab.tools.file = {
 	 * this also creates the required subdirectories if not yet existant
 	 * you can use the .exists() function to check if we go this one already
 	 */
-	getSyncDbFile: function (config, type, id) {
+	getSyncDbFile: function (config, id) {
 		if (id === null)
 		{
-			com.synckolab.tools.logMessage("Error: entry has no id (" +config + ": " + type + ")", com.synckolab.global.LOG_ERROR);
+			com.synckolab.tools.logMessage("Error: entry has no id (" +config.name + ": " + config.type + ")", com.synckolab.global.LOG_ERROR);
 			return null;
 		}
 
@@ -779,13 +779,13 @@ com.synckolab.tools.file = {
 				file.create(1, parseInt("0775", 8));
 			}
 	
-			file.append(type);
+			file.append(config.type);
 	
 			if (!file.exists()) {
 				file.create(1, parseInt("0775", 8));
 			}
 	
-			file.append(config);
+			file.append(config.name);
 			if (!file.exists()) {
 				file.create(1, parseInt("0775", 8));
 			}
@@ -793,7 +793,7 @@ com.synckolab.tools.file = {
 		}
 		catch (ex)
 		{
-			com.synckolab.tools.logMessage("Problem with getting syncDbFile:  (" +config + ": " + type + ": " + id + ")\n" + ex, com.synckolab.global.LOG_ERROR);
+			com.synckolab.tools.logMessage("Problem with getting syncDbFile:  (" +config.name + ": " + config.type + ": " + id + ")\n" + ex, com.synckolab.global.LOG_ERROR);
 			return null;
 		}
 		return file;
@@ -802,17 +802,23 @@ com.synckolab.tools.file = {
 
 
 /**
- * writes a sync file
+ * writes a sync file. 
+ * @param file the file to write in. If it exists, it will be removed first.
+ * @param data the data object that will be converted to json and written
  */
-com.synckolab.tools.writeSyncDBFile = function (file, skcontent)
+com.synckolab.tools.writeSyncDBFile = function (file, data)
 {
-	if (skcontent === null) {
+	if (data === null) {
 		return;
 	}
 
 	if (file.exists()) { 
 		file.remove(true);
 	}
+	
+	// create a json file out of it
+	var skcontent = JSON.stringify(data);
+	
 	file.create(file.NORMAL_FILE_TYPE, parseInt("0666", 8));
 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
 	stream.init(file, 2, 0x200, false); // open as "write only"
@@ -821,9 +827,12 @@ com.synckolab.tools.writeSyncDBFile = function (file, skcontent)
 };
 
 
-	/**
-	 * reads a given sync file
-	 */
+/**
+ * reads a given sync file. 
+ * The sync file contains the entry in a json format.
+ * @param file the file to read from
+ * @returns the json object from the file
+ */
 com.synckolab.tools.readSyncDBFile = function (file)
 {	
 	if (file === null)
@@ -855,12 +864,14 @@ com.synckolab.tools.readSyncDBFile = function (file)
 		fileScriptableIO.close();
 		istream.close();
 
-		return com.synckolab.tools.text.trim(fileContent);
+		// use json instead
+		return JSON.parse(fileContent);
 	}
 	catch (ex)
 	{
 		com.synckolab.tools.logMessage("readSyncDBFile ERROR while reading file" + ex);
 	}
+	return null;
 };
 
 /**
