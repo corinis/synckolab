@@ -190,42 +190,42 @@ com.synckolab.calendarTools = {
 		/**
 		 * insert an organizer if not existing and update  
 		 */
-		insertOrganizer: function (levent, lsyncCalendar) {
+		insertOrganizer: function (levent, config) {
 			if (levent.organizer) {
 				return levent;
 			}
 			var modevent = levent.clone();
 			var organizer = Components.classes["@mozilla.org/calendar/attendee;1"].createInstance(Components.interfaces.calIAttendee);
-			organizer.id = "MAILTO:" + lsyncCalendar.email;
-			organizer.commonName = lsyncCalendar.name;
+			organizer.id = "MAILTO:" + config.email;
+			organizer.commonName = config.name;
 			organizer.participationStatus = "ACCEPTED";
 			organizer.rsvp = false;
 			organizer.role = "CHAIR";
 			organizer.isOrganizer = true;
 			modevent.organizer = organizer;
 			/* set task status to NONE if it is NULL */
-			if (lsyncCalendar.syncTasks && !levent.status) {
+			if (config.type === "task" && !levent.status) {
 				modevent.status="NONE";
 			}
-			lsyncCalendar.gCalendar.modifyItem(modevent, levent, lsyncCalendar.gEvents);
+			config.calendar.modifyItem(modevent, levent, null);
 			return modevent;
 		},
 
 		/**
 		 * only ORGANIZER is allowed to change non-public events
 		 */
-		allowSyncEvent: function (levent, revent, lsyncCalendar) {
+		allowSyncEvent: function (levent, revent, config) {
 			var lpublic = this.isPublicEvent(levent);
 			var rpublic = this.isPublicEvent(revent);
 			if (lpublic && rpublic) {
 				return true;
 			}
 			/*previous behaviour*/
-			var rorgmail = lsyncCalendar.email;
+			var rorgmail = config.email;
 			if (revent.organizer) {
 				rorgmail = revent.organizer.id.replace(/MAILTO:/i, '');
 			}
-			var org2mail = (lsyncCalendar.email === rorgmail);
+			var org2mail = (config.email === rorgmail);
 			com.synckolab.tools.logMessage("allowSyncEvent: " + org2mail + ":" + lpublic + ":" + rpublic, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG );
 			return org2mail;
 		},
@@ -238,7 +238,7 @@ com.synckolab.calendarTools = {
 			if (!rc) {
 				com.synckolab.tools.logMessage("Update local event with server one : " + revent.id, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG );
 				lsyncCalendar.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localUpdate"));
-				lsyncCalendar.gCalendar.modifyItem(revent, fevent, lsyncCalendar.gEvents);
+				lsyncCalendar.gConfig.calendar.modifyItem(revent, fevent, lsyncCalendar.gEvents);
 			}
 			return rc;
 		},
@@ -282,9 +282,9 @@ com.synckolab.calendarTools = {
 		/**
 		 * prepare event for export 
 		 */
-		modifyEventOnExport: function (levent, lsyncCalendar) {
-			levent = this.insertOrganizer(levent, lsyncCalendar);
-			levent = this.modifyDescriptionOnExport(levent, lsyncCalendar.syncTasks);
+		modifyEventOnExport: function (levent, config) {
+			levent = this.insertOrganizer(levent, config);
+			levent = this.modifyDescriptionOnExport(levent, config.type === "task");
 			return levent;
 		},
 
@@ -1345,7 +1345,10 @@ com.synckolab.calendarTools.cnv_event2xml = function (event, skipVolatiles, sync
 	{
 		xml += " <organizer>\n";
 		xml += "  <display-name>" + com.synckolab.tools.text.encode4XML(event.organizer.commonName) + "</display-name>\n";
-		xml += "  <smtp-address>" + com.synckolab.tools.text.encode4XML(event.organizer.id.replace(/MAILTO:/i, '')) + "</smtp-address>\n";
+		// might not have an smtp address
+		if(event.organizer.id) {
+			xml += "  <smtp-address>" + com.synckolab.tools.text.encode4XML(event.organizer.id.replace(/MAILTO:/i, '')) + "</smtp-address>\n";
+		}
 		xml += " </organizer>\n";
 	}
 

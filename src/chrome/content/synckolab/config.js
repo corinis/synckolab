@@ -245,7 +245,7 @@ com.synckolab.config.readConfiguration = function() {
  * creates an empty config object
  */
 com.synckolab.config.createEmptyconfig = function(baseConfig, confType) {
-	return {
+	var c = {
 		sync: false,
 		name: baseConfig.name,
 		type: confType,
@@ -253,20 +253,33 @@ com.synckolab.config.createEmptyconfig = function(baseConfig, confType) {
 		conflictResolve: baseConfig.conflictResolve,
 		hide: com.synckolab.main.hideFolder,
 		addListener: false,
-		triggerParseAddMessage: function(msg){},
-		triggerParseDeleteMessage: function(msg) {}
+		triggerParseAddMessage: function(msg, config){},
+		triggerParseDeleteMessage: function(msg, config) {}
 	};
+	
+	if(confType === "contact") {
+		c.triggerParseAddMessage = com.synckolab.AddressBook.triggerParseAddMessage;
+		c.triggerParseDeleteMessage = com.synckolab.AddressBook.triggerParseDeleteMessage;
+	} else {
+		// tasks and events are handled by calendar
+		c.triggerParseAddMessage = com.synckolab.Calendar.triggerParseAddMessage;
+		c.triggerParseDeleteMessage = com.synckolab.Calendar.triggerParseDeleteMessage;
+	}
+	
+	return c;
 };
 
 com.synckolab.config.folderListener = {
 	findConfig: function(folder) {
+		// fixup folder: image:// vs. imap-message://
+		folder = "imap-message" + folder.substring(4);
+		
 		// search through the configs  
 		for(var j = 0; j < com.synckolab.main.syncConfigs.length; j++) {
 			if(com.synckolab.main.syncConfigs[j]) {
 				var curConfig = com.synckolab.main.syncConfigs[j];
-				if(!curConfig) {
-					continue;
-				}
+				//com.synckolab.tools.logMessage("checking " + curConfig.contact.folderMsgURI + " vs. " + folder, com.synckolab.global.LOG_DEBUG);
+
 				if(curConfig.contact && curConfig.contact.sync) {
 					if(curConfig.contact.folderMsgURI === folder)
 					{
@@ -288,6 +301,10 @@ com.synckolab.config.folderListener = {
 		
 	},
 	msgAdded: function(aMsg) {
+		// make sure not to parse messages while a full sync is running
+		if(com.synckolab.global.running) {
+			return;
+		}
 		
 		var msg = aMsg.QueryInterface(Components.interfaces.nsIMsgDBHdr);
 		//nsIMsgDBHdr - check folder
@@ -295,13 +312,26 @@ com.synckolab.config.folderListener = {
 		// lets see if we have this folde rin the list
 		var curConfig = this.findConfig(msg.folder.folderURL);
 		if(curConfig) {
-			curConfig.triggerParseAddMessage(aMsg);
+			com.synckolab.tools.logMessage("Found configuration for folder... calling", com.synckolab.global.LOG_DEBUG);
+			var content = {
+					message: "imap-message" + msg.folder.folderURL.substring(4) +"#"+msg.messageKey,
+					fileContent: "",
+					// save the config used
+					config: curConfig,
+					nextFunc: curConfig.triggerParseAddMessage
+			};
+			com.synckolab.main.getMessageIntoContent(content);
 		}
 	},
 	msgsClassified: function(aMsgs, aJunkProcessed, aTraitProcessed) {
 		// ignore
 	},
 	msgsDeleted: function(aMsgs) {
+		// make sure not to parse messages while a full sync is running
+		if(com.synckolab.global.running) {
+			return;
+		}
+		
 		//nsiArray<nsIMsgDBHdr> - check folder
 		com.synckolab.tools.logMessage("GOT DELETE...", com.synckolab.global.LOG_DEBUG);
 		var e = aMsgs.enumerate();
@@ -310,7 +340,14 @@ com.synckolab.config.folderListener = {
 			com.synckolab.tools.logMessage("DELETED from " + msg.folder.folderURL, com.synckolab.global.LOG_DEBUG);
 			var curConfig = this.findConfig(msg.folder.folderURL);
 			if(curConfig) {
-				curConfig.triggerParseDeleteMessage(aMsg);
+				var content = {
+						message: "imap-message" + msg.folder.folderURL.substring(4) +"#"+msg.messageKey,
+						fileContent: "",
+						// save the config used
+						config: curConfig,
+						nextFunc: curConfig.triggerParseDeleteMessage
+				};
+				com.synckolab.main.getMessageIntoContent(content);
 			}
 		}
 	},

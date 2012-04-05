@@ -61,7 +61,6 @@ com.synckolab.Calendar = {
 	gCurEvent : 0,
 	gSyncTimeFrame : 180, // time frame to take into account (all older than X days will be ignored completely) -1 just take all
 	gCalendarName : '', // the calendar name
-	gCalendar : '', // the calendar
 	gCalendarEvents : '', // all events from the calendar
 	gCalDB : '', // hashmap for all the events (faster than iterating on big numbers)
 	format : 'Xml', // the format iCal/Xml	
@@ -168,7 +167,7 @@ com.synckolab.Calendar = {
 		var calendars = this.calTools.getCalendars();
 		for ( var i = 0; i < calendars.length; i++) {
 			if (calendars[i].name === config.calendarName || com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name) === com.synckolab.tools.text.fixNameToMiniCharset(config.calendarName)) {
-				this.gCalendar = calendars[i];
+				this.gConfig.calendar = calendars[i];
 				break;
 			}
 		}
@@ -189,11 +188,11 @@ com.synckolab.Calendar = {
 		this.gEvents.ready = false;
 
 		// gCalendar might be invalid if no calendar is selected in the settings
-		if (this.gCalendar) {
+		if (this.gConfig) {
 			if (this.gConfig.type === "task") {
-				this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_TODO | this.gCalendar.ITEM_FILTER_COMPLETED_ALL, 0, null, null, this.gEvents);
+				this.gConfig.calendar.getItems(this.gConfig.calendar.ITEM_FILTER_TYPE_TODO | this.gConfig.calendar.ITEM_FILTER_COMPLETED_ALL, 0, null, null, this.gEvents);
 			} else {
-				this.gCalendar.getItems(this.gCalendar.ITEM_FILTER_TYPE_EVENT, 0, null, null, this.gEvents);
+				this.gConfig.calendar.getItems(this.gConfig.calendar.ITEM_FILTER_TYPE_EVENT, 0, null, null, this.gEvents);
 			}
 		} else {
 			alert("Please select a calender as sync target before trying to synchronize.");
@@ -219,6 +218,68 @@ com.synckolab.Calendar = {
 				this.events.push(aItems[i]);
 			}
 		}
+	},
+	
+	/**
+	 * callback when a new message has arrived
+	 */
+	triggerParseAddMessage: function(message) {
+		var messageFields = new com.synckolab.dataBase();
+
+		// parse the content
+		var parsedEvent = com.synckolab.calendarTools.message2Event(message.fileContent, messageFields, message.config.task);
+		
+		// remember current uid
+		var curUID = parsedEvent.id;
+
+		// get the dbfile from the local disk
+		var idxEntry = com.synckolab.tools.file.getSyncDbFile(message.config, curUID);
+
+		com.synckolab.tools.writeSyncDBFile(idxEntry, message.fileContent, true);
+
+		// update the parsedEvent timestamp so it wont display a window
+		var lastAckTime = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
+		lastAckTime.jsDate = new Date();
+		parsedEvent.alarmLastAck = lastAckTime;
+
+		// if we dont have a timezone - set it
+		/*
+		if (parsedEvent.timezone === null || parsedEvent.timezone.icalComponent === null) {
+			parsedEvent.timezone = lastAckTime.timezone;
+		}
+		*/
+
+		// add the new event
+		try {
+			message.config.calendar.addItem(parsedEvent, null);
+			com.synckolab.tools.logMessage("added locally:" + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
+		} catch (addEx) {
+			com.synckolab.tools.logMessage("unable to add item:" + parsedEvent.id + "\n" + addEx, this.global.LOG_CAL + this.global.LOG_ERR);
+		}
+
+	},
+	/**
+	 * callback when a message has been deleted which should contain a contact
+	 */
+	triggerParseDeleteMessage: function(message) {
+		var messageFields = new com.synckolab.dataBase();
+
+		// parse the content
+		var parsedEvent = com.synckolab.calendarTools.message2Event(message.fileContent, messageFields, message.config.task);
+		
+		// remember current uid
+		var curUID = parsedEvent.id;
+
+		// get the dbfile from the local disk
+		var cEntry = com.synckolab.tools.file.getSyncDbFile(message.config, curUID);
+		
+		message.config.calendar.deleteItem(parsedEvent, null);
+
+		// also remove the local db file since we deleted the contact on the server
+		if (cEntry.exists) {
+			cEntry.remove(false);
+		}
+
 	},
 	/**
 	 * a callback function for synckolab.js - synckolab will only start with the sync when this returns true
@@ -286,7 +347,7 @@ com.synckolab.Calendar = {
 			return null;
 		}
 		// set the calendar
-		parsedEvent.calendar = this.gCalendar;
+		parsedEvent.calendar = this.gConfig.calendar;
 		// remember current uid
 		this.gCurUID = parsedEvent.id;
 
@@ -351,7 +412,7 @@ com.synckolab.Calendar = {
 
 				// add the new event
 				try {
-					this.gCalendar.addItem(parsedEvent, this.gEvents);
+					this.gConfig.calendar.addItem(parsedEvent, this.gEvents);
 					// also add to the hash-database
 					this.gCalDB.put(parsedEvent.id, parsedEvent);
 					this.tools.logMessage("added locally:" + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
@@ -423,7 +484,7 @@ com.synckolab.Calendar = {
 							try {
 								// modify the item - catch exceptions due to triggered alarms
 								// because they will break the sync process
-								this.gCalendar.modifyItem(parsedEvent, foundEvent, this.gEvents);
+								this.gConfig.calendar.modifyItem(parsedEvent, foundEvent, this.gEvents);
 							} catch (e) {
 								this.tools.logMessage("gCalendar.modifyItem() failed: " + e, this.global.LOG_CAL + this.global.LOG_WARNING);
 							}
@@ -488,7 +549,7 @@ com.synckolab.Calendar = {
 							try {
 								// modify the item - catch exceptions due to triggered alarms
 								// because they will break the sync process								
-								this.gCalendar.modifyItem(parsedEvent, foundEvent, this.gEvents);
+								this.gConfig.calendar.modifyItem(parsedEvent, foundEvent, this.gEvents);
 							} catch (e1) {
 								this.tools.logMessage("gCalendar.modifyItem() failed: " + e1, this.global.LOG_CAL + this.global.LOG_WARNING);
 							}
@@ -612,7 +673,7 @@ com.synckolab.Calendar = {
 					this.tools.logMessage("nextUpdate assumes 'delete on server', better don't write event:" + cur.id, this.global.LOG_CAL + this.global.LOG_INFO);
 
 					writeCur = false;
-					this.gCalendar.deleteItem(cur, this.gEvents);
+					this.gConfig.calendar.deleteItem(cur, this.gEvents);
 
 					// also remove the local db file since we deleted the contact on the server
 					if (cEntry.exists) {
@@ -663,7 +724,7 @@ com.synckolab.Calendar = {
 				// and now really write the message
 				msg = null;
 				var clonedEvent = cur;
-				clonedEvent = this.calTools.modifyEventOnExport(cur, this);
+				clonedEvent = this.calTools.modifyEventOnExport(cur, this.gConfig);
 
 				if (this.gConfig.format === "Xml") {
 					msg = this.calTools.event2kolabXmlMsg(clonedEvent, this.gConfig.email, this.gConfig.task);

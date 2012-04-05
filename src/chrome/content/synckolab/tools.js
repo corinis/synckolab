@@ -405,7 +405,6 @@ stripMailHeader: function (skcontent) {
 		skcontent = com.synckolab.tools.text.quoted.decode(skcontent);
 	}
 
-
 	return com.synckolab.tools.text.trim(skcontent);
 },
 

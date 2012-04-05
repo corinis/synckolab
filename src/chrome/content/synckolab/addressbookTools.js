@@ -261,9 +261,9 @@ com.synckolab.addressbookTools = {
 			}
 		}
 		
-		// tbird 3: we can use custom fields!!!
+		// we can use custom fields!!!
 		var uid = this.getCardProperty(card, "UUID");
-		if (uid !== "" && uid) {
+		if (uid && uid !== "") {
 			return uid;
 		}
 
@@ -288,10 +288,13 @@ com.synckolab.addressbookTools = {
  * get the address books form the address-book provider
  * @return a collection of address books
  */
-com.synckolab.addressbookTools.getABDirectory = function () {
+com.synckolab.addressbookTools.getABDirectory = function (listener) {
 	// tbird >= 7
 	try {
 		var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+		if(listener) {
+			abManager.addAddressBookListener(listener, 0xFFFFFFFF); // all
+		}
 		return abManager.directories;
 	} catch (ex) {
 		// tbird < 7
@@ -306,10 +309,15 @@ com.synckolab.addressbookTools.getABDirectory = function () {
  * @value the value to set the property to, null will be changed to an empty string ("")
  */
 com.synckolab.addressbookTools.setCardProperty = function (card, prop, value, extra) {
+	if(card === null) {
+		throw ("Unable to process null-card: " + prop);
+	}
+	
 	// make sure not write "null" anywhere
 	if (value === null || value === "null" || prop === "Custom4" && (!value.indexOf("pas-id-") || !value.indexOf("sk-"))) {
 		value = "";
 	}
+	
 	// special case: this is a json object for the synckolab cache
 	if(card.synckolab) {
 		card[prop] = value;
@@ -1720,70 +1728,6 @@ com.synckolab.addressbookTools.createTBirdObject = function(base, cards) {
 		}
 	}
 	return card;
-};
-
-/**
- * Parses a vcard/xml/list into its card/list object.
- * this function finds out if the message is either:
- *  - a vcard with a contact
- *  - a vcard with a list
- *  - a xml kolab2 contact
- *  - a xml kolab2 distribution list
- * on its own and returns the correct object.
- * @param message string - a string with the vcard (make sure its trimmed from whitespace)
- * @param fields Array - extra fields to save with the card (may be null)
- * @param cards hashmap - only required if this is a list: contains an index of all existing cards
- * @deprecated 
- * @return the filled object or null if not parseable
- *		can be: Components.interfaces.nsIAbDirectory
- *		or:	Components.interfaces.nsIAbCard
- */
-com.synckolab.addressbookTools.parseMessage = function (message, extraFields, cards) {
-	// fix for bug #16766: message has no properties
-	if (message === null) {
-		return false;
-	}
-
-	// check for xml style
-	if (message.indexOf("<?xml") !== -1 || message.indexOf("<?XML") !== -1) {
-		return this.xml2Card(message, extraFields, cards);
-	} else {
-		com.synckolab.tools.logMessage("VCARD/VLIST!", this.global.LOG_INFO + this.global.LOG_AB);
-	}
-
-	// decode utf8
-	message = com.synckolab.tools.text.utf8.decode(message);
-
-	// check for errors in the decoded message
-	if (message.indexOf("TYPE=3D") !== -1) {
-		message = com.synckolab.tools.text.quoted.decode(message);
-	} else 
-	// that still looks double decoded
-	if (message.indexOf("=C3=") !== -1) {
-		message = com.synckolab.tools.text.utf8.decode(com.synckolab.tools.text.quoted.decode(message));
-	}
-
-	// make an array of all lines for easier parsing
-	var lines = message.split("\n");
-
-	// check if we got a list
-	for ( var i = 0; i < lines.length; i++) {
-		if (lines[i].toUpperCase().indexOf("X-LIST") !== -1) {
-			com.synckolab.tools.logMessage("parsing a list: " + message, this.global.LOG_DEBUG + this.global.LOG_AB);
-			var mailList = Components.classes["@mozilla.org/addressbook/directoryproperty;1"].createInstance(Components.interfaces.nsIAbDirectory);
-			if (!this.vList2Card(lines[i], lines, mailList, cards)) {
-				return null;
-			}
-			return mailList;
-		}
-	}
-
-	var newCard = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
-	if (!com.synckolab.addressbookTools.message2Card(lines, newCard, extraFields, 0, lines.length)) {
-		com.synckolab.tools.logMessage("unparseable: " + message, this.global.LOG_ERROR + this.global.LOG_AB);
-		return null;
-	}
-	return newCard;
 };
 
 /**

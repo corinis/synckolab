@@ -95,7 +95,101 @@ com.synckolab.AddressBook = {
 		
 		// get the rdf for the Addresbook list
 		// the addressbook type nsIAbDirectory
-		var cn = com.synckolab.addressbookTools.getABDirectory();
+		var cn = com.synckolab.addressbookTools.getABDirectory({
+			getConfig: function(addressBokName) {
+				// search through the configs  
+				for(var j = 0; j < com.synckolab.main.syncConfigs.length; j++) {
+					if(com.synckolab.main.syncConfigs[j]) {
+						var curConfig = com.synckolab.main.syncConfigs[j];
+						//com.synckolab.tools.logMessage("checking " + curConfig.contact.folderMsgURI + " vs. " + folder, com.synckolab.global.LOG_DEBUG);
+
+						if(curConfig.contact && curConfig.contact.sync) {
+							if(curConfig.contact.addressBookName === addressBokName)
+							{
+								return curConfig.contact;
+							}
+						}
+					}
+				}
+				
+			},
+			onItemAdded: function(parent, newCard) {
+				if(!parent) {
+					return;
+				}
+				// make sure not to parse messages while a full sync is running
+				if(com.synckolab.global.running) {
+					return;
+				}
+				
+				var cConfig = this.getConfig(parent.dirName);
+				if(!cConfig) {
+					return;
+				}
+				
+				newCard = newCard.QueryInterface(Components.interfaces.nsIAbCard);
+				alert("new in " + parent.dirName);
+				
+				// get the dbfile from the local disk
+				var cUID = null;
+				
+				cUID = com.synckolab.addressbookTools.getUID(newCard);
+				if (!cUID) {
+					// generate a unique id (will random be enough for the future?)
+					cUID = "sk-vc-" + com.synckolab.tools.text.randomVcardId();
+					com.synckolab.addressbookTools.setUID(newCard, cUID);
+				}
+				
+				if (newCard.isMailList) {
+					com.synckolab.tools.logMessage("adding unsaved list: " + cUID, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+				} else {
+					com.synckolab.tools.logMessage("adding unsaved card: " + cUID, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+				}
+				
+				cConfig.addressBook.modifyCard(newCard);
+
+				// and write the message
+				var abcontent = com.synckolab.addressbookTools.card2Message(newCard, cConfig.email, cConfig.format);
+				com.synckolab.tools.logMessage("New Card " + cUID, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+
+				// get the dbfile from the local disk
+				var cEntry = com.synckolab.tools.file.getSyncDbFile(cConfig, cUID);
+				// write the current content in the sync-db file (parse to json object first)
+				com.synckolab.tools.writeSyncDBFile(cEntry, com.synckolab.addressbookTools.parseMessage(com.synckolab.tools.stripMailHeader(abcontent)));
+				
+				com.synckolab.main.writeImapMessage(abcontent, cConfig, 
+				{
+					OnProgress: function (progress, progressMax) {},
+					OnStartCopy: function () { },
+					SetMessageKey: function (key) {},
+					OnStopCopy: function (status) { 
+						com.synckolab.tools.logMessage("Finished writing contact entry to imap", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+					}
+				});
+				
+			},
+			onItemRemoved: function(parent, item) {
+				if(!parent) {
+					return;
+				}
+				// make sure not to parse messages while a full sync is running
+				if(com.synckolab.global.running) {
+					return;
+				}
+
+				var cUID = com.synckolab.addressbookTools.getUID(item);
+
+				alert("delete "+cUID+" from " + parent.dirName);
+			},
+			onItemPropertyChanged: function(item, prop, oldval, newval) {
+				// make sure not to parse messages while a full sync is running
+				if(com.synckolab.global.running) {
+					return;
+				}
+				
+				alert("changed");
+			}
+		});
 		var ABook = cn.getNext();
 		config.addressBook = null;
 		while (ABook)
@@ -119,6 +213,8 @@ com.synckolab.AddressBook = {
 		
 		// uid -> filename database - main functions needs to know the name
 		config.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config + ".ab");
+		
+		// add a listener
 	},
 
 	init: function (config) {
@@ -158,6 +254,115 @@ com.synckolab.AddressBook = {
 			this.gCardDB.put(cUID, card);
 		}
 	},
+	
+	
+	/**
+	 * callback when a new message has arrived
+	 */
+	triggerParseAddMessage: function(message) {
+		// parse the new message content
+		var newCard = com.synckolab.addressbookTools.parseMessageContent(message.fileContent);
+		
+		// get the dbfile from the local disk
+		var cUid = com.synckolab.addressbookTools.getUID(newCard);
+		var cEntry = com.synckolab.tools.file.getSyncDbFile(message.config, cUid);
+
+		// write the pojo into a file for faster comparison in later sync
+		com.synckolab.tools.writeSyncDBFile(cEntry, newCard);
+		
+		// also copy the image
+		var pNameA = com.synckolab.addressbookTools.getCardProperty(newCard, "PhotoName");
+		if (pNameA && pNameA !== "" && pNameA !== "null")
+		{
+			// in case the copy failed - clear the photoname
+			if (com.synckolab.addressbookTools.copyImage(pNameA) === false) {
+				com.synckolab.addressbookTools.setCardProperty(newCard, "PhotoName", "");
+			}
+		}
+		
+		
+		com.synckolab.tools.logMessage("card is new, add to address book: " + cUid, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+		// convert to a thunderbird object and add to the address book 
+		if (newCard.type === "maillist")
+		{
+			// skip mailing lists
+			message.config.addressBook.addMailList(com.synckolab.addressbookTools.createTBirdObject(newCard, message.config.addressBook));
+			// also add to the hash-database
+			//this.gCardDB.put(this.tools.getUID(newCard), newCard);
+		}
+		else
+		{
+			message.config.addressBook.addCard(com.synckolab.addressbookTools.createTBirdObject(newCard));
+			// also add to the hash-database
+			//this.gCardDB.put(this.tools.getUID(newCard), newCard);
+		}
+
+
+	},
+
+	/**
+	 * callback when a message has been deleted which should contain a contact
+	 */
+	triggerParseDeleteMessage: function(message) {
+		// parse the new message content
+		var newCard = com.synckolab.addressbookTools.parseMessageContent(message.fileContent);
+		
+		// find the entry in the address book and remove it
+		var cId = com.synckolab.addressbookTools.getUID(newCard);
+		var cards = message.config.addressBook.childCards;
+		var deleteList = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
+		while (cards.hasMoreElements())
+		{
+			var cCard = cards.getNext().QueryInterface(Components.interfaces.nsIAbCard);
+			if(com.synckolab.addressbookTools.getUID(cCard) === cId) {
+				com.synckolab.tools.logMessage("found card to delete: " + cId, com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
+				deleteList.appendElement(cCard, false);
+				break;
+			}
+		}
+		
+		try
+		{
+			message.config.addressBook.deleteCards(deleteList);
+		}
+		catch (e)
+		{
+			com.synckolab.tools.logMessage("unable to delete card: " + cId, com.synckolab.global.LOG_ERROR + com.synckolab.global.LOG_AB);
+			return;
+		}
+
+		
+		// get the dbfile from the local disk
+		var cEntry = com.synckolab.tools.file.getSyncDbFile(message.config, cId);
+		if (cEntry.exists()) {
+			cEntry.remove(true);
+		}
+
+		// also delete image
+		var pNameA = com.synckolab.addressbookTools.getCardProperty(newCard, "PhotoName");
+		if (pNameA && pNameA !== "" && pNameA !== "null")
+		{
+			// delete actual image
+			var fileTo = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsIFile);
+			fileTo.append("Photos");
+			if (!fileTo.exists()) {
+				fileTo.create(1, parseInt("0775", 8));
+			}
+
+			// fix newName: we can have C:\ - file:// and more - remove all that and put it in the photos folder
+			newName = newName.replace(/[^A-Za-z0-9._ \-]/g, "");
+			newName = newName.replace(/ /g, "_");
+
+			// check if the file exists
+			fileTo.append(newName);
+			if(fileTo.exists())
+				fileTo.remove(true);
+		}
+
+		com.synckolab.tools.logMessage("deleting card: " + cId, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+		
+	},
+
 	/**
 	 * a callback function for synckolab.js - synckolab will only start with the sync when this returns true
 	 * for abook: data getting is synchronous so not needed - calendar is a different story!
@@ -642,7 +847,6 @@ com.synckolab.AddressBook = {
 				com.synckolab.tools.logMessage("adding unsaved card: " + this.tools.getUID(curItem), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 			}
 			
-			var writeCur = true;
 			this.gConfig.addressBook.modifyCard(cur);
 			
 			// create a new item in the itemList for display
@@ -772,7 +976,7 @@ com.synckolab.AddressBook = {
 					// get the dbfile from the local disk
 					cEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, this.tools.getUID(curItem));
 					// write the current content in the sync-db file
-					com.synckolab.tools.writeSyncDBFile(cEntry, this.tools.parseMessage(com.synckolab.tools.stripMailHeader(abcontent)));
+					com.synckolab.tools.writeSyncDBFile(cEntry, this.tools.parseMessageContent(com.synckolab.tools.stripMailHeader(abcontent)));
 				}
 			}
 		}

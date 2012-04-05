@@ -249,7 +249,7 @@ com.synckolab.main.sync =  function (event)
 	// reset variables
 	com.synckolab.main.totalMessages = 0;
 	com.synckolab.main.curMessage = null; 
-	com.synckolab.main.gcurMessageKey = null;
+	com.synckolab.main.currentMessage = null;
 	com.synckolab.main.updateMessages = null;
 	com.synckolab.main.updateMessagesContent = null;
 	com.synckolab.main.writeDone = false;
@@ -688,22 +688,6 @@ com.synckolab.main.syncKolabCompact = function() {
 	com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.nextSync();}}, com.synckolab.config.SWITCH_TIME, 0);	
 };
 
-com.synckolab.main.kolabCopyServiceListener = {
-		OnProgress: function (progress, progressMax) { 
-		},
-		OnStartCopy: function () { 
-		},
-		SetMessageKey: function (key) { 
-		},
-		OnStopCopy: function (status) {
-			if (com.synckolab.main.curStep === 5) {
-				com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.updateContentWrite();}}, com.synckolab.config.SWITCH_TIME, 0);
-			}
-			if (com.synckolab.main.curStep === 6) {
-				com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.writeContent();}}, com.synckolab.config.SWITCH_TIME, 0);
-			}
-		}
-};
 
 /**
  * start with the sync with the sync class
@@ -798,7 +782,7 @@ com.synckolab.main.getMessage = function()
 	var laterMsg = null;
 
 	// get the messages we skipped
-	if (cur === null)
+	if (!cur)
 	{
 		if (com.synckolab.main.gLaterMessages.pointer >= com.synckolab.main.gLaterMessages.msgs.length)
 		{
@@ -934,11 +918,22 @@ com.synckolab.main.getMessage = function()
 
 	// get the message content into fileContent
 	// parseMessageRunner is called when we got the message
-	com.synckolab.main.fileContent = "";
-	com.synckolab.main.gcurMessageKey = cur.messageKey;
+	com.synckolab.main.currentMessage = {
+			message: com.synckolab.main.gConfig.folderMsgURI +"#"+cur.messageKey,
+			fileContent: "",
+			nextFunc: com.synckolab.main.parseMessageRunner
+	};
+	com.synckolab.main.getMessageIntoContent(com.synckolab.main.currentMessage);
+};
+
+/**
+ * 
+ * @param content the content structure contianing the message key and the buffer for the content
+ */
+com.synckolab.main.getMessageIntoContent = function(content) {
 	var aurl = {};
 	com.synckolab.global.messageService.CopyMessage(
-			com.synckolab.main.gConfig.folderMsgURI +"#"+com.synckolab.main.gcurMessageKey, 
+			content.message, 
 			/* nsIStreamListener */
 			{
 					onDataAvailable: function (request, context, inputStream, offset, count){
@@ -946,7 +941,7 @@ com.synckolab.main.getMessage = function()
 						{
 							var sis=Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance(Components.interfaces.nsIScriptableInputStream);
 							sis.init(inputStream);
-							com.synckolab.main.fileContent += sis.read(count);
+							content.fileContent += sis.read(count);
 						}
 						catch(ex)
 						{
@@ -956,16 +951,17 @@ com.synckolab.main.getMessage = function()
 					onStartRequest: function (request, context) {
 					},
 					onStopRequest: function (aRequest, aContext, aStatusCode) {
-						com.synckolab.tools.logMessage("got Message [" + com.synckolab.main.gConfig.folderMsgURI +"#"+com.synckolab.main.gcurMessageKey + "]:\n" + com.synckolab.main.fileContent, com.synckolab.global.LOG_DEBUG);
+						com.synckolab.tools.logMessage("got Message [" + content.message + "]:\n" + content.fileContent, com.synckolab.global.LOG_DEBUG);
 
 						// remove the header of the content
-						com.synckolab.main.fileContent = com.synckolab.tools.stripMailHeader(com.synckolab.main.fileContent);
+						content.fileContent = com.synckolab.tools.stripMailHeader(content.fileContent);
 
-						com.synckolab.main.parseMessageRunner();
+						content.nextFunc(content);
 					}
 			}, false, null, msgWindow, aurl
 	);
 };
+
 
 /**
  * Copies a local file into any mail folder.
@@ -973,7 +969,7 @@ com.synckolab.main.getMessage = function()
  * fileName string - the file to copy(+path)
  * folderUri string - the Uri/Url of the folder we want this in
  */
-com.synckolab.main.copyToFolder = function(fileName, folderUri)
+com.synckolab.main.copyToFolder = function(fileName, folderUri, listener)
 {
 	var mailFolder = folderUri;
 	var fileSpec;
@@ -987,7 +983,7 @@ com.synckolab.main.copyToFolder = function(fileName, folderUri)
 		copyservice = Components.classes["@mozilla.org/messenger/messagecopyservice;1"].getService(Components.interfaces.nsIMsgCopyService);
 		// in order to be able to REALLY copy the message setup a listener
 		// and mark as read
-		copyservice.CopyFileMessage(fileSpec, mailFolder, null, false, 0x000001, com.synckolab.main.kolabCopyServiceListener, null); // dont need a msg window
+		copyservice.CopyFileMessage(fileSpec, mailFolder, null, false, 0x000001, listener, null); // dont need a msg window
 	}
 	else
 		//tbird 3
@@ -1002,7 +998,7 @@ com.synckolab.main.copyToFolder = function(fileName, folderUri)
 		copyservice = Components.classes["@mozilla.org/messenger/messagecopyservice;1"].getService(Components.interfaces.nsIMsgCopyService);
 		// in order to be able to REALLY copy the message setup a listener
 		// and mark as read
-		copyservice.CopyFileMessage(fileSpec, mailFolder, null, false, 0x000001, null, com.synckolab.main.kolabCopyServiceListener, null); // dont need a msg window
+		copyservice.CopyFileMessage(fileSpec, mailFolder, null, false, 0x000001, null, listener, null); // dont need a msg window
 	}
 };
 
@@ -1027,31 +1023,30 @@ com.synckolab.main.parseMessageRunner = function()
 
 	var skcontent = null;
 	// unparsable message... content is null and so it will skip
-	if(com.synckolab.main.fileContent) {
+	if(com.synckolab.main.currentMessage && com.synckolab.main.currentMessage.fileContent) {
 		com.synckolab.tools.logMessage("parsing message... ", com.synckolab.global.LOG_DEBUG);
 
 		// fix the message for line truncs (last char in line is =)
-		com.synckolab.main.fileContent = com.synckolab.main.fileContent.replace(/\=\n(\S)/g, "$1");
-		skcontent = com.synckolab.main.gSync.parseMessage(com.synckolab.main.fileContent, com.synckolab.main.updateMessagesContent, (com.synckolab.main.gLaterMessages.pointer === 0));
+		com.synckolab.main.currentMessage.fileContent = com.synckolab.main.currentMessage.fileContent.replace(/\=\n(\S)/g, "$1");
+		skcontent = com.synckolab.main.gSync.parseMessage(com.synckolab.main.currentMessage.fileContent, com.synckolab.main.updateMessagesContent, (com.synckolab.main.gLaterMessages.pointer === 0));
 	}
 
 	if (skcontent === "LATER") {
 		var cMsg = {};
-		cMsg.content = com.synckolab.main.fileContent;
+		cMsg.content = com.synckolab.main.currentMessage.fileContent;
 		cMsg.hdr = com.synckolab.main.gLastMessageDBHdr;
 		cMsg.fileKey = com.synckolab.main.gSyncFileKey;
-//		cMsg.messageKey = com.synckolab.main.gcurMessageKey;
 		com.synckolab.main.gLaterMessages.msgs.push(cMsg);
 	}
 	else {
 		// just to make sure there REALLY isnt any content left :)
-		com.synckolab.main.fileContent = "";
+		com.synckolab.main.currentMessage.fileContent = null;
 		if (skcontent)
 		{
 			if (skcontent === "DELETEME") {
-				com.synckolab.tools.logMessage("deleting [" + com.synckolab.main.gConfig.folderMsgURI +"#"+com.synckolab.main.gcurMessageKey + "]", com.synckolab.global.LOG_INFO);
+				com.synckolab.tools.logMessage("deleting [" + com.synckolab.main.currentMessage.message + "]", com.synckolab.global.LOG_INFO);
 			} else {
-				com.synckolab.tools.logMessage("updating [" + com.synckolab.main.gConfig.folderMsgURI +"#"+com.synckolab.main.gcurMessageKey + "]", com.synckolab.global.LOG_INFO);
+				com.synckolab.tools.logMessage("updating [" + com.synckolab.main.currentMessage.message + "]", com.synckolab.global.LOG_INFO);
 			}
 			// adding message to list of to-delete messages - com.synckolab.main.gConfig.folderMsgURI +"#"+
 			com.synckolab.main.updateMessages.push(com.synckolab.main.gLastMessageDBHdr); 
@@ -1133,31 +1128,58 @@ com.synckolab.main.writeContent = function()
 
 	if (com.synckolab.main.gSync.gSaveImap)
 	{
-		// write the message in the temp file
-		var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
-		// temp path
-		sfile.initWithPath(com.synckolab.main.gTmpFile);
-		if (sfile.exists()) {
-			sfile.remove(true);
-		}
-		sfile.create(sfile.NORMAL_FILE_TYPE, parseInt("0600", 8));
-
-		// make the message rfc compatible (make sure all lines en with \r\n)
-		skcontent = skcontent.replace(/\r\n|\n\r|\n|\r/g, "\r\n");
-
-		// create a new message in there
-		var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
-		stream.init(sfile, 2, 0x200, false); // open as "write only"
-		stream.write(skcontent, skcontent.length);
-		stream.close();
-
 		// write the temp file back to the original directory
 		com.synckolab.tools.logMessage("WriteContent Writing...", com.synckolab.global.LOG_INFO);
-		com.synckolab.main.copyToFolder(com.synckolab.main.gTmpFile, com.synckolab.main.gConfig.folder); 
+		com.synckolab.main.writeImapMessage(skcontent, com.synckolab.main.gConfig, com.synckolab.main.kolabCopyServiceListener); 
 	}
 	else {
 		com.synckolab.main.writeContentAfterSave();
 	}
+};
+
+com.synckolab.main.kolabCopyServiceListener = {
+		OnProgress: function (progress, progressMax) { 
+		},
+		OnStartCopy: function () { 
+		},
+		SetMessageKey: function (key) { 
+		},
+		OnStopCopy: function (status) {
+			if (com.synckolab.main.curStep === 5) {
+				com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.updateContentWrite();}}, com.synckolab.config.SWITCH_TIME, 0);
+			}
+			if (com.synckolab.main.curStep === 6) {
+				com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.writeContent();}}, com.synckolab.config.SWITCH_TIME, 0);
+			}
+		}
+};
+
+/**
+ * write a content back to an imap folder
+ * @param skcontent the content to write (an eml)
+ * @param config the config to use (for the correct folder)
+ * @param listener this is a callback that is used when the copy has been finished/failed
+ */
+com.synckolab.main.writeImapMessage = function(skcontent, config, listener) {
+	// write the message in the temp file
+	var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
+	// temp path
+	sfile.initWithPath(com.synckolab.main.gTmpFile);
+	if (sfile.exists()) {
+		sfile.remove(true);
+	}
+	sfile.create(sfile.NORMAL_FILE_TYPE, parseInt("0600", 8));
+
+	// make the message rfc compatible (make sure all lines en with \r\n)
+	skcontent = skcontent.replace(/\r\n|\n\r|\n|\r/g, "\r\n");
+
+	// create a new message in there
+	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
+	stream.init(sfile, 2, 0x200, false); // open as "write only"
+	stream.write(skcontent, skcontent.length);
+	stream.close();
+
+	com.synckolab.main.copyToFolder(com.synckolab.main.gTmpFile, config.folder, listener); 
 };
 
 
@@ -1302,27 +1324,8 @@ com.synckolab.main.updateContentWrite = function()
 		// write the message
 		if (com.synckolab.main.gSync.gSaveImap && skcontent !== "DELETEME" && skcontent!== null && skcontent.length > 1)
 		{
-			// write the message in the temp file
-			var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
 			com.synckolab.tools.logMessage("adding [" + skcontent + "] to messages", com.synckolab.global.LOG_DEBUG);
-			// temp path
-			sfile.initWithPath(com.synckolab.main.gTmpFile);
-			if (sfile.exists()) {
-				sfile.remove(true);
-			}
-			sfile.create(sfile.NORMAL_FILE_TYPE, parseInt("0600", 8));
-
-			// make the message rfc compatible (make sure all lines en with \r\n)
-			skcontent = skcontent.replace(/\r\n|\n|\r/g, "\r\n");
-
-			// create a new message in there
-			var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
-			stream.init(sfile, 2, 0x200, false); // open as "write only"
-			stream.write(skcontent, skcontent.length);
-			stream.close();
-
-			// write the temp file back to the original directory
-			com.synckolab.main.copyToFolder(com.synckolab.main.gTmpFile, com.synckolab.main.gConfig.folder); 
+			com.synckolab.main.writeImapMessage(skcontent, com.synckolab.main.gConfig, com.synckolab.main.kolabCopyServiceListener);
 		}
 		else {
 			com.synckolab.main.updateContentWrite();
