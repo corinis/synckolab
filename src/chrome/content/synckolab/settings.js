@@ -69,6 +69,9 @@ com.synckolab.settings = {
 			this.CONFIG_FIELD_TYPES["TaskFormat"] = this.FIELD_TYPE_CHAR;
 			this.CONFIG_FIELD_TYPES["TaskFolderPath"] = this.FIELD_TYPE_CHAR;
 			this.CONFIG_FIELD_TYPES["autoSync"] = this.FIELD_TYPE_INT;
+			this.CONFIG_FIELD_TYPES["syncListenerContactImap"] = this.FIELD_TYPE_BOOL;
+			this.CONFIG_FIELD_TYPES["syncListenerCalendarImap"] = this.FIELD_TYPE_BOOL;
+			this.CONFIG_FIELD_TYPES["syncListenerTaskImap"] = this.FIELD_TYPE_BOOL;
 			this.CONFIG_FIELD_TYPES["syncContacts"] = this.FIELD_TYPE_BOOL;
 			this.CONFIG_FIELD_TYPES["syncTasks"] = this.FIELD_TYPE_BOOL;
 			this.CONFIG_FIELD_TYPES["syncCalendar"] = this.FIELD_TYPE_BOOL;
@@ -839,6 +842,14 @@ com.synckolab.settings = {
 				com.synckolab.tools.logMessage("WARNING: failed to read state of SyncKolab."+config+".saveToContactImap: " + exm, com.synckolab.global.LOG_WARNING);
 			}
 
+			document.getElementById("syncListenerContactImap").checked = true;
+			try {
+				document.getElementById("syncListenerContactImap").checked = pref.getBoolPref("SyncKolab."+config+".syncListenerContactImap");
+				document.getElementById("syncListenerContactImap").setAttribute("disabled", pref.prefIsLocked("SyncKolab."+config+".syncListenerContactImap"));
+			} catch (exfl) {
+				com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab."+config+".syncListenerContactImap' failed: " + exfl, com.synckolab.global.LOG_WARNING);
+			}
+			
 			document.getElementById("syncContacts").checked = false;
 			try {
 				document.getElementById("syncContacts").checked = pref.getBoolPref("SyncKolab."+config+".syncContacts");
@@ -964,6 +975,14 @@ com.synckolab.settings = {
 					document.getElementById("calSyncTimeframe").setAttribute("disabled", pref.prefIsLocked("SyncKolab."+config+".calSyncTimeframe"));
 				} catch (exv) {
 					com.synckolab.tools.logMessage("WARNING: failed to read state of SyncKolab."+config+".calSyncTimeframe: " + exv, com.synckolab.global.LOG_WARNING);
+				}
+
+				document.getElementById("syncListenerCalendarImap").checked = true;
+				try {
+					document.getElementById("syncListenerCalendarImap").checked = pref.getBoolPref("SyncKolab."+config+".syncListenerCalendarImap");
+					document.getElementById("syncListenerCalendarImap").setAttribute("disabled", pref.prefIsLocked("SyncKolab."+config+".syncListenerCalendarImap"));
+				} catch (excl) {
+					com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab."+config+".syncListenerCalendarImap' failed: " + excl, com.synckolab.global.LOG_WARNING);
 				}
 
 				document.getElementById("saveToCalendarImap").checked = true;
@@ -1101,6 +1120,14 @@ com.synckolab.settings = {
 					document.getElementById("taskSyncTimeframe").setAttribute("disabled", pref.prefIsLocked("SyncKolab."+config+".taskSyncTimeframe"));
 				} catch (exah) {
 					com.synckolab.tools.logMessage("WARNING: failed to read state of SyncKolab."+config+".taskSyncTimeframe: " + exah, com.synckolab.global.LOG_WARNING);
+				}
+
+				document.getElementById("syncListenerTaskImap").checked = true;
+				try {
+					document.getElementById("syncListenerTaskImap").checked = pref.getBoolPref("SyncKolab."+config+".syncListenerTaskImap");
+					document.getElementById("syncListenerTaskImap").setAttribute("disabled", pref.prefIsLocked("SyncKolab."+config+".syncListenerTaskImap"));
+				} catch (exdl) {
+					com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab."+config+".syncListenerTaskImap' failed: " + exdl, com.synckolab.global.LOG_WARNING);
 				}
 
 				document.getElementById("saveToTaskImap").checked = true;

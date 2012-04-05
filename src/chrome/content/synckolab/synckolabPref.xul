@@ -64,6 +64,7 @@
 
 							<label class="text-link" onclick="LaunchUrl('http://www.kontact.org')">KDE Client (Kontact) (GPL)</label>
 							<label class="text-link" onclick="LaunchUrl('http://www.horde.org')">Horde Webmail (GPL)</label>
+							<label class="text-link" onclick="LaunchUrl('http://code.google.com/p/kolab-android/')">Kolab Android</label>
 
 							<separator class="thin" />
 							<hbox>
@@ -152,8 +153,7 @@
 								</menulist>
 							</hbox>
 
-							<separator class="thin" />
-
+							<checkbox id="syncListenerContactImap" label="&synckolab.settings.SyncListener;"/>
 							<checkbox id="saveToContactImap" label="&synckolab.settings.SaveToImap;" tooltiptext="&synckolab.settings.SaveToImapTip;" />
 							<separator class="thin" />
 							<checkbox id="syncContacts" label="&synckolab.settings.SyncContacts;" tooltiptext="&synckolab.settings.SyncContactsTip;" oncommand="com.synckolab.settings.setControlStateContacts(this.checked)" />
@@ -188,6 +188,7 @@
 								<label value="&synckolab.settings.TimeframeSyncDays;" />
 							</hbox>
 
+							<checkbox id="syncListenerCalendarImap" label="&synckolab.settings.SyncListener;"/>
 							<checkbox id="saveToCalendarImap" label="&synckolab.settings.SaveToImap;" tooltiptext="&synckolab.settings.SaveToImapTip;" />
 							<separator class="thin" />
 							<checkbox id="syncCalendar" label="&synckolab.settings.SyncCalendar;" tooltiptext="&synckolab.settings.SyncCalendarTip;" oncommand="com.synckolab.settings.setControlStateCalendar(this.checked)" />
@@ -221,6 +222,7 @@
 								<label value="&synckolab.settings.TimeframeSyncDays;" />
 							</hbox>
 
+							<checkbox id="syncListenerTaskImap" label="&synckolab.settings.SyncListener;"/>
 							<checkbox id="saveToTaskImap" label="&synckolab.settings.SaveToImap;" tooltiptext="&synckolab.settings.SaveToImapTip;" />
 							<separator class="thin" />
 							<checkbox id="syncTasks" label="&synckolab.settings.SyncTasks;" tooltiptext="&synckolab.settings.SyncTasksTip;" oncommand="com.synckolab.settings.setControlStateTasks(this.checked)" />
