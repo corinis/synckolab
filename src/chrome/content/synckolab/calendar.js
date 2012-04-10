@@ -112,10 +112,12 @@ com.synckolab.Calendar = {
 			// use default timeframe if not specified
 			try {
 				config.timeFrame = pref.getIntPref("SyncKolab." + config.name + ".taskSyncTimeframe");
+				config.useSyncListener = pref.getBoolPref("SyncKolab." + config.name + ".syncListenerCalendarImap");
 			} catch (tfignore) {
 				// per default take all
 				this.tools.logMessage("Sync Time frame is not specified. Syncing all.", this.global.LOG_WARNING);
 				config.timeFrame = -1;
+				config.useSyncListener = false;
 			}
 			// uid -> filename database - main functions needs to know the name
 			config.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config + ".task");
@@ -140,10 +142,12 @@ com.synckolab.Calendar = {
 			// use default timeframe if not specified
 			try {
 				config.syncTimeFrame = pref.getIntPref("SyncKolab." + config.name + ".calSyncTimeframe");
+				config.useSyncListener = pref.getBoolPref("SyncKolab." + config.name + ".syncListenerTaskImap");
 			} catch (ignore2) {
 				// per default take all
 				this.tools.logMessage("Sync Time frame is not specified. Syncing all.", this.global.LOG_WARNING);
 				config.syncTimeFrame = -1;
+				config.useSyncListener = false;
 			}
 			// uid -> filename database - main functions needs to know the name
 			config.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config + ".cal");

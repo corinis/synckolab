@@ -89,6 +89,7 @@ com.synckolab.AddressBook = {
 			config.addressBookName = pref.getCharPref("SyncKolab." + config.name + ".AddressBook");
 			config.format = pref.getCharPref("SyncKolab." + config.name + ".AddressBookFormat");
 			config.saveImap = pref.getBoolPref("SyncKolab." + config.name + ".saveToContactImap");
+			config.useSyncListener = pref.getBoolPref("SyncKolab." + config.name + ".syncListenerContactImap");
 		} catch (e) {
 			return;
 		}
@@ -103,7 +104,7 @@ com.synckolab.AddressBook = {
 						var curConfig = com.synckolab.main.syncConfigs[j];
 						//com.synckolab.tools.logMessage("checking " + curConfig.contact.folderMsgURI + " vs. " + folder, com.synckolab.global.LOG_DEBUG);
 
-						if(curConfig.contact && curConfig.contact.sync) {
+						if(curConfig.contact && curConfig.contact.sync && curConfig.contact.useSyncListener) {
 							if(curConfig.contact.addressBookName === addressBokName)
 							{
 								return curConfig.contact;

@@ -247,6 +247,7 @@ com.synckolab.config.readConfiguration = function() {
 com.synckolab.config.createEmptyconfig = function(baseConfig, confType) {
 	var c = {
 		sync: false,
+		useSyncListener: false,
 		name: baseConfig.name,
 		type: confType,
 		serverKey: baseConfig.serverKey,
@@ -281,18 +282,18 @@ com.synckolab.config.folderListener = {
 				//com.synckolab.tools.logMessage("checking " + curConfig.contact.folderMsgURI + " vs. " + folder, com.synckolab.global.LOG_DEBUG);
 
 				if(curConfig.contact && curConfig.contact.sync) {
-					if(curConfig.contact.folderMsgURI === folder)
+					if(curConfig.contact.useSyncListener && curConfig.contact.folderMsgURI === folder)
 					{
 						return curConfig.contact;
 					}
 				}
 				if(curConfig.cal && curConfig.cal.sync) {
-					if(curConfig.cal.folderMsgURI === folder) {
+					if(curConfig.cal.useSyncListener && curConfig.cal.folderMsgURI === folder) {
 						return curConfig.cal;
 					}
 				}
 				if(curConfig.task && curConfig.task.sync) {
-					if(curConfig.task.folderMsgURI === folder) {
+					if(curConfig.task.useSyncListener && curConfig.task.folderMsgURI === folder) {
 						return curConfig.task;
 					}
 				}
