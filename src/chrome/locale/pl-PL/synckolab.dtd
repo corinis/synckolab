@@ -30,6 +30,7 @@
 <!ENTITY synckolab.settings.CalendarFolder	"Folder Kalendarza">
 <!ENTITY synckolab.settings.TaskFormat		"Format Zadań">
 <!ENTITY synckolab.settings.TaskFolder		"Folder Zadań">
+<!ENTITY synckolab.settings.SyncListener	"Automatic Sync">
 <!ENTITY synckolab.settings.SyncContacts	"Synchronizuj Kontakty">
 <!ENTITY synckolab.settings.SyncCalendar	"Synchronizuj Kalendarz">
 <!ENTITY synckolab.settings.SyncTasks		"Synchronizuj Zadania">

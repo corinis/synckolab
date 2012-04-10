@@ -30,6 +30,7 @@
 <!ENTITY synckolab.settings.CalendarFolder	"Naptár mappa">
 <!ENTITY synckolab.settings.TaskFormat		"Fromátum">
 <!ENTITY synckolab.settings.TaskFolder		"Mappa">
+<!ENTITY synckolab.settings.SyncListener	"Automatic Sync">
 <!ENTITY synckolab.settings.SyncContacts	"Kapcsolatok szinkronizálása">
 <!ENTITY synckolab.settings.SyncCalendar	"Naptár szinkronizálása">
 <!ENTITY synckolab.settings.SyncTasks		"Feladatok szinkronizálása">

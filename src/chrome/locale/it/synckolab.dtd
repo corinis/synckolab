@@ -30,6 +30,7 @@
 <!ENTITY synckolab.settings.CalendarFolder	"Cartella Calendario">
 <!ENTITY synckolab.settings.TaskFormat		"Formato">
 <!ENTITY synckolab.settings.TaskFolder		"Cartella">
+<!ENTITY synckolab.settings.SyncListener	"Automatic Sync">
 <!ENTITY synckolab.settings.SyncContacts	"Sincronizza Contatti">
 <!ENTITY synckolab.settings.SyncCalendar	"Sincronizza Calendario">
 <!ENTITY synckolab.settings.SyncTasks		"Sincronizza Eventi">

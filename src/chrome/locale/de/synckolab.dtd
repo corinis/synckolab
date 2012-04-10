@@ -32,6 +32,7 @@
 <!ENTITY synckolab.settings.CalendarFolder	"Verzeichnis">
 <!ENTITY synckolab.settings.TaskFormat		"Format">
 <!ENTITY synckolab.settings.TaskFolder		"Verzeichnis">
+<!ENTITY synckolab.settings.SyncListener	"Automatisch abgleichen">
 <!ENTITY synckolab.settings.SyncContacts	"Kontakte abgleichen">
 <!ENTITY synckolab.settings.SyncCalendar	"Kalender abgleichen">
 <!ENTITY synckolab.settings.SyncTasks		"Aufgaben abgleichen">

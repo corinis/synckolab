@@ -30,6 +30,7 @@
 <!ENTITY synckolab.settings.CalendarFolder	"カレンダーを保存するフォルダ">
 <!ENTITY synckolab.settings.TaskFormat		"タスクリストの保存形式">
 <!ENTITY synckolab.settings.TaskFolder		"タスクリストを保存するフォルダ">
+<!ENTITY synckolab.settings.SyncListener	"Automatic Sync">
 <!ENTITY synckolab.settings.SyncContacts	"コンタクトを同期する">
 <!ENTITY synckolab.settings.SyncCalendar	"カレンダーを同期する">
 <!ENTITY synckolab.settings.SyncTasks		"タスクリストを同期する">

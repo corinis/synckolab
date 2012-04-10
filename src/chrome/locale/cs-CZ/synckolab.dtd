@@ -30,6 +30,7 @@
 <!ENTITY synckolab.settings.CalendarFolder	"Složka kalendáře">
 <!ENTITY synckolab.settings.TaskFormat		"Formát úkolů">
 <!ENTITY synckolab.settings.TaskFolder		"Složka úkolů">
+<!ENTITY synckolab.settings.SyncListener	"Automatic Sync">
 <!ENTITY synckolab.settings.SyncContacts	"Synchronizovat kontakty">
 <!ENTITY synckolab.settings.SyncCalendar	"Synchronizovat kalendář">
 <!ENTITY synckolab.settings.SyncTasks		"Synchronizovat úkoly">
