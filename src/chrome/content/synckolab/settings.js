@@ -1565,6 +1565,7 @@ com.synckolab.settings = {
 
 			pref.setCharPref("SyncKolab."+config+".AddressBook", document.getElementById("conURL").value);
 			pref.setCharPref("SyncKolab."+config+".AddressBookFormat", document.getElementById("conFormat").value);
+			pref.setBoolPref("SyncKolab."+config+".syncListenerContactImap", document.getElementById("syncListenerContactImap").checked);
 			pref.setBoolPref("SyncKolab."+config+".saveToContactImap", document.getElementById("saveToContactImap").checked);
 			pref.setBoolPref("SyncKolab."+config+".syncContacts", document.getElementById("syncContacts").checked);
 
@@ -1573,6 +1574,7 @@ com.synckolab.settings = {
 			{
 				pref.setCharPref("SyncKolab."+config+".Calendar", document.getElementById("calURL").value);
 				pref.setCharPref("SyncKolab."+config+".CalendarFormat", document.getElementById("calFormat").value);
+				pref.setBoolPref("SyncKolab."+config+".syncListenerCalendarImap", document.getElementById("syncListenerCalendarImap").checked);
 				pref.setBoolPref("SyncKolab."+config+".saveToCalendarImap", document.getElementById("saveToCalendarImap").checked);
 				pref.setBoolPref("SyncKolab."+config+".syncCalendar", document.getElementById("syncCalendar").checked);
 				if (document.getElementById("calSyncTimeframe") !== null && parseInt(document.getElementById("calSyncTimeframe").value, 10) !== 'NaN') {
@@ -1584,6 +1586,7 @@ com.synckolab.settings = {
 
 				pref.setCharPref("SyncKolab."+config+".Tasks", document.getElementById("taskURL").value);
 				pref.setCharPref("SyncKolab."+config+".TaskFormat", document.getElementById("taskFormat").value);
+				pref.setBoolPref("SyncKolab."+config+".syncListenerTaskImap", document.getElementById("syncListenerTaskImap").checked);
 				pref.setBoolPref("SyncKolab."+config+".saveToTaskImap", document.getElementById("saveToTaskImap").checked);
 				pref.setBoolPref("SyncKolab."+config+".syncTasks", document.getElementById("syncTasks").checked);
 				if (document.getElementById("taskSyncTimeframe") && parseInt(document.getElementById("taskSyncTimeframe").value, 10) !== 'NaN') {
@@ -1728,17 +1731,20 @@ com.synckolab.settings = {
 
 					pref.clearUserPref("SyncKolab."+config+".AddressBook");
 					pref.clearUserPref("SyncKolab."+config+".AddressBookFormat");
+					pref.clearUserPref("SyncKolab."+config+".syncListenerContactImap");
 					pref.clearUserPref("SyncKolab."+config+".saveToContactImap");
 					pref.clearUserPref("SyncKolab."+config+".syncContacts");
 
 					pref.clearUserPref("SyncKolab."+config+".Calendar");
 					pref.clearUserPref("SyncKolab."+config+".CalendarFormat");
+					pref.clearUserPref("SyncKolab."+config+".syncListenerCalendarImap");
 					pref.clearUserPref("SyncKolab."+config+".saveToCalendarImap");
 					pref.clearUserPref("SyncKolab."+config+".syncCalendar");
 					pref.clearUserPref("SyncKolab."+config+".calSyncTimeframe");
 
 					pref.clearUserPref("SyncKolab."+config+".Tasks");
 					pref.clearUserPref("SyncKolab."+config+".TaskFormat");
+					pref.clearUserPref("SyncKolab."+config+".syncListenerTaskImap");
 					pref.clearUserPref("SyncKolab."+config+".saveToTaskImap");
 					pref.clearUserPref("SyncKolab."+config+".syncTasks");
 					pref.clearUserPref("SyncKolab."+config+".taskSyncTimeframe");
@@ -1765,10 +1771,9 @@ com.synckolab.settings = {
 					"conURL",
 					"conImapFolder",
 					"conFormat",
+					"syncListenerContactImap",
 					"saveToContactImap"
 			];
-
-
 			for(var i=0 ; i < fieldsArray.length ; i++ ) {
 				if(fieldsArray[i] !== '') {
 					document.getElementById(fieldsArray[i]).disabled = !active;
@@ -1793,11 +1798,10 @@ com.synckolab.settings = {
 					"calURL",
 					"calImapFolder",
 					"calFormat",
+					"syncListenerCalendarImap",
 					"saveToCalendarImap",
 					"calSyncTimeframe"
 			];
-
-
 			for(var i=0 ; i < fieldsArray.length ; i++ ) {
 				if(fieldsArray[i] !== '') {
 					if (document.getElementById(fieldsArray[i]) !== null) {
@@ -1816,6 +1820,7 @@ com.synckolab.settings = {
 					"taskURL",
 					"taskImapFolder",
 					"taskFormat",
+					"syncListenerTaskImap",
 					"saveToTaskImap",
 					"taskSyncTimeframe"
 			];
@@ -2280,6 +2285,9 @@ com.synckolab.settings = {
 					"syncCalendar",
 					"saveToTaskImap",
 					"syncTasks",
+					"syncListenerContactImap",
+					"syncListenerCalendarImap",
+					"syncListenerTaskImap",
 					"hiddenWindow",
 					"syncOnStart"
 			];

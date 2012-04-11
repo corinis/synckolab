@@ -1153,6 +1153,10 @@ com.synckolab.hashMap.entry = function ( key, value )
 
 com.synckolab.hashMap.prototype.getIKey = function (key)
 {
+	if(!key) {
+		throw("No key defined for hashmap!");
+	}
+	
 	var sum = 0;
 	for (var k = 0; k < key.length; k++) {
 		sum += key.charCodeAt(k)*k;
@@ -1162,22 +1166,23 @@ com.synckolab.hashMap.prototype.getIKey = function (key)
 
 com.synckolab.hashMap.prototype.put = function ( key, value )
 {
-	if( ( typeof key !== "undefined" ) && ( typeof value !== "undefined" ) && key )
-	{
-		// get a key
-		var ikey = this.getIKey(key) % this.seed;
-		var car = this.array[ikey];
-		// overwrite if we already have it
-		for( var k = 0 ; k < car.length ; k++ )
-		{
-			if( car[k].key === key ) {
-				car[k].value = value;
-				return;
-			}
-		}
-		car[car.length] = new com.synckolab.hashMap.entry( key, value );
-		this.len++;
+	if(!key) {
+		throw("No key defined for hashmap!");
 	}
+
+	// get a key
+	var ikey = this.getIKey(key) % this.seed;
+	var car = this.array[ikey];
+	// overwrite if we already have it
+	for( var k = 0 ; k < car.length ; k++ )
+	{
+		if( car[k].key === key ) {
+			car[k].value = value;
+			return;
+		}
+	}
+	car[car.length] = new com.synckolab.hashMap.entry( key, value );
+	this.len++;
 };
 
 com.synckolab.hashMap.prototype.clear = function ()

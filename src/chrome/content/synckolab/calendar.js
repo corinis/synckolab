@@ -115,7 +115,7 @@ com.synckolab.Calendar = {
 				config.useSyncListener = pref.getBoolPref("SyncKolab." + config.name + ".syncListenerCalendarImap");
 			} catch (tfignore) {
 				// per default take all
-				this.tools.logMessage("Sync Time frame is not specified. Syncing all.", this.global.LOG_WARNING);
+				com.synckolab.tools.logMessage("Sync Time frame is not specified. Syncing all.", this.global.LOG_WARNING);
 				config.timeFrame = -1;
 				config.useSyncListener = false;
 			}
@@ -145,7 +145,7 @@ com.synckolab.Calendar = {
 				config.useSyncListener = pref.getBoolPref("SyncKolab." + config.name + ".syncListenerTaskImap");
 			} catch (ignore2) {
 				// per default take all
-				this.tools.logMessage("Sync Time frame is not specified. Syncing all.", this.global.LOG_WARNING);
+				com.synckolab.tools.logMessage("Sync Time frame is not specified. Syncing all.", this.global.LOG_WARNING);
 				config.syncTimeFrame = -1;
 				config.useSyncListener = false;
 			}
@@ -381,7 +381,7 @@ com.synckolab.Calendar = {
 		// remember that we did this uid already
 		this.folderMessageUids.push(parsedEvent.id);
 
-		// ok lets see if we have this one already 
+		// foundEvent from calendar
 		foundEvent = this.calTools.findEvent(this.gCalDB, parsedEvent.id);
 		this.tools.logMessage("findevent returned :" + foundEvent + "(" + (foundEvent === null ? 'null' : foundEvent.id) + ") for " + parsedEvent.id + " caching " + this.gCalDB.length() + " events", this.global.LOG_CAL + this.global.LOG_DEBUG);
 
@@ -441,6 +441,7 @@ com.synckolab.Calendar = {
 			// event exists in local calendar
 			this.tools.logMessage("Event exists local: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_DEBUG);
 
+			// cEvent: event from sync db
 			var cEvent = this.calTools.message2Event(com.synckolab.tools.readSyncDBFile(idxEntry, true), null, this.gConfig.task);
 
 			var hasEntry = idxEntry.exists() && (cEvent);
@@ -450,6 +451,8 @@ com.synckolab.Calendar = {
 			this.tools.logMessage("cEvent==parsedEvent: " + equal2parsed, this.global.LOG_CAL + this.global.LOG_DEBUG);
 			var equal2found = hasEntry && this.calTools.equalsEvent(cEvent, foundEvent, this.gConfig.task, this.gConfig.email);
 			this.tools.logMessage("cEvent==foundEvent: " + equal2found, this.global.LOG_CAL + this.global.LOG_DEBUG);
+			var local_equals_parsed  = this.calTools.equalsEvent(parsedEvent, foundEvent, this.gConfig.task, this.gConfig.email);
+			this.tools.logMessage("found==parsed: " + equal2found, this.global.LOG_CAL + this.global.LOG_DEBUG);
 
 			if (hasEntry && !equal2parsed && !equal2found) {
 				// changed locally and on server side
@@ -538,7 +541,14 @@ com.synckolab.Calendar = {
 
 				// we got that already, see which is newer and update the message or the event
 				// the sync database might be out-of-date, so we handle a non-existent entry as well
-				if (!hasEntry || (!equal2parsed && equal2found)) {
+				if(!hasEntry || (!equal2parsed && local_equals_parsed)) {
+					this.tools.logMessage("only not in sync db: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
+					com.synckolab.tools.writeSyncDBFile(idxEntry, fileContent, true);
+					// update list item
+					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("noChange"));
+					return null;
+				}
+				else if (!hasEntry || (!equal2parsed && equal2found)) {
 					this.tools.logMessage("event on server changed: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
 
 					com.synckolab.tools.writeSyncDBFile(idxEntry, fileContent, true);

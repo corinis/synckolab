@@ -177,8 +177,17 @@ com.synckolab.AddressBook = {
 				if(com.synckolab.global.running) {
 					return;
 				}
+				
+				var cConfig = this.getConfig(parent.dirName);
+				if(!cConfig) {
+					return;
+				}
 
 				var cUID = com.synckolab.addressbookTools.getUID(item);
+				// the item doesnt have an uuid - skip
+				if(!cUID) {
+					return;
+				}
 
 				alert("delete "+cUID+" from " + parent.dirName);
 			},
@@ -680,14 +689,18 @@ com.synckolab.AddressBook = {
 					return null; // Return null, we either updated nothing or updated only local
 				}
 				else
-				// we got that already, see which to update (server change if db == local != server)
+				// we got that already, see which to update (server change if db == local != server) - or actually no change
 				if (!cEntry.exists() || (cCard_equals_aCard && !cCard_equals_newCard))
 				{
 					if (!cEntry.exists()) {
 						com.synckolab.tools.logMessage("In parse Message in addressbook.js cEntry does not exist", com.synckolab.global.LOG_DEBUG);
 					}
 					
-					com.synckolab.tools.logMessage("server changed: " + this.tools.getUID(aCard), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+					if(aCard_equals_newCard){
+						com.synckolab.tools.logMessage("no change, but sync file missing: " + this.tools.getUID(aCard), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+					} else {
+						com.synckolab.tools.logMessage("server changed: " + this.tools.getUID(aCard), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+					}
 					
 					// server changed - update local
 					if (aCard.isMailList)
@@ -734,14 +747,19 @@ com.synckolab.AddressBook = {
 						
 					}
 
-					com.synckolab.tools.logMessage("updated local " + this.tools.getUID(aCard), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+					com.synckolab.tools.logMessage("write sync db " + this.tools.getUID(aCard), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 					
 					// write the current content in the sync-db file
 					//com.synckolab.tools.writeSyncDBFile (cEntry, com.synckolab.tools.stripMailHeader(this.tools.card2Message(newCard, this.gConfig.email, this.gConfig.format)));
 					com.synckolab.tools.writeSyncDBFile(cEntry, newCard);
 
 					// update list item
-					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localUpdate"));
+					if(aCard_equals_newCard){
+						this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("noChange"));
+					}
+					else {
+						this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localUpdate"));
+					}
 					return null;
 				}
 				else

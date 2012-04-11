@@ -59,9 +59,21 @@ com.synckolab.addressbookTools = {
 			def = null;
 		}
 
+		// json synckolab object
+		if(card.synckolab) {
+			if(card[prop])	// TODO better check for undefined?
+			{
+				return card[prop];
+			}
+			return null;
+		}
+
+		
 		// fix from syncgb
 		if (card.isMailList && !card.getProperty) {
 			switch (prop) {
+			case "uid":
+			case "Uid":
 			case "Name":
 				if (card.listNickName) {
 					prop = "listNickName";
@@ -86,21 +98,13 @@ com.synckolab.addressbookTools = {
 				break;
 			default:
 				var err = new Error("card.getProperty is not a function");
-				com.synccgp.tools.logMessage("ERROR in getCardProperty called on a list: \n" + err.stack, com.synccgp.global.LOG_DEBUG);
+				com.synckolab.tools.logMessage("ERROR getting "+prop+" from list: \n" + err.stack, com.synccgp.global.LOG_DEBUG);
 				throw err;
 			}
 
 			return card[prop] || def;
 		}
 
-		// json synckolab object
-		if(card.synckolab) {
-			if(card[prop])	// TODO better check for undefined?
-			{
-				return card[prop];
-			}
-			return null;
-		}
 		// tbird 3
 		if (card.getProperty) {
 			if (card.isMailList && prop === "Name") {
@@ -254,6 +258,11 @@ com.synckolab.addressbookTools = {
 		// for mailing lists
 		if (card.isMailList) {
 			try {
+				// sk always uses dirName
+				if(card.synckolab) {
+					return this.getCardProperty(card, "dirName");
+				}
+				// tbird is more creative 
 				return this.getCardProperty(card, "Name");
 			} catch (err) {
 				com.synckolab.tools.logMessage("Error in getUID. ListNickName: '" + card.listNickName + "'\n\nStack:\n" + err.stack, com.synckolab.global.LOG_DEBUG);
@@ -538,40 +547,50 @@ com.synckolab.addressbookTools.findCard = function (cards, vId, directory) {
  * Tools to work with the address book. Parsing functions for vcard, Kolab xml
  * to and from contact plus some utility functions. 
  *
- * @param xml a string with the vcard (make sure its trimmed from whitespace)
+ * @param xml a dom node of a card or a string with the xml
  * @param card the card object to update
  */
 com.synckolab.addressbookTools.xml2Card = function (xml, card) {
-	// check if we have to decode quoted printable
-	if (xml.indexOf(" version=3D") !== -1) {
-		// we know from the version
-		xml = com.synckolab.tools.text.quoted.decode(xml);
-	}
-
-	xml = com.synckolab.tools.text.utf8.decode(xml);
-	// potential fix: .replace(/&/g, "&amp;")
-
-	// convert the string to xml
-	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser);
-	var doc = parser.parseFromString(xml, "text/xml");
-
-	var topNode = doc.firstChild;
-	if (topNode.nodeName === "parsererror") {
-		// so this message has no valid XML part :-(
-		com.synckolab.tools.logMessage("Error parsing the XML content of this message.\n" + xml, this.global.LOG_ERROR + this.global.LOG_AB);
-		return null;
-	}
-	if ((topNode.nodeType !== Node.ELEMENT_NODE) || (topNode.nodeName.toUpperCase() !== "CONTACT")) {
-
-		if ((topNode.nodeType === Node.ELEMENT_NODE) && (topNode.nodeName.toUpperCase() === "DISTRIBUTION-LIST")) {
-			return this.Xml2List(topNode, card);
+	var cur;
+	
+	// if xml has a nodeType attribute - its already a node
+	if(xml.indexOf && !xml.nodeName) {
+		com.synckolab.tools.logMessage("parsing the XML content into card", this.global.LOG_DEBUG + this.global.LOG_AB);
+		// check if we have to decode quoted printable
+		if (xml.indexOf(" version=3D") !== -1) {
+			// we know from the version
+			xml = com.synckolab.tools.text.quoted.decode(xml);
 		}
-		// this can't be an event in Kolab XML format
-		com.synckolab.tools.logMessage("This message doesn't contain a contact in Kolab XML format (" + topNode.nodeName + ").\n" + xml, this.global.LOG_ERROR + this.global.LOG_AB);
-		return null;
+	
+		xml = com.synckolab.tools.text.utf8.decode(xml);
+		// potential fix: .replace(/&/g, "&amp;")
+	
+		// convert the string to xml
+		var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser);
+		var doc = parser.parseFromString(xml, "text/xml");
+	
+		var topNode = doc.firstChild;
+		if (topNode.nodeName === "parsererror") {
+			// so this message has no valid XML part :-(
+			com.synckolab.tools.logMessage("Error parsing the XML content of this message.\n" + xml, this.global.LOG_ERROR + this.global.LOG_AB);
+			return null;
+		}
+		if ((topNode.nodeType !== Node.ELEMENT_NODE) || (topNode.nodeName.toUpperCase() !== "CONTACT")) {
+	
+			if ((topNode.nodeType === Node.ELEMENT_NODE) && (topNode.nodeName.toUpperCase() === "DISTRIBUTION-LIST")) {
+				return this.Xml2List(topNode, card);
+			}
+			// this can't be an event in Kolab XML format
+			com.synckolab.tools.logMessage("This message doesn't contain a contact in Kolab XML format (" + topNode.nodeName + ").\n" + xml, this.global.LOG_ERROR + this.global.LOG_AB);
+			return null;
+		}
+	
+		cur = new com.synckolab.Node(doc.firstChild.firstChild);
+	} else {
+		com.synckolab.tools.logMessage("parsing dom tree into card.", this.global.LOG_DEBUG + this.global.LOG_AB);
+		cur = new com.synckolab.Node(xml.firstChild);
 	}
-
-	var cur = new com.synckolab.Node(doc.firstChild.firstChild);
+	
 	var found = false;
 	var tok; // for tokenizer
 	var email = 0;
@@ -607,6 +626,11 @@ com.synckolab.addressbookTools.xml2Card = function (xml, card) {
 				found = true;
 				break;
 
+			case "DISPLAY-NAME":
+				this.setCardProperty(card, "DisplayName", cur.getFirstData());
+				break;
+
+				
 			// set the prefer mail format (this is not covered by kolab itself)
 			case "PREFER-MAIL-FORMAT":
 				// 0: unknown
@@ -874,7 +898,7 @@ com.synckolab.addressbookTools.xml2Card = function (xml, card) {
 				}
 				if (cur.nodeName !== "product-id" && cur.nodeName !== "sensitivity") {
 					// remember other fields
-					com.synckolab.tools.logMessage("XC FIELD not found: " + cur.nodeName + ":" + cur.getFirstData(), this.global.LOG_WARNING + this.global.LOG_AB);
+					com.synckolab.tools.logMessage("FIELD not found: " + cur.nodeName + "=" + cur.getFirstData(), this.global.LOG_WARNING + this.global.LOG_AB);
 					this.setCardProperty(card, cur.nodeName, cur.getFirstData(), true);
 				}
 				break;
@@ -942,12 +966,12 @@ com.synckolab.addressbookTools.list2Xml = function (card, fields) {
 
 				xml += "  <member>";
 				xml += com.synckolab.tools.text.nodeWithContent("display-name", this.getCardProperty(cur, "DisplayName"), false);
-				if (this.haveCardProperty(card, "PrimaryEmail")) {
-					xml += com.synckolab.tools.text.nodeWithContent("smtp-address", cur.primaryEmail, false);
-				} else if (this.haveCardProperty(card, "SecondEmail")) {
-					xml += com.synckolab.tools.text.nodeWithContent("smtp-address", cur.secondEmail, false);
+				if (this.haveCardProperty(cur, "PrimaryEmail")) {
+					xml += com.synckolab.tools.text.nodeWithContent("smtp-address", this.getCardProperty(cur, "PrimaryEmail"), false);
+				} else if (this.haveCardProperty(cur, "SecondEmail")) {
+					xml += com.synckolab.tools.text.nodeWithContent("smtp-address", this.getCardProperty(cur, "SecondEmail"), false);
 				} else {
-					com.synckolab.tools.logMessage("ERROR: List entry without an email?!?" + this.getUID(cur), this.global.LOG_WARNING + this.global.LOG_AB);
+					com.synckolab.tools.logMessage("List entry without an email!" + this.getUID(cur), this.global.LOG_WARNING + this.global.LOG_AB);
 				}
 
 				xml += com.synckolab.tools.text.nodeWithContent("uid", uid, false);
@@ -1518,6 +1542,12 @@ com.synckolab.addressbookTools.vList2Card = function (uids, lines, card, cards) 
 	return true;
 };
 
+/**
+ * this is analog function to xml2card. It will fill a json object (card) with the 
+ * information from the xml
+ * @param topNode the node to parse
+ * @param card the card object
+ */
 com.synckolab.addressbookTools.Xml2List = function (topNode, card) {
 	card.type = "maillist";
 	card.isMailList = true;
@@ -1570,25 +1600,24 @@ com.synckolab.addressbookTools.Xml2List = function (topNode, card) {
 				// because for thunderbird the name is unique
 				break;
 			case "MEMBER":
-				var uid = cur.getXmlResult("UID");
 				// sub-vcard... parse...
-				com.synckolab.tools.logMessage("FOUND CARD: " + uid, this.global.LOG_DEBUG + this.global.LOG_AB);
 				if(!card.contacts) {
 					card.contacts = [];
 				}
+				var member = {
+					synckolab: com.synckolab.config.version, // synckolab version
+					listMember: true,
+					type: "contact", // a contact
+					isMailList: false,
+					ts: new Date().getTime() // the current time
+				};
+				// parse the whole card
+				com.synckolab.addressbookTools.xml2Card(cur, member);
+				com.synckolab.tools.logMessage("FOUND CARD: " + member.toSource(), this.global.LOG_DEBUG + this.global.LOG_AB);
 				
-				card.contacts.push(uid);
-				// TODO: add the whole content of the card!
-				/*
-				// check if we have this card already in out internal db (should be there)
-				var cMember = cards.get(uid);
-				if (cMember) {
-					com.synckolab.tools.logMessage("found existing card - adding to list!!!", this.global.LOG_DEBUG + this.global.LOG_AB);
-					card.addressLists.appendElement(cMember, false);
-				} else {
-					com.synckolab.tools.logMessage("some cards do not exist yet! Skipping!", this.global.LOG_WARNING + this.global.LOG_AB);
-				}
-				*/
+				card.contacts.push(member);
+				// parse the member - take as much as we wan
+				
 				break;
 			case "PRODUCT-ID":
 			case "CREATION-DATE":
@@ -1596,8 +1625,7 @@ com.synckolab.addressbookTools.Xml2List = function (topNode, card) {
 				// ignore
 				break;
 			default:
-				com.synckolab.tools.logMessage("Ignoring VList FIELD not found: " + cur.nodeName, this.global.LOG_DEBUG + this.global.LOG_AB);
-				//extraFields.addField(tok[0], tok[1]);
+				com.synckolab.tools.logMessage("Ignoring XML list FIELD not found: " + cur.nodeName, this.global.LOG_DEBUG + this.global.LOG_AB);
 				break;
 			}
 
@@ -1609,7 +1637,7 @@ com.synckolab.addressbookTools.Xml2List = function (topNode, card) {
 	if (!found) {
 		return null;
 	}
-	com.synckolab.tools.logMessage("finished parsing list: " + card.dirName + " - " + this.getUID(card), this.global.LOG_DEBUG + this.global.LOG_AB);
+	com.synckolab.tools.logMessage("finished parsing list: " + card.dirName + " - " + this.getUID(card) + "\n" + card.toSource(), this.global.LOG_DEBUG + this.global.LOG_AB);
 
 	return card;
 };

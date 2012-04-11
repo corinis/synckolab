@@ -437,7 +437,7 @@ com.synckolab.tools.text = {
 	},
 
 	decode4XML : function (s) {
-		if (s === null) {
+		if (!s) {
 			return "";
 		}
 		if (!s.replace) {
