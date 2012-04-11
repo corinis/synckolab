@@ -61,9 +61,9 @@ function closeSync() {
 		</listhead>
 	
 		<listcols>
-			<listcol width="150px"/>
-			<listcol/>
 			<listcol flex="1"/>
+			<listcol/>
+			<listcol width="200px"/>
 		</listcols>
 	</listbox>
   <spacer style="height: 10px"/>
