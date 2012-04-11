@@ -428,6 +428,10 @@ com.synckolab.tools.text = {
 		if (s === null) {
 			return "";
 		}
+		if(!s) {
+			com.synckolab.global.consoleService.logStringMessage("undefined string " + new Error("s").stack);
+		} 
+
 		if (!s.replace) {
 			return s;
 		}

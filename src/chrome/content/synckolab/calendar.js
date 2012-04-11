@@ -761,7 +761,6 @@ com.synckolab.Calendar = {
 				// add the new event into the db
 				cEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, cur.id);
 				com.synckolab.tools.writeSyncDBFile(cEntry, com.synckolab.tools.stripMailHeader(msg), true);
-
 			}
 		}
 

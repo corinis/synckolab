@@ -87,7 +87,11 @@ logMessage: function (msg, level) {
 		}
 		// report errors as error
 		if (clvl === com.synckolab.global.LOG_ERROR && Components.utils.reportError) {
-			Components.utils.reportError("" + msg);
+			var err = new Error("" + msg);
+			Components.utils.reportError("" + msg + err.stack);
+		} else 
+		if (clvl === com.synckolab.global.LOG_ERROR) {
+			com.synckolab.global.consoleService.logStringMessage("" + msg + new Error("" + msg).stack);
 		} else {
 			com.synckolab.global.consoleService.logStringMessage(msg);
 		}

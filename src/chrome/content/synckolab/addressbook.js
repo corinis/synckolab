@@ -437,6 +437,10 @@ com.synckolab.AddressBook = {
 		// parse the new item
 		newCard = this.tools.parseMessageContent(fileContent);
 		
+		if (newCard && newCard.isMailList)
+		{
+			com.synckolab.tools.logMessage("got mailing list " + this.tools.getUID(newCard), com.synckolab.global.LOG_WARNING + com.synckolab.global.LOG_AB);
+		}
 		/*
 		if (newCard && newCard.isMailList)
 		{
@@ -477,44 +481,45 @@ com.synckolab.AddressBook = {
 
 			// get the dbfile from the local disk
 			var cEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, this.tools.getUID(newCard));
-			com.synckolab.tools.logMessage("got entry from db" + aCard, com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);	
+			com.synckolab.tools.logMessage("got entry from db: " + aCard, com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);	
 
 			// a new card or locally deleted 
 			if (aCard === null)
 			{	
 				// if the file does not exist and it is not found in the adress book -
-				// we definitely have a new player here - add it 
+				// we definitely have a new entry here - add it 
 				// also do so if the forceLocalCopy flag is set (happens when you change the configuration)
 				if (!cEntry.exists() || this.forceLocalCopy)
 				{
 					// write the pojo into a file for faster comparison in later sync
 					com.synckolab.tools.writeSyncDBFile(cEntry, newCard);
 					
-					// also copy the image
-					var pNameA = this.tools.getCardProperty(newCard, "PhotoName");
-					if (pNameA && pNameA !== "" && pNameA !== "null")
-					{
-						// in case the copy failed - clear the photoname
-						if (this.tools.copyImage(pNameA) === false) {
-							this.tools.setCardProperty(newCard, "PhotoName", "");
-						}
-					}
-					
-					
-					com.synckolab.tools.logMessage("card is new, add to address book: " + this.tools.getUID(newCard), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 					// convert to a thunderbird object and add to the address book 
 					if (newCard.type === "maillist")
 					{
-						// skip mailing lists
+						com.synckolab.tools.logMessage("list is new, add to address book: " + this.tools.getUID(newCard), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+						// add mailing lists- pass the gCardDB with its nsIAbCard
 						this.gConfig.addressBook.addMailList(com.synckolab.addressbookTools.createTBirdObject(newCard, this.gCardDB));
 						// also add to the hash-database
 						this.gCardDB.put(this.tools.getUID(newCard), newCard);
 					}
 					else
 					{
-						this.gConfig.addressBook.addCard(com.synckolab.addressbookTools.createTBirdObject(newCard));
+						com.synckolab.tools.logMessage("card is new, add to address book: " + this.tools.getUID(newCard), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+						// also copy the image
+						var pNameA = this.tools.getCardProperty(newCard, "PhotoName");
+						if (pNameA && pNameA !== "" && pNameA !== "null")
+						{
+							// in case the copy failed - clear the photoname
+							if (this.tools.copyImage(pNameA) === false) {
+								this.tools.setCardProperty(newCard, "PhotoName", "");
+							}
+						}
+						
+						var abCard = com.synckolab.addressbookTools.createTBirdObject(newCard);
+						this.gConfig.addressBook.addCard(abCard);
 						// also add to the hash-database
-						this.gCardDB.put(this.tools.getUID(newCard), newCard);
+						this.gCardDB.put(this.tools.getUID(newCard), abCard);
 					}
 					
 					//update list item
@@ -556,7 +561,7 @@ com.synckolab.AddressBook = {
 					com.synckolab.tools.logMessage("In parse Message in addressbook.js cCard equals aCard", com.synckolab.global.LOG_DEBUG);
 				} else {
 					cCard_equals_aCard = false;
-					com.synckolab.tools.logMessage("In parse Message in addressbook.js cCard DOES NOT equal aCard", com.synckolab.global.LOG_DEBUG);
+					com.synckolab.tools.logMessage("In parse Message in addressbook.js cCard \n"+cCard.toSource()+"\n NOT EQUALS aCard\n"+aCard.toSource()+"\n ", com.synckolab.global.LOG_DEBUG);
 				}
 				
 				if (this.tools.equalsContact(cCard, newCard)) {
@@ -708,10 +713,10 @@ com.synckolab.AddressBook = {
 						
 						try
 						{
-							var delMailListlist = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
-							delMailListlist.appendElement(aCard, false);
-							this.gConfig.addressBook.deleteCards(delMailListlist);
-							//this.gConfig.addressBook.deleteDirectory(aCard);
+							//var delMailListlist = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
+							//delMailListlist.appendElement(aCard, false);
+							//this.gConfig.addressBook.deleteCards(delMailListlist);
+							this.gConfig.addressBook.deleteDirectory(aCard);
 							this.gConfig.addressBook.addMailList(com.synckolab.addressbookTools.createTBirdObject(newCard, this.gCardDB));
 						} catch (delMailList)
 						{
@@ -828,19 +833,19 @@ com.synckolab.AddressBook = {
 		var curItem = cur;
 		
 		// mailing lists are nsIABDirectory
-		/*
+		
 		if (cur.isMailList)
 		{
-			com.synckolab.tools.logMessage("GOT A MAILING LIST!!! - skipping", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
-			return null;
+			com.synckolab.tools.logMessage("Convert Mailing list to nsIABDirectory", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
+			curItem = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager).getDirectory(cur.mailListURI);;
 		}
-		*/
+		
 		
 		
 		// check for this entry
 		if (this.tools.getUID(curItem) === null)
 		{
-			/*
+			
 			if (cur.isMailList)
 			{
 				try
@@ -848,14 +853,14 @@ com.synckolab.AddressBook = {
 					// select the next card
 					this.gCards.next();
 				}
-				catch (ext)
+				catch (extMLCard)
 				{
 					// no next.. but we find that out early enough
 				}
 				// skip this one.. there simply ARE no valid mailing list without UID
 				return null;
 			}
-			*/
+			
 			
 			// look at new card
 			// generate a unique id (will random be enough for the future?)
@@ -930,11 +935,15 @@ com.synckolab.AddressBook = {
 				
 				if (cEntry.exists() && !this.forceServerCopy)
 				{
-					// TODO: do not delete list for now..
+					
 					if (!curItem.isMailList)
 					{
 						this.deleteList.appendElement(curItem, false);
+					} else {
+						// delete list
+						this.gConfig.addressBook.deleteDirectory(curItem);
 					}
+					
 					// create a new item in the itemList for display
 					this.curItemInList = this.doc.createElement("listitem");
 					this.curItemInListId = this.doc.createElement("listcell");
