@@ -684,12 +684,16 @@ com.synckolab.AddressBook = {
 						}
 						
 						// write the current content in the sync-db file
-						com.synckolab.tools.writeSyncDBFile(cEntry, fileContent);
+						com.synckolab.tools.writeSyncDBFile(cEntry, newCard);
 					}
 
 					if (bUpdateServer) {
 						// update on server
-						return this.tools.card2Message(aCard, this.gConfig.email, this.gConfig.format);
+						var abcontent = this.tools.card2Message(aCard, this.gConfig.email, this.gConfig.format);
+
+						// write the current content in the sync-db file
+						com.synckolab.tools.writeSyncDBFile(cEntry, this.tools.parseMessageContent(com.synckolab.tools.stripMailHeader(abcontent)));
+						return abcontent;
 					}
 					return null; // Return null, we either updated nothing or updated only local
 				}
@@ -755,7 +759,6 @@ com.synckolab.AddressBook = {
 					com.synckolab.tools.logMessage("write sync db " + this.tools.getUID(aCard), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 					
 					// write the current content in the sync-db file
-					//com.synckolab.tools.writeSyncDBFile (cEntry, com.synckolab.tools.stripMailHeader(this.tools.card2Message(newCard, this.gConfig.email, this.gConfig.format)));
 					com.synckolab.tools.writeSyncDBFile(cEntry, newCard);
 
 					// update list item
@@ -779,7 +782,7 @@ com.synckolab.AddressBook = {
 					// remember this message for update - generate mail message (incl. extra fields)
 					var abcontent = this.tools.card2Message(aCard, this.gConfig.email, this.gConfig.format);
 					// write the current content in the sync-db file
-					com.synckolab.tools.writeSyncDBFile(cEntry, newCard);
+					com.synckolab.tools.writeSyncDBFile(cEntry, this.tools.parseMessageContent(com.synckolab.tools.stripMailHeader(abcontent)));
 					return abcontent;
 				}
 				
