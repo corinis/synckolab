@@ -96,6 +96,7 @@ com.synckolab.AddressBook = {
 		
 		// get the rdf for the Addresbook list
 		// the addressbook type nsIAbDirectory
+		
 		var cn = com.synckolab.addressbookTools.getABDirectory({
 			getConfig: function(addressBokName) {
 				// search through the configs  
@@ -129,7 +130,7 @@ com.synckolab.AddressBook = {
 				}
 				
 				newCard = newCard.QueryInterface(Components.interfaces.nsIAbCard);
-				alert("new in " + parent.dirName);
+				com.synckolab.tools.logMessage("trigger new card", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
 				
 				// get the dbfile from the local disk
 				var cUID = null;
@@ -139,6 +140,10 @@ com.synckolab.AddressBook = {
 					// generate a unique id (will random be enough for the future?)
 					cUID = "sk-vc-" + com.synckolab.tools.text.randomVcardId();
 					com.synckolab.addressbookTools.setUID(newCard, cUID);
+					// avoid loop
+					com.synckolab.global.triggerRunning = true;
+					cConfig.addressBook.modifyCard(newCard);
+					com.synckolab.global.triggerRunning = false;
 				}
 				
 				if (newCard.isMailList) {
@@ -147,17 +152,18 @@ com.synckolab.AddressBook = {
 					com.synckolab.tools.logMessage("adding unsaved card: " + cUID, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 				}
 				
-				cConfig.addressBook.modifyCard(newCard);
 
 				// and write the message
 				var abcontent = com.synckolab.addressbookTools.card2Message(newCard, cConfig.email, cConfig.format);
-				com.synckolab.tools.logMessage("New Card " + cUID, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+				com.synckolab.tools.logMessage("New Card " + abcontent, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 
 				// get the dbfile from the local disk
 				var cEntry = com.synckolab.tools.file.getSyncDbFile(cConfig, cUID);
 				// write the current content in the sync-db file (parse to json object first)
-				com.synckolab.tools.writeSyncDBFile(cEntry, com.synckolab.addressbookTools.parseMessage(com.synckolab.tools.stripMailHeader(abcontent)));
-				
+				com.synckolab.tools.writeSyncDBFile(cEntry, com.synckolab.addressbookTools.parseMessageContent(com.synckolab.tools.stripMailHeader(abcontent)));
+
+				com.synckolab.tools.logMessage("Writing card to imap" , com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+
 				com.synckolab.main.writeImapMessage(abcontent, cConfig, 
 				{
 					OnProgress: function (progress, progressMax) {},
@@ -178,8 +184,8 @@ com.synckolab.AddressBook = {
 					return;
 				}
 				
-				var cConfig = this.getConfig(parent.dirName);
-				if(!cConfig) {
+				var curConfig = this.getConfig(parent.dirName);
+				if(!curConfig) {
 					return;
 				}
 
@@ -189,7 +195,11 @@ com.synckolab.AddressBook = {
 					return;
 				}
 
-				alert("delete "+cUID+" from " + parent.dirName);
+				// local delete triggers a FULL sync 
+				com.synckolab.tools.logMessage("Trigger synckolab "+curConfig.name, com.synckolab.global.LOG_INFO);
+				com.synckolab.main.forceConfig = curConfig.name;
+				com.synckolab.main.forceConfigType = "contact";
+				com.synckolab.main.sync("trigger", curConfig);
 			},
 			onItemPropertyChanged: function(item, prop, oldval, newval) {
 				// make sure not to parse messages while a full sync is running
@@ -197,7 +207,8 @@ com.synckolab.AddressBook = {
 					return;
 				}
 				
-				alert("changed");
+				// local change triggers a full sync
+				com.synckolab.tools.logMessage("item changed "+ item.directoryId, com.synckolab.global.LOG_INFO);
 			}
 		});
 		var ABook = cn.getNext();
@@ -384,7 +395,7 @@ com.synckolab.AddressBook = {
 			}
 
 			// fix newName: we can have C:\ - file:// and more - remove all that and put it in the photos folder
-			newName = pNameA.replace(/[^A-Za-z0-9._ \-]/g, "");
+			var newName = pNameA.replace(/[^A-Za-z0-9._ \-]/g, "");
 			newName = newName.replace(/ /g, "_");
 
 			// check if the file exists

@@ -29,8 +29,10 @@
  * ***** END LICENSE BLOCK ***** */
 "use strict";
 
-if(!com) var com={};
-if(!com.synckolab) com.synckolab={};
+if (!com)
+	var com = {};
+if (!com.synckolab)
+	com.synckolab = {};
 
 /* ----- general functions to access calendar and events ----- */
 
@@ -60,15 +62,14 @@ com.synckolab.addressbookTools = {
 		}
 
 		// json synckolab object
-		if(card.synckolab) {
-			if(card[prop])	// TODO better check for undefined?
+		if (card.synckolab) {
+			if (card[prop]) // TODO better check for undefined?
 			{
 				return card[prop];
 			}
 			return null;
 		}
 
-		
 		// fix from syncgb
 		if (card.isMailList && !card.getProperty) {
 			switch (prop) {
@@ -99,7 +100,7 @@ com.synckolab.addressbookTools = {
 			case "description":
 				break;
 			default:
-				com.synckolab.tools.logMessage("ERROR getting "+prop+" from list", com.synckolab.global.LOG_DEBUG);
+				com.synckolab.tools.logMessage("ERROR getting " + prop + " from list", com.synckolab.global.LOG_DEBUG);
 			}
 
 			return card[prop] || def;
@@ -259,7 +260,7 @@ com.synckolab.addressbookTools = {
 		if (card.isMailList) {
 			try {
 				// sk always uses dirName
-				if(card.synckolab) {
+				if (card.synckolab) {
 					return this.getCardProperty(card, "DisplayName");
 				}
 				// tbird is more creative 
@@ -269,7 +270,7 @@ com.synckolab.addressbookTools = {
 				throw err;
 			}
 		}
-		
+
 		// we can use custom fields!!!
 		var uid = this.getCardProperty(card, "UUID");
 		if (uid && uid !== "") {
@@ -301,9 +302,11 @@ com.synckolab.addressbookTools.getABDirectory = function (listener) {
 	// tbird >= 7
 	try {
 		var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-		if(listener) {
+		/* - ignore ab listener: if you change something locally - sync manual!
+		if (listener) {
 			abManager.addAddressBookListener(listener, 0xFFFFFFFF); // all
 		}
+		*/
 		return abManager.directories;
 	} catch (ex) {
 		// tbird < 7
@@ -318,23 +321,22 @@ com.synckolab.addressbookTools.getABDirectory = function (listener) {
  * @value the value to set the property to, null will be changed to an empty string ("")
  */
 com.synckolab.addressbookTools.setCardProperty = function (card, prop, value, extra) {
-	if(card === null) {
+	if (card === null) {
 		throw ("Unable to process null-card: " + prop);
 	}
-	
+
 	// make sure not write "null" anywhere
 	if (value === null || value === "null" || prop === "Custom4" && (!value.indexOf("pas-id-") || !value.indexOf("sk-"))) {
 		value = "";
 	}
-	
+
 	// special case: this is a json object for the synckolab cache
-	if(card.synckolab) {
+	if (card.synckolab) {
 		card[prop] = value;
-	}
-	else
+	} else
 	// tbird 3
 	if (card.setProperty) {
-		if(!extra) {
+		if (!extra) {
 			card.setProperty(prop, value);
 		}
 		return;
@@ -552,23 +554,23 @@ com.synckolab.addressbookTools.findCard = function (cards, vId, directory) {
  */
 com.synckolab.addressbookTools.xml2Card = function (xml, card) {
 	var cur;
-	
+
 	// if xml has a nodeType attribute - its already a node
-	if(xml.indexOf && !xml.nodeName) {
+	if (xml.indexOf && !xml.nodeName) {
 		com.synckolab.tools.logMessage("parsing the XML content into card", this.global.LOG_DEBUG + this.global.LOG_AB);
 		// check if we have to decode quoted printable
 		if (xml.indexOf(" version=3D") !== -1) {
 			// we know from the version
 			xml = com.synckolab.tools.text.quoted.decode(xml);
 		}
-	
+
 		xml = com.synckolab.tools.text.utf8.decode(xml);
 		// potential fix: .replace(/&/g, "&amp;")
-	
+
 		// convert the string to xml
 		var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser);
 		var doc = parser.parseFromString(xml, "text/xml");
-	
+
 		var topNode = doc.firstChild;
 		if (topNode.nodeName === "parsererror") {
 			// so this message has no valid XML part :-(
@@ -576,7 +578,7 @@ com.synckolab.addressbookTools.xml2Card = function (xml, card) {
 			return null;
 		}
 		if ((topNode.nodeType !== Node.ELEMENT_NODE) || (topNode.nodeName.toUpperCase() !== "CONTACT")) {
-	
+
 			if ((topNode.nodeType === Node.ELEMENT_NODE) && (topNode.nodeName.toUpperCase() === "DISTRIBUTION-LIST")) {
 				return this.Xml2List(topNode, card);
 			}
@@ -584,13 +586,13 @@ com.synckolab.addressbookTools.xml2Card = function (xml, card) {
 			com.synckolab.tools.logMessage("This message doesn't contain a contact in Kolab XML format (" + topNode.nodeName + ").\n" + xml, this.global.LOG_ERROR + this.global.LOG_AB);
 			return null;
 		}
-	
+
 		cur = new com.synckolab.Node(doc.firstChild.firstChild);
 	} else {
 		com.synckolab.tools.logMessage("parsing dom tree into card.", this.global.LOG_DEBUG + this.global.LOG_AB);
 		cur = new com.synckolab.Node(xml.firstChild);
 	}
-	
+
 	var found = false;
 	var tok; // for tokenizer
 	var email = 0;
@@ -630,7 +632,6 @@ com.synckolab.addressbookTools.xml2Card = function (xml, card) {
 				this.setCardProperty(card, "DisplayName", cur.getFirstData());
 				break;
 
-				
 			// set the prefer mail format (this is not covered by kolab itself)
 			case "PREFER-MAIL-FORMAT":
 				// 0: unknown
@@ -677,7 +678,7 @@ com.synckolab.addressbookTools.xml2Card = function (xml, card) {
 				case 0:
 					this.setCardProperty(card, "PrimaryEmail", cur.getXmlResult("SMTP-ADDRESS", ""));
 					// only applies to tbird < 3
-					if (card.defaultEmail){
+					if (card.defaultEmail) {
 						card.defaultEmail = this.getCardProperty(card, "PrimaryEmail");
 					}
 					break;
@@ -919,13 +920,14 @@ com.synckolab.addressbookTools.xml2Card = function (xml, card) {
 
 com.synckolab.addressbookTools.list2Pojo = function (card) {
 	var pojo = {
-		synckolab: com.synckolab.config.version, // synckolab version
-		type: "maillist", // a contact
-		isMailList: true,
-		ts: new Date().getTime(), // the current time
-		contacts: [] // the contacts
+		synckolab : com.synckolab.config.version, // synckolab version
+		type : "maillist", // a contact
+		isMailList : true,
+		ts : new Date().getTime(), // the current time
+		contacts : []
+	// the contacts
 	};
-	
+
 	pojo.displayName = this.getUID(card);
 	if (this.haveCardProperty(card, "Notes")) {
 		pojo.Notes = this.getCardProperty(card, "Notes");
@@ -933,7 +935,7 @@ com.synckolab.addressbookTools.list2Pojo = function (card) {
 	if (this.haveCardProperty(card, "NickName")) {
 		pojo.NickName = this.getCardProperty(card, "NickName");
 	}
-	
+
 	var cList = this.abListObject(card);
 	var lCards = cList.childCards;
 	if (lCards && lCards.hasMoreElements) {
@@ -952,7 +954,7 @@ com.synckolab.addressbookTools.list2Pojo = function (card) {
 		com.synckolab.tools.logMessage("lists not supported ", com.synckolab.global.LOG_WARNING + com.synckolab.global.LOG_AB);
 		return null;
 	}
-	
+
 	return pojo;
 };
 
@@ -981,7 +983,7 @@ com.synckolab.addressbookTools.list2Xml = function (card, fields) {
 	if (this.haveCardProperty(card, "NickName")) {
 		xml += " <nickname>" + com.synckolab.tools.text.encode4XML(this.getCardProperty(card, "NickName")) + "</nickname>\n";
 	}
-	
+
 	com.synckolab.tools.logMessage("going through child cards", this.global.LOG_DEBUG + this.global.LOG_AB);
 	var cList = this.abListObject(card);
 	var lCards = cList.childCards;
@@ -1039,7 +1041,8 @@ com.synckolab.addressbookTools.list2Vcard = function (card, fields) {
 	// Date: Fri, 17 Dec 2004 15:06:42 +0100
 	var cdate = new Date(this.getCardProperty(card, "LastModifiedDate") * 1000);
 	var sTime = (cdate.getHours() < 10 ? "0" : "") + cdate.getHours() + ":" + (cdate.getMinutes() < 10 ? "0" : "") + cdate.getMinutes() + ":" + (cdate.getSeconds() < 10 ? "0" : "") + cdate.getSeconds();
-	var sdate = "DATE: " + com.synckolab.tools.text.getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " + com.synckolab.tools.text.getMonthString(cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime + " " + (((cdate.getTimezoneOffset() / 60) < 0) ? "-" : "+") + (((cdate.getTimezoneOffset() / 60) < 10) ? "0" : "") + cdate.getTimezoneOffset() + "\n";
+	var sdate = "DATE: " + com.synckolab.tools.text.getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " + com.synckolab.tools.text.getMonthString(cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime + " " + (((cdate.getTimezoneOffset() / 60) < 0) ? "-" : "+")
+			+ (((cdate.getTimezoneOffset() / 60) < 10) ? "0" : "") + cdate.getTimezoneOffset() + "\n";
 
 	var msg = "BEGIN:VCARD\n";
 
@@ -1053,7 +1056,7 @@ com.synckolab.addressbookTools.list2Vcard = function (card, fields) {
 	if (this.haveCardProperty(card, "NickName")) {
 		msg += "NICK:" + com.synckolab.tools.text.quoted.encode(this.getCardProperty(card, "NickName")) + "\n";
 	}
-	
+
 	var uidList = "";
 
 	var cList = card;
@@ -1065,7 +1068,7 @@ com.synckolab.addressbookTools.list2Vcard = function (card, fields) {
 		}
 
 		if (total) {
-			for (var i = 0; i < total; i++) {
+			for ( var i = 0; i < total; i++) {
 				var cur = cList.addressLists.queryElementAt(i, Components.interfaces.nsIAbCard);
 
 				// custom4 is not really necessary since there will be a smart-check
@@ -1304,19 +1307,19 @@ com.synckolab.addressbookTools.card2Xml = function (card, fields) {
  * Generate a sha1 key out of a vcard - used for database
  */
 com.synckolab.addressbookTools.genConSha1 = function (card) {
-	return com.synckolab.tools.sha1.hex_sha1(this.getCardProperty(card, "AimScreenName") + ":" + this.getCardProperty(card, "AnniversaryDay") + ":" + this.getCardProperty(card, "AnniversaryMonth") + ":" + this.getCardProperty(card, "AnniversaryYear") + ":" + this.getCardProperty(card, "BirthDay") + ":" +
-			this.getCardProperty(card, "BirthMonth") + ":" + this.getCardProperty(card, "BirthYear") + ":" + this.getCardProperty(card, "CardType") + ":" + this.getCardProperty(card, "Category") + ":" + this.getCardProperty(card, "CellularNumber") + ":" +
-			this.getCardProperty(card, "CellularNumberType") + ":" + this.getCardProperty(card, "Company") + ":" + this.getCardProperty(card, "Custom1") + ":" + this.getCardProperty(card, "Custom2") + ":" + this.getCardProperty(card, "Custom3") + ":" + this.getCardProperty(card, "Custom4") + ":" +
+	return com.synckolab.tools.sha1.hex_sha1(this.getCardProperty(card, "AimScreenName") + ":" + this.getCardProperty(card, "AnniversaryDay") + ":" + this.getCardProperty(card, "AnniversaryMonth") + ":" + this.getCardProperty(card, "AnniversaryYear") + ":" + this.getCardProperty(card, "BirthDay")
+			+ ":" + this.getCardProperty(card, "BirthMonth") + ":" + this.getCardProperty(card, "BirthYear") + ":" + this.getCardProperty(card, "CardType") + ":" + this.getCardProperty(card, "Category") + ":" + this.getCardProperty(card, "CellularNumber") + ":"
+			+ this.getCardProperty(card, "CellularNumberType") + ":" + this.getCardProperty(card, "Company") + ":" + this.getCardProperty(card, "Custom1") + ":" + this.getCardProperty(card, "Custom2") + ":" + this.getCardProperty(card, "Custom3") + ":" + this.getCardProperty(card, "Custom4") + ":" +
 			//this.getCardProperty(card, "DefaultAddress") + ":" + @deprecated
-			this.getCardProperty(card, "Department") + ":" + this.getCardProperty(card, "DisplayName") + ":" + this.getCardProperty(card, "FamilyName") + ":" + this.getCardProperty(card, "FaxNumber") + ":" + this.getCardProperty(card, "FaxNumberType") + ":" + this.getCardProperty(card, "FirstName") +
-			":" + this.getCardProperty(card, "HomeAddress") + ":" + this.getCardProperty(card, "HomeAddress2") + ":" + this.getCardProperty(card, "HomeCity") + ":" + this.getCardProperty(card, "HomeCountry") + ":" + this.getCardProperty(card, "HomePhone") + ":" +
-			this.getCardProperty(card, "HomePhoneType") + ":" + this.getCardProperty(card, "HomeState") + ":" + this.getCardProperty(card, "HomeZipCode") + ":" + this.getCardProperty(card, "JobTitle") + ":" + this.getCardProperty(card, "LastName") + ":" + this.getCardProperty(card, "NickName") +
-			":" + this.getCardProperty(card, "Notes") + ":" + this.getCardProperty(card, "PagerNumber") + ":" + this.getCardProperty(card, "PagerNumberType") + ":" + this.getCardProperty(card, "PhoneticFirstName") + ":" + this.getCardProperty(card, "PhoneticLastName") + ":" +
-			this.getCardProperty(card, "PreferMailFormat") + ":" + //Added by Copart, will evidently create a lot of SHA mismatches on first update after sync, auto update will occur
+			this.getCardProperty(card, "Department") + ":" + this.getCardProperty(card, "DisplayName") + ":" + this.getCardProperty(card, "FamilyName") + ":" + this.getCardProperty(card, "FaxNumber") + ":" + this.getCardProperty(card, "FaxNumberType") + ":" + this.getCardProperty(card, "FirstName")
+			+ ":" + this.getCardProperty(card, "HomeAddress") + ":" + this.getCardProperty(card, "HomeAddress2") + ":" + this.getCardProperty(card, "HomeCity") + ":" + this.getCardProperty(card, "HomeCountry") + ":" + this.getCardProperty(card, "HomePhone") + ":"
+			+ this.getCardProperty(card, "HomePhoneType") + ":" + this.getCardProperty(card, "HomeState") + ":" + this.getCardProperty(card, "HomeZipCode") + ":" + this.getCardProperty(card, "JobTitle") + ":" + this.getCardProperty(card, "LastName") + ":" + this.getCardProperty(card, "NickName")
+			+ ":" + this.getCardProperty(card, "Notes") + ":" + this.getCardProperty(card, "PagerNumber") + ":" + this.getCardProperty(card, "PagerNumberType") + ":" + this.getCardProperty(card, "PhoneticFirstName") + ":" + this.getCardProperty(card, "PhoneticLastName") + ":"
+			+ this.getCardProperty(card, "PreferMailFormat") + ":" + //Added by Copart, will evidently create a lot of SHA mismatches on first update after sync, auto update will occur
 			this.getCardProperty(card, "PrimaryEmail") + ":" + this.getCardProperty(card, "SecondEmail") + ":" + this.getCardProperty(card, "SpouseName") + ":" + this.getCardProperty(card, "WebPage1") + ":" + // WebPage1 is work web page
 			this.getCardProperty(card, "WebPage2") + ":" + // WebPage2 is home web page
-			this.getCardProperty(card, "WorkAddress") + ":" + this.getCardProperty(card, "WorkAddress2") + ":" + this.getCardProperty(card, "WorkCity") + ":" + this.getCardProperty(card, "WorkCountry") + ":" + this.getCardProperty(card, "WorkPhone") + ":" +
-			this.getCardProperty(card, "WorkPhoneType") + ":" + this.getCardProperty(card, "WorkState") + ":" + this.getCardProperty(card, "AllowRemoteContent") + ":" + card.workZipCode);
+			this.getCardProperty(card, "WorkAddress") + ":" + this.getCardProperty(card, "WorkAddress2") + ":" + this.getCardProperty(card, "WorkCity") + ":" + this.getCardProperty(card, "WorkCountry") + ":" + this.getCardProperty(card, "WorkPhone") + ":"
+			+ this.getCardProperty(card, "WorkPhoneType") + ":" + this.getCardProperty(card, "WorkState") + ":" + this.getCardProperty(card, "AllowRemoteContent") + ":" + card.workZipCode);
 };
 
 /**
@@ -1329,10 +1332,9 @@ com.synckolab.addressbookTools.equalsContact = function (a, b) {
 	var fieldsArray;
 	// remember the numeric field
 	var numericFieldCount = 0;
-	
+
 	// if one does not exist - they are definitely different!
-	if(!a || !b)
-	{
+	if (!a || !b) {
 		return false;
 	}
 
@@ -1349,11 +1351,11 @@ com.synckolab.addressbookTools.equalsContact = function (a, b) {
 		// these are numbers
 		"PreferMailFormat", "BirthYear", "BirthMonth", "BirthDay", "AnniversaryYear", "AnniversaryMonth", "AnniversaryDay",
 		// now for strings
-		"FirstName", "LastName", "DisplayName", "NickName", "PrimaryEmail", "SecondEmail", "AimScreenName", "WorkPhone", "HomePhone", "FaxNumber", "PagerNumber", "CellularNumber", "HomeAddress", "HomeAddress2", "HomeCity", "HomeState", "HomeZipCode", "HomeCountry", "WebPage2",
-				"JobTitle", "Department", "Company", "WorkAddress", "WorkAddress2", "WorkCity", "WorkState", "WorkZipCode", "WorkCountry", "WebPage1", "Custom1", "Custom2", "Custom3", "Custom4", "Notes", "PhotoURI"]; // PhotoType, PhotoName
+		"FirstName", "LastName", "DisplayName", "NickName", "PrimaryEmail", "SecondEmail", "AimScreenName", "WorkPhone", "HomePhone", "FaxNumber", "PagerNumber", "CellularNumber", "HomeAddress", "HomeAddress2", "HomeCity", "HomeState", "HomeZipCode", "HomeCountry", "WebPage2", "JobTitle",
+				"Department", "Company", "WorkAddress", "WorkAddress2", "WorkCity", "WorkState", "WorkZipCode", "WorkCountry", "WebPage1", "Custom1", "Custom2", "Custom3", "Custom4", "Notes", "PhotoURI" ]; // PhotoType, PhotoName
 		numericFieldCount = 7;
 	}
-	
+
 	var i;
 	for (i = 0; i < fieldsArray.length; i++) {
 		var sa = this.getCardProperty(a, fieldsArray[i]);
@@ -1381,8 +1383,7 @@ com.synckolab.addressbookTools.equalsContact = function (a, b) {
 		if (sa === null || sb === null) {
 			if (sa === null && sb === null) {
 				continue;
-			}
-			else {
+			} else {
 				com.synckolab.tools.logMessage("not equals " + fieldsArray[i] + " '" + sa + "' vs. '" + sb + "'", this.global.LOG_DEBUG + this.global.LOG_AB);
 				return false;
 			}
@@ -1405,34 +1406,34 @@ com.synckolab.addressbookTools.equalsContact = function (a, b) {
 
 	if (a.isMailList) {
 		com.synckolab.tools.logMessage("start comparing mailing lists!", this.global.LOG_DEBUG + this.global.LOG_AB);
-		
+
 		// convert lists to simple object
-		if(!a.synckolab) {
+		if (!a.synckolab) {
 			a = com.synckolab.addressbookTools.list2Pojo(a);
 		}
-		
-		if(!b.synckolab) {
+
+		if (!b.synckolab) {
 			b = com.synckolab.addressbookTools.list2Pojo(b);
 		}
 
 		com.synckolab.tools.logMessage(a.toSource() + " vs. " + b.toSource(), this.global.LOG_DEBUG + this.global.LOG_AB);
-		
+
 		// length needs to be equal
-		if(a.contacts.length !== b.contacts.length) {
+		if (a.contacts.length !== b.contacts.length) {
 			com.synckolab.tools.logMessage("different amount of contacts in each list", this.global.LOG_DEBUG + this.global.LOG_AB);
 			return false;
 		}
 
 		// create an array of all contacts of A
 		var aContacts = [];
-		for (i=0; i < a.contacts.length; i++) {
+		for (i = 0; i < a.contacts.length; i++) {
 			aContacts.push(a.contacts[i]);
 		}
 
 		// now go through b - if the entry exists in aContacts - remove
-		for (i=0; i < b.contacts.length; i++) {
+		for (i = 0; i < b.contacts.length; i++) {
 			var found = false;
-			for (var j = 0; j < aContacts.length; j++) {
+			for ( var j = 0; j < aContacts.length; j++) {
 				if (aContacts[j].UUID === b.contacts[i].UUID) {
 					found = true;
 					aContacts.splice(j, 1);
@@ -1440,15 +1441,15 @@ com.synckolab.addressbookTools.equalsContact = function (a, b) {
 				}
 			}
 			// break at the first contact that has not been found
-			if(!found) {
+			if (!found) {
 				com.synckolab.tools.logMessage("contact: " + b.contacts[i].UUID + " not in both lists!", this.global.LOG_DEBUG + this.global.LOG_AB);
 				return false;
 			}
 		}
-		
+
 		// if there are any childcards left - return
 		if (aContacts.length > 0) {
-			com.synckolab.tools.logMessage("still "+aContacts.length+" contacts in a", this.global.LOG_DEBUG + this.global.LOG_AB);
+			com.synckolab.tools.logMessage("still " + aContacts.length + " contacts in a", this.global.LOG_DEBUG + this.global.LOG_AB);
 			return false;
 		}
 		// listst are equals
@@ -1463,7 +1464,7 @@ com.synckolab.addressbookTools.vList2Card = function (uids, lines, card, cards) 
 
 	card.type = "maillist";
 	card.isMailList = true;
-	
+
 	//	parse the card
 	for ( var i = 0; i < lines.length; i++) {
 		var vline = lines[i];
@@ -1615,23 +1616,24 @@ com.synckolab.addressbookTools.Xml2List = function (topNode, card) {
 				break;
 			case "MEMBER":
 				// sub-vcard... parse...
-				if(!card.contacts) {
+				if (!card.contacts) {
 					card.contacts = [];
 				}
 				var member = {
-					synckolab: com.synckolab.config.version, // synckolab version
-					listMember: true,
-					type: "contact", // a contact
-					isMailList: false,
-					ts: new Date().getTime() // the current time
+					synckolab : com.synckolab.config.version, // synckolab version
+					listMember : true,
+					type : "contact", // a contact
+					isMailList : false,
+					ts : new Date().getTime()
+				// the current time
 				};
 				// parse the whole card
 				com.synckolab.addressbookTools.xml2Card(cur, member);
 				com.synckolab.tools.logMessage("FOUND CARD: " + member.toSource(), this.global.LOG_DEBUG + this.global.LOG_AB);
-				
+
 				card.contacts.push(member);
 				// parse the member - take as much as we wan
-				
+
 				break;
 			case "PRODUCT-ID":
 			case "CREATION-DATE":
@@ -1675,7 +1677,6 @@ com.synckolab.addressbookTools.isMailList = function (message) {
 	return false;
 };
 
-
 /**
  * Parses a vcard/xml/list into its json object.
  * this function finds out if the message is either:
@@ -1692,32 +1693,33 @@ com.synckolab.addressbookTools.parseMessageContent = function (message) {
 	if (message === null) {
 		return false;
 	}
-	
+
 	// the pojo contains the synckolab version - this is used to identify the content
 	var card = {
-		synckolab: com.synckolab.config.version, // synckolab version
-		type: "contact", // a contact
-		isMailList: false,
-		ts: new Date().getTime() // the current time
+		synckolab : com.synckolab.config.version, // synckolab version
+		type : "contact", // a contact
+		isMailList : false,
+		ts : new Date().getTime()
+	// the current time
 	};
-	
+
 	// check for xml style
 	if (message.indexOf("<?xml") !== -1 || message.indexOf("<?XML") !== -1) {
-		if(this.xml2Card(message, card)) {
+		if (this.xml2Card(message, card)) {
 			card.sha1 = com.synckolab.addressbookTools.genConSha1(card);
 			return card;
 		}
 	} else {
 		com.synckolab.tools.logMessage("VCARD/VLIST!", this.global.LOG_INFO + this.global.LOG_AB);
 	}
-	
+
 	// decode utf8
 	message = com.synckolab.tools.text.utf8.decode(message);
 
 	// check for errors in the decoded message
 	if (message.indexOf("TYPE=3D") !== -1) {
 		message = com.synckolab.tools.text.quoted.decode(message);
-	} else 
+	} else
 	// that still looks double decoded
 	if (message.indexOf("=C3=") !== -1) {
 		message = com.synckolab.tools.text.utf8.decode(com.synckolab.tools.text.quoted.decode(message));
@@ -1741,7 +1743,7 @@ com.synckolab.addressbookTools.parseMessageContent = function (message) {
 		com.synckolab.tools.logMessage("unparseable: " + message, this.global.LOG_ERROR + this.global.LOG_AB);
 		return null;
 	}
-	
+
 	card.sha1 = com.synckolab.addressbookTools.genConSha1(card);
 	return card;
 };
@@ -1751,11 +1753,11 @@ com.synckolab.addressbookTools.parseMessageContent = function (message) {
  * @param base the base json object
  * @return a thunderbird object (either nsIABCard or nsIAbDirectory)
  */
-com.synckolab.addressbookTools.createTBirdObject = function(base, cards) {
+com.synckolab.addressbookTools.createTBirdObject = function (base, cards) {
 	var card = null;
-	if(base.type === "contact") {
+	if (base.type === "contact") {
 		card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
-	} else if(base.type === "maillist") {
+	} else if (base.type === "maillist") {
 		card = Components.classes["@mozilla.org/addressbook/directoryproperty;1"].createInstance(Components.interfaces.nsIAbDirectory);
 		card.isMailList = true;
 	} else {
@@ -1763,31 +1765,30 @@ com.synckolab.addressbookTools.createTBirdObject = function(base, cards) {
 	}
 
 	// for a mailing list add the entries
-	if(base.type === "maillist") {
+	if (base.type === "maillist") {
 		card.dirName = this.getCardProperty(base, "DisplayName");
-		if(this.haveCardProperty(base, "NickName")) {
+		if (this.haveCardProperty(base, "NickName")) {
 			card.listNickName = this.getCardProperty(base, "NickName");
 		}
-		if(this.haveCardProperty(base, "Notes")) {
+		if (this.haveCardProperty(base, "Notes")) {
 			card.description = this.getCardProperty(base, "Notes");
 		}
 		// fill the list
-		for(var i = 0; i < base.contacts.length; i++) {
+		for ( var i = 0; i < base.contacts.length; i++) {
 			var listCard = cards.get(this.getUID(base.contacts[i]));
 			card.addressLists.appendElement(listCard, false);
 		}
-	}
-	else {
+	} else {
 		// go through all elements of base
-		for(var field in base) {
+		for ( var field in base) {
 			// skip our own stuff TODO: handle mailing lists!
-			if(field !== "type" && field !== "synckolab" && field !== "ts" && field !== "contacts" && field !== "isMailList") {
+			if (field !== "type" && field !== "synckolab" && field !== "ts" && field !== "contacts" && field !== "isMailList") {
 				// copy the property from base to card
 				this.setCardProperty(card, field, this.getCardProperty(base, field));
 			}
 		}
 	}
-	
+
 	return card;
 };
 
@@ -2181,11 +2182,11 @@ com.synckolab.addressbookTools.list2Human = function (card) {
  */
 com.synckolab.addressbookTools.abListObject = function (card) {
 	// nsiABDirectory has childCards
-	if(!card.mailListURI) {
+	if (!card.mailListURI) {
 		return card;
 	}
 	com.synckolab.tools.logMessage("getting list from manager:" + card.mailListURI, this.global.LOG_INFO + this.global.LOG_AB);
-	
+
 	return Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager).getDirectory(card.mailListURI);
 };
 
@@ -2195,7 +2196,7 @@ com.synckolab.addressbookTools.card2Human = function (card) {
 	if (this.haveCardProperty(card, "FirstName") || this.haveCardProperty(card, "LastName")) {
 		msg += "Name: " + (this.haveCardProperty(card, "LastName") ? this.getCardProperty(card, "LastName", "") + " " : "") + this.getCardProperty(card, "FirstName", "") + "\n";
 	} else if (this.haveCardProperty(card, "DisplayName")) {
-		msg += "Name: " + this.getCardProperty(card, "DisplayName")+ "\n";
+		msg += "Name: " + this.getCardProperty(card, "DisplayName") + "\n";
 	}
 
 	if (this.haveCardProperty(card, "JobTitle")) {
@@ -2319,8 +2320,8 @@ com.synckolab.addressbookTools.card2Vcard = function (card, fields) {
 	// Date: Fri, 17 Dec 2004 15:06:42 +0100
 	var cdate = new Date(this.getCardProperty(card, "LastModifiedDate") * 1000);
 	var sTime = (cdate.getHours() < 10 ? "0" : "") + cdate.getHours() + ":" + (cdate.getMinutes() < 10 ? "0" : "") + cdate.getMinutes() + ":" + (cdate.getSeconds() < 10 ? "0" : "") + cdate.getSeconds();
-	var sdate = "DATE: " + com.synckolab.tools.text.getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " + com.synckolab.tools.text.getMonthString(cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime + " " + (((cdate.getTimezoneOffset() / 60) < 0) ? "-" : "+") +
-			(((cdate.getTimezoneOffset() / 60) < 10) ? "0" : "") + cdate.getTimezoneOffset() + "\n";
+	var sdate = "DATE: " + com.synckolab.tools.text.getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " + com.synckolab.tools.text.getMonthString(cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime + " " + (((cdate.getTimezoneOffset() / 60) < 0) ? "-" : "+")
+			+ (((cdate.getTimezoneOffset() / 60) < 10) ? "0" : "") + cdate.getTimezoneOffset() + "\n";
 
 	var msg = "BEGIN:VCARD\n";
 	// N:Lastname;Firstname;Other;Prefix;Suffix
@@ -2444,8 +2445,7 @@ com.synckolab.addressbookTools.card2Vcard = function (card, fields) {
 	}
 	if (this.getCardProperty(card, "AllowRemoteContent")) {
 		msg += "ALLOWREMOTECONTENT:true\n";
-	}
-	else {
+	} else {
 		msg += "ALLOWREMOTECONTENT:false\n";
 	}
 	// picture
@@ -2543,7 +2543,7 @@ com.synckolab.addressbookTools.contactConflictTest = function (serverCard, local
 	"BirthYear", "BirthMonth", "BirthDay", "AnniversaryYear", "AnniversaryMonth", "AnniversaryDay",
 	// now for stings
 	"FirstName", "LastName", "DisplayName", "NickName", "PrimaryEmail", "SecondEmail", "AimScreenName", "PreferMailFormat", "WorkPhone", "HomePhone", "FaxNumber", "PagerNumber", "CellularNumber", "HomeAddress", "HomeAddress2", "HomeCity", "HomeState", "HomeZipCode", "HomeCountry", "WebPage2",
-			"JobTitle", "Department", "Company", "WorkAddress", "WorkAddress2", "WorkCity", "WorkState", "WorkZipCode", "WorkCountry", "WebPage1", "Custom1", "Custom2", "Custom3", "Custom4", "Notes"];
+			"JobTitle", "Department", "Company", "WorkAddress", "WorkAddress2", "WorkCity", "WorkState", "WorkZipCode", "WorkCountry", "WebPage1", "Custom1", "Custom2", "Custom3", "Custom4", "Notes" ];
 	// remember the numeric field
 	var numericFieldCount = 6;
 
@@ -2576,8 +2576,7 @@ com.synckolab.addressbookTools.contactConflictTest = function (serverCard, local
 		if (!sa || !sb) {
 			if (!sa && !sb) {
 				continue;
-			}
-			else {
+			} else {
 				conflict = true;
 			}
 		}

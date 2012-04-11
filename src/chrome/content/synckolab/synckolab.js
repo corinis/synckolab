@@ -40,6 +40,7 @@ com.synckolab.main = {
 	// this is the timer function.. will call itself once a minute and check the configs
 	syncConfigs: null, // the configuration array
 	forceConfig: null, // per default go through ALL configurations
+	forceConfigType: null, // specify "contact"/"calendar"/"task" for only one special type of config
 	doHideWindow: false,
 	hideFolder: false, // true if we "hide" the folder and show the calendar/abook instead
 
@@ -219,8 +220,9 @@ com.synckolab.main.gLastMessageDBHdr = null; // save last message header
 /**
  * Start a sync.
  * @param event containing the type of sync (i.e. "timer")
+ * @param syncconfig an optional configuration to sync directly (i.e. for "trigger")
  */
-com.synckolab.main.sync =  function (event) 
+com.synckolab.main.sync =  function (event, syncconfig) 
 {
 	com.synckolab.global.consoleService.logStringMessage("running SyncKolab "+com.synckolab.config.version+" with debug level " + com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL + " in " + event + " mode (hideWindow: " + com.synckolab.main.doHideWindow +")");
 	
@@ -233,9 +235,10 @@ com.synckolab.main.sync =  function (event)
 	com.synckolab.global.running = true;
 
 	// in case this wasnt called via timer - its a manual sync
-	if (event !== "timer")
+	if (event !== "timer" && event !== "trigger")
 	{
 		com.synckolab.main.forceConfig = "MANUAL-SYNC";
+		com.synckolab.main.forceConfigType = null;
 	}
 
 	com.synckolab.global.strBundle = document.getElementById("synckolabBundle");
@@ -403,7 +406,9 @@ com.synckolab.main.nextSync = function()
 
 		// if we were called from timer - forceConfig defines one config which is loaded - skip the rest then
 		if (com.synckolab.main.forceConfig && com.synckolab.main.forceConfig !== "MANUAL-SYNC") {
-			if (com.synckolab.main.forceConfig !== curConfig.name)
+			// check if we skip that: name and type must match
+			if (com.synckolab.main.forceConfig !== curConfig.name || 
+					(com.synckolab.main.forceConfigType && com.synckolab.main.forceConfigType !== "contact"))
 			{
 				com.synckolab.main.curConConfig++;
 				com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.nextSync();}}, com.synckolab.config.SWITCH_TIME, 0);	
@@ -463,7 +468,9 @@ com.synckolab.main.nextSync = function()
 
 		// if we were called from timer - forceConfig defines one config which is loaded - skip the rest then
 		if (com.synckolab.main.forceConfig && com.synckolab.main.forceConfig !== "MANUAL-SYNC") {
-			if (com.synckolab.main.forceConfig !== curConfig.name)
+			// check if we skip that: name and type must match
+			if (com.synckolab.main.forceConfig !== curConfig.name || 
+					(com.synckolab.main.forceConfigType && com.synckolab.main.forceConfigType !== "calendar"))
 			{
 				com.synckolab.main.curCalConfig++;
 				com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.nextSync();}}, com.synckolab.config.SWITCH_TIME, 0);	
@@ -534,7 +541,9 @@ com.synckolab.main.nextSync = function()
 
 		// if we were called from timer - forceConfig defines one config which is loaded - skip the rest then
 		if (com.synckolab.main.forceConfig && com.synckolab.main.forceConfig !== "MANUAL-SYNC") {
-			if (com.synckolab.main.forceConfig !== curConfig.name)
+			// check if we skip that: name and type must match
+			if (com.synckolab.main.forceConfig !== curConfig.name || 
+					(com.synckolab.main.forceConfigType && com.synckolab.main.forceConfigType !== "task"))
 			{
 				com.synckolab.main.curTaskConfig++;
 				com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.nextSync();}}, com.synckolab.config.SWITCH_TIME, 0);	
@@ -1181,6 +1190,8 @@ com.synckolab.main.writeImapMessage = function(skcontent, config, listener) {
 	stream.init(sfile, 2, 0x200, false); // open as "write only"
 	stream.write(skcontent, skcontent.length);
 	stream.close();
+
+	com.synckolab.tools.logMessage("Copy Message to Folder", com.synckolab.global.LOG_DEBUG);
 
 	com.synckolab.main.copyToFolder(com.synckolab.main.gTmpFile, config.folder, listener); 
 };
