@@ -118,6 +118,7 @@ com.synckolab.tools.text = {
 			case '\u00d2':
 			case '\u00d4':
 			case '\u00d5':
+			case '\u00D6':
 				placeHolder = false;
 				ret += 'O';
 				break;
@@ -126,6 +127,7 @@ com.synckolab.tools.text = {
 			case '\u00f9':
 			case '\u00fb':
 			case '\u0169':
+			case '\u0171':
 				placeHolder = false;
 				ret += 'u';
 				break;
