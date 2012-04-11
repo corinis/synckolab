@@ -408,11 +408,9 @@ com.synckolab.Calendar = {
 				parsedEvent.alarmLastAck = lastAckTime;
 
 				// if we dont have a timezone - set it
-				/*
-				if (parsedEvent.timezone === null || parsedEvent.timezone.icalComponent === null) {
+				if (!parsedEvent.timezone || !parsedEvent.timezone.icalComponent) {
 					parsedEvent.timezone = lastAckTime.timezone;
 				}
-				*/
 
 				// add the new event
 				try {
