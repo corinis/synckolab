@@ -561,7 +561,7 @@ com.synckolab.AddressBook = {
 					com.synckolab.tools.logMessage("In parse Message in addressbook.js cCard equals aCard", com.synckolab.global.LOG_DEBUG);
 				} else {
 					cCard_equals_aCard = false;
-					com.synckolab.tools.logMessage("In parse Message in addressbook.js cCard \n"+cCard.toSource()+"\n NOT EQUALS aCard\n"+aCard.toSource()+"\n ", com.synckolab.global.LOG_DEBUG);
+					com.synckolab.tools.logMessage("In parse Message in addressbook.js cCard NOT EQUALS aCard\n ", com.synckolab.global.LOG_DEBUG);
 				}
 				
 				if (this.tools.equalsContact(cCard, newCard)) {
