@@ -837,10 +837,8 @@ com.synckolab.AddressBook = {
 		if (cur.isMailList)
 		{
 			com.synckolab.tools.logMessage("Convert Mailing list to nsIABDirectory", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
-			curItem = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager).getDirectory(cur.mailListURI);;
+			curItem = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager).getDirectory(cur.mailListURI);
 		}
-		
-		
 		
 		// check for this entry
 		if (this.tools.getUID(curItem) === null)
