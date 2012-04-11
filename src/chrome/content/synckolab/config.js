@@ -64,6 +64,9 @@ com.synckolab.global = {
 		// string bundle use: strBundle.getString("KEYNAME") (init in synckolab.js)
 		strBundle: {},
 		
+		triggerRunning: false,
+		running: false,
+		
 		consoleService: Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService),
 		rdf: Components.classes["@mozilla.org/rdf/rdf-service;1"].getService(Components.interfaces.nsIRDFService),
 		ios: Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService),
@@ -352,9 +355,15 @@ com.synckolab.config.folderListener = {
 			}
 		}
 	},
+	/**
+	 * this can be two things: move AWAY or INTO one of our folders
+	 */
 	msgsMoveCopyCompleted: function(aMove, aSrcMsgs, aDestFolder) {
 		//nsiArray<nsIMsgDBHdr> - check folder
-		com.synckolab.tools.logMessage("COPY/MOVE", com.synckolab.global.LOG_DEBUG);
+		com.synckolab.tools.logMessage("MOVE: " + aMove, com.synckolab.global.LOG_DEBUG);
+		if(aMove) {
+			this.msgsDeleted(aSrcMsgs);
+		}
 	},
 	msgKeyChanged: function(aOldMsgKey, aNewMsgHdr) {
 		// ignore

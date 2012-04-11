@@ -119,10 +119,10 @@ com.synckolab.AddressBook = {
 					return;
 				}
 				// make sure not to parse messages while a full sync is running
-				if(com.synckolab.global.running) {
+				if(com.synckolab.global.running || com.synckolab.global.triggerRunning) {
 					return;
 				}
-				
+
 				var cConfig = this.getConfig(parent.dirName);
 				if(!cConfig) {
 					return;
@@ -174,7 +174,7 @@ com.synckolab.AddressBook = {
 					return;
 				}
 				// make sure not to parse messages while a full sync is running
-				if(com.synckolab.global.running) {
+				if(com.synckolab.global.running|| com.synckolab.global.triggerRunning) {
 					return;
 				}
 				
@@ -193,7 +193,7 @@ com.synckolab.AddressBook = {
 			},
 			onItemPropertyChanged: function(item, prop, oldval, newval) {
 				// make sure not to parse messages while a full sync is running
-				if(com.synckolab.global.running) {
+				if(com.synckolab.global.running || com.synckolab.global.triggerRunning) {
 					return;
 				}
 				
@@ -239,6 +239,9 @@ com.synckolab.AddressBook = {
 		// get the sync config
 		this.gConfig = config;
 		
+		// clean out cardDb to avoid conflicts with autosync
+		this.gConfig.cardDb = null;
+		
 		// a hashmap remembering all the cards - for faster use
 		this.gCardDB = new com.synckolab.hashMap();
 		
@@ -280,31 +283,52 @@ com.synckolab.AddressBook = {
 		// write the pojo into a file for faster comparison in later sync
 		com.synckolab.tools.writeSyncDBFile(cEntry, newCard);
 		
-		// also copy the image
-		var pNameA = com.synckolab.addressbookTools.getCardProperty(newCard, "PhotoName");
-		if (pNameA && pNameA !== "" && pNameA !== "null")
-		{
-			// in case the copy failed - clear the photoname
-			if (com.synckolab.addressbookTools.copyImage(pNameA) === false) {
-				com.synckolab.addressbookTools.setCardProperty(newCard, "PhotoName", "");
-			}
-		}
-		
-		
 		com.synckolab.tools.logMessage("card is new, add to address book: " + cUid, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 		// convert to a thunderbird object and add to the address book 
 		if (newCard.type === "maillist")
 		{
-			// skip mailing lists
-			message.config.addressBook.addMailList(com.synckolab.addressbookTools.createTBirdObject(newCard, message.config.addressBook));
+			// add mailing lists - add list of currently added cards
+			if(!message.config.cardDb) {
+				message.config.cardDb = new com.synckolab.hashMap();
+				var lCards = message.config.addressBook.childCards;
+				var card = null;
+				// read all cards
+				while (lCards.hasMoreElements() && (card = lCards.getNext()))
+				{
+					// get the right interface
+					card = card.QueryInterface(Components.interfaces.nsIAbCard);
+					
+					// create a UUID if it does not exist!
+					var cUID = com.synckolab.addressbookTools.getUID(card);
+					if (cUID === null || cUID === "")
+					{
+						cUID = "sk-vc-" + com.synckolab.tools.text.randomVcardId();
+						com.synckolab.addressbookTools.setUID(card, cUID);
+						message.config.addressBook.modifyCard(card);
+					}
+					
+					message.config.cardDb.put(cUID, card);
+				}
+			}
+			message.config.addressBook.addMailList(com.synckolab.addressbookTools.createTBirdObject(newCard, message.config.cardDb));
 			// also add to the hash-database
 			//this.gCardDB.put(this.tools.getUID(newCard), newCard);
 		}
 		else
 		{
+			// also copy the image
+			var pNameA = com.synckolab.addressbookTools.getCardProperty(newCard, "PhotoName");
+			if (pNameA && pNameA !== "" && pNameA !== "null")
+			{
+				// in case the copy failed - clear the photoname
+				if (com.synckolab.addressbookTools.copyImage(pNameA) === false) {
+					com.synckolab.addressbookTools.setCardProperty(newCard, "PhotoName", "");
+				}
+			}
+			
 			message.config.addressBook.addCard(com.synckolab.addressbookTools.createTBirdObject(newCard));
-			// also add to the hash-database
-			//this.gCardDB.put(this.tools.getUID(newCard), newCard);
+			// clean out old cardDb
+			message.config.cardDb = null;
 		}
 
 
@@ -360,13 +384,14 @@ com.synckolab.AddressBook = {
 			}
 
 			// fix newName: we can have C:\ - file:// and more - remove all that and put it in the photos folder
-			newName = newName.replace(/[^A-Za-z0-9._ \-]/g, "");
+			newName = pNameA.replace(/[^A-Za-z0-9._ \-]/g, "");
 			newName = newName.replace(/ /g, "_");
 
 			// check if the file exists
 			fileTo.append(newName);
-			if(fileTo.exists())
+			if(fileTo.exists()){
 				fileTo.remove(true);
+			}
 		}
 
 		com.synckolab.tools.logMessage("deleting card: " + cId, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);

@@ -955,8 +955,11 @@ com.synckolab.main.getMessageIntoContent = function(content) {
 
 						// remove the header of the content
 						content.fileContent = com.synckolab.tools.stripMailHeader(content.fileContent);
-
+						
+						// make sure we dont come into an endless loop here
+						com.synckolab.global.triggerRunning = true;
 						content.nextFunc(content);
+						com.synckolab.global.triggerRunning = false;
 					}
 			}, false, null, msgWindow, aurl
 	);
