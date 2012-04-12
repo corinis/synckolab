@@ -68,7 +68,7 @@ com.synckolab.tools.text = {
 	},
 
 	checkExist : function (value) {
-		return value !== null && value !== "";
+		return value && value !== "";
 	},
 
 	trim : function (s) {

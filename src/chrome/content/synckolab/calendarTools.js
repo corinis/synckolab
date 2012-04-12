@@ -128,6 +128,7 @@ com.synckolab.calendarTools = {
 		 * This is taken from the lightning extension (calendar-event-dialog.js#938ff setItemProperty)
 		 */
 		setKolabItemProperty: function (item, propertyName, value) {
+			com.synckolab.tools.logMessage("setting property: " + propertyName + " with value " + value, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
 			try
 			{
 				switch(propertyName) {
@@ -365,6 +366,10 @@ com.synckolab.calendarTools.message2json = function (fileContent, syncTasks) {
  */
 com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 	com.synckolab.tools.logMessage("Event To JSON", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+	// no event given
+	if(!event) {
+		return null;
+	}
 	var jobj = {
 			synckolab : com.synckolab.config.version, // synckolab version
 			type : "calendar"
@@ -695,41 +700,51 @@ com.synckolab.calendarTools.json2event = function (jobj) {
 
 	if (syncTasks === true)
 	{
+		com.synckolab.tools.logMessage("creating task/todo.", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
 		event = Components.classes["@mozilla.org/calendar/todo;1"].createInstance(Components.interfaces.calITodo);
 	}
 	else {
+		com.synckolab.tools.logMessage("creating event.", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
 		event = Components.classes["@mozilla.org/calendar/event;1"].createInstance(Components.interfaces.calIEvent);
 	}
 
 	var cDate, i;
 	
 	// full day
+	if(!jobj.startDate) {
+		throw ("Items MUST have a startdate");
+	}
+
 	if (jobj.startDate.indexOf(":") === -1) {
 		cDate = com.synckolab.tools.text.string2CalDate(jobj.startDate);
 		cDate.isDate = true;
 		// entry date and start date can be handled the same way
+		com.synckolab.tools.logMessage("setting: " + (syncTasks?"entryDate":"startDate"), com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
 		this.setKolabItemProperty(event, syncTasks?"entryDate":"startDate", cDate);
 	} else {
 		// entry date and start date can be handled the same way
+		com.synckolab.tools.logMessage("setting: " + (syncTasks?"entryDate":"startDate"), com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
 		this.setKolabItemProperty(event, syncTasks?"entryDate":"startDate", com.synckolab.tools.text.string2CalDate(jobj.startDate, true));
 	}
 	
 	// full day
-	if (jobj.endDate.indexOf(":") === -1) {
-		cDate = com.synckolab.tools.text.string2CalDate(jobj.endDate);
-		// Kolab uses for 1-day-event:
-		// startdate = day_x, enddate = day_x
-		// Sunbird uses for 1-day-event:
-		// startdate = day_x, enddate = day_x + 1
-		var tmp_date = cDate.jsDate;
-		tmp_date.setTime(tmp_date.getTime() + 24*60*60000);
-		cDate.jsDate = tmp_date;
-		cDate.isDate = true;
-		// due date and end date can be handled the same way
-		this.setKolabItemProperty(event, syncTasks?"dueDate":"endDate", cDate);
-	} else {
-		// due date and end date can be handled the same way
-		this.setKolabItemProperty(event, syncTasks?"dueDate":"endDate", com.synckolab.tools.text.string2CalDate(jobj.endDate, true));
+	if(jobj.endDate) {
+		if (jobj.endDate.indexOf(":") === -1) {
+			cDate = com.synckolab.tools.text.string2CalDate(jobj.endDate);
+			// Kolab uses for 1-day-event:
+			// startdate = day_x, enddate = day_x
+			// Sunbird uses for 1-day-event:
+			// startdate = day_x, enddate = day_x + 1
+			var tmp_date = cDate.jsDate;
+			tmp_date.setTime(tmp_date.getTime() + 24*60*60000);
+			cDate.jsDate = tmp_date;
+			cDate.isDate = true;
+			// due date and end date can be handled the same way
+			this.setKolabItemProperty(event, syncTasks?"dueDate":"endDate", cDate);
+		} else {
+			// due date and end date can be handled the same way
+			this.setKolabItemProperty(event, syncTasks?"dueDate":"endDate", com.synckolab.tools.text.string2CalDate(jobj.endDate, true));
+		}
 	}
 	
 	// 2005-03-30T15:28:52Z
@@ -915,7 +930,7 @@ com.synckolab.calendarTools.xml2json = function (xml, syncTasks)
 		type : "calendar"
 	};
 	
-	if(syncTasks) {
+	if(syncTasks === true) {
 		jobj.type = "task";
 	}
 
@@ -960,12 +975,12 @@ com.synckolab.calendarTools.xml2json = function (xml, syncTasks)
 	}
 
 	// check for task
-	if(!syncTasks && topNode.nodeName.toUpperCase() === "TASK") {
+	if(syncTasks !== true && topNode.nodeName.toUpperCase() === "TASK") {
 		com.synckolab.tools.logMessage("Skipping task in event sync" + event, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_ERROR);
 		return null;
 	}
 
-	if(syncTasks && topNode.nodeName.toUpperCase() !== "TASK") {
+	if(syncTasks === true && topNode.nodeName.toUpperCase() !== "TASK") {
 		com.synckolab.tools.logMessage("Skipping event in task sync" + event, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_ERROR);
 		return null;
 	}
@@ -1356,7 +1371,7 @@ com.synckolab.calendarTools.xml2json = function (xml, syncTasks)
 	} // end while
 
 	com.synckolab.tools.logMessage("Parsed event in XML", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
-	return true;
+	return jobj;
 };
 
 /**
@@ -1548,7 +1563,7 @@ com.synckolab.calendarTools.json2xml = function (jobj, syncTasks, email) {
 
 
 	xml += " <revision>0</revision>\n";	
-	if (syncTasks === true)
+	if (jobj.type === "task")
 	{
 		xml += "</task>\n";
 	}
@@ -1594,10 +1609,11 @@ com.synckolab.calendarTools.json2Human = function (jobj)
  *
  * @return a message in Kolab 2 format
  */
-com.synckolab.calendarTools.event2kolabXmlMsg = function (event, email, syncTasks)
+com.synckolab.calendarTools.event2kolabXmlMsg = function (event, email)
 {
+	var syncTasks = (event.type === "task");
 	var xml = this.json2xml(event, syncTasks);
-	return com.synckolab.tools.generateMail(event.id, email, "", syncTasks?"application/x-vnd.kolab.task":"application/x-vnd.kolab.event", 
+	return com.synckolab.tools.generateMail(event.uid, email, "", syncTasks?"application/x-vnd.kolab.task":"application/x-vnd.kolab.event", 
 			true, com.synckolab.tools.text.utf8.encode(xml), this.json2Human(event, syncTasks));
 };
 

@@ -348,12 +348,13 @@ com.synckolab.Calendar = {
 
 		// parse the content
 		var newEvent = this.calTools.message2json(fileContent, this.gConfig.task);
-		this.tools.logMessage("parsed event (message2Event)", this.global.LOG_CAL + this.global.LOG_DEBUG);
 
 		if (newEvent === null) {
 			this.curItemInListId.setAttribute("label", com.synckolab.global.strBundle.getString("unparseable"));
 			return null;
 		}
+		
+		this.tools.logMessage("parsed event (message2Event) \n" + newEvent.toSource(), this.global.LOG_CAL + this.global.LOG_DEBUG);
 		
 		var tmpEventObj;
 		
@@ -416,12 +417,16 @@ com.synckolab.Calendar = {
 				tmpEventObj.alarmLastAck = lastAckTime;
 
 				// if we dont have a timezone - set it based on the ack object (=current timezone)
+				/*
 				if (!tmpEventObj.timezone || !tmpEventObj.timezone.icalComponent) {
 					tmpEventObj.timezone = lastAckTime.timezone;
 				}
+				*/
 
 				// add the new event
 				try {
+					this.tools.logMessage("adding obj with startdate:" + tmpEventObj.startDate, this.global.LOG_CAL + this.global.LOG_INFO);
+					
 					this.gConfig.calendar.addItem(tmpEventObj, this.gEvents);
 					// also add to the hash-database
 					this.gCalDB.put(newEvent.uid, newEvent);
@@ -573,9 +578,9 @@ com.synckolab.Calendar = {
 				}
 
 				if(foundEvent_equals_newEvent){
-					com.synckolab.tools.logMessage("no change, but sync file missing: " + this.tools.getUID(foundEvent), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+					com.synckolab.tools.logMessage("no change, but sync file missing: " + foundEvent.uid, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 				} else {
-					com.synckolab.tools.logMessage("server changed: " + this.tools.getUID(foundEvent), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+					com.synckolab.tools.logMessage("server changed: " + foundEvent.uid, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 				}
 				
 				// server changed - update local
@@ -604,7 +609,7 @@ com.synckolab.Calendar = {
 				}
 
 				
-				com.synckolab.tools.logMessage("write sync db " + this.tools.getUID(foundEvent), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+				com.synckolab.tools.logMessage("write sync db " + foundEvent.uid, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 				
 				// write the current content in the sync-db file
 				com.synckolab.tools.writeSyncDBFile(idxEntry, newEvent);
@@ -621,7 +626,7 @@ com.synckolab.Calendar = {
 			// is the db file equals server, but not local.. we got a local change
 			else if (idxEntry.exists() && !cEvent_equals_foundEvent && cEvent_equals_newEvent)
 			{
-				com.synckolab.tools.logMessage("client changed " + this.tools.getUID(foundEvent) + " - " + cEvent.primaryEmail, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+				com.synckolab.tools.logMessage("client changed " + foundEvent.uid + " - " + cEvent.primaryEmail, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 				
 				// update list item
 				this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("updateOnServer"));

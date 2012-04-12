@@ -1222,6 +1222,8 @@ com.synckolab.hashMap.entry = function ( key, value )
 com.synckolab.hashMap.prototype.getIKey = function (key)
 {
 	if(!key) {
+		var err = new Error("");
+		Components.utils.reportError("No key defined for hashmap!" + err.stack);
 		throw("No key defined for hashmap!");
 	}
 	
