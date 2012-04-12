@@ -228,37 +228,38 @@ com.synckolab.Calendar = {
 	 * callback when a new message has arrived
 	 */
 	triggerParseAddMessage: function(message) {
-		var messageFields = new com.synckolab.dataBase();
 
 		// parse the content
-		var parsedEvent = com.synckolab.calendarTools.message2Event(message.fileContent, messageFields, message.config.task);
+		var newEvent = com.synckolab.calendarTools.message2json(message.fileContent, message.config.task);
 		
-		// remember current uid
-		var curUID = parsedEvent.id;
-
 		// get the dbfile from the local disk
-		var idxEntry = com.synckolab.tools.file.getSyncDbFile(message.config, curUID);
+		var cUid = newEvent.uid;
+		var cEntry = com.synckolab.tools.file.getSyncDbFile(message.config, cUid);
 
-		com.synckolab.tools.writeSyncDBFile(idxEntry, message.fileContent, true);
-
-		// update the parsedEvent timestamp so it wont display a window
-		var lastAckTime = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
-		lastAckTime.jsDate = new Date();
-		parsedEvent.alarmLastAck = lastAckTime;
-
-		// if we dont have a timezone - set it
-		/*
-		if (parsedEvent.timezone === null || parsedEvent.timezone.icalComponent === null) {
-			parsedEvent.timezone = lastAckTime.timezone;
-		}
-		*/
+		// write the pojo into a file for faster comparison in later sync
+		com.synckolab.tools.writeSyncDBFile(cEntry, newEvent);
+		
+		com.synckolab.tools.logMessage("event is new, add to calendar: " + cUid, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 
 		// add the new event
 		try {
+			var parsedEvent = com.synckolab.calendarTools.message2json(newEvent, message.config.task);
+			// update the newEvent timestamp so it wont display a window
+			var lastAckTime = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
+			lastAckTime.jsDate = new Date();
+			parsedEvent.alarmLastAck = lastAckTime;
+
+			// if we dont have a timezone - set it
+			/*
+			if (newEvent.timezone === null || newEvent.timezone.icalComponent === null) {
+				newEvent.timezone = lastAckTime.timezone;
+			}
+			*/
+			
 			message.config.calendar.addItem(parsedEvent, null);
-			com.synckolab.tools.logMessage("added locally:" + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
+			com.synckolab.tools.logMessage("added locally:" + cUid, this.global.LOG_CAL + this.global.LOG_INFO);
 		} catch (addEx) {
-			com.synckolab.tools.logMessage("unable to add item:" + parsedEvent.id + "\n" + addEx, this.global.LOG_CAL + this.global.LOG_ERR);
+			com.synckolab.tools.logMessage("unable to add item:" + cUid + "\n" + addEx, this.global.LOG_CAL + this.global.LOG_ERR);
 		}
 
 	},
@@ -269,15 +270,21 @@ com.synckolab.Calendar = {
 		var messageFields = new com.synckolab.dataBase();
 
 		// parse the content
-		var parsedEvent = com.synckolab.calendarTools.message2Event(message.fileContent, messageFields, message.config.task);
+		var newEvent = com.synckolab.calendarTools.message2json(message.fileContent, message.config.task);
 		
 		// remember current uid
-		var curUID = parsedEvent.id;
+		var cUID = newEvent.uid;
 
 		// get the dbfile from the local disk
-		var cEntry = com.synckolab.tools.file.getSyncDbFile(message.config, curUID);
+		var cEntry = com.synckolab.tools.file.getSyncDbFile(message.config, cUID);
 		
-		message.config.calendar.deleteItem(parsedEvent, null);
+		// search for the event in the calendar
+		for ( var i = 0; i < message.config.calendar.events.length; i++) {
+			if(message.config.gEvents.events[i].id === cUID) {
+				message.config.calendar.deleteItem(message.config.calendar.events[i], null);
+				break;
+			}
+		}
 
 		// also remove the local db file since we deleted the contact on the server
 		if (cEntry.exists) {
@@ -339,92 +346,93 @@ com.synckolab.Calendar = {
 			com.synckolab.tools.scrollToBottom(this.itemList);
 		}
 
-		// this is an array of arrays that hold fieldname+fielddata of until-now-unknown fields
-		var messageFields = new com.synckolab.dataBase();
-
 		// parse the content
-		var parsedEvent = this.calTools.message2Event(fileContent, messageFields, this.gConfig.task);
+		var newEvent = this.calTools.message2json(fileContent, this.gConfig.task);
 		this.tools.logMessage("parsed event (message2Event)", this.global.LOG_CAL + this.global.LOG_DEBUG);
 
-		if (parsedEvent === null) {
+		if (newEvent === null) {
 			this.curItemInListId.setAttribute("label", com.synckolab.global.strBundle.getString("unparseable"));
 			return null;
 		}
-		// set the calendar
-		parsedEvent.calendar = this.gConfig.calendar;
+		
+		var tmpEventObj;
+		
 		// remember current uid
-		this.gCurUID = parsedEvent.id;
+		this.gCurUID = newEvent.uid;
 
 		// update list item
-		this.curItemInListId.setAttribute("label", parsedEvent.id);
+		this.curItemInListId.setAttribute("label", newEvent.uid);
 		this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("checking"));
-		var info = parsedEvent.title;
+		var info = newEvent.title;
 		var i;
 		var msg;
 		var foundEvent;
 		var calComp;
 
-		if (!this.gConfig.task && parsedEvent.startDate) {
-			info += " (" + com.synckolab.tools.text.date2String(parsedEvent.startDate.jsDate) + ")";
+		if (!this.gConfig.task && newEvent.startDate) {
+			info += " (" + newEvent.startDate + ")";
 		}
 		this.curItemInListContent.setAttribute("label", info);
 
 		// check for duplicate events
 		for (i = 0; i < this.folderMessageUids.length; i++) {
-			if (parsedEvent.id === this.folderMessageUids[i]) {
-				this.tools.logMessage("event is is already parsed.. deleting duplicate: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
+			if (newEvent.uid === this.folderMessageUids[i]) {
+				this.tools.logMessage("event is is already parsed.. deleting duplicate: " + newEvent.uid, this.global.LOG_CAL + this.global.LOG_INFO);
 				this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("deleteOnServer"));
 				return "DELETEME";
 			}
 		}
 
 		// remember that we did this uid already
-		this.folderMessageUids.push(parsedEvent.id);
+		this.folderMessageUids.push(newEvent.uid);
 
-		// foundEvent from calendar
-		foundEvent = this.calTools.findEvent(this.gCalDB, parsedEvent.id);
-		this.tools.logMessage("findevent returned :" + foundEvent + "(" + (foundEvent === null ? 'null' : foundEvent.id) + ") for " + parsedEvent.id + " caching " + this.gCalDB.length() + " events", this.global.LOG_CAL + this.global.LOG_DEBUG);
+		// get event from calendar based on the uid - and convert to json
+		foundEvent = com.synckolab.calendarTools.event2json(this.calTools.findEvent(this.gCalDB, newEvent.uid));
+		
+		this.tools.logMessage("findevent returned :" + foundEvent + "(" + (foundEvent === null ? 'null' : foundEvent.uid) + ") for " + newEvent.uid + " caching " + this.gCalDB.length() + " events", this.global.LOG_CAL + this.global.LOG_DEBUG);
 
 		// get the dbfile from the local disk
-		var idxEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, parsedEvent.id);
+		var idxEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, newEvent.uid);
 		
 		this.tools.logMessage("idxEntry:" + idxEntry, this.global.LOG_CAL + this.global.LOG_DEBUG);
 
 		// always add if the forceLocalCopy flag is set (happens when you change the configuration)
 		if (foundEvent === null || this.forceLocalCopy) {
 			// a new event
-			this.tools.logMessage("a new event, locally unknown:" + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_DEBUG);
-			if (!idxEntry.exists() || !this.calTools.allowSyncEvent(foundEvent, parsedEvent, this)) {
-				// use the original content to write the snyc file 
-				// this makes it easier to compare later on and makes sure no info is 
-				// lost/changed
-				com.synckolab.tools.writeSyncDBFile(idxEntry, fileContent, true);
+			this.tools.logMessage("a new event, locally unknown:" + newEvent.uid, this.global.LOG_CAL + this.global.LOG_DEBUG);
+			if (!idxEntry.exists() || !this.calTools.allowSyncEvent(foundEvent, newEvent, this)) {
+				// write the pojo into a file for faster comparison in later sync
+				com.synckolab.tools.writeSyncDBFile(idxEntry, newEvent);
 
 				this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localAdd"));
 
-				// update the parsedEvent timestamp so it wont display a window
+				tmpEventObj = com.synckolab.calendarTools.json2event(newEvent);
+				// set the calendar
+				tmpEventObj.calendar = this.gConfig.calendar;
+
+				// update the newEvent timestamp so it wont display a window
 				var lastAckTime = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
 				lastAckTime.jsDate = new Date();
-				parsedEvent.alarmLastAck = lastAckTime;
+				tmpEventObj.alarmLastAck = lastAckTime;
 
-				// if we dont have a timezone - set it
-				if (!parsedEvent.timezone || !parsedEvent.timezone.icalComponent) {
-					parsedEvent.timezone = lastAckTime.timezone;
+				// if we dont have a timezone - set it based on the ack object (=current timezone)
+				if (!tmpEventObj.timezone || !tmpEventObj.timezone.icalComponent) {
+					tmpEventObj.timezone = lastAckTime.timezone;
 				}
 
 				// add the new event
 				try {
-					this.gConfig.calendar.addItem(parsedEvent, this.gEvents);
+					this.gConfig.calendar.addItem(tmpEventObj, this.gEvents);
 					// also add to the hash-database
-					this.gCalDB.put(parsedEvent.id, parsedEvent);
-					this.tools.logMessage("added locally:" + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
+					this.gCalDB.put(newEvent.uid, newEvent);
+					this.tools.logMessage("added locally:" + newEvent.uid, this.global.LOG_CAL + this.global.LOG_INFO);
 				} catch (addEx) {
-					this.tools.logMessage("unable to add item:" + parsedEvent.id + "\n" + addEx, this.global.LOG_CAL + this.global.LOG_ERR);
+					this.tools.logMessage("unable to add item:" + newEvent.uid + "\n" + addEx, this.global.LOG_CAL + this.global.LOG_ERR);
 					this.curItemInListStatus.setAttribute("label", "ERROR");
 				}
 			} else {
 				// now this should be deleted, since it was in the db already
-				this.tools.logMessage("Delete event on server and in db: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
+				this.tools.logMessage("Delete event on server and in db: " + newEvent.uid, this.global.LOG_CAL + this.global.LOG_INFO);
 				this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("deleteOnServer"));
 
 				// also remove the local db file since we deleted the contact
@@ -432,29 +440,45 @@ com.synckolab.Calendar = {
 					idxEntry.remove(false);
 				}
 
-
 				return "DELETEME";
 			}
 		} else {
 			// event exists in local calendar
-			this.tools.logMessage("Event exists local: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_DEBUG);
+			this.tools.logMessage("Event exists local: " + newEvent.uid, this.global.LOG_CAL + this.global.LOG_DEBUG);
 
-			// cEvent: event from sync db
-			var cEvent = this.calTools.message2Event(com.synckolab.tools.readSyncDBFile(idxEntry, true), null, this.gConfig.task);
+			var cEvent = com.synckolab.tools.readSyncDBFile(idxEntry);
+			
+			var cEvent_equals_foundEvent, cEvent_equals_newEvent, foundEvent_equals_newEvent;
+			
+			// Streamline card comparisons
+			if (com.synckolab.calendarTools.equalsEvent(cEvent, foundEvent)) {
+				cEvent_equals_foundEvent = true;
+				com.synckolab.tools.logMessage("In parse Message cEvent equals foundEvent", com.synckolab.global.LOG_DEBUG);
+			} else {
+				cEvent_equals_foundEvent = false;
+				com.synckolab.tools.logMessage("In parse Message cEvent NOT EQUALS foundEvent\n ", com.synckolab.global.LOG_DEBUG);
+			}
+			
+			if (com.synckolab.calendarTools.equalsEvent(cEvent, newEvent)) {
+				cEvent_equals_newEvent = true;
+				com.synckolab.tools.logMessage("In parse Message cEvent equals newEvent", com.synckolab.global.LOG_DEBUG);
+			} else {
+				cEvent_equals_newEvent = false;
+				com.synckolab.tools.logMessage("In parse Message cEvent DOES NOT equal newEvent", com.synckolab.global.LOG_DEBUG);
+			}
 
-			var hasEntry = idxEntry.exists() && (cEvent);
-			// make sure cEvent is not null, else the comparision will fail
-			this.tools.logMessage("Start comparing events....", this.global.LOG_CAL + this.global.LOG_DEBUG);
-			var equal2parsed = hasEntry && this.calTools.equalsEvent(cEvent, parsedEvent, this.gConfig.task, this.gConfig.email);
-			this.tools.logMessage("cEvent==parsedEvent: " + equal2parsed, this.global.LOG_CAL + this.global.LOG_DEBUG);
-			var equal2found = hasEntry && this.calTools.equalsEvent(cEvent, foundEvent, this.gConfig.task, this.gConfig.email);
-			this.tools.logMessage("cEvent==foundEvent: " + equal2found, this.global.LOG_CAL + this.global.LOG_DEBUG);
-			var local_equals_parsed  = this.calTools.equalsEvent(parsedEvent, foundEvent, this.gConfig.task, this.gConfig.email);
-			this.tools.logMessage("found==parsed: " + equal2found, this.global.LOG_CAL + this.global.LOG_DEBUG);
+			if (com.synckolab.calendarTools.equalsEvent(foundEvent, newEvent)) {
+				foundEvent_equals_newEvent = true;
+				com.synckolab.tools.logMessage("In parse Message foundEvent equals newEvent", com.synckolab.global.LOG_DEBUG);
+			} else {
+				foundEvent_equals_newEvent = false;
+				com.synckolab.tools.logMessage("In parse Message foundEvent DOES NOT equal newEvent", com.synckolab.global.LOG_DEBUG);
+			}
 
-			if (hasEntry && !equal2parsed && !equal2found) {
+			if (idxEntry.exists() && !cEvent_equals_foundEvent && !cEvent_equals_newEvent)
+			{
 				// changed locally and on server side
-				this.tools.logMessage("Changed on server and local: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_DEBUG);
+				this.tools.logMessage("Changed on server and local: " + newEvent.uid, this.global.LOG_CAL + this.global.LOG_DEBUG);
 
 				//Holds the users response, must be an object so that we can pass by reference
 				var conflictResolution = {};
@@ -467,7 +491,7 @@ com.synckolab.Calendar = {
 					conflictResolution.result = 2;
 				} else
 				// display a dialog asking for whats going on
-				if (window.confirm(com.synckolab.global.strBundle.getFormattedString("calConflictUseServer", [ foundEvent.title, foundEvent.id, parsedEvent.title, parsedEvent.id ]))) {
+				if (window.confirm(com.synckolab.global.strBundle.getFormattedString("calConflictUseServer", [ foundEvent.title, foundEvent.id, newEvent.title, newEvent.uid ]))) {
 					conflictResolution.result = 1;
 				} else {
 					conflictResolution.result = 2;
@@ -475,37 +499,41 @@ com.synckolab.Calendar = {
 				
 				if (conflictResolution.result === 1) {
 					// take event from server
-					this.tools.logMessage("Take event from server: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
+					this.tools.logMessage("Take event from server: " + newEvent.uid, this.global.LOG_CAL + this.global.LOG_INFO);
 
-					com.synckolab.tools.writeSyncDBFile(idxEntry, fileContent, true);
+					com.synckolab.tools.writeSyncDBFile(idxEntry, newEvent);
 
 					for (i = 0; i < this.gEvents.events.length; i++) {
-						if (this.gEvents.events[i].id === parsedEvent.id) {
+						if (this.gEvents.events[i].id === newEvent.uid) {
+							tmpEventObj = com.synckolab.calendarTools.json2event(newEvent);
+							// set the calendar
+							tmpEventObj.calendar = this.gConfig.calendar;
+
 							// if we change a local event make sure to set alarmLastAck
-							if (parsedEvent.alarmLastAck) {
-								parsedEvent.alarmLastAck = foundEvent.alarmLastAck.clone();
+							if (this.gEvents.events[i].alarmLastAck) {
+								tmpEventObj.alarmLastAck = this.gEvents.events[i].alarmLastAck.clone();
 							}
 
 							try {
 								// modify the item - catch exceptions due to triggered alarms
 								// because they will break the sync process
-								this.gConfig.calendar.modifyItem(parsedEvent, foundEvent, this.gEvents);
+								this.gConfig.calendar.modifyItem(tmpEventObj, this.gEvents.events[i], this.gEvents);
 							} catch (e) {
 								this.tools.logMessage("gCalendar.modifyItem() failed: " + e, this.global.LOG_CAL + this.global.LOG_WARNING);
 							}
 
 							//update list item
 							this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localUpdate"));
-
 							return null;
 						}
 					}
 				} else {
 					// local change to server
-					this.tools.logMessage("put event on server: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
+					this.tools.logMessage("put event on server: " + newEvent.uid, this.global.LOG_CAL + this.global.LOG_INFO);
 
 					// first check privacy info
-					foundEvent = this.calTools.checkEventOnDeletion(foundEvent, parsedEvent, this);
+					//foundEvent = this.calTools.checkEventOnDeletion(foundEvent, newEvent, this);
+					
 					if (!foundEvent || foundEvent === "DELETEME") {
 						return foundEvent;
 					}
@@ -514,19 +542,21 @@ com.synckolab.Calendar = {
 					if (this.gConfig.format === "Xml") {
 						msg = this.calTools.event2kolabXmlMsg(foundEvent, this.gConfig.email, this.gConfig.task);
 					} else {
+						tmpEventObj = com.synckolab.calendarTools.json2event(newEvent);
+
 						calComp = Components.classes["@mozilla.org/calendar/ics-service;1"].getService(Components.interfaces.calIICSService).createIcalComponent("VCALENDAR");
 						calComp.version = "2.0";
 						calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
-						calComp.addSubcomponent(foundEvent.icalComponent);
+						calComp.addSubcomponent(tmpEventObj.icalComponent);
 
 						if (this.gConfig.task) {
-							msg = com.synckolab.tools.generateMail(parsedEvent.id, this.gConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
+							msg = com.synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
 						} else {
-							msg = com.synckolab.tools.generateMail(parsedEvent.id, this.gConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
+							msg = com.synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
 						}
 					}
 
-					com.synckolab.tools.writeSyncDBFile(idxEntry, com.synckolab.tools.stripMailHeader(msg), true);
+					com.synckolab.tools.writeSyncDBFile(idxEntry, foundEvent);
 
 					// update list item
 					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("updateOnServer"));
@@ -534,80 +564,92 @@ com.synckolab.Calendar = {
 					// remember this message for update
 					return msg;
 				}
-			} else {
-				this.tools.logMessage("changed only on one side (if at all):" + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_DEBUG);
+			} else 
+			// we got that already, see which to update (server change if db == local != server) - or actually no change
+			if (!idxEntry.exists() || (cEvent_equals_foundEvent && !cEvent_equals_newEvent))
+			{
+				if (!idxEntry.exists()) {
+					com.synckolab.tools.logMessage("In parse Message idxEntry does not exist", com.synckolab.global.LOG_DEBUG);
+				}
 
-				// we got that already, see which is newer and update the message or the event
-				// the sync database might be out-of-date, so we handle a non-existent entry as well
-				if(!hasEntry || (!equal2parsed && local_equals_parsed)) {
-					this.tools.logMessage("only not in sync db: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
-					com.synckolab.tools.writeSyncDBFile(idxEntry, fileContent, true);
-					// update list item
+				if(foundEvent_equals_newEvent){
+					com.synckolab.tools.logMessage("no change, but sync file missing: " + this.tools.getUID(foundEvent), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+				} else {
+					com.synckolab.tools.logMessage("server changed: " + this.tools.getUID(foundEvent), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+				}
+				
+				// server changed - update local
+				for (i = 0; i < this.gEvents.events.length; i++) {
+					if (this.gEvents.events[i].id === newEvent.uid) {
+						tmpEventObj = com.synckolab.calendarTools.json2event(newEvent);
+
+						// if we change a local event make sure to set alarmLastAck
+						if (this.gEvents.events[i].alarmLastAck) {
+							tmpEventObj.alarmLastAck = this.gEvents.events[i].alarmLastAck.clone();
+						}
+
+						try {
+							// modify the item - catch exceptions due to triggered alarms
+							// because they will break the sync process								
+							this.gConfig.calendar.modifyItem(tmpEventObj, this.gEvents.events[i], this.gEvents);
+						} catch (e1) {
+							this.tools.logMessage("gCalendar.modifyItem() failed: " + e1, this.global.LOG_CAL + this.global.LOG_WARNING);
+						}
+
+						// update list item
+						this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localUpdate"));
+
+						return null;
+					}
+				}
+
+				
+				com.synckolab.tools.logMessage("write sync db " + this.tools.getUID(foundEvent), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+				
+				// write the current content in the sync-db file
+				com.synckolab.tools.writeSyncDBFile(idxEntry, newEvent);
+				
+				// update list item
+				if(foundEvent_equals_newEvent){
 					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("noChange"));
-					return null;
 				}
-				else if (!hasEntry || (!equal2parsed && equal2found)) {
-					this.tools.logMessage("event on server changed: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
-
-					com.synckolab.tools.writeSyncDBFile(idxEntry, fileContent, true);
-
-					for (i = 0; i < this.gEvents.events.length; i++) {
-						if (this.gEvents.events[i].id === parsedEvent.id) {
-							// if we change a local event make sure to set alarmLastAck
-							if (parsedEvent.alarmLastAck) {
-								parsedEvent.alarmLastAck = foundEvent.alarmLastAck.clone();
-							}
-
-							try {
-								// modify the item - catch exceptions due to triggered alarms
-								// because they will break the sync process								
-								this.gConfig.calendar.modifyItem(parsedEvent, foundEvent, this.gEvents);
-							} catch (e1) {
-								this.tools.logMessage("gCalendar.modifyItem() failed: " + e1, this.global.LOG_CAL + this.global.LOG_WARNING);
-							}
-
-							// update list item
-							this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localUpdate"));
-
-							return null;
-						}
-					}
-				} else if (equal2parsed && !equal2found) {
-					this.tools.logMessage("event on client changed: " + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
-
-					foundEvent = this.calTools.checkEventOnDeletion(foundEvent, parsedEvent, this);
-					if (!foundEvent || foundEvent === "DELETEME") {
-						return foundEvent;
-					}
-
-					msg = null;
-					if (this.gConfig.format === "Xml") {
-						msg = this.calTools.event2kolabXmlMsg(foundEvent, this.gConfig.email, this.gConfig.task);
-					} else {
-						calComp = Components.classes["@mozilla.org/calendar/ics-service;1"].getService(Components.interfaces.calIICSService).createIcalComponent("VCALENDAR");
-						calComp.version = "2.0";
-						calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
-						calComp.addSubcomponent(foundEvent.icalComponent);
-						
-						if (this.gConfig.task) {
-							msg = com.synckolab.tools.generateMail(parsedEvent.id, this.gConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
-						} else {
-							msg = com.synckolab.tools.generateMail(parsedEvent.id, this.gConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
-						}
-					}
-
-					// update list item
-					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("updateOnServer"));
-
-					com.synckolab.tools.writeSyncDBFile(idxEntry, com.synckolab.tools.stripMailHeader(msg), true);
-
-					// remember this message for update
-					return msg;
+				else {
+					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localUpdate"));
 				}
-
-				this.tools.logMessage("no change for event:" + parsedEvent.id, this.global.LOG_CAL + this.global.LOG_INFO);
-				this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("noChange"));
+				return null;
 			}
+			// is the db file equals server, but not local.. we got a local change
+			else if (idxEntry.exists() && !cEvent_equals_foundEvent && cEvent_equals_newEvent)
+			{
+				com.synckolab.tools.logMessage("client changed " + this.tools.getUID(foundEvent) + " - " + cEvent.primaryEmail, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+				
+				// update list item
+				this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("updateOnServer"));
+				
+				// remember this message for update - generate mail message (incl. extra fields)
+				msg = null;
+				if (this.gConfig.format === "Xml") {
+					msg = this.calTools.event2kolabXmlMsg(foundEvent, this.gConfig.email, this.gConfig.task);
+				} else {
+					tmpEventObj = com.synckolab.calendarTools.json2event(foundEvent);
+
+					calComp = Components.classes["@mozilla.org/calendar/ics-service;1"].getService(Components.interfaces.calIICSService).createIcalComponent("VCALENDAR");
+					calComp.version = "2.0";
+					calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
+					calComp.addSubcomponent(tmpEventObj.icalComponent);
+
+					if (this.gConfig.task) {
+						msg = com.synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
+					} else {
+						msg = com.synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
+					}
+				}
+				
+				// write the current content in the sync-db file
+				com.synckolab.tools.writeSyncDBFile(idxEntry, foundEvent);
+				return msg;
+			}
+
 		}
 		return null;
 	},
@@ -736,7 +778,7 @@ com.synckolab.Calendar = {
 				// and now really write the message
 				msg = null;
 				var clonedEvent = cur;
-				clonedEvent = this.calTools.modifyEventOnExport(cur, this.gConfig);
+				clonedEvent = this.calTools.event2json(cur, this.gConfig);
 
 				if (this.gConfig.format === "Xml") {
 					msg = this.calTools.event2kolabXmlMsg(clonedEvent, this.gConfig.email, this.gConfig.task);
@@ -744,7 +786,7 @@ com.synckolab.Calendar = {
 					var calComp = Components.classes["@mozilla.org/calendar/ics-service;1"].getService(Components.interfaces.calIICSService).createIcalComponent("VCALENDAR");
 					calComp.version = "2.0";
 					calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
-					calComp.addSubcomponent(clonedEvent.icalComponent);
+					calComp.addSubcomponent(cur.icalComponent);
 
 					if (this.gConfig.task) {
 						msg = com.synckolab.tools.generateMail(cur.id, this.gConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
@@ -758,7 +800,7 @@ com.synckolab.Calendar = {
 
 				// add the new event into the db
 				cEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, cur.id);
-				com.synckolab.tools.writeSyncDBFile(cEntry, com.synckolab.tools.stripMailHeader(msg), true);
+				com.synckolab.tools.writeSyncDBFile(cEntry, clonedEvent);
 			}
 		}
 

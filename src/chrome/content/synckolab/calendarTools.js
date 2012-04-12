@@ -175,11 +175,11 @@ com.synckolab.calendarTools = {
 
 
 		isPrivateEvent: function (levent) {
-			return (levent && levent.getProperty("CLASS") === "PRIVATE");
+			return (levent && levent.sensitivity === "private");
 		},
 
 		isConfidentialEvent: function (levent) {
-			return (levent && levent.getProperty("CLASS") === "CONFIDENTIAL");
+			return (levent && levent.sensitivity === "confidential");
 		},
 
 		isPublicEvent: function (levent) {
@@ -187,9 +187,10 @@ com.synckolab.calendarTools = {
 					!this.isConfidentialEvent(levent));
 		},
 
-		/**
+		/*
 		 * insert an organizer if not existing and update  
-		 */
+		 * ignore: #24838
+		
 		insertOrganizer: function (levent, config) {
 			if (levent.organizer) {
 				return levent;
@@ -203,13 +204,14 @@ com.synckolab.calendarTools = {
 			organizer.role = "CHAIR";
 			organizer.isOrganizer = true;
 			modevent.organizer = organizer;
-			/* set task status to NONE if it is NULL */
+			// set task status to NONE if it is NULL 
 			if (config.type === "task" && !levent.status) {
 				modevent.status="NONE";
 			}
 			config.calendar.modifyItem(modevent, levent, null);
 			return modevent;
 		},
+		*/
 
 		/**
 		 * only ORGANIZER is allowed to change non-public events
@@ -220,10 +222,14 @@ com.synckolab.calendarTools = {
 			if (lpublic && rpublic) {
 				return true;
 			}
+			// no organizer: anyone can change
+			if(!revent.organizer) {
+				return true;
+			}
 			/*previous behaviour*/
 			var rorgmail = config.email;
 			if (revent.organizer) {
-				rorgmail = revent.organizer.id.replace(/MAILTO:/i, '');
+				rorgmail = revent.organizer.mail;
 			}
 			var org2mail = (config.email === rorgmail);
 			com.synckolab.tools.logMessage("allowSyncEvent: " + org2mail + ":" + lpublic + ":" + rpublic, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG );
@@ -283,7 +289,7 @@ com.synckolab.calendarTools = {
 		 * prepare event for export 
 		 */
 		modifyEventOnExport: function (levent, config) {
-			levent = this.insertOrganizer(levent, config);
+			//levent = this.insertOrganizer(levent, config); #24838 do not add an organizer
 			levent = this.modifyDescriptionOnExport(levent, config.type === "task");
 			return levent;
 		},
@@ -309,56 +315,27 @@ com.synckolab.calendarTools = {
 /* ----- functions to handle the Kolab 2 XML event format ----- */
 
 /**
- * This functions checks if two events are equals
- * TODO: make sure that event2xml does not create undesired behaviour when
- *   comparing iCal vs. XML
+ * This functions checks if two event json objects are equals
  */
-com.synckolab.calendarTools.equalsEvent = function (a, b, syncTasks, email) {
-	var sa = this.cnv_event2xml(a, true, syncTasks, email);
-	var sb = this.cnv_event2xml(b, true, syncTasks, email);
-	if (sa === sb) {
-		return true;
-	}
-
-	// do a diff to see whats different
-	var la = sa.split("\n");
-	var lb = sb.split("\n");
-	var i;
-	for (i=0; i < la.length && i < lb.length; i++)
-	{
-		if (la[i] !== lb[i]) {
-			com.synckolab.tools.logMessage("not equals: " + la[i] + " vs. " + lb[i], com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_INFO );
-		}
-	}
-	return false;
+com.synckolab.calendarTools.equalsEvent = function (a, b) {
+	return com.synckolab.tools.equalsObject(a, b);
 };
 
-com.synckolab.calendarTools.message2Event = function (fileContent, extraFields, syncTasks) {
+com.synckolab.calendarTools.message2json = function (fileContent, syncTasks) {
 	if (fileContent === null) {
 		return null;
 	}
 
-	var parsedEvent = null;
 	if (fileContent.indexOf("<?xml") !== -1 || fileContent.indexOf("<?XML") !== -1)
 	{
-		if (syncTasks === true)
-		{
-			parsedEvent = Components.classes["@mozilla.org/calendar/todo;1"].createInstance(Components.interfaces.calITodo);
-		}
-		else {
-			parsedEvent = Components.classes["@mozilla.org/calendar/event;1"].createInstance(Components.interfaces.calIEvent);
-		}
-		if (this.xml2Event(fileContent, extraFields, parsedEvent) === false)
-		{
-			return null;
-		}
+		return this.xml2json(fileContent, syncTasks);
 	}
-	else
-	{
-		fileContent = com.synckolab.tools.text.utf8.decode(com.synckolab.tools.text.quoted.decode(fileContent));
-		// this.format === 'iCal'
-		parsedEvent = this.ical2event(fileContent, syncTasks);
-	}
+
+	// for ical - use the way through the lightning decoder to json
+	var parsedEvent = null;
+	fileContent = com.synckolab.tools.text.utf8.decode(com.synckolab.tools.text.quoted.decode(fileContent));
+	// this.format === 'iCal'
+	parsedEvent = this.ical2event(fileContent, syncTasks);
 
 	if(parsedEvent === null) {
 		return null;
@@ -377,8 +354,550 @@ com.synckolab.calendarTools.message2Event = function (fileContent, extraFields, 
 		return null;
 	}
 
-	return parsedEvent;
+	return this.event2json(parsedEvent, syncTasks);
 };
+
+/**
+ * converts a lightning event into a json representation.
+ * @param event the lightning event
+ * @param syncTasks true if this is a task
+ * @return a json object
+ */
+com.synckolab.calendarTools.event2json = function (event, syncTasks) {
+	com.synckolab.tools.logMessage("Event To JSON", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+	var jobj = {
+			synckolab : com.synckolab.config.version, // synckolab version
+			type : "calendar"
+	};
+	
+	if(syncTasks) {
+		jobj.type = "task";
+	}
+	
+	// TODO  not working ATM:
+	//	- yearly recurrence
+
+	var isAllDay = syncTasks?false:(event.startDate?event.startDate.isDate:false);
+	var endDate = com.synckolab.calendarTools.getEndDate(event, syncTasks);
+	var i, minutes;
+	var dayindex, daynumber;
+
+	// correct the end date for all day events 
+	// Kolab uses for 1-day-event:
+	// startdate = day_x, enddate = day_x
+	// Sunbird uses for 1-day-event:
+	// startdate = day_x, enddate = day_x + 1
+	if (isAllDay && endDate && endDate )
+	{
+		var tmp_date = endDate;
+		tmp_date.setTime(tmp_date.getTime() - 24*60*60000);
+		// lightning 0.9pre fix
+		if (createDateTime) {
+			endDate = new createDateTime();
+		} else {
+			endDate = new CalDateTime();
+		}
+
+		endDate.jsDate = tmp_date;
+	}
+
+	// tasks have some additional fields
+	if (syncTasks === true)
+	{
+		jobj.startDate = com.synckolab.tools.text.calDateTime2String(event.entryDate, isAllDay);
+		jobj.endDate = com.synckolab.tools.text.calDateTime2String(endDate, isAllDay);
+		// jobj.completedDate =  com.synckolab.tools.text.calDateTime2String(completedDate, true);
+		jobj.priority = event.priority;
+
+		// tasks have a status
+		if (event.isCompleted || event.percentComplete === 100) {
+			jobj.completed = 100;
+			jobj.status = "completed";
+		}
+		else {
+			jobj.status = this.getTaskStatus(event.status, true);
+			jobj.completed = event.percentComplete;
+		}
+	} else {
+		jobj.startDate = com.synckolab.tools.text.calDateTime2String(event.startDate, isAllDay);
+		jobj.endDate = com.synckolab.tools.text.calDateTime2String(endDate, isAllDay);
+	}
+
+	jobj.uid = event.id;
+	jobj.title = event.title;
+	jobj.body = event.getProperty("DESCRIPTION");
+	jobj.sensitivity = event.getProperty("CLASS")?event.getProperty("CLASS").toLowerCase():"public";
+	// xml += " <creation-date>" + com.synckolab.tools.text.calDateTime2String(event.getProperty("CREATED"), false) + "</creation-date>\n";
+	// xml += " <last-modification-date>" + com.synckolab.tools.text.calDateTime2String(event.getProperty("LAST-MODIFIED"), false) + "</last-modification-date>\n";
+
+	if (event.getProperty("LOCATION")) {
+		jobj.location = event.getProperty("LOCATION");
+	}
+	
+	// make sure we mark new events as busy - TODO validate this
+	jobj.showTimeAs = event.getProperty("X-KOLAB-SHOW-TIME-AS")?event.getProperty("X-KOLAB-SHOW-TIME-AS"):"busy";
+
+	if (event.getProperty("X-KOLAB-COLOR-LABEL")) {
+		jobj.colorLabel = event.getProperty("X-KOLAB-COLOR-LABEL");
+	}
+
+	// tmp object for copying arrays
+	var tmpobj;
+	
+	// allow multiple alarms
+	if (event.getAlarms)
+	{
+		jobj.alarms = [];
+		
+		// Alarms (only allow relative alarms)
+		var alarm;
+		var alarms = event.getAlarms({});
+		
+		for(i=0; i < alarms.length; i++) {
+			alarm = alarms[i];
+			// skip absolute - ALARM_RELATED_ABSOLUTE = 0;
+			if (alarm.related === 0) {
+				continue;
+			}
+			minutes = Math.floor(Math.abs(alarm.offset.inSeconds)/60);
+
+			tmpobj = {
+				offset: minutes
+			};
+			jobj.alarms.push(tmpobj);
+			
+			// TODO lightning has some other attributes which we should take care of
+			com.synckolab.tools.copyFields(alarm, tmpobj, ["description", "summary", "action"], true);
+		}
+	}
+	else if (event.alarmOffset && event.alarmOffset.inSeconds !== 0)
+	{
+		jobj.alarms = [];
+		minutes = Math.floor(Math.abs(event.alarmOffset.inSeconds)/60);
+		tmpobj = {
+			offset: minutes
+		};
+		jobj.alarms.push(tmpobj);
+	}
+
+	// lighnting 0.9 (thanks to Pavlic)
+	if (event.getCategories)
+	{
+		jobj.categories = "";
+		var catarray = event.getCategories({});
+		if (catarray.length > 0 ) {
+			var cnt;
+			for (cnt = 0; cnt < catarray.length; cnt++) {
+				jobj.categories += catarray[cnt];
+				if ( (cnt+1) < catarray.length) {
+					jobj.categories += ",";
+				}
+			}
+		}
+	}
+	else
+	{
+		if (event.getProperty("CATEGORIES")) {
+			jobj.categories = event.getProperty("CATEGORIES");
+		} else if (event.getProperty("CATEGORY")) {
+			jobj.categories = event.getProperty("CATEGORY");
+		}
+	}
+
+	var recInfo = event.recurrenceInfo;
+	if (recInfo && recInfo.countRecurrenceItems() >= 1)
+	{
+		jobj.recurrence = {};
+		// read the first recurrence rule and process it
+		var recRule = recInfo.getRecurrenceItemAt(0);
+		switch (recRule.type)
+		{
+		case "DAILY":
+			jobj.recurrence.cycle = "daily";
+			break;
+		case "WEEKLY":
+			jobj.recurrence.cycle = "weekly";
+			jobj.recurrence.days = []; 
+			// need to process the <day> value here
+			for (i in recRule.getComponent("BYDAY", {})) {
+				jobj.recurrence.days.push(com.synckolab.tools.kolab.getXmlDayName(i));
+			}
+			break;
+		case "MONTHLY":
+			// "daynumber" or "weekday"
+			var days = recRule.getComponent("BYMONTHDAY", {});
+			if (days && days.length > 0 && days[0]) {
+				// daynumber has <daynumber>
+				jobj.recurrence.cycle = "monthly";
+				jobj.recurrence.daynumber = days[0];
+			}
+			else
+			{
+				jobj.recurrence.cycle = "monthly";
+				// weekday has <daynumber> and <day>
+				days = recRule.getComponent("BYDAY", {});
+				if (days && days.length > 0 && days[0] > 0)
+				{
+					dayindex = days[0] % 8;
+					daynumber = (days[0] - dayindex) / 8;
+					jobj.recurrence.daynumber = daynumber;
+					jobj.recurrence.weekday = com.synckolab.tools.kolab.getXmlDayName(dayindex);
+				}
+				else
+				{
+					jobj.recurrence.daynumber = -1;
+					if (days && days.length > 0 && days[0] < 0) {
+						dayindex = days[0] * -1 - 8;
+					} else {
+						dayindex = 1;
+					}
+					jobj.recurrence.weekday = com.synckolab.tools.kolab.getXmlDayName(dayindex);
+				}
+			}
+			break;
+		case "YEARLY":
+			// "weekday", monthday" or "yearday"
+			// weekday has <day>, <daynumber> and <month>
+			// FIXME weekday is not yet supported by Lightning
+			//xml += " <recurrence cycle=\"yearly\" type=\"weekday\">\n";
+			//xml += "  <day>tuesday</day>\n";
+			//xml += "  <daynumber>2</daynumber>\n";
+			//xml += "  <month>july</month>\n";
+
+			// monthday has <daynumber> and <month>
+			// FIXME monthday is not yet supported by Lightning
+			//xml += " <recurrence cycle=\"yearly\" type=\"monthday\">\n";
+			//xml += "  <daynumber>2</daynumber>\n";
+			//xml += "  <month>july</month>\n";
+
+			// yearday has <daynumber>
+			jobj.recurrence.cycle = "yearly";
+			// FIXME we have no matching field in Lighning yet
+			jobj.recurrence.daynumber = 1;
+			break;
+			// no recurrence
+		default:
+			recInfo = null;
+		}
+
+		// additional info for recurence
+		if (recInfo)
+		{
+			jobj.recurrence.interval = recRule.interval;
+			jobj.recurrence.count = 0;
+			if (recRule.isByCount)
+			{
+				if (recRule.count > 0) {
+					jobj.recurrence.count = recRule.count;
+				} 
+			}
+			else
+			{
+
+				endDate = recRule.endDate;
+				// new lightning
+				if (!endDate) {
+					endDate = recRule.untilDate;
+				}
+				
+				if (endDate) {
+					jobj.recurrence.untilDate = com.synckolab.tools.text.date2String(endDate.jsDate);
+				}
+			}
+
+			var items = recInfo.getRecurrenceItems({});
+			if(items) {
+				jobj.recurrence.exclusion = [];
+				for (i in items)
+				{
+					var item = items[i];
+					if (item.isNegative) {
+						jobj.recurrence.exclusion.push(com.synckolab.tools.text.calDateTime2String(item.date, true));
+					}
+				}
+			}
+		}
+	}
+
+	var attendees = event.getAttendees({});
+	if (syncTasks !== true && attendees && attendees.length > 0) 
+	{
+		jobj.attendees = [];
+		
+		var attendee;
+		for (i=0; i < attendees.lenght; i++) {
+			attendee = attendees[i];
+			tmpobj = {};
+			jobj.attendess.push(tmpobj);
+			
+			tmpobj.mail = attendee.id.replace(/MAILTO:/i, '');
+			tmpobj.displayName = attendee.commonName;
+			tmpobj.rsvp = (attendee.rsvp ? true : false);
+			
+			tmpobj.status = "none"; // default: "NEEDS-ACTION"
+			switch (attendee.participationStatus)
+			{
+			case "TENTATIVE":
+				tmpobj.status = "tentative";
+				break;
+			case "ACCEPTED":
+				tmpobj.status = "accepted";
+				break;
+			case "DECLINED":
+				tmpobj.status = "declined";
+				break;
+			}
+			
+			tmpobj.role = "required"; // default: "REQ-PARTICIPANT"
+			switch (attendee.role)
+			{
+			case "OPT-PARTICIPANT":
+				tmpobj.role = "optional";
+				break;
+			case "NON-PARTICIPANT":
+				tmpobj.role = "resource";
+				break;
+			}
+		}
+	}
+
+	if (event.organizer)
+	{
+		jobj.organizer = {
+			displayName: event.organizer.commonName
+		};
+		// might not have an smtp address
+		if(event.organizer.id) {
+			jobj.organizer.mail = event.organizer.id.replace(/MAILTO:/i, '');
+		} else {
+			jobj.organizer.mail = "unknown";
+		}
+	}
+
+	if (event.getProperty("X-KOLAB-CREATOR-DISPLAY-NAME") && event.getProperty("X-KOLAB-CREATOR-SMTP-ADDRESS"))
+	{
+		jobj.creator = {
+			displayName: event.getProperty("X-KOLAB-CREATOR-DISPLAY-NAME"),
+			mail: event.getProperty("X-KOLAB-CREATOR-SMTP-ADDRESS").replace(/MAILTO:/i, '')
+		};
+	}
+
+	return jobj;
+};
+
+/**
+ * this fills an event object based on a event json.
+ * @param json the json object to read
+ */
+com.synckolab.calendarTools.json2event = function (jobj) {
+	var syncTasks = (jobj.type === "task");
+	var event;
+
+	if (syncTasks === true)
+	{
+		event = Components.classes["@mozilla.org/calendar/todo;1"].createInstance(Components.interfaces.calITodo);
+	}
+	else {
+		event = Components.classes["@mozilla.org/calendar/event;1"].createInstance(Components.interfaces.calIEvent);
+	}
+
+	var cDate, i;
+	
+	// full day
+	if (jobj.startDate.indexOf(":") === -1) {
+		cDate = com.synckolab.tools.text.string2CalDate(jobj.startDate);
+		cDate.isDate = true;
+		// entry date and start date can be handled the same way
+		this.setKolabItemProperty(event, syncTasks?"entryDate":"startDate", cDate);
+	} else {
+		// entry date and start date can be handled the same way
+		this.setKolabItemProperty(event, syncTasks?"entryDate":"startDate", com.synckolab.tools.text.string2CalDate(jobj.startDate, true));
+	}
+	
+	// full day
+	if (jobj.endDate.indexOf(":") === -1) {
+		cDate = com.synckolab.tools.text.string2CalDate(jobj.endDate);
+		// Kolab uses for 1-day-event:
+		// startdate = day_x, enddate = day_x
+		// Sunbird uses for 1-day-event:
+		// startdate = day_x, enddate = day_x + 1
+		var tmp_date = cDate.jsDate;
+		tmp_date.setTime(tmp_date.getTime() + 24*60*60000);
+		cDate.jsDate = tmp_date;
+		cDate.isDate = true;
+		// due date and end date can be handled the same way
+		this.setKolabItemProperty(event, syncTasks?"dueDate":"endDate", cDate);
+	} else {
+		// due date and end date can be handled the same way
+		this.setKolabItemProperty(event, syncTasks?"dueDate":"endDate", com.synckolab.tools.text.string2CalDate(jobj.endDate, true));
+	}
+	
+	// 2005-03-30T15:28:52Z
+	if(jobj.creationDate) {
+		this.setKolabItemProperty(event, "CREATED", com.synckolab.tools.text.string2CalDateTime(jobj.creationDate, true));
+	}
+
+	// 2005-03-30T15:28:52Z
+	if(jobj.lastModified) {
+		this.setKolabItemProperty(event, "LAST-MODIFIED", com.synckolab.tools.text.string2CalDateTime(jobj.lastModified, true));
+	}
+
+	// special fields for tasks
+	if(syncTasks) {
+		this.setKolabItemProperty(event, "priority", jobj.priority);
+		this.setKolabItemProperty(event, "status", jobj.status);
+		this.setKolabItemProperty(event, "PERCENT-COMPLETE", jobj.completed);
+	}
+	
+	event.id = jobj.uid;
+	this.setKolabItemProperty(event, "title", jobj.title);
+	this.setKolabItemProperty(event, "DESCRIPTION", jobj.body);
+	this.setKolabItemProperty(event, "CLASS", jobj.sensitivity.toUpperCase());
+	
+	if(jobj.location) {
+		this.setKolabItemProperty(event, "LOCATION", jobj.location);
+	}
+	
+	this.setKolabItemProperty(event, "X-KOLAB-SHOW-TIME-AS", jobj.showTimeAs);
+	
+	if(jobj.colorLabel) {
+		this.setKolabItemProperty(event, "X-KOLAB-COLOR-LABEL", jobj.colorLabel);
+	}
+	
+	
+	if(jobj.alarms) {
+		for(i=0; i < jobj.alarms.length; i++) {
+			// tbird 3 uses multiple alarms (using addAlarm)
+			if (event.addAlarm)
+			{
+				var alarm = Components.classes["@mozilla.org/calendar/alarm;1"].createInstance(Components.interfaces.calIAlarm);
+				alarm.related = 1; // 1: related to startdate - 2: related to enddate
+				// fix for #24507 make sure the alarm is BEFORE the event not after
+				alarm.offset = com.synckolab.tools.text.createDuration(-1 * Number(jobj.alarms[i].offset));
+				
+				// TODO lightning has some other attributes which we should take care of
+				com.synckolab.tools.copyFields(jobj.alarms[i], alarm, ["description", "summary", "action"], true);
+
+				event.addAlarm(alarm);
+			}
+			else {
+				event.alarmOffset = com.synckolab.tools.text.createDuration(-1 * Number(jobj.alarms[i].offset));
+			}
+		}
+	}
+
+	if (!event.setCategories) {
+		this.setKolabItemProperty(event, "CATEGORIES", jobj.categories);
+	}
+	else {
+		// from calUtils.js
+		var categories = categoriesStringToArray(jobj.categories);
+		event.setCategories(categories.length, categories);
+	}
+
+	if(jobj.recurrence) {
+		com.synckolab.tools.logMessage("recurring event", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+
+		var recInfo = Components.classes["@mozilla.org/calendar/recurrence-info;1"].createInstance(Components.interfaces.calIRecurrenceInfo);
+		recInfo.item = event;
+		var recRule = Components.classes["@mozilla.org/calendar/recurrence-rule;1"].createInstance(Components.interfaces.calIRecurrenceRule);
+		recRule.type = jobj.recurrene.cycle.toUpperCase();
+
+		switch(jobj.recurrene.cycle) {
+		case "daily":
+			// nothing else to do here
+			break;
+		case "weekly":
+			if(jobj.recurrence.days.length > 0) {
+				recRule.setComponent("BYDAY", jobj.recurrence.days.length, jobj.recurrence.days);
+			}
+			break;
+		case "monthly":
+			if(!jobj.recurrence.weekday) {
+				recRule.setComponent("BYMONTHDAY", 1, [jobj.recurrence.daynumber]);
+			} else {
+				var dayindex = com.synckolab.tools.kolab.getDayIndex(jobj.recurrence.weekday);
+				if(jobj.recurrence.daynumber === -1) {
+					recRule.setComponent("BYDAY", 1, [(-1)*(8+dayindex)]);
+				} else {
+					recRule.setComponent("BYDAY", 1, [jobj.recurrence.daynumber*8 + dayindex]);
+				}
+			} 
+			break;
+		case "yearly":
+			// Yearly options are not supported by lightning
+			break;
+		}
+		
+		// interval
+		recRule.interval = jobj.recurrence.interval;
+		if(jobj.recurrence.count) {
+			recRule.count = jobj.recurrence.count;
+		}
+		
+		if(jobj.recurrence.untilDate) {
+			if (recRule.endDate) {
+				recRule.endDate = com.synckolab.tools.text.string2CalDate(jobj.recurrence.untilDate);
+			} else {
+				// new lighnting
+				recRule.untilDate = com.synckolab.tools.text.string2CalDate(jobj.recurrence.untilDate);
+			}
+		}
+		recInfo.insertRecurrenceItemAt(recRule, 0);
+		
+		if(jobj.recurrence.exclusion && jobj.recurrence.exclusion.length > 0) {
+			for(i=0; i < jobj.recurrence.exclusion.length; i++) {
+				var exclusionDate = com.synckolab.tools.text.string2CalDate(jobj.recurrence.exclusion[i]);
+				recInfo.removeOccurrenceAt(exclusionDate);
+				var exclusion = recInfo.getOccurrenceFor(exclusionDate,true);
+				recInfo.modifyException(exclusion, true);
+			}
+		}
+		
+		event.recurrenceInfo = recInfo;
+	}
+
+	if(jobj.attendees && jobj.attendees.length > 0) {
+		for(i=0; i < jobj.attendees.length; i++) {
+			var attendee = Components.classes["@mozilla.org/calendar/attendee;1"].createInstance(Components.interfaces.calIAttendee);
+			attendee.id = "MAILTO:" + jobj.attendees[i].mail;
+			attendee.commonName = jobj.attendees[i].displayName;
+			attendee.isOrganizer= false;
+			attendee.participationStatus = (jobj.attendees[i].status === "none")?"NEEDS-ACTION":jobj.attendees[i].status.toUpperCase();
+			attendee.rsvp = jobj.attendees[i].rsvp;
+			attendee.role = "REQ-PARTICIPANT";
+			switch(jobj.attendees[i].role) {
+			case "optional":
+				attendee.role = "OPT-PARTICIPANT";
+				break;
+			case "resource":
+				attendee.role = "NON-PARTICIPANT";
+				break;
+			}
+			// "invitation-sent" is missing, it can be "true" or false"
+			event.addAttendee(attendee);
+		}
+	}
+
+	if(jobj.creator) {
+		this.setKolabItemProperty(event, "X-KOLAB-CREATOR-DISPLAY-NAME", jobj.creator.displayName);
+		this.setKolabItemProperty(event, "X-KOLAB-CREATOR-SMTP-ADDRESS", jobj.creator.mail);
+	}
+
+	if(jobj.organizer) {
+		var organizer = Components.classes["@mozilla.org/calendar/attendee;1"].createInstance(Components.interfaces.calIAttendee);
+		organizer.id = "MAILTO:" + jobj.organizer.mail;
+		organizer.commonName = jobj.organizer.displayName;
+		organizer.participationStatus = "ACCEPTED";
+		organizer.rsvp = false;
+		organizer.role = "CHAIR";
+		organizer.isOrganizer = true;
+		event.organizer = organizer;
+	}
+	
+	return event;
+};
+
 
 
 /**
@@ -389,9 +908,17 @@ com.synckolab.calendarTools.message2Event = function (fileContent, extraFields, 
  *
  * @return true, if this event actually existed  
  */
-com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
+com.synckolab.calendarTools.xml2json = function (xml, syncTasks)
 {
-	var syncTasks = false;
+	var jobj = {
+		synckolab : com.synckolab.config.version, // synckolab version
+		type : "calendar"
+	};
+	
+	if(syncTasks) {
+		jobj.type = "task";
+	}
+
 	// check if we have to decode quoted printable
 	if (xml.indexOf(" version=3D") !== -1) { // we know from the version
 		xml = com.synckolab.tools.text.quoted.decode(xml);
@@ -433,24 +960,18 @@ com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
 	}
 
 	// check for task
-	if (topNode.nodeName.toUpperCase() === "TASK") {
-		syncTasks = true;
+	if(!syncTasks && topNode.nodeName.toUpperCase() === "TASK") {
+		com.synckolab.tools.logMessage("Skipping task in event sync" + event, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_ERROR);
+		return null;
 	}
 
-	if (syncTasks === true && com.synckolab.tools.instanceOf(event, Components.interfaces.calIEvent))
-	{
-		com.synckolab.tools.logMessage("There is an event in the task folder! skipping\n" + event, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_WARNING);
-		return false;
-	}
-
-	if (syncTasks === false && !com.synckolab.tools.instanceOf(event, Components.interfaces.calIEvent))
-	{
-		com.synckolab.tools.logMessage("There is a task in the calendar folder! skipping\n" + event, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_WARNING);
-		return false;
+	if(syncTasks && topNode.nodeName.toUpperCase() !== "TASK") {
+		com.synckolab.tools.logMessage("Skipping event in task sync" + event, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_ERROR);
+		return null;
 	}
 
 	var cur = new com.synckolab.Node(topNode.firstChild);
-	var s;
+	var s, tmpobj;
 	var cDate;
 	// iterate over the DOM tree of the XML structure of the event
 	while(cur)
@@ -460,11 +981,7 @@ com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
 			switch (cur.nodeName.toUpperCase())
 			{
 			case "UID":
-				event.id = cur.getFirstData();
-				// FIXME - for faster debugging only, so you can see the 
-				// uid resp. the msg subject in the URL field when opening the event, 
-				// you can find the appropriate msg very easily afterwards
-				this.setKolabItemProperty(event, "URL", cur.getFirstData());
+				jobj.uid = cur.getFirstData();
 				break;
 
 			case "CREATION-DATE":
@@ -474,8 +991,8 @@ com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
 
 				s = cur.getFirstData();
 				// 2005-03-30T15:28:52Z
-				this.setKolabItemProperty(event, "CREATED", com.synckolab.tools.text.string2CalDateTime(s, true));
-				break;						
+				//skip: jobj.createdDate = cur.getFirstData();
+				break;
 
 			case "LAST-MODIFICATION-DATE":
 				if (!cur.firstChild) {
@@ -483,8 +1000,8 @@ com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
 				}
 
 				// 2005-03-30T15:28:52Z
-				this.setKolabItemProperty(event, "LAST-MODIFIED", com.synckolab.tools.text.string2CalDateTime(cur.getFirstData(), true));
-				break;						
+				//skip: jobj.modified = cur.getFirstData();
+				break;
 
 				// entry date and start date can be handled the same way 
 			case "ENTRY-DATE":
@@ -492,35 +1009,7 @@ com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
 				if (!cur.firstChild) {
 					break;
 				}
-
-				s = cur.getFirstData();
-				// 2005-03-30T15:28:52Z
-				if (s.indexOf(":") === -1)
-				{
-					cDate = com.synckolab.tools.text.string2CalDate(s);
-					cDate.isDate = true;
-					// date values witout time part specify a full day event
-					if (syncTasks === true) {
-						this.setKolabItemProperty(event, "entryDate", cDate);
-					} else {
-						this.setKolabItemProperty(event, "startDate", cDate);
-					}
-				}
-				else
-				{
-					if (syncTasks === true) {
-						this.setKolabItemProperty(event, "entryDate", com.synckolab.tools.text.string2CalDateTime(s, true));
-					} else {
-						this.setKolabItemProperty(event, "startDate", com.synckolab.tools.text.string2CalDateTime(s, true));
-					}
-				}
-				break;						
-
-				// hande end date and due-date, completed-date the same way (completed date also sets the percent complete to 100)
-			case "COMPLETED-DATE":
-				if (syncTasks) {
-					this.setKolabItemProperty(event, "PERCENT-COMPLETE", 100);
-				}
+				jobj.startDate = cur.getFirstData();
 				break;
 
 			case "DUE-DATE":
@@ -528,38 +1017,7 @@ com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
 				if (!cur.firstChild) {
 					break;
 				}
-
-				s = cur.getFirstData();
-				// 2005-03-30T15:28:52Z
-				if (s.indexOf(":") === -1) // full day event
-				{
-					// date values witout time part specify a full day event
-					cDate = com.synckolab.tools.text.string2CalDate(s);
-					// Kolab uses for 1-day-event:
-					// startdate = day_x, enddate = day_x
-					// Sunbird uses for 1-day-event:
-					// startdate = day_x, enddate = day_x + 1
-					var tmp_date = cDate.jsDate;
-					com.synckolab.tools.logMessage("Found EndDate: "+s+" - in time: " + tmp_date.getTime(), com.synckolab.global.LOG_DEBUG);
-					tmp_date.setTime(tmp_date.getTime() + 24*60*60000);
-					cDate.jsDate = tmp_date;
-					cDate.isDate = true;
-
-					// for tasks its endDate
-					if (syncTasks === true) {
-						this.setKolabItemProperty(event, "dueDate", cDate);
-					} else {
-						this.setKolabItemProperty(event, "endDate", cDate);
-					}
-				}
-				else
-				{
-					if (syncTasks === true) {
-						this.setKolabItemProperty(event, "dueDate", com.synckolab.tools.text.string2CalDateTime(s, true));
-					} else {
-						this.setKolabItemProperty(event, "endDate", com.synckolab.tools.text.string2CalDateTime(s, true));
-					}
-				}
+				jobj.endDate = cur.getFirstData();
 				break;
 
 			case "PRIORITY":
@@ -567,23 +1025,22 @@ com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
 				if (syncTasks === false) {
 					break;
 				}
-				if (cur.firstChild) {
-					this.setKolabItemProperty(event, "priority", cur.firstChild.data);
+				jobj.priority = cur.getFirstData();
+				break;
+
+			case "COMPLETED-DATE":
+				if (syncTasks) {
+					jobj.completed = 100;
+					jobj.statsu = "completed";
 				}
 				break;
 
 			case "STATUS":
 				// only tasks 
-				if (syncTasks === false) {
+				if (syncTasks === false || !cur.firstChild) {
 					break;
 				}
-				if (!cur.firstChild) {
-					break;
-				}
-
-				var cStatus = cur.firstChild.data;
-				this.setKolabItemProperty(event, "status", cStatus);
-
+				jobj.status = cur.getFirstData();
 				break;
 
 			case "COMPLETED":
@@ -603,16 +1060,15 @@ com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
 				} else if (iComplete > 100) {
 						iComplete = 100;
 				}
-
-				this.setKolabItemProperty(event, "PERCENT-COMPLETE", iComplete);
+				jobj.completed = iComplete;
 				break;
 
 			case "SUMMARY":
 				if (cur.firstChild)
 				{
 					var data = cur.getFirstData();
-					if (data !== '' && data !== 'null' && data) {
-						this.setKolabItemProperty(event, "title", cur.getFirstData());
+					if (data && data !== '' && data !== 'null') {
+						jobj.title = data;
 					}
 				}
 				break;
@@ -622,137 +1078,103 @@ com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
 				if (cur.firstChild)
 				{
 					var cnotes = cur.getFirstData();
-					this.setKolabItemProperty(event, "DESCRIPTION", cnotes);
+					if (cnotes && cnotes !== '' && cnotes !== 'null') {
+						jobj.body = cnotes;
+					}
 				}
 				break;
 
-			case "CREATOR":
-				this.setKolabItemProperty(event, "X-KOLAB-CREATOR-DISPLAY-NAME", cur.getXmlResult("DISPLAY-NAME", ""));
-				this.setKolabItemProperty(event, "X-KOLAB-CREATOR-SMTP-ADDRESS", cur.getXmlResult("SMTP-ADDRESS", ""));
-				break;
-
-			case "ORGANIZER":
-				var organizer = Components.classes["@mozilla.org/calendar/attendee;1"]
-				.createInstance(Components.interfaces.calIAttendee);
-				organizer.id = "MAILTO:" + cur.getXmlResult("SMTP-ADDRESS", "unknown");
-				organizer.commonName = cur.getXmlResult("DISPLAY-NAME", "");
-				organizer.participationStatus = "ACCEPTED";
-				organizer.rsvp = false;
-				organizer.role = "CHAIR";
-				organizer.isOrganizer = true;
-				event.organizer = organizer;
+			case "SENSITIVITY":
+				jobj.sensitivity = "public";
+				if (cur.firstChild) {
+					jobj.sensitivity = cur.getFirstData();
+				}
 				break;
 
 			case "LOCATION":
 				// sometimes we have <location></location> in the XML
 				if (cur.firstChild) {
-					this.setKolabItemProperty(event, "LOCATION", cur.getFirstData());
+					jobj.location = cur.getFirstData();
 				}
 				break;
 
-			case "CATEGORIES":
-				if (cur.firstChild)
-				{
-					if (!event.setCategories) {
-						this.setKolabItemProperty(event, "CATEGORIES", cur.getFirstData());
-						break;
-					}
-					var cattxt = cur.getFirstData();
-					if (cattxt) {
-						// from calUtils.js
-						var categories = categoriesStringToArray(cattxt);
-						event.setCategories(categories.length, categories);
-					}
+			case "SHOW-TIME-AS":
+				if (cur.firstChild) {
+					jobj.showTimeAs = cur.getFirstData();
+				}
+				break;
+
+			case "COLOR-LABEL":
+				if (cur.firstChild) {
+					jobj.colorLabel = cur.getFirstData();
 				}
 				break;
 
 			case "ALARM":
 				if (cur.firstChild)
 				{
-					var cData = cur.getFirstData();
-					// fix for #24507 make sure the alarm is BEFORE the event not after
-					var alarmOffset = com.synckolab.tools.text.createDuration(-1 * Number(cData));
+					if(!jobj.alarms) {
+						jobj.alarms = [];
+					}
 
-					// tbird 3 uses multiple alarms (using addAlarm)
-					if (event.addAlarm)
-					{
-						var alarm = Components.classes["@mozilla.org/calendar/alarm;1"].createInstance(Components.interfaces.calIAlarm);
-						alarm.related = 1; // 1: related to startdate - 2: related to enddate
-						alarm.offset = alarmOffset;
-						// optional attributes
-						if (cur.getAttribute("description")) {
-							alarm.description = cur.getAttribute("description");
-						}
-						if (cur.getAttribute("summary")) {
-							alarm.summary = cur.getAttribute("summary");
-						}
-						if (cur.getAttribute("action")) {
-							alarm.action = cur.getAttribute("action");
-						}
-						event.addAlarm(alarm);
+					var cData = cur.getFirstData();
+					tmpobj =  {};
+					tmpobj.related = 1; // 1: related to startdate - 2: related to enddate
+					tmpobj.offset = Number(cData);
+					if (cur.getAttribute("description")) {
+						tmpobj.description = cur.getAttribute("description");
 					}
-					else {
-						event.alarmOffset = alarmOffset;
+					if (cur.getAttribute("summary")) {
+						tmpobj.summary = cur.getAttribute("summary");
 					}
+					if (cur.getAttribute("action")) {
+						tmpobj.action = cur.getAttribute("action");
+					}
+					
+					jobj.alarms.push(tmpobj);
 				}
 				break;
 
-			case "SENSITIVITY":
-				this.setKolabItemProperty(event, "CLASS", 'PUBLIC');
-				if (cur.firstChild) {
-					switch (cur.getFirstData())
-					{
-					case "private":
-						this.setKolabItemProperty(event, "CLASS", 'PRIVATE');
-						break;
-					case "confidential":
-						this.setKolabItemProperty(event, "CLASS", 'CONFIDENTIAL');
-						break;
-					}
+			case "CATEGORIES":
+				if (cur.firstChild)
+				{
+					jobj.categories = cur.getFirstData();
 				}
 				break;
 
 			case "RECURRENCE":
+				jobj.recurrence = {};
+				
 				var detail;
 				var day;
 				var daynumber;
 				var dayindex;
 				var month;
-				com.synckolab.tools.logMessage("Parsing recurring event: " + event.id, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_INFO);
-				var recInfo = Components.classes["@mozilla.org/calendar/recurrence-info;1"].createInstance(Components.interfaces.calIRecurrenceInfo);
-				recInfo.item = event;
-				var recRule = Components.classes["@mozilla.org/calendar/recurrence-rule;1"].createInstance(Components.interfaces.calIRecurrenceRule);
+
 				// read the "cycle" attribute for the units and
 				// map the Kolab XML values to the Sunbird values
-				var units = cur.getAttribute("cycle");
-				if (units === null) {
-					units = "weekly";
+				jobj.recurrence.cycle = cur.getAttribute("cycle");
+				if (jobj.recurrence.cycle === null) {
+					jobj.recurrence.cycle = "weekly";
 				}
-				recRule.type = units.toUpperCase();
-				switch (recRule.type)
+				
+				switch (jobj.recurrence.cycle)
 				{
-				case "DAILY":
-					// nothing else to do here
-					break;
-				case "WEEKLY":
+				case "weekly":
 					// need to process the <day> value here
-					var onDays = [];
-					var recur = cur.firstChild;
+					jobj.recurrence.days = []; 
 					// iterate over the DOM subtre
+					var recur = cur.firstChild;
 					while(recur)
 					{
 						if ((recur.nodeType === Node.ELEMENT_NODE) && (recur.nodeName.toUpperCase() === "DAY"))
 						{
-							day = recur.firstChild.data;
-							onDays.push(com.synckolab.tools.kolab.getDayIndex(day));
+							jobj.recurrence.days.push(recur.firstChild.data);
 						}
 						recur = recur.nextSibling;
 					}
-					if (onDays.length > 0) {
-						recRule.setComponent("BYDAY", onDays.length, onDays);
-					}
 					break;
-				case "MONTHLY":
+				case "monthly":
 					// need to process extra type "type" which can be
 					// "daynumber" or "weekday"
 					var mode = cur.getAttribute("type");
@@ -763,35 +1185,31 @@ com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
 						detail = cur.getChildNode("daynumber");
 						if ((detail) && (detail.nodeType === Node.ELEMENT_NODE) && (detail.nodeName.toUpperCase() === "DAYNUMBER"))
 						{
-							daynumber = detail.firstChild.data;
-							recRule.setComponent("BYMONTHDAY", 1, [daynumber]);
+							jobj.recurrence.daynumber = detail.firstChild.data;
 						}
 						break;
 					case "WEEKDAY":
 						// weekday has <daynumber> and <day>
 						detail = cur.firstChild;
+						jobj.recurrence.daynumber = -1;
 						while(detail)
 						{
 							if ((detail.nodeType === Node.ELEMENT_NODE) && (detail.nodeName.toUpperCase() === "DAY"))
 							{
-								day = detail.firstChild.data;
+								jobj.recurrence.weekday = detail.firstChild.data;
 							}
 							if ((detail.nodeType === Node.ELEMENT_NODE) && (detail.nodeName.toUpperCase() === "DAYNUMBER"))
 							{
-								daynumber = detail.firstChild.data;
+								jobj.recurrence.daynumber = detail.firstChild.data;
 							}
 							detail = detail.nextSibling;
-						}
-						dayindex = com.synckolab.tools.kolab.getDayIndex(day);
-						if (daynumber === -1) {
-							recRule.setComponent("BYDAY", 1, [(-1)*(8+dayindex)]);
-						} else {
-							recRule.setComponent("BYDAY", 1, [daynumber*8 + dayindex]);
 						}
 						break;
 					}
 					break;
-				case "YEARLY":
+				case "yearly":
+					jobj.recurrence.daynumber = 1;
+					
 					// need to process extra type "type" which can be
 					// "weekday", monthday" or "yearday"
 					mode = cur.getAttribute("type");
@@ -848,7 +1266,9 @@ com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
 					break;
 				}
 
-				recRule.interval = cur.getXmlResult("INTERVAL", "1");
+				jobj.recurrence.interval = cur.getXmlResult("INTERVAL", "1");
+				jobj.recurrence.count = 0;
+				
 				var node = new com.synckolab.Node(cur.getChildNode("RANGE"));
 				if (node)
 				{
@@ -862,27 +1282,21 @@ com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
 						case "DATE":
 							if (rangeSpec !== "dummy")
 							{
-								// XML type is Date, not DateTime
-								if (recRule.endDate) {
-									recRule.endDate = com.synckolab.tools.text.string2CalDate(rangeSpec);
-								} else {
-									// new lighnting
-									recRule.untilDate = com.synckolab.tools.text.string2CalDate(rangeSpec);
-								}
+								jobj.recurrence.untilDate = rangeSpec;
 							}
 							else {
-								recRule.count = -1;
+								jobj.recurrence.count = -1;
 							}
 							break;
 						case "NUMBER":
 							if (rangeSpec !== "dummy") {
-								recRule.count = rangeSpec;
+								jobj.recurrence.count = Number(rangeSpec);
 							} else {
-								recRule.count = 1;
+								jobj.recurrence.count = 1;
 							}
 							break;
 						case "NONE":
-							recRule.count = -1;
+							jobj.recurrence.count =  -1;
 							break;
 						}
 					}
@@ -890,83 +1304,51 @@ com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
 				else
 				{
 					// no range set
-					recRule.count = -1;
+					jobj.recurrence.count = -1;
 				}
 
-				recInfo.insertRecurrenceItemAt(recRule, 0);
 				// read 0..n exclusions
-				var node = cur.firstChild;
+				jobj.recurrence.exclusion = [];
+				node = cur.firstChild;
 				while(node)
 				{
 					if(node.nodeType === Node.ELEMENT_NODE && (node.nodeName.toUpperCase() === "EXCLUSION"))
 					{
-						var date = com.synckolab.tools.text.string2CalDate(node.firstChild.data);
-						recInfo.removeOccurrenceAt(date);
-						var exclusion = recInfo.getOccurrenceFor(date,true);
-						recInfo.modifyException(exclusion, true);
+						jobj.recurrence.exclusion.push(node.firstChild.data);
 					}
 					node = node.nextSibling;
 				}
-				event.recurrenceInfo = recInfo;
 				break;
 
 			case "ATTENDEE":
-				var attendee = Components.classes["@mozilla.org/calendar/attendee;1"].createInstance(Components.interfaces.calIAttendee);
-				attendee.id = "MAILTO:" + cur.getXmlResult("SMTP-ADDRESS", "unknown");
-				attendee.commonName = cur.getXmlResult("DISPLAY-NAME", "");
-				// The status must be one of none, tentative, accepted, or declined.
-				switch (cur.getXmlResult("STATUS", "none"))
-				{
-				case "tentative":
-					attendee.participationStatus = "TENTATIVE";
-					break;
-				case "accepted":
-					attendee.participationStatus = "ACCEPTED";
-					break;
-				case "declined":
-					attendee.participationStatus = "DECLINED";
-					break;
-				default:
-					attendee.participationStatus = "NEEDS-ACTION";
+				if(!jobj.attendees) {
+					jobj.attendees = [];
 				}
+				
+				var attendee = {};
+				attendee.mail = cur.getXmlResult("SMTP-ADDRESS", "unknown");
+				attendee.displayName = cur.getXmlResult("DISPLAY-NAME", "");
+				attendee.status = cur.getXmlResult("STATUS", "none");
 				// The request response status is true or false
 				attendee.rsvp = cur.getXmlResult("REQUEST-RESPONSE", "false") === "true";
-
-				// Role is one of required, optional, or resource.
-				switch (cur.getXmlResult("ROLE", "optional"))
-				{
-				case "required":
-					attendee.role = "REQ-PARTICIPANT";
-					break;
-				case "optional":
-					attendee.role = "OPT-PARTICIPANT";
-					break;
-				case "resource":
-					// FIXME it's currently the only way to map a "resource" attendee
-					attendee.role = "NON-PARTICIPANT";
-					break;
-				default:
-					attendee.role = "NON-PARTICIPANT";
-				}
-				attendee.isOrganizer = false;
-				event.addAttendee(attendee);
+				attendee.role = cur.getXmlResult("ROLE", "optional");
+				jobj.attendees.push(attendee);
 				// "invitation-sent" is missing, it can be "true" or false"
 				break;
-
-			case "SHOW-TIME-AS":
-				// default is "none"
-				this.setKolabItemProperty(event, "X-KOLAB-SHOW-TIME-AS", cur.getFirstData());
+				
+			case "CREATOR":
+				jobj.creator = {};
+				jobj.creator.displayName = cur.getXmlResult("DISPLAY-NAME", "");
+				jobj.creator.mail = cur.getXmlResult("SMTP-ADDRESS", "");
 				break;
 
-			case "COLOR-LABEL":
-				// default is "none"
-				this.setKolabItemProperty(event, "X-KOLAB-COLOR-LABEL", cur.getFirstData());
+			case "ORGANIZER":
+				jobj.organizer = {};
+				jobj.organizer.displayName = cur.getXmlResult("DISPLAY-NAME", "");
+				jobj.organizer.mail = cur.getXmlResult("SMTP-ADDRESS", "unknown");
 				break;
 
 			default:
-				if (extraFields && cur.firstChild ) {
-					extraFields.addField(cur.nodeName, cur.getFirstData());
-				}
 
 			} // end switch
 		} // end if
@@ -976,20 +1358,6 @@ com.synckolab.calendarTools.xml2Event = function (xml, extraFields, event)
 	com.synckolab.tools.logMessage("Parsed event in XML", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
 	return true;
 };
-
-
-/**
- * convert an ICAL event into a Kolab XML string representation
- * and include all fields
- *
- * @return XML string in Kolab 2 format
- */
-com.synckolab.calendarTools.event2xml = function (event, syncTasks, email)
-{
-	return com.synckolab.calendarTools.cnv_event2xml( event, false, syncTasks, email);
-};
-
-
 
 /**
  * task status mapping from Lightning to xml
@@ -1025,210 +1393,91 @@ com.synckolab.calendarTools.getTaskStatus = function (tstatus, xmlvalue) {
  * @param skipVolatiles skips problematic fields for hash creation
  * @return XML string in Kolab 2 format
  */
-com.synckolab.calendarTools.cnv_event2xml = function (event, skipVolatiles, syncTasks, email) {
+com.synckolab.calendarTools.json2xml = function (jobj, syncTasks, email) {
 	// TODO  not working ATM:
 	//	- yearly recurrence
 
-	var isAllDay = syncTasks?false:(event.startDate?event.startDate.isDate:false);
-	var endDate = com.synckolab.calendarTools.getEndDate(event, syncTasks);
-	var i, minutes;
-	var dayindex, daynumber;
-
-	// correct the end date for all day events before writing the XML object
-	// Kolab uses for 1-day-event:
-	// startdate = day_x, enddate = day_x
-	// Sunbird uses for 1-day-event:
-	// startdate = day_x, enddate = day_x + 1
-	if (isAllDay && endDate && endDate )
-	{
-		var tmp_date = endDate;
-		tmp_date.setTime(tmp_date.getTime() - 24*60*60000);
-		// lightning 0.9pre fix
-		if (createDateTime) {
-			endDate = new createDateTime();
-		} else {
-			endDate = new CalDateTime();
-		}
-
-		endDate.jsDate = tmp_date;
-	}
-
 	var xml = '<?xml version='+'"'+'1.0" encoding='+'"UTF-8"?>\n';
-	if (syncTasks === true)
+	if (jobj.type === "task")
 	{
 		xml += '<task version='+'"'+'1.0" >\n';
-
-		// tasks have a status
-		if (event.isCompleted || event.percentComplete === 100) {
-			xml += " <completed>100</completed>\n";
-			xml += " <status>completed</status>\n";
-		}
-		else {
-			xml += " <status>" + this.getTaskStatus(event.status, true) + "</status>\n";
-			xml += " <completed>" + event.percentComplete +"</completed>\n";
-		}
 	}
 	else {
 		xml += '<event version='+'"'+'1.0" >\n';
 	}
-	if (!skipVolatiles) {
-		xml += " <product-id>Synckolab " + com.synckolab.config.version + ", Calendar Sync</product-id>\n";
-	}
-
-	xml += " <uid>" + event.id + "</uid>\n";
+	
+	xml += " <product-id>Synckolab " + com.synckolab.config.version + ", Calendar Sync</product-id>\n";
+	xml += com.synckolab.tools.text.nodeWithContent("uid", jobj.uid, false);
 
 	if(syncTasks === true)
 	{
-		xml += " <start-date>" + com.synckolab.tools.text.calDateTime2String(event.entryDate, isAllDay) + "</start-date>\n";
-		xml += " <due-date>" + com.synckolab.tools.text.calDateTime2String(endDate, isAllDay) + "</due-date>\n";
-		/*
-		if (!skipVolatiles)
-			xml += " <completed-date>" + com.synckolab.tools.text.calDateTime2String(completedDate, true) + "</completed-date>\n";
-		 */
-	}
-	else
-	{
-		xml += " <start-date>" + com.synckolab.tools.text.calDateTime2String(event.startDate, isAllDay) + "</start-date>\n";
-		xml += " <end-date>" + com.synckolab.tools.text.calDateTime2String(endDate, isAllDay) + "</end-date>\n";
-	}
-
-
-	xml += " <summary>" + com.synckolab.tools.text.encode4XML(event.title) +"</summary>\n";
-
-	if (skipVolatiles !== true)
-	{
-		xml += " <creation-date>" + com.synckolab.tools.text.calDateTime2String(event.getProperty("CREATED"), false) + "</creation-date>\n";
-		xml += " <last-modification-date>" + com.synckolab.tools.text.calDateTime2String(event.getProperty("LAST-MODIFIED"), false) + "</last-modification-date>\n";
-	}
-
-	// description only for public events
-	if (event.getProperty("DESCRIPTION") && (this.isPublicEvent(event) || !skipVolatiles)) {
-		xml += " <body>" + com.synckolab.tools.text.encode4XML(event.getProperty("DESCRIPTION")) + "</body>\n";
-	}
-
-	if (event.getProperty("CLASS")) {
-		xml += " <sensitivity>" + event.getProperty("CLASS").toLowerCase() + "</sensitivity>\n";
-	} else {
-		xml += " <sensitivity>public</sensitivity>\n";
-	}
-
-	if (event.getProperty("LOCATION")) {
-		xml += " <location>" + com.synckolab.tools.text.encode4XML(event.getProperty("LOCATION")) +"</location>\n";
-	}
-	
-	// tbird 3: allow multiple alarms
-	if (event.getAlarms)
-	{
-		// Alarms (only allow relative alarms)
-		var alarm;
-		var alarms = event.getAlarms({});
+		// tasks have a status
 		
-		for(i=0; i < alarms.length; i++) {
-			alarm = alarms[i];
-			// skip abolute ALARM_RELATED_ABSOLUTE = 0;
-			if (alarm.related === 0) {
-				continue;
-			}
-			minutes = Math.floor(Math.abs(alarm.offset.inSeconds)/60);
+		xml += com.synckolab.tools.text.nodeWithContent("status", jobj.status, false);
+		xml += com.synckolab.tools.text.nodeWithContent("completed", jobj.completed, false);
+		xml += com.synckolab.tools.text.nodeWithContent("start-date", jobj.startDate, false);
+		xml += com.synckolab.tools.text.nodeWithContent("due-date", jobj.endDate, false);
+		xml += com.synckolab.tools.text.nodeWithContent("priority", jobj.priority, false);
+		
+		// xml += " <completed-date>" + com.synckolab.tools.text.calDateTime2String(completedDate, true) + "</completed-date>\n";
+	}
+	else
+	{
+		xml += com.synckolab.tools.text.nodeWithContent("start-date", jobj.startDate, false);
+		xml += com.synckolab.tools.text.nodeWithContent("end-date", jobj.endDate, false);
+	}
 
-			// tbird 3 has some other attributes which we should take care of
+
+	xml += com.synckolab.tools.text.nodeWithContent("summary", jobj.title, false);
+	xml += com.synckolab.tools.text.nodeWithContent("body", jobj.body, false);
+	xml += com.synckolab.tools.text.nodeWithContent("sensitivity", jobj.sensitivity, false);
+	// xml += " <creation-date>" + jobj.createdDate + "</creation-date>\n";
+	// xml += " <last-modification-date>" + jobj.lastModificationDate + "</last-modification-date>\n";
+	xml += com.synckolab.tools.text.nodeWithContent("location", jobj.location, false);
+	xml += com.synckolab.tools.text.nodeWithContent("show-time-as", jobj.showTimeAs, false);
+	xml += com.synckolab.tools.text.nodeWithContent("color-label", jobj.colorLabel, false);
+
+	var i;
+	if(jobj.alarms) {
+		for(i=0; i < jobj.alarms.length; i++) {
 			var att = "";
-			if (alarm.description && alarm.description !== "") {
-				att += 'description="' + alarm.description + '" ';
+			if (jobj.alarms[i].description && jobj.alarms[i].description !== "") {
+				att += 'description="' + jobj.alarms[i].description + '" ';
 			}
-			if (alarm.summary && alarm.summary !== "") {
-				att += 'summary="' + alarm.summary + '" ';
+			if (jobj.alarms[i].summary && jobj.alarms[i].summary !== "") {
+				att += 'summary="' + jobj.alarms[i].summary + '" ';
 			}
-			if (alarm.action && alarm.action !== "") {
-				att += 'action="' + alarm.action + '"';
+			if (jobj.alarms[i].action && jobj.alarms[i].action !== "") {
+				att += 'action="' + jobj.alarms[i].action + '"';
 			}
 
-			xml += " <alarm "+att+">" + minutes + "</alarm>\n";
-		}
-	}
-	else
-		// tbird 2
-		if (event.alarmOffset && event.alarmOffset.inSeconds !== 0)
-		{
-			minutes = Math.floor(Math.abs(event.alarmOffset.inSeconds)/60);
-			xml += " <alarm>" + minutes + "</alarm>\n";
-		}
-
-	// lighnting 0.9 (thanks to Pavlic)
-	if (event.getCategories)
-	{
-		var catarray = event.getCategories({});
-		if (catarray.length > 0 ) {
-			xml += " <categories>";
-			var cnt;
-			for (cnt = 0; cnt < catarray.length; cnt++) {
-				xml += com.synckolab.tools.text.encode4XML(catarray[cnt]) ;
-				if ( (cnt+1) < catarray.length) {
-					xml += ",";
-				}
-			}
-			xml += "</categories>\n";
-		}
-	}
-	else
-	{
-		if (event.getProperty("CATEGORIES")) {
-			xml += " <categories>" + com.synckolab.tools.text.encode4XML(event.getProperty("CATEGORIES")) + "</categories>\n";
-		} else if (event.getProperty("CATEGORY")) {
-			xml += " <categories>" + com.synckolab.tools.text.encode4XML(event.getProperty("CATEGORY")) + "</categories>\n";
+			xml += " <alarm "+att+">" + jobj.alarms[i].offset + "</alarm>\n";
 		}
 	}
 
-	var recInfo = event.recurrenceInfo;
-	if (recInfo && recInfo.countRecurrenceItems() >= 1)
-	{
-		// read the first recurrence rule and process it
-		var recRule = recInfo.getRecurrenceItemAt(0);
-		switch (recRule.type)
-		{
-		case "DAILY":
+	xml += com.synckolab.tools.text.nodeWithContent("categories", jobj.categories, false);
+	if(jobj.recurrence) {
+		switch(jobj.recurrence.cycle) {
+		case "daily":
 			xml += " <recurrence cycle=\"daily\">\n";
 			break;
-		case "WEEKLY":
+		case "weekly":
 			xml += " <recurrence cycle=\"weekly\">\n";
-			// need to process the <day> value here
-			for (i in recRule.getComponent("BYDAY", {})) {
-				xml += "  <day>" + com.synckolab.tools.kolab.getXmlDayName(i) + "</day>\n";
+			for(i=0; i < jobj.recurrence.days.length; i++) {
+				xml += com.synckolab.tools.text.nodeWithContent("day", jobj.recurrence.days[i], false);
 			}
 			break;
-		case "MONTHLY":
-			// "daynumber" or "weekday"
-			var days = recRule.getComponent("BYMONTHDAY", {});
-			if (days && days.length > 0 && days[0]) {
-				// daynumber has <daynumber>
+		case "monthly":
+			if(!jobj.recurrence.weekday) {
 				xml += " <recurrence cycle=\"monthly\" type=\"daynumber\">\n";
-				xml += "  <daynumber>" + days[0] + "</daynumber>\n";
-			}
-			else
-			{
+				xml += "  <daynumber>" + jobj.recurrence.daynumber + "</daynumber>\n";
+			} else {
 				xml += " <recurrence cycle=\"monthly\" type=\"weekday\">\n";
-				// weekday has <daynumber> and <day>
-				days = recRule.getComponent("BYDAY", {});
-				if (days && days.length > 0 && days[0] > 0)
-				{
-					dayindex = days[0] % 8;
-					daynumber = (days[0] - dayindex) / 8;
-					xml += "  <daynumber>" + daynumber + "</daynumber>\n";
-					xml += "  <day>" + com.synckolab.tools.kolab.getXmlDayName(dayindex) + "</day>\n";
-				}
-				else
-				{
-					xml += "  <daynumber>-1</daynumber>\n";
-					if (days && days.length > 0 && days[0] < 0) {
-						dayindex = days[0] * -1 - 8;
-					} else {
-						dayindex = 1;
-					}
-					xml += "  <day>" + com.synckolab.tools.kolab.getXmlDayName(dayindex) + "</day>\n";
-				}
-			}
+				xml += "  <daynumber>" + jobj.recurrence.daynumber + "</daynumber>\n";
+				xml += "  <day>" + jobj.recurrence.weekday + "</day>\n";
+			} 
 			break;
-		case "YEARLY":
+		case "yearly":
 			// "weekday", monthday" or "yearday"
 			// weekday has <day>, <daynumber> and <month>
 			// FIXME weekday is not yet supported by Lightning
@@ -1248,131 +1497,59 @@ com.synckolab.calendarTools.cnv_event2xml = function (event, skipVolatiles, sync
 			// FIXME we have no matching field in Lighning yet
 			xml += "  <daynumber>1</daynumber>\n";
 			break;
-			// no recurrence
-		default:
-			recInfo = null;
 		}
-		// we still might not have a reccurence :)
-		if (recInfo)
-		{
-			xml += "  <interval>" + recRule.interval + "</interval>\n";
-			if (recRule.isByCount)
-			{
-				if (recRule.count > 0) {
-					xml += "  <range type=\"number\">" + recRule.count + "</range>\n";
-				} else {
-					xml += "  <range type=\"none\"/>\n";
-				}
-			}
-			else
-			{
-
-				endDate = recRule.endDate;
-				// new lightning
-				if (!endDate) {
-					endDate = recRule.untilDate;
-				}
-				
-				if (endDate) {
-					xml += "  <range type=\"date\">" + com.synckolab.tools.text.date2String(endDate.jsDate) + "</range>\n";
-				}
-				else {
-					xml += "  <range type=\"none\"/>\n";
-				}
-			}
-
-			var items = recInfo.getRecurrenceItems({});
-			if(items) {
-				for (i in items)
-				{
-					var item = items[i];
-					if (item.isNegative) {
-						xml += "  <exclusion>" + com.synckolab.tools.text.calDateTime2String(item.date, true) + "</exclusion>\n";
-					}
-				}
-			}
-			xml += " </recurrence>\n";
+		
+		xml += com.synckolab.tools.text.nodeWithContent("interval", jobj.recurrence.interval, true);
+		if(jobj.recurrence.count && jobj.recurrence.count > 0) {
+			xml += "  <range type=\"number\">" + jobj.recurrence.count + "</range>\n";
+		} else if(jobj.recurrence.untilDate) {
+			xml += "  <range type=\"date\">" + jobj.recurrence.untilDate + "</range>\n";
+		} else {
+			xml += "  <range type=\"none\"/>\n";
 		}
+
+		if(jobj.recurrence.exclusion) {
+			for(i=0; i < jobj.recurrence.exclusion.length; i++) {
+				xml += com.synckolab.tools.text.nodeWithContent("exclusion", jobj.recurrence.exclusion[i], true);
+			}
+		}
+		
+		xml += " </recurrence>\n";
 	}
-
-	var attendees = event.getAttendees({});
-	if (syncTasks !== true && attendees && attendees.length > 0) 
-	{
-		var attendee;
-		for (i=0; i < attendees.lenght; i++) {
-			attendee = attendees[i];
-			var mail = attendee.id.replace(/MAILTO:/i, '');
-			var status = "none";
-			switch (attendee.participationStatus)
-			{
-			case "TENTATIVE":
-				status = "tentative";
-				break;
-			case "ACCEPTED":
-				status = "accepted";
-				break;
-			case "DECLINED":
-				status = "declined";
-				break;
-			case "NEEDS-ACTION":
-				status = "none";
-				break;
-			}
+	
+	if(jobj.attendees) {
+		for(i=0; i < jobj.attendees.length; i++) {
 			xml += " <attendee>\n";
-			xml += "  <display-name>" + com.synckolab.tools.text.encode4XML(attendee.commonName) + "</display-name>\n";
-			xml += "  <smtp-address>" + com.synckolab.tools.text.encode4XML(mail) + "</smtp-address>\n";
-			xml += "  <status>" + status + "</status>\n";
-			xml += "  <request-response>" + (attendee.rsvp ? "true" : "false") + "</request-response>\n";
-			switch (attendee.role)
-			{
-			case "REQ-PARTICIPANT":
-				xml += "  <role>required</role>\n";
-				break;
-			case "OPT-PARTICIPANT":
-				xml += "  <role>optional</role>\n";
-				break;
-			case "NON-PARTICIPANT":
-				xml += "  <role>resource</role>\n";
-				break;
-			default:
-				xml += "  <role>required</role>\n";
-			}
+			xml += com.synckolab.tools.text.nodeWithContent("display-name", jobj.attendees[i].displayName, false);
+			xml += com.synckolab.tools.text.nodeWithContent("smtp-address", jobj.attendees[i].email, false);
+			xml += com.synckolab.tools.text.nodeWithContent("status", jobj.attendees[i].status, false);
+			xml += com.synckolab.tools.text.nodeWithContent("request-response", jobj.attendees[i].rsvp ? "true" : "false", false);
+			xml += com.synckolab.tools.text.nodeWithContent("role", jobj.attendees[i].role, false);
 			xml += " </attendee>\n";
 		}
 	}
 
-	if ( event.organizer )
+
+	if (jobj.organizer)
 	{
 		xml += " <organizer>\n";
-		xml += "  <display-name>" + com.synckolab.tools.text.encode4XML(event.organizer.commonName) + "</display-name>\n";
-		// might not have an smtp address
-		if(event.organizer.id) {
-			xml += "  <smtp-address>" + com.synckolab.tools.text.encode4XML(event.organizer.id.replace(/MAILTO:/i, '')) + "</smtp-address>\n";
-		}
+		xml += com.synckolab.tools.text.nodeWithContent("display-name", jobj.organizer.displayName, false);
+		xml += com.synckolab.tools.text.nodeWithContent("smtp-address", jobj.organizer.email, false);
 		xml += " </organizer>\n";
 	}
 
-	if (event.getProperty("X-KOLAB-SHOW-TIME-AS")) {
-		xml += " <show-time-as>" + event.getProperty("X-KOLAB-SHOW-TIME-AS") + "</show-time-as>\n";
-	} else { // make sure we mark new events as busy - TODO validate this 
-		xml += " <show-time-as>busy</show-time-as>\n";
-	}
-
-	if (event.getProperty("X-KOLAB-COLOR-LABEL")) {
-		xml += " <color-label>" + com.synckolab.tools.text.encode4XML(event.getProperty("X-KOLAB-COLOR-LABEL")) + "</color-label>\n";
-	}
-	if (event.getProperty("X-KOLAB-CREATOR-DISPLAY-NAME") && event.getProperty("X-KOLAB-CREATOR-SMTP-ADDRESS"))
+	if (jobj.creator)
 	{
 		xml += " <creator>\n";
-		xml += "  <display-name>" + com.synckolab.tools.text.encode4XML(event.getProperty("X-KOLAB-CREATOR-DISPLAY-NAME")) + "</display-name>\n";
-		xml += "  <smtp-address>" + com.synckolab.tools.text.encode4XML(event.getProperty("X-KOLAB-CREATOR-SMTP-ADDRESS")) + "</smtp-address>\n";
+		xml += com.synckolab.tools.text.nodeWithContent("display-name", jobj.creator.displayName, false);
+		xml += com.synckolab.tools.text.nodeWithContent("smtp-address", jobj.creator.email, false);
 		xml += " </creator>\n";
 	}
+
 
 	xml += " <revision>0</revision>\n";	
 	if (syncTasks === true)
 	{
-		xml += " <priority>" + com.synckolab.tools.text.encode4XML(event.priority) + "</priority>\n";
 		xml += "</task>\n";
 	}
 	else {
@@ -1386,30 +1563,28 @@ com.synckolab.calendarTools.cnv_event2xml = function (event, skipVolatiles, sync
 /**
  * Write an event into human readable form
  */
-com.synckolab.calendarTools.event2Human = function (event, syncTasks)
+com.synckolab.calendarTools.json2Human = function (jobj)
 {
 	var txt = "";
-	if (event.title) {
-		txt += "Summary: " + event.title +"\n";
+	if (jobj.title) {
+		txt += "Summary: " + jobj.title +"\n";
 	}
 
-	if(syncTasks === false)
+	if(jobj.type === "task")
 	{
-		var isAllDay = event.startDate?event.startDate.isDate:false;
-		if (event.startDate)
+		if (jobj.startDate)
 		{
-			txt += "Start date: " + com.synckolab.tools.text.calDateTime2String(event.startDate, isAllDay) + "\n";
-			var endDate = event.endDate;
-			if (event.endDate && !isAllDay) {
-				txt += "End date: " + com.synckolab.tools.text.calDateTime2String(endDate, isAllDay) + "\n\n";
+			txt += "Start date: " + jobj.startDate + "\n";
+			if (jobj.endDate) {
+				txt += "End date: " + jobj.endDate + "\n\n";
 			}
 		}
 	}
-	if (event.getProperty("DESCRIPTION")) {
-		txt += event.getProperty("DESCRIPTION") + "\n";
+	if (jobj.body) {
+		txt += jobj.body + "\n";
 	}
-	if (event.getProperty("LOCATION")) {
-		txt += event.getProperty("LOCATION") +"\n";
+	if (jobj.location) {
+		txt += jobj.location +"\n";
 	}
 	return txt;
 };
@@ -1421,10 +1596,9 @@ com.synckolab.calendarTools.event2Human = function (event, syncTasks)
  */
 com.synckolab.calendarTools.event2kolabXmlMsg = function (event, email, syncTasks)
 {
-	var xml = this.event2xml(event, syncTasks, email);
-	var my_msg = com.synckolab.tools.generateMail(event.id, email, "", syncTasks?"application/x-vnd.kolab.task":"application/x-vnd.kolab.event", 
-			true, com.synckolab.tools.text.utf8.encode(xml), this.event2Human(event, syncTasks));
-	return my_msg;
+	var xml = this.json2xml(event, syncTasks);
+	return com.synckolab.tools.generateMail(event.id, email, "", syncTasks?"application/x-vnd.kolab.task":"application/x-vnd.kolab.event", 
+			true, com.synckolab.tools.text.utf8.encode(xml), this.json2Human(event, syncTasks));
 };
 
 

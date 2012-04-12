@@ -64,7 +64,7 @@ com.synckolab.tools.text = {
 			return "";
 		}
 
-		return "<" + nodeName + ">" + (this.checkExist(nodeValue) ? this.encode4XML(nodeValue) : "") + "</" + nodeName + ">\n";
+		return "  <" + nodeName + ">" + (this.checkExist(nodeValue) ? this.encode4XML(nodeValue) : "") + "</" + nodeName + ">\n";
 	},
 
 	checkExist : function (value) {

@@ -143,6 +143,70 @@ isString: function (s) {
 },
 
 /**
+ * helper function that copies given fields from one object to another. Each field is checked for non-null and empty string.
+ * @param src the source object
+ * @param target the target object
+ * @param fields an array of fields
+ * @param noempty add checks for empty string as well
+ */
+copyFields: function (src, target, fields, noempty) {
+	for(var i = 0; i < fields.length; i++) {
+		var field = fields[i];
+		if(src[field] && (!noempty || src[field] !== "")) {
+			target[field] = src[field];
+		}
+	}
+},
+
+/**
+ * compares two objects
+ * @return true if they contain the same content, false otherwise
+ */
+equalsObject: function(a, b)
+{
+	var p;
+	for(p in a) {
+		if(typeof(b[p]) === 'undefined') {
+			com.synckolab.tools.logMessage("not equals: " + p, com.synckolab.global.LOG_DEBUG);
+			return false;
+		}
+	}
+
+	for(p in a) {
+		if (a[p]) {
+			switch(typeof(a[p])) {
+			case 'object':
+				if (!this.equalsObject(a[p], b[p])) { 
+					com.synckolab.tools.logMessage("not equals: " + p, com.synckolab.global.LOG_DEBUG);
+					return false; 
+				} 
+				break;
+			case 'function': // skip functions
+				break;
+			default:
+				if (a[p] !== b[p]) { 
+					com.synckolab.tools.logMessage("not equals: " + p, com.synckolab.global.LOG_DEBUG);
+					return false; 
+				}
+			}
+		} else {
+			if (b[p]) {
+				return false;
+			}
+		}
+	}
+
+	for(p in b) {
+		if(typeof(a[p]) === 'undefined') {
+			com.synckolab.tools.logMessage("not equals: " + p, com.synckolab.global.LOG_DEBUG);
+			return false;
+		}
+	}
+
+	return true;
+},
+
+/**
  * Removes a possible mail header and extracts only the "real" content.
  * This also trims the message and removes some common problems (like -- at the end)
  */
