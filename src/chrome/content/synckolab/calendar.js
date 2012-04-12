@@ -230,7 +230,7 @@ com.synckolab.Calendar = {
 	triggerParseAddMessage: function(message) {
 
 		// parse the content
-		var newEvent = com.synckolab.calendarTools.message2json(message.fileContent, message.config.task);
+		var newEvent = com.synckolab.calendarTools.message2json(message.fileContent, message.config.type === "task");
 		
 		// get the dbfile from the local disk
 		var cUid = newEvent.uid;
@@ -270,7 +270,7 @@ com.synckolab.Calendar = {
 		var messageFields = new com.synckolab.dataBase();
 
 		// parse the content
-		var newEvent = com.synckolab.calendarTools.message2json(message.fileContent, message.config.task);
+		var newEvent = com.synckolab.calendarTools.message2json(message.fileContent, message.config.type === "task");
 		
 		// remember current uid
 		var cUID = newEvent.uid;
@@ -347,7 +347,7 @@ com.synckolab.Calendar = {
 		}
 
 		// parse the content
-		var newEvent = this.calTools.message2json(fileContent, this.gConfig.task);
+		var newEvent = this.calTools.message2json(fileContent, this.gConfig.type === "task");
 
 		if (newEvent === null) {
 			this.curItemInListId.setAttribute("label", com.synckolab.global.strBundle.getString("unparseable"));
@@ -370,7 +370,7 @@ com.synckolab.Calendar = {
 		var foundEvent;
 		var calComp;
 
-		if (!this.gConfig.task && newEvent.startDate) {
+		if (!this.gConfig.type === "task" && newEvent.startDate) {
 			info += " (" + newEvent.startDate + ")";
 		}
 		this.curItemInListContent.setAttribute("label", info);
@@ -388,7 +388,7 @@ com.synckolab.Calendar = {
 		this.folderMessageUids.push(newEvent.uid);
 
 		// get event from calendar based on the uid - and convert to json
-		foundEvent = com.synckolab.calendarTools.event2json(this.calTools.findEvent(this.gCalDB, newEvent.uid));
+		foundEvent = com.synckolab.calendarTools.event2json(this.calTools.findEvent(this.gCalDB, newEvent.uid), this.gConfig.type === "task");
 		
 		this.tools.logMessage("findevent returned :" + foundEvent + "(" + (foundEvent === null ? 'null' : foundEvent.uid) + ") for " + newEvent.uid + " caching " + this.gCalDB.length() + " events", this.global.LOG_CAL + this.global.LOG_DEBUG);
 
@@ -545,7 +545,7 @@ com.synckolab.Calendar = {
 
 					msg = null;
 					if (this.gConfig.format === "Xml") {
-						msg = this.calTools.event2kolabXmlMsg(foundEvent, this.gConfig.email, this.gConfig.task);
+						msg = this.calTools.event2kolabXmlMsg(foundEvent, this.gConfig.email, this.gConfig.type === "task");
 					} else {
 						tmpEventObj = com.synckolab.calendarTools.json2event(newEvent);
 
@@ -554,7 +554,7 @@ com.synckolab.Calendar = {
 						calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
 						calComp.addSubcomponent(tmpEventObj.icalComponent);
 
-						if (this.gConfig.task) {
+						if (this.gConfig.type === "task") {
 							msg = com.synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
 						} else {
 							msg = com.synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
@@ -634,7 +634,7 @@ com.synckolab.Calendar = {
 				// remember this message for update - generate mail message (incl. extra fields)
 				msg = null;
 				if (this.gConfig.format === "Xml") {
-					msg = this.calTools.event2kolabXmlMsg(foundEvent, this.gConfig.email, this.gConfig.task);
+					msg = this.calTools.event2kolabXmlMsg(foundEvent, this.gConfig.email, this.gConfig.type === "task");
 				} else {
 					tmpEventObj = com.synckolab.calendarTools.json2event(foundEvent);
 
@@ -643,7 +643,7 @@ com.synckolab.Calendar = {
 					calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
 					calComp.addSubcomponent(tmpEventObj.icalComponent);
 
-					if (this.gConfig.task) {
+					if (this.gConfig.type === "task") {
 						msg = com.synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
 					} else {
 						msg = com.synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
@@ -686,7 +686,7 @@ com.synckolab.Calendar = {
 			var writeCur = true;
 			msg = null;
 
-			this.tools.logMessage("nextUpdate for " + (this.gConfig.task ? "task" : "event") + ":" + cur.id, this.global.LOG_CAL + this.global.LOG_DEBUG);
+			this.tools.logMessage("nextUpdate for " + (this.gConfig.type === "task" ? "task" : "event") + ":" + cur.id, this.global.LOG_CAL + this.global.LOG_DEBUG);
 
 			if (cur.id === null) {
 				this.tools.logMessage("no id found for this element! skipping.", this.global.LOG_CAL + this.global.LOG_WARNING);
@@ -694,7 +694,7 @@ com.synckolab.Calendar = {
 			}
 
 			// check if we can skip this entry	(make sure we got a start and enddate.. otherwise it will fail)
-			var endDate = this.calTools.getEndDate(cur, this.gConfig.task);
+			var endDate = this.calTools.getEndDate(cur, this.gConfig.type === "task");
 
 			if (endDate && this.gSyncTimeFrame > 0 && (endDate.getTime() + (this.gSyncTimeFrame * 86400000) < (new Date()).getTime())) {
 				this.tools.logMessage("skipping event because its too old: " + cur.id, this.global.LOG_CAL + this.global.LOG_INFO);
@@ -783,20 +783,19 @@ com.synckolab.Calendar = {
 				// and now really write the message
 				msg = null;
 				var clonedEvent = cur;
-				clonedEvent = this.calTools.event2json(cur, this.gConfig);
+				clonedEvent = this.calTools.event2json(cur, this.gConfig.type === "task");
 
 				if (this.gConfig.format === "Xml") {
-					msg = this.calTools.event2kolabXmlMsg(clonedEvent, this.gConfig.email, this.gConfig.task);
+					msg = this.calTools.event2kolabXmlMsg(clonedEvent, this.gConfig.email, this.gConfig.type === "task");
 				} else {
 					var calComp = Components.classes["@mozilla.org/calendar/ics-service;1"].getService(Components.interfaces.calIICSService).createIcalComponent("VCALENDAR");
 					calComp.version = "2.0";
 					calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
 					calComp.addSubcomponent(cur.icalComponent);
 
-					if (this.gConfig.task) {
+					if (this.gConfig.type === "task") {
 						msg = com.synckolab.tools.generateMail(cur.id, this.gConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
 					} else {
-
 						msg = com.synckolab.tools.generateMail(cur.id, this.gConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
 					}
 				}

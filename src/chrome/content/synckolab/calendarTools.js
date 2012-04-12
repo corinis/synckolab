@@ -128,7 +128,7 @@ com.synckolab.calendarTools = {
 		 * This is taken from the lightning extension (calendar-event-dialog.js#938ff setItemProperty)
 		 */
 		setKolabItemProperty: function (item, propertyName, value) {
-			com.synckolab.tools.logMessage("setting property: " + propertyName + " with value " + value, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+			//com.synckolab.tools.logMessage("setting property: " + propertyName + " with value " + value, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
 			try
 			{
 				switch(propertyName) {
@@ -375,7 +375,7 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 			type : "calendar"
 	};
 	
-	if(syncTasks) {
+	if(syncTasks === true) {
 		jobj.type = "task";
 	}
 	
@@ -976,12 +976,12 @@ com.synckolab.calendarTools.xml2json = function (xml, syncTasks)
 
 	// check for task
 	if(syncTasks !== true && topNode.nodeName.toUpperCase() === "TASK") {
-		com.synckolab.tools.logMessage("Skipping task in event sync" + event, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_ERROR);
+		com.synckolab.tools.logMessage("Skipping task in event sync", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_ERROR);
 		return null;
 	}
 
 	if(syncTasks === true && topNode.nodeName.toUpperCase() !== "TASK") {
-		com.synckolab.tools.logMessage("Skipping event in task sync" + event, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_ERROR);
+		com.synckolab.tools.logMessage("Skipping event in task sync", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_ERROR);
 		return null;
 	}
 
