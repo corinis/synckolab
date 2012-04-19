@@ -452,7 +452,7 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 	// allow multiple alarms
 	if (event.getAlarms)
 	{
-		jobj.alarms = [];
+		var calarms = [];
 		
 		// Alarms (only allow relative alarms)
 		var alarm;
@@ -467,12 +467,18 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 			minutes = Math.floor(Math.abs(alarm.offset.inSeconds)/60);
 
 			tmpobj = {
-				offset: minutes
+				offset: minutes,
+				related: 1
 			};
-			jobj.alarms.push(tmpobj);
+			calarms.push(tmpobj);
 			
 			// TODO lightning has some other attributes which we should take care of
 			com.synckolab.tools.copyFields(alarm, tmpobj, ["description", "summary", "action"], true);
+		}
+		
+		// only create if there are alarms
+		if(calarms.length > 0) {
+			tmpobj.alarms = calarms;
 		}
 	}
 	else if (event.alarmOffset && event.alarmOffset.inSeconds !== 0)
@@ -488,17 +494,19 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 	// lighnting 0.9 (thanks to Pavlic)
 	if (event.getCategories)
 	{
-		jobj.categories = "";
+		var cCat = "";
 		var catarray = event.getCategories({});
 		if (catarray.length > 0 ) {
 			var cnt;
 			for (cnt = 0; cnt < catarray.length; cnt++) {
-				jobj.categories += catarray[cnt];
+				cCat += catarray[cnt];
 				if ( (cnt+1) < catarray.length) {
-					jobj.categories += ",";
+					cCat += ",";
 				}
 			}
 		}
+		if(cCat != "")
+			jobj.categories = cCat;
 	}
 	else
 	{
@@ -635,7 +643,10 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 			tmpobj = {};
 			jobj.attendess.push(tmpobj);
 			
-			tmpobj.mail = attendee.id.replace(/MAILTO:/i, '');
+			var cmail = attendee.id.replace(/MAILTO:/i, '')
+			if(cmail && cmail !== "unknown") {
+				tmpobj.mail = attendee.id.replace(/MAILTO:/i, '');
+			}
 			tmpobj.displayName = attendee.commonName;
 			tmpobj.rsvp = (attendee.rsvp ? true : false);
 			
@@ -674,9 +685,7 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 		// might not have an smtp address
 		if(event.organizer.id) {
 			jobj.organizer.mail = event.organizer.id.replace(/MAILTO:/i, '');
-		} else {
-			jobj.organizer.mail = "unknown";
-		}
+		} 
 	}
 
 	if (event.getProperty("X-KOLAB-CREATOR-DISPLAY-NAME") && event.getProperty("X-KOLAB-CREATOR-SMTP-ADDRESS"))
@@ -716,15 +725,13 @@ com.synckolab.calendarTools.json2event = function (jobj) {
 	}
 
 	if (jobj.startDate.indexOf(":") === -1) {
-		cDate = com.synckolab.tools.text.string2CalDate(jobj.startDate);
-		cDate.isDate = true;
 		// entry date and start date can be handled the same way
-		com.synckolab.tools.logMessage("setting: " + (syncTasks?"entryDate":"startDate"), com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
-		this.setKolabItemProperty(event, syncTasks?"entryDate":"startDate", cDate);
+		com.synckolab.tools.logMessage("setting all day: " + (syncTasks?"entryDate":"startDate"), com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+		this.setKolabItemProperty(event, syncTasks?"entryDate":"startDate", com.synckolab.tools.text.string2CalDate(jobj.startDate));
 	} else {
 		// entry date and start date can be handled the same way
 		com.synckolab.tools.logMessage("setting: " + (syncTasks?"entryDate":"startDate"), com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
-		this.setKolabItemProperty(event, syncTasks?"entryDate":"startDate", com.synckolab.tools.text.string2CalDate(jobj.startDate, true));
+		this.setKolabItemProperty(event, syncTasks?"entryDate":"startDate", com.synckolab.tools.text.string2CalDateTime(jobj.startDate, true));
 	}
 	
 	// full day
@@ -743,7 +750,7 @@ com.synckolab.calendarTools.json2event = function (jobj) {
 			this.setKolabItemProperty(event, syncTasks?"dueDate":"endDate", cDate);
 		} else {
 			// due date and end date can be handled the same way
-			this.setKolabItemProperty(event, syncTasks?"dueDate":"endDate", com.synckolab.tools.text.string2CalDate(jobj.endDate, true));
+			this.setKolabItemProperty(event, syncTasks?"dueDate":"endDate", com.synckolab.tools.text.string2CalDateTime(jobj.endDate, true));
 		}
 	}
 	
@@ -1341,7 +1348,10 @@ com.synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				}
 				
 				var attendee = {};
-				attendee.mail = cur.getXmlResult("SMTP-ADDRESS", "unknown");
+				var cmail = cur.getXmlResult("SMTP-ADDRESS");
+				if (cmail && cmail !== "unknown") {
+					attendee.mail = cmail;
+				}
 				attendee.displayName = cur.getXmlResult("DISPLAY-NAME", "");
 				attendee.status = cur.getXmlResult("STATUS", "none");
 				// The request response status is true or false
@@ -1358,9 +1368,25 @@ com.synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				break;
 
 			case "ORGANIZER":
-				jobj.organizer = {};
-				jobj.organizer.displayName = cur.getXmlResult("DISPLAY-NAME", "");
-				jobj.organizer.mail = cur.getXmlResult("SMTP-ADDRESS", "unknown");
+				var otmpDN = cur.getXmlResult("DISPLAY-NAME");
+				var otmpMail = cur.getXmlResult("SMTP-ADDRESS");
+				if (otmpDN && otmpDN !== "unknown" && otmpDN !== "") {
+					otmpDN = null;
+				}
+				
+				if (otmpMail && otmpMail !== "unknown" && otmpMail !== "") {
+					otmpMail = null;
+				}
+				
+				if(otmpDN || otmpMail) {
+					jobj.organizer = {};
+					if (otmpDN) {
+						jobj.organizer.displayName = otmpDN;
+					}
+					if (otmpMail) {
+						jobj.organizer.mail = otmpMail;
+					}
+				}
 				break;
 
 			default:

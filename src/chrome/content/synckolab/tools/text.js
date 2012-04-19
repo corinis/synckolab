@@ -226,8 +226,9 @@ com.synckolab.tools.text = {
 	// takes: 2005-03-30T15:28:52Z or 2005-03-30 15:28:52
 	string2DateTime : function (val) {
 		// in case its a date without time
-		if (val.indexOf(":") === -1)
+		if (val.indexOf(":") === -1) {
 			return this.string2Date(val);
+		}
 
 		var s = val.replace('T', ' ');
 		s = s.replace('Z', '');

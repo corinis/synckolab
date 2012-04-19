@@ -821,12 +821,12 @@ com.synckolab.main.getMessage = function()
 		}
 
 		// check if we can ignore this message because its too old (0=take all into accout)	
-		if(com.synckolab.main.gSync.gSyncTimeFrame > 0 && skipCMessage !== true)
+		if(com.synckolab.main.gConfig.timeFrame && com.synckolab.main.gConfig.timeFrame > 0 && skipCMessage !== true)
 		{
 			com.synckolab.tools.logMessage("Checking if message might be too old for now " + (new Date()).getTime(), com.synckolab.global.LOG_DEBUG);
 
 			// now get the correct startdate (convert in milliseconds)
-			if ((cur.dateInSeconds + (com.synckolab.main.gSync.gSyncTimeFrame * 86400))*1000 < (new Date()).getTime())
+			if ((cur.dateInSeconds + (com.synckolab.main.gConfig.timeFrame * 86400))*1000 < (new Date()).getTime())
 			{
 				com.synckolab.tools.logMessage("Message " + cur.mime2DecodedSubject + " will be ignored (too old) Now: " + (new Date()).getTime(), com.synckolab.global.LOG_INFO);
 				// skip current and process next nessage	

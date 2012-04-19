@@ -159,14 +159,22 @@ copyFields: function (src, target, fields, noempty) {
 },
 
 /**
- * compares two objects
+ * compares two objects. note: empty string or null is the same as not existant
  * @return true if they contain the same content, false otherwise
  */
 equalsObject: function(a, b)
 {
+	// empty arrays 
+	if(!a && b && b.length && b.length === 0) {
+		return true;
+	}
+	if(!b && a && a.length && a.length === 0) {
+		return true;
+	}
+	
 	var p;
 	for(p in a) {
-		if(typeof(b[p]) === 'undefined') {
+		if(typeof(b[p]) === 'undefined' && a[p] !== null && a[p] !== "") {
 			com.synckolab.tools.logMessage("not equals: " + p, com.synckolab.global.LOG_DEBUG);
 			return false;
 		}
@@ -197,7 +205,7 @@ equalsObject: function(a, b)
 	}
 
 	for(p in b) {
-		if(typeof(a[p]) === 'undefined') {
+		if(typeof(a[p]) === 'undefined' && b[p] !== null && b[p] !== "") {
 			com.synckolab.tools.logMessage("not equals: " + p, com.synckolab.global.LOG_DEBUG);
 			return false;
 		}

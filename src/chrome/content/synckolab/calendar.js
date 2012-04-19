@@ -59,7 +59,7 @@ com.synckolab.Calendar = {
 	gCurUID : '', // save the last checked uid - for external use
 
 	gCurEvent : 0,
-	gSyncTimeFrame : 180, // time frame to take into account (all older than X days will be ignored completely) -1 just take all
+	
 	gCalendarName : '', // the calendar name
 	gCalendarEvents : '', // all events from the calendar
 	gCalDB : '', // hashmap for all the events (faster than iterating on big numbers)
@@ -116,7 +116,7 @@ com.synckolab.Calendar = {
 			} catch (tfignore) {
 				// per default take all
 				com.synckolab.tools.logMessage("Sync Time frame is not specified. Syncing all.", this.global.LOG_WARNING);
-				config.timeFrame = -1;
+				config.timeFrame = 180;
 				config.useSyncListener = false;
 			}
 			// uid -> filename database - main functions needs to know the name
@@ -653,6 +653,10 @@ com.synckolab.Calendar = {
 				// write the current content in the sync-db file
 				com.synckolab.tools.writeSyncDBFile(idxEntry, foundEvent);
 				return msg;
+			}
+			else {
+				com.synckolab.tools.logMessage("events are equals", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+				this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("noChange"));
 			}
 
 		}
