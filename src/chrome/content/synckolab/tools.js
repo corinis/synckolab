@@ -35,8 +35,12 @@ if(!com) var com={};
 if(!com.synckolab) com.synckolab={};
 if(!com.synckolab.tools) com.synckolab.tools={};
 
-Components.utils.import("resource://calendar/modules/calUtils.jsm");
-Components.utils.import("resource://calendar/modules/calProviderUtils.jsm");
+try {
+	Components.utils.import("resource://calendar/modules/calUtils.jsm");
+	Components.utils.import("resource://calendar/modules/calProviderUtils.jsm");
+} catch (importEx) {
+	// ignore exception if lightning is not installed
+}
 
 com.synckolab.tools = {
 

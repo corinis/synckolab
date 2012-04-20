@@ -106,7 +106,12 @@
 			if (doneInit)
 				return;
 
-			com.synckolab.settings.isCalendar = com.synckolab.calendarTools.isCalendarAvailable();
+			// might get an exception because calendarTools does not exist
+			try {
+				com.synckolab.settings.isCalendar = com.synckolab.calendarTools.isCalendarAvailable();
+			} catch (ex) {
+				com.synckolab.settings.isCalendar = false;
+			}
 			com.synckolab.settings.prefillFields();
 			doneInit = true;
 		}
