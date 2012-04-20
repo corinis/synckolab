@@ -29,8 +29,12 @@
  * ***** END LICENSE BLOCK ***** */
 "use strict";
 
-Components.utils.import("resource://calendar/modules/calUtils.jsm");
-Components.utils.import("resource://calendar/modules/calProviderUtils.jsm");
+try {
+	Components.utils.import("resource://calendar/modules/calUtils.jsm");
+	Components.utils.import("resource://calendar/modules/calProviderUtils.jsm");
+} catch (importEx) {
+	// ignore exception if lightning is not installed
+}
 
 if(!com) var com={};
 if(!com.synckolab) com.synckolab={};
