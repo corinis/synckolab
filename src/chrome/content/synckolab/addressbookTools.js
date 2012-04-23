@@ -302,11 +302,11 @@ com.synckolab.addressbookTools.getABDirectory = function (listener) {
 	// tbird >= 7
 	try {
 		var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-		/* - ignore ab listener: if you change something locally - sync manual!
+		/* - ignore ab listener: if you change something locally - sync manual! */
 		if (listener) {
 			abManager.addAddressBookListener(listener, 0xFFFFFFFF); // all
 		}
-		*/
+		
 		return abManager.directories;
 	} catch (ex) {
 		// tbird < 7
@@ -1662,6 +1662,9 @@ com.synckolab.addressbookTools.Xml2List = function (topNode, card) {
  * @return true if the message contains a list instead of a card
  */
 com.synckolab.addressbookTools.isMailList = function (message) {
+	if(message.synckolab) {
+		return message.type === "maillist";
+	}
 	if (message.indexOf("<?xml") !== -1 || message.indexOf("<?XML") !== -1) {
 		if (message.indexOf("<distribution-list") !== -1 || message.indexOf("<DISTRIBUTION-LIST") !== -1) {
 			com.synckolab.tools.logMessage("is mail list returning true", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);

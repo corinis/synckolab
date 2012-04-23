@@ -1419,3 +1419,26 @@ com.synckolab.tools.instanceOf = function (aObject, aInterface) {
 	}
 	return true;
 };
+
+
+/**
+ * reads all messages in a given imap folder and create a hashmap with the messageHdr and the id.
+ * it uses "parseFunc.uid" as key. This assumes that the subject is the uid!
+ * @param map the map to save everything into
+ * @param config the config (to read the right folder)
+ * @param parseFunc a function that parses the messages into objects
+ */
+com.synckolab.tools.fillMessageLookup = function(map, config, parseFunc) {
+	var messages;
+	// get the message keys
+	if (config.folder.getMessages) {
+		messages = config.folder.getMessages(null);	 // dont need the msgWindow use null
+	} else {
+		messages = config.folder.messages; // tbird 3 uses an enumerator property instead of a function
+	}
+
+	while(messages.hasMoreElements()) {
+		var cur = messages.getNext().QueryInterface(Components.interfaces.nsIMsgDBHdr);
+		map.put(cur.mime2DecodedSubject, cur);
+	}
+};

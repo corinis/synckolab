@@ -161,8 +161,8 @@ com.synckolab.config.readConfiguration = function() {
 	com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL = com.synckolab.global.LOG_ALL + com.synckolab.global.LOG_WARNING; // default: warn
 	try {
 		com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL = com.synckolab.global.LOG_ALL + pref.getIntPref("SyncKolab.debugLevel");
-	} catch (ex) {
-		com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab.debugLevel' failed - setting default as WARNING: " + ex, com.synckolab.global.LOG_WARNING);
+	} catch (exdebugLvl) {
+		com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab.debugLevel' failed - setting default as WARNING: " + exdebugLvl, com.synckolab.global.LOG_WARNING);
 		pref.setIntPref("SyncKolab.debugLevel", com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL);
 	}
 	
@@ -273,6 +273,7 @@ com.synckolab.config.createEmptyconfig = function(baseConfig, confType) {
 		serverKey: baseConfig.serverKey,
 		conflictResolve: baseConfig.conflictResolve,
 		hide: com.synckolab.main.hideFolder,
+		msgList: new com.synckolab.hashMap(), // keep a lookup of ALL messages in the folder for local trigger
 		addListener: false,
 		triggerParseAddMessage: function(msg, config){},
 		triggerParseDeleteMessage: function(msg, config) {}
@@ -324,7 +325,7 @@ com.synckolab.config.folderListener = {
 	},
 	msgAdded: function(aMsg) {
 		// make sure not to parse messages while a full sync is running
-		if(com.synckolab.global.running) {
+		if(com.synckolab.global.running || com.synckolab.global.triggerRunning) {
 			return;
 		}
 		
@@ -350,7 +351,7 @@ com.synckolab.config.folderListener = {
 	},
 	msgsDeleted: function(aMsgs) {
 		// make sure not to parse messages while a full sync is running
-		if(com.synckolab.global.running) {
+		if(com.synckolab.global.running || com.synckolab.global.triggerRunning) {
 			return;
 		}
 		
