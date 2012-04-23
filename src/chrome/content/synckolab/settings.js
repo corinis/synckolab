@@ -1565,7 +1565,11 @@ com.synckolab.settings = {
 
 			pref.setCharPref("SyncKolab."+config+".AddressBook", document.getElementById("conURL").value);
 			pref.setCharPref("SyncKolab."+config+".AddressBookFormat", document.getElementById("conFormat").value);
-			pref.setBoolPref("SyncKolab."+config+".syncListenerContactImap", document.getElementById("syncListenerContactImap").checked);
+			if(document.getElementById("syncListenerContactImap")) {
+				pref.setBoolPref("SyncKolab."+config+".syncListenerContactImap", document.getElementById("syncListenerContactImap").checked);
+			} else {
+				pref.setBoolPref("SyncKolab."+config+".syncListenerContactImap", false);
+			}
 			pref.setBoolPref("SyncKolab."+config+".saveToContactImap", document.getElementById("saveToContactImap").checked);
 			pref.setBoolPref("SyncKolab."+config+".syncContacts", document.getElementById("syncContacts").checked);
 
@@ -1574,7 +1578,11 @@ com.synckolab.settings = {
 			{
 				pref.setCharPref("SyncKolab."+config+".Calendar", document.getElementById("calURL").value);
 				pref.setCharPref("SyncKolab."+config+".CalendarFormat", document.getElementById("calFormat").value);
-				pref.setBoolPref("SyncKolab."+config+".syncListenerCalendarImap", document.getElementById("syncListenerCalendarImap").checked);
+				if(document.getElementById("syncListenerCalendarImap")){
+					pref.setBoolPref("SyncKolab."+config+".syncListenerCalendarImap", document.getElementById("syncListenerCalendarImap").checked);
+				}else {
+					pref.setBoolPref("SyncKolab."+config+".syncListenerCalendarImap", false);
+				}
 				pref.setBoolPref("SyncKolab."+config+".saveToCalendarImap", document.getElementById("saveToCalendarImap").checked);
 				pref.setBoolPref("SyncKolab."+config+".syncCalendar", document.getElementById("syncCalendar").checked);
 				if (document.getElementById("calSyncTimeframe") !== null && parseInt(document.getElementById("calSyncTimeframe").value, 10) !== 'NaN') {
@@ -1586,7 +1594,11 @@ com.synckolab.settings = {
 
 				pref.setCharPref("SyncKolab."+config+".Tasks", document.getElementById("taskURL").value);
 				pref.setCharPref("SyncKolab."+config+".TaskFormat", document.getElementById("taskFormat").value);
-				pref.setBoolPref("SyncKolab."+config+".syncListenerTaskImap", document.getElementById("syncListenerTaskImap").checked);
+				if(document.getElementById("syncListenerTaskImap")) {
+					pref.setBoolPref("SyncKolab."+config+".syncListenerTaskImap", document.getElementById("syncListenerTaskImap").checked);
+				} else {
+					pref.setBoolPref("SyncKolab."+config+".syncListenerTaskImap", false);
+				}
 				pref.setBoolPref("SyncKolab."+config+".saveToTaskImap", document.getElementById("saveToTaskImap").checked);
 				pref.setBoolPref("SyncKolab."+config+".syncTasks", document.getElementById("syncTasks").checked);
 				if (document.getElementById("taskSyncTimeframe") && parseInt(document.getElementById("taskSyncTimeframe").value, 10) !== 'NaN') {
@@ -1671,6 +1683,7 @@ com.synckolab.settings = {
 		delConfig: function ()
 		{
 			var config = this.curConfig;
+			alert(config);
 			if (confirm(this.strBundle.getFormattedString("configDelete", [config])))
 			{
 				// get the treechildren item
@@ -1731,12 +1744,14 @@ com.synckolab.settings = {
 
 					pref.clearUserPref("SyncKolab."+config+".AddressBook");
 					pref.clearUserPref("SyncKolab."+config+".AddressBookFormat");
+					pref.clearUserPref("SyncKolab."+config+".ContactFolderPath");
 					pref.clearUserPref("SyncKolab."+config+".syncListenerContactImap");
 					pref.clearUserPref("SyncKolab."+config+".saveToContactImap");
 					pref.clearUserPref("SyncKolab."+config+".syncContacts");
 
 					pref.clearUserPref("SyncKolab."+config+".Calendar");
 					pref.clearUserPref("SyncKolab."+config+".CalendarFormat");
+					pref.clearUserPref("SyncKolab."+config+".CalendarFolderPath");
 					pref.clearUserPref("SyncKolab."+config+".syncListenerCalendarImap");
 					pref.clearUserPref("SyncKolab."+config+".saveToCalendarImap");
 					pref.clearUserPref("SyncKolab."+config+".syncCalendar");
@@ -1744,6 +1759,7 @@ com.synckolab.settings = {
 
 					pref.clearUserPref("SyncKolab."+config+".Tasks");
 					pref.clearUserPref("SyncKolab."+config+".TaskFormat");
+					pref.clearUserPref("SyncKolab."+config+".TaskFolderPath");
 					pref.clearUserPref("SyncKolab."+config+".syncListenerTaskImap");
 					pref.clearUserPref("SyncKolab."+config+".saveToTaskImap");
 					pref.clearUserPref("SyncKolab."+config+".syncTasks");
