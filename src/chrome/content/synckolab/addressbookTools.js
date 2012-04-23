@@ -1662,9 +1662,6 @@ com.synckolab.addressbookTools.Xml2List = function (topNode, card) {
  * @return true if the message contains a list instead of a card
  */
 com.synckolab.addressbookTools.isMailList = function (message) {
-	if(message.synckolab) {
-		return message.type === "maillist";
-	}
 	if (message.indexOf("<?xml") !== -1 || message.indexOf("<?XML") !== -1) {
 		if (message.indexOf("<distribution-list") !== -1 || message.indexOf("<DISTRIBUTION-LIST") !== -1) {
 			com.synckolab.tools.logMessage("is mail list returning true", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
