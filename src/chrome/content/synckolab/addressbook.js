@@ -589,10 +589,10 @@ com.synckolab.AddressBook = {
 				// read the current card from the sync db (might be null)
 				var cCard = com.synckolab.tools.readSyncDBFile(idxEntry);
 				
-				var cCard_equals_foundCard, cCard_equals_newCard, foundCard_equals_newCard;
+				var cCard_equals_foundCard = false, cCard_equals_newCard = false, foundCard_equals_newCard = false;
 				
 				// Streamline card comparisons
-				if (this.tools.equalsContact(cCard, foundCard)) {
+				if (cCard && this.tools.equalsContact(cCard, foundCard)) {
 					cCard_equals_foundCard = true;
 					com.synckolab.tools.logMessage("In parse Message in addressbook.js cCard equals foundCard", com.synckolab.global.LOG_DEBUG);
 				} else {
@@ -600,7 +600,7 @@ com.synckolab.AddressBook = {
 					com.synckolab.tools.logMessage("In parse Message in addressbook.js cCard NOT EQUALS foundCard\n ", com.synckolab.global.LOG_DEBUG);
 				}
 				
-				if (this.tools.equalsContact(cCard, newCard)) {
+				if (cCard && this.tools.equalsContact(cCard, newCard)) {
 					cCard_equals_newCard = true;
 					com.synckolab.tools.logMessage("In parse Message in addressbook.js cCard equals newCard", com.synckolab.global.LOG_DEBUG);
 				} else {
@@ -617,7 +617,7 @@ com.synckolab.AddressBook = {
 				}
 				
 				// compare each card with each other
-				if (idxEntry.exists() && !cCard_equals_foundCard && !cCard_equals_newCard)
+				if ((idxEntry.exists() && !cCard_equals_foundCard && !cCard_equals_newCard) || (!idxEntry.exists() && !foundCard_equals_newCard))
 				{
 					//local and server were both updated, ut oh, what do we want to do?
 					com.synckolab.tools.logMessage("Conflicts detected, testing for autoresolve.", com.synckolab.global.LOG_WARNING + com.synckolab.global.LOG_AB);

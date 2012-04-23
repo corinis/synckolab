@@ -512,7 +512,8 @@ com.synckolab.Calendar = {
 				com.synckolab.tools.logMessage("In parse Message foundEvent DOES NOT equal newEvent", com.synckolab.global.LOG_DEBUG);
 			}
 
-			if (idxEntry.exists() && !cEvent_equals_foundEvent && !cEvent_equals_newEvent)
+			// change for conflict
+			if ((idxEntry.exists() && !cEvent_equals_foundEvent && !cEvent_equals_newEvent) || (!idxEntry.exists() && !foundEvent_equals_newEvent))
 			{
 				// changed locally and on server side
 				this.tools.logMessage("Changed on server and local: " + newEvent.uid, this.global.LOG_CAL + this.global.LOG_DEBUG);

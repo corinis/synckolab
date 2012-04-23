@@ -126,6 +126,13 @@ com.synckolab.contactConflict = {
 			serverValue = com.synckolab.addressbookTools.getCardProperty(this.serverCard, this.conflictsArray[i]);
 			localValue = com.synckolab.addressbookTools.getCardProperty(this.localCard, this.conflictsArray[i]);
 			
+			if (serverValue === 0 || serverValue === null || serverValue === "0" || serverValue === "null")
+				serverValue = "";
+
+			if (localValue === 0 || localValue === null || localValue === "0" || localValue === "null")
+				localValue = "";
+
+				
 			var e = document.getElementById(this.conflictsArray[i]); //Field Element
 			if(!e) {
 				continue;
