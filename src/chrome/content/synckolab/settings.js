@@ -1607,6 +1607,7 @@ com.synckolab.settings = {
 					pref.setIntPref("SyncKolab."+config+".taskSyncTimeframe", 180);
 				}
 			}
+			com.synckolab.settings.updateConfigVersion();
 		},
 
 
@@ -1669,6 +1670,20 @@ com.synckolab.settings = {
 			this.saveAllPrefs(this.curConfig);
 		},
 
+		/**
+		 * set a new version for the configuration so an internal reload happens
+		 */
+		updateConfigVersion: function() {
+			var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+			var curVersion = 0;
+			try {
+				curVersion = pref.getIntPref("SyncKolab.configVersion");
+			} catch (ex) {
+				// ignore: default 0
+			}
+			pref.setIntPref("SyncKolab.configVersion", Number(curVersion) + 1);
+		},
+		
 		addConfig: function ()
 		{
 			if (window.opener) {
@@ -1776,6 +1791,7 @@ com.synckolab.settings = {
 					} catch (exi1) {}
 				}
 			}
+			com.synckolab.settings.updateConfigVersion();
 		},
 
 		/**

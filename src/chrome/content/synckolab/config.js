@@ -45,7 +45,10 @@ com.synckolab.config = {
 		DEBUG_SYNCKOLAB_LEVEL: 15, // global.global.LOG_ALL + global.global.LOG_DEBUG
 
 		//set this to true and on every error there will be a pause so you can check the logs
-		PAUSE_ON_ERROR: false
+		PAUSE_ON_ERROR: false,
+		
+		// default version of configuration
+		VERSION: -1
 	};
 
 com.synckolab.global = {
@@ -85,9 +88,17 @@ com.synckolab.global = {
  * </ul>
  */
 com.synckolab.config.readConfiguration = function() {
-	com.synckolab.tools.logMessage("Checking configuration", com.synckolab.global.LOG_DEBUG);
 	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 	var i;
+	var curVersion = 0;
+	try {
+		curVersion = pref.getIntPref("SyncKolab.configVersion");
+	} catch (ex) {
+		// ignore
+	}
+
+	com.synckolab.tools.logMessage("Checking configuration ("+com.synckolab.config.VERSION+" - "+curVersion+")", com.synckolab.global.LOG_DEBUG);
+
 	var configs = [];
 	try {
 		configs = pref.getCharPref("SyncKolab.Configs").split(';');
@@ -102,42 +113,48 @@ com.synckolab.config.readConfiguration = function() {
 		return;
 	}
 
-	// check if we have an up-to-date config loaded
-	if (com.synckolab.main.syncConfigs && com.synckolab.main.syncConfigs.length > 0)
-	{
-		if (com.synckolab.main.syncConfigs.length === configs.length) {
-
-			// Check our previous configs against the current list of configs.
-			var configChanged = false;
-			for (i = 0; i < configs.length; i++) {
-				// skip empty configs
-				if(configs[i] === '') {
-					continue;
-				}
-				
-				var found = false;
-				for(var j = 0; j < com.synckolab.main.syncConfigs.length; j++) {
-					if(com.synckolab.main.syncConfigs[j]) {
-						if (configs[i] === com.synckolab.main.syncConfigs[j].name) {
-							found = true;
-							break;
+	if(curVersion === com.synckolab.config.VERSION) {
+		// check if we have an up-to-date config loaded
+		if (com.synckolab.main.syncConfigs && com.synckolab.main.syncConfigs.length > 0)
+		{
+			if (com.synckolab.main.syncConfigs.length === configs.length) {
+	
+				// Check our previous configs against the current list of configs.
+				var configChanged = false;
+				for (i = 0; i < configs.length; i++) {
+					// skip empty configs
+					if(configs[i] === '') {
+						continue;
+					}
+					
+					var found = false;
+					for(var j = 0; j < com.synckolab.main.syncConfigs.length; j++) {
+						if(com.synckolab.main.syncConfigs[j]) {
+							if (configs[i] === com.synckolab.main.syncConfigs[j].name) {
+								found = true;
+								break;
+							}
 						}
 					}
+					// the config name was not found
+					if(!found) {
+						com.synckolab.tools.logMessage("unable to find " + configs[i], com.synckolab.global.LOG_DEBUG);
+						configChanged = true;
+						break;
+					}
 				}
-				// the config name was not found
-				if(!found) {
-					com.synckolab.tools.logMessage("unable to find " + configs[i], com.synckolab.global.LOG_DEBUG);
-					configChanged = true;
-					break;
+	
+				// skip re-reading of config - nothing changed
+				if(!configChanged) {
+					return;
 				}
 			}
-
-			// skip re-reading of config - nothing changed
-			if(!configChanged) {
-				return;
-			}
+			com.synckolab.tools.logMessage("Config has changed - reloading.", com.synckolab.global.LOG_DEBUG);
 		}
-		com.synckolab.tools.logMessage("Config has changed - reloading.", com.synckolab.global.LOG_DEBUG);
+	} else {
+		// remember the config version
+		com.synckolab.config.VERSION = curVersion;
+		com.synckolab.tools.logMessage("Config Version has changed. ("+com.synckolab.config.VERSION+" - "+curVersion+")", com.synckolab.global.LOG_INFO);
 	}
 
 	// set the debug level

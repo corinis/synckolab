@@ -591,6 +591,10 @@ com.synckolab.main.nextSync = function()
 	{
 		com.synckolab.tools.logMessage("Done syncing resetting ui." , com.synckolab.global.LOG_DEBUG);
 
+		if(com.synckolab.global.wnd && !com.synckolab.global.wnd.document) {
+			com.synckolab.global.wnd = null;
+		}
+		
 		if (com.synckolab.global.wnd) {
 			com.synckolab.main.totalMeter.setAttribute("value", "100%");
 		}
@@ -620,13 +624,18 @@ com.synckolab.main.nextSync = function()
 		}
 
 		// remove all status bar elements
-		if (com.synckolab.global.wnd === null)
-		{
-			var sb = document.getElementById("status-bar");
-
-			sb.removeChild(com.synckolab.main.meter);
-			sb.removeChild(com.synckolab.main.statusMsg);
-			sb.removeChild(com.synckolab.main.curCounter);
+		try {
+			if (com.synckolab.global.wnd === null)
+			{
+				var sb = document.getElementById("status-bar");
+				if(sb) {
+					sb.removeChild(com.synckolab.main.meter);
+					sb.removeChild(com.synckolab.main.statusMsg);
+					sb.removeChild(com.synckolab.main.curCounter);
+				}
+			}
+		} catch (sbEx) {
+			// ignore
 		}
 
 		// done autorun
