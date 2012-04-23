@@ -706,8 +706,9 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 /**
  * this fills an event object based on a event json.
  * @param json the json object to read
+ * @param calendar an optional calendar to set
  */
-com.synckolab.calendarTools.json2event = function (jobj) {
+com.synckolab.calendarTools.json2event = function (jobj, calendar) {
 	var syncTasks = (jobj.type === "task");
 	var event;
 
@@ -720,7 +721,9 @@ com.synckolab.calendarTools.json2event = function (jobj) {
 		com.synckolab.tools.logMessage("creating event.", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
 		event = Components.classes["@mozilla.org/calendar/event;1"].createInstance(Components.interfaces.calIEvent);
 	}
-
+	// set the correct calendar
+	event.calendar = calendar;
+	
 	var cDate, i;
 	
 	// full day

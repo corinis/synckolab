@@ -180,6 +180,9 @@ com.synckolab.Calendar = {
 
 		// remember all the items we already worked with
 		this.gCalDB = new com.synckolab.hashMap();
+		
+		// make sure its up-to date: call refresh
+		this.gConfig.calendar.refresh();
 	},
 
 	init2 : function (nextFunc, sync) {
@@ -190,6 +193,9 @@ com.synckolab.Calendar = {
 		this.gEvents.events = [];
 		this.gEvents.sync = sync;
 		this.gEvents.ready = false;
+		
+		// we are starting a batch operation here
+		this.gConfig.calendar.startBatch();
 
 		// gCalendar might be invalid if no calendar is selected in the settings
 		if (this.gConfig) {
@@ -370,7 +376,7 @@ com.synckolab.Calendar = {
 		var foundEvent;
 		var calComp;
 
-		if (!this.gConfig.type === "task" && newEvent.startDate) {
+		if (this.gConfig.type !== "task" && newEvent.startDate) {
 			info += " (" + newEvent.startDate + ")";
 		}
 		this.curItemInListContent.setAttribute("label", info);
@@ -407,9 +413,7 @@ com.synckolab.Calendar = {
 
 				this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localAdd"));
 
-				tmpEventObj = com.synckolab.calendarTools.json2event(newEvent);
-				// set the calendar
-				tmpEventObj.calendar = this.gConfig.calendar;
+				tmpEventObj = com.synckolab.calendarTools.json2event(newEvent, this.gConfig.calendar);
 
 				// update the newEvent timestamp so it wont display a window
 				var lastAckTime = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
@@ -510,7 +514,7 @@ com.synckolab.Calendar = {
 
 					for (i = 0; i < this.gEvents.events.length; i++) {
 						if (this.gEvents.events[i].id === newEvent.uid) {
-							tmpEventObj = com.synckolab.calendarTools.json2event(newEvent);
+							tmpEventObj = com.synckolab.calendarTools.json2event(newEvent, this.gConfig.calendar);
 							// set the calendar
 							tmpEventObj.calendar = this.gConfig.calendar;
 
@@ -586,12 +590,14 @@ com.synckolab.Calendar = {
 				// server changed - update local
 				for (i = 0; i < this.gEvents.events.length; i++) {
 					if (this.gEvents.events[i].id === newEvent.uid) {
-						tmpEventObj = com.synckolab.calendarTools.json2event(newEvent);
+						tmpEventObj = com.synckolab.calendarTools.json2event(newEvent, this.gConfig.calendar);
 
 						// if we change a local event make sure to set alarmLastAck
 						if (this.gEvents.events[i].alarmLastAck) {
 							tmpEventObj.alarmLastAck = this.gEvents.events[i].alarmLastAck.clone();
 						}
+
+						this.tools.logMessage("start modify item", this.global.LOG_CAL + this.global.LOG_DEBUG);
 
 						try {
 							// modify the item - catch exceptions due to triggered alarms
@@ -600,6 +606,8 @@ com.synckolab.Calendar = {
 						} catch (e1) {
 							this.tools.logMessage("gCalendar.modifyItem() failed: " + e1, this.global.LOG_CAL + this.global.LOG_WARNING);
 						}
+
+						this.tools.logMessage("event modified", this.global.LOG_CAL + this.global.LOG_DEBUG);
 
 						// update list item
 						this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localUpdate"));
@@ -817,6 +825,9 @@ com.synckolab.Calendar = {
 	},
 
 	doneParsing : function () {
-		// done
+		// end batch processing 
+		this.gConfig.calendar.endBatch();
+		// refresh the calendar
+		this.gConfig.calendar.refresh();
 	}
 };
