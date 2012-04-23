@@ -416,7 +416,9 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 		jobj.startDate = com.synckolab.tools.text.calDateTime2String(event.entryDate, isAllDay);
 		jobj.endDate = com.synckolab.tools.text.calDateTime2String(endDate, isAllDay);
 		// jobj.completedDate =  com.synckolab.tools.text.calDateTime2String(completedDate, true);
-		jobj.priority = event.priority;
+		if(event.priority && event.priority !== null && event.priority !== "") {
+			jobj.priority = event.priority;
+		}
 
 		// tasks have a status
 		if (event.isCompleted || event.percentComplete === 100) {
@@ -424,7 +426,7 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 			jobj.status = "completed";
 		}
 		else {
-			jobj.status = this.getTaskStatus(event.status, true);
+			jobj.status = com.synckolab.calendarTools.getTaskStatus(event.status, true);
 			jobj.completed = event.percentComplete;
 		}
 	} else {
@@ -727,7 +729,7 @@ com.synckolab.calendarTools.json2event = function (jobj, calendar) {
 	var cDate, i;
 	
 	// full day
-	if(!jobj.startDate) {
+	if(!syncTasks && !jobj.startDate) {
 		throw ("Items MUST have a startdate");
 	}
 
@@ -773,7 +775,9 @@ com.synckolab.calendarTools.json2event = function (jobj, calendar) {
 
 	// special fields for tasks
 	if(syncTasks) {
-		this.setKolabItemProperty(event, "priority", jobj.priority);
+		if(jobj.priority) {
+			this.setKolabItemProperty(event, "priority", jobj.priority);
+		}
 		this.setKolabItemProperty(event, "status", jobj.status);
 		this.setKolabItemProperty(event, "PERCENT-COMPLETE", jobj.completed);
 	}
@@ -946,6 +950,7 @@ com.synckolab.calendarTools.xml2json = function (xml, syncTasks)
 	
 	if(syncTasks === true) {
 		jobj.type = "task";
+		jobj.completed = 0;
 	}
 
 	// check if we have to decode quoted printable
@@ -1295,7 +1300,7 @@ com.synckolab.calendarTools.xml2json = function (xml, syncTasks)
 					break;
 				}
 
-				jobj.recurrence.interval = cur.getXmlResult("INTERVAL", "1");
+				jobj.recurrence.interval = Number(cur.getXmlResult("INTERVAL", 1));
 				jobj.recurrence.count = 0;
 				
 				var node = new com.synckolab.Node(cur.getChildNode("RANGE"));
@@ -1314,7 +1319,7 @@ com.synckolab.calendarTools.xml2json = function (xml, syncTasks)
 								jobj.recurrence.untilDate = rangeSpec;
 							}
 							else {
-								jobj.recurrence.count = -1;
+								jobj.recurrence.count = 0;
 							}
 							break;
 						case "NUMBER":
@@ -1325,7 +1330,7 @@ com.synckolab.calendarTools.xml2json = function (xml, syncTasks)
 							}
 							break;
 						case "NONE":
-							jobj.recurrence.count =  -1;
+							jobj.recurrence.count =  0;
 							break;
 						}
 					}
@@ -1417,11 +1422,15 @@ com.synckolab.calendarTools.getTaskStatus = function (tstatus, xmlvalue) {
 	arrstatus["IN-PROCESS"] = "in-progress";
 	arrstatus["in-progress"] = "in-progress";
 	arrstatus["NEEDS-ACTION"] = "waiting-on-someone-else";
-	arrstatus["NONE"] = "not-started";
 	arrstatus["CANCELLED"] = "deferred";
 	arrstatus["COMPLETED"] = "completed";
 
 	if (xmlvalue) {
+		var info = arrstatus[tstatus];
+		// not found = not-started
+		if(!info) {
+			return "not-started";
+		}
 		return arrstatus[tstatus];
 	}
 	/* we want to return the Lightning value */
@@ -1460,7 +1469,6 @@ com.synckolab.calendarTools.json2xml = function (jobj, syncTasks, email) {
 	if(syncTasks === true)
 	{
 		// tasks have a status
-		
 		xml += com.synckolab.tools.text.nodeWithContent("status", jobj.status, false);
 		xml += com.synckolab.tools.text.nodeWithContent("completed", jobj.completed, false);
 		xml += com.synckolab.tools.text.nodeWithContent("start-date", jobj.startDate, false);
