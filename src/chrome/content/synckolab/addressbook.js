@@ -106,7 +106,7 @@ com.synckolab.AddressBook = {
 						//com.synckolab.tools.logMessage("checking " + curConfig.contact.folderMsgURI + " vs. " + folder, com.synckolab.global.LOG_DEBUG);
 
 						if(curConfig.contact && curConfig.contact.sync && curConfig.contact.useSyncListener) {
-							if(curConfig.contact.addressBookName === addressBokName)
+							if(curConfig.contact.addressBookName === addressBokName || com.synckolab.tools.text.fixNameToMiniCharset(curConfig.contact.addressBookName) === com.synckolab.tools.text.fixNameToMiniCharset(addressBokName))
 							{
 								return curConfig.contact;
 							}
@@ -216,7 +216,9 @@ com.synckolab.AddressBook = {
 		while (ABook)
 		{
 			var cur = ABook.QueryInterface(Components.interfaces.nsIAbDirectory);
-			if (cur.dirName === config.addressBookName)
+			if (cur.dirName === config.addressBookName ||
+				com.synckolab.tools.text.fixNameToMiniCharset(config.addressBookName) === com.synckolab.tools.text.fixNameToMiniCharset(cur.dirName)
+				)
 			{
 				config.addressBook = cur;
 				break;

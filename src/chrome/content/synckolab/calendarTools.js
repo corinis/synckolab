@@ -830,9 +830,9 @@ com.synckolab.calendarTools.json2event = function (jobj, calendar) {
 		var recInfo = Components.classes["@mozilla.org/calendar/recurrence-info;1"].createInstance(Components.interfaces.calIRecurrenceInfo);
 		recInfo.item = event;
 		var recRule = Components.classes["@mozilla.org/calendar/recurrence-rule;1"].createInstance(Components.interfaces.calIRecurrenceRule);
-		recRule.type = jobj.recurrene.cycle.toUpperCase();
+		recRule.type = jobj.recurrence.cycle.toUpperCase();
 
-		switch(jobj.recurrene.cycle) {
+		switch(jobj.recurrence.cycle) {
 		case "daily":
 			// nothing else to do here
 			break;

@@ -112,7 +112,7 @@ com.synckolab.Calendar = {
 			// use default timeframe if not specified
 			try {
 				config.timeFrame = pref.getIntPref("SyncKolab." + config.name + ".taskSyncTimeframe");
-				config.useSyncListener = pref.getBoolPref("SyncKolab." + config.name + ".syncListenerCalendarImap");
+				config.useSyncListener = pref.getBoolPref("SyncKolab." + config.name + ".syncListenerTaskImap");
 			} catch (tfignore) {
 				// per default take all
 				com.synckolab.tools.logMessage("Sync Time frame is not specified. Syncing all.", this.global.LOG_WARNING);
@@ -121,6 +121,7 @@ com.synckolab.Calendar = {
 			}
 			// uid -> filename database - main functions needs to know the name
 			config.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config + ".task");
+			
 		} else {
 			// calendar config
 			try {
@@ -142,7 +143,7 @@ com.synckolab.Calendar = {
 			// use default timeframe if not specified
 			try {
 				config.syncTimeFrame = pref.getIntPref("SyncKolab." + config.name + ".calSyncTimeframe");
-				config.useSyncListener = pref.getBoolPref("SyncKolab." + config.name + ".syncListenerTaskImap");
+				config.useSyncListener = pref.getBoolPref("SyncKolab." + config.name + ".syncListenerCalendarImap");
 			} catch (ignore2) {
 				// per default take all
 				com.synckolab.tools.logMessage("Sync Time frame is not specified. Syncing all.", this.global.LOG_WARNING);
@@ -152,6 +153,16 @@ com.synckolab.Calendar = {
 			// uid -> filename database - main functions needs to know the name
 			config.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config + ".cal");
 		}
+		
+		// get the correct calendar instance
+		var calendars = com.synckolab.calendarTools.getCalendars();
+		for ( var i = 0; i < calendars.length; i++) {
+			if (calendars[i].name === config.calendarName || com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name) === com.synckolab.tools.text.fixNameToMiniCharset(config.calendarName)) {
+				config.calendar = calendars[i];
+				break;
+			}
+		}
+
 	},
 	
 	init : function (config) {
@@ -166,15 +177,6 @@ com.synckolab.Calendar = {
 
 		this.forceServerCopy = false;
 		this.forceLocalCopy = false;
-
-		// get the correct calendar instance
-		var calendars = this.calTools.getCalendars();
-		for ( var i = 0; i < calendars.length; i++) {
-			if (calendars[i].name === config.calendarName || com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name) === com.synckolab.tools.text.fixNameToMiniCharset(config.calendarName)) {
-				this.gConfig.calendar = calendars[i];
-				break;
-			}
-		}
 
 		this.folderMessageUids = []; // the checked uids - for better sync
 
@@ -249,11 +251,11 @@ com.synckolab.Calendar = {
 
 		// add the new event
 		try {
-			var parsedEvent = com.synckolab.calendarTools.message2json(newEvent, message.config.task);
+			var tmpEventObj = com.synckolab.calendarTools.json2event(newEvent, message.config.calendar);
 			// update the newEvent timestamp so it wont display a window
 			var lastAckTime = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
 			lastAckTime.jsDate = new Date();
-			parsedEvent.alarmLastAck = lastAckTime;
+			tmpEventObj.alarmLastAck = lastAckTime;
 
 			// if we dont have a timezone - set it
 			/*
@@ -262,10 +264,11 @@ com.synckolab.Calendar = {
 			}
 			*/
 			
-			message.config.calendar.addItem(parsedEvent, null);
-			com.synckolab.tools.logMessage("added locally:" + cUid, this.global.LOG_CAL + this.global.LOG_INFO);
+			message.config.calendar.addItem(tmpEventObj, null);
+			message.config.calendar.refresh();
+			com.synckolab.tools.logMessage("added locally:" + cUid, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_INFO);
 		} catch (addEx) {
-			com.synckolab.tools.logMessage("unable to add item:" + cUid + "\n" + addEx, this.global.LOG_CAL + this.global.LOG_ERR);
+			com.synckolab.tools.logMessage("unable to add item:" + cUid + "\n" + addEx, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_ERR);
 		}
 
 	},
@@ -283,14 +286,38 @@ com.synckolab.Calendar = {
 
 		// get the dbfile from the local disk
 		var cEntry = com.synckolab.tools.file.getSyncDbFile(message.config, cUID);
-		
-		// search for the event in the calendar
-		for ( var i = 0; i < message.config.calendar.events.length; i++) {
-			if(message.config.gEvents.events[i].id === cUID) {
-				message.config.calendar.deleteItem(message.config.calendar.events[i], null);
-				break;
-			}
+
+		var filter = 0;
+		if (message.config.type === "task") {
+			filter = message.config.calendar.ITEM_FILTER_TYPE_TODO | message.config.calendar.ITEM_FILTER_COMPLETED_ALL;
+		} else {
+			filter = message.config.calendar.ITEM_FILTER_TYPE_EVENT;
 		}
+
+		// search for the event in the calendar
+		message.config.calendar.getItems(filter, 0, null, null, 
+		{
+			eventId: cUID,
+			calObj: message.config.calendar,
+			onOperationComplete : function (aCalendar, aStatus, aOperator, aId, aDetail) {
+				com.synckolab.tools.logMessage("operation " + com.synckolab.Calendar.gConfig.type + ": status=" + aStatus + " Op=" + aOperator + " Detail=" + aDetail, com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_CAL);
+				if (aStatus === 2152333316) {
+					com.synckolab.tools.logMessage(com.synckolab.Calendar.gConfig.type + ": duplicate id - for additem", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_CAL);
+				}
+			},
+			onGetResult : function (aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {
+				com.synckolab.tools.logMessage("got results: " + aCount + " items - looking for "+ this.eventId, com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_CAL);
+				var workItem;
+				for ( var i = 0; i < aCount; i++) {
+					if(aItems[i].id === this.eventId) {
+						workItem = aItems[i];
+						break;
+					}
+				}
+				this.calObj.deleteItem(workItem, null);
+				this.calObj.refresh();
+			}
+		});
 
 		// also remove the local db file since we deleted the contact on the server
 		if (cEntry.exists) {
@@ -500,7 +527,7 @@ com.synckolab.Calendar = {
 					conflictResolution.result = 2;
 				} else
 				// display a dialog asking for whats going on
-				if (window.confirm(com.synckolab.global.strBundle.getFormattedString("calConflictUseServer", [ foundEvent.title, foundEvent.id, newEvent.title, newEvent.uid ]))) {
+				if (window.confirm(com.synckolab.global.strBundle.getFormattedString("calConflictUseServer", [ foundEvent.title, foundEvent.uid, newEvent.title, newEvent.uid ]))) {
 					conflictResolution.result = 1;
 				} else {
 					conflictResolution.result = 2;
