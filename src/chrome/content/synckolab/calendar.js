@@ -66,8 +66,6 @@ com.synckolab.Calendar = {
 	format : 'Xml', // the format iCal/Xml	
 	folderMessageUids : '',
 
-	dbFile : '', // the current sync database filen (a file with uid:size:date:localfile)
-
 	doc : '', // this is the owning document
 	itemList : '', // display the currently processed item with status
 	curItemInList : '', // the current item in the list (for updating the status)
@@ -119,8 +117,10 @@ com.synckolab.Calendar = {
 				config.timeFrame = 180;
 				config.useSyncListener = false;
 			}
+
 			// uid -> filename database - main functions needs to know the name
-			config.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config + ".task");
+			// the current sync database filen (a file with uid:size:date:localfile)
+			config.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config.name + ".task");
 			
 		} else {
 			// calendar config
@@ -151,7 +151,8 @@ com.synckolab.Calendar = {
 				config.useSyncListener = false;
 			}
 			// uid -> filename database - main functions needs to know the name
-			config.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config + ".cal");
+			// the current sync database filen (a file with uid:size:date:localfile)
+			config.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config.name + ".cal");
 		}
 		
 		// get the correct calendar instance

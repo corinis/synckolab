@@ -1662,6 +1662,9 @@ com.synckolab.addressbookTools.Xml2List = function (topNode, card) {
  * @return true if the message contains a list instead of a card
  */
 com.synckolab.addressbookTools.isMailList = function (message) {
+	if(message.synckolab) {
+		return message.type === "maillist";
+	}
 	if (message.indexOf("<?xml") !== -1 || message.indexOf("<?XML") !== -1) {
 		if (message.indexOf("<distribution-list") !== -1 || message.indexOf("<DISTRIBUTION-LIST") !== -1) {
 			com.synckolab.tools.logMessage("is mail list returning true", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
@@ -1692,6 +1695,11 @@ com.synckolab.addressbookTools.parseMessageContent = function (message) {
 	// fix for bug #16766: message has no properties
 	if (message === null) {
 		return false;
+	}
+
+	// if fileContent contains a synckolab field its already parsed
+	if(message.synckolab) {
+		return message;
 	}
 
 	// the pojo contains the synckolab version - this is used to identify the content

@@ -748,7 +748,7 @@ com.synckolab.main.getContent = function()
 	}
 
 	// get the message database (a file with uid:size:date:localfile)
-	com.synckolab.main.syncMessageDb = new com.synckolab.dataBase(com.synckolab.main.gSync.dbFile);
+	com.synckolab.main.syncMessageDb = new com.synckolab.dataBase(com.synckolab.main.gConfig.dbFile);
 	
 	com.synckolab.main.curMessage = 0;
 	com.synckolab.main.updateMessages = []; // saves the the message url to delete
@@ -882,6 +882,7 @@ com.synckolab.main.getMessage = function()
  cur.date (PRTime) ?
 	 */
 	com.synckolab.main.gLastMessageDBHdr = cur;
+	com.synckolab.tools.logMessage("checking for synckey in local db: " + cur.mime2DecodedSubject, com.synckolab.global.LOG_DEBUG);
 	com.synckolab.main.gSyncFileKey = com.synckolab.main.syncMessageDb.get(cur.mime2DecodedSubject);
 
 	com.synckolab.main.gSyncKeyInfo = cur.mime2DecodedSubject;
@@ -897,15 +898,20 @@ com.synckolab.main.getMessage = function()
 		{
 			com.synckolab.tools.logMessage("we have " + cur.mime2DecodedSubject + " already locally...", com.synckolab.global.LOG_DEBUG);
 			// check if the message has changed
-			if (cur.messageSize === com.synckolab.main.gSyncFileKey[1] && cur.date === com.synckolab.main.gSyncFileKey[2])
+			if (cur.messageSize === Number(com.synckolab.main.gSyncFileKey[1]) && cur.date === Number(com.synckolab.main.gSyncFileKey[2]))
 			{
 				// get the content from the cached file and ignore the imap
 				com.synckolab.tools.logMessage("taking content from: " + com.synckolab.main.gSyncFileKey[3] + "/" + com.synckolab.main.gSyncFileKey[4], com.synckolab.global.LOG_DEBUG);
-				com.synckolab.main.fileContent = com.synckolab.tools.readSyncDBFile(com.synckolab.tools.file.getSyncDbFile(com.synckolab.main.gConfig, com.synckolab.main.gSyncFileKey[4]));
-
+				
+				var cachedFile = com.synckolab.tools.readSyncDBFile(com.synckolab.tools.file.getSyncDbFile(com.synckolab.main.gConfig, com.synckolab.main.gSyncFileKey[4]));
 				// make sure we dont read an empty file
-				if (com.synckolab.main.fileContent && com.synckolab.main.fileContent !== "")
+				if (cachedFile && cachedFile !== "" && cachedFile.synckolab)
 				{
+					com.synckolab.tools.logMessage("read cached file", com.synckolab.global.LOG_DEBUG);
+					// parse the json
+					com.synckolab.main.currentMessage = {
+							fileContent: cachedFile
+					};
 					com.synckolab.main.parseMessageRunner();
 					return;
 				}
@@ -1048,7 +1054,10 @@ com.synckolab.main.parseMessageRunner = function()
 		com.synckolab.tools.logMessage("parsing message... ", com.synckolab.global.LOG_DEBUG);
 
 		// fix the message for line truncs (last char in line is =)
-		com.synckolab.main.currentMessage.fileContent = com.synckolab.main.currentMessage.fileContent.replace(/\=\n(\S)/g, "$1");
+		// content might be a preparsed json
+		if(!com.synckolab.main.currentMessage.fileContent.synckolab) {
+			com.synckolab.main.currentMessage.fileContent = com.synckolab.main.currentMessage.fileContent.replace(/\=\n(\S)/g, "$1");
+		}
 		skcontent = com.synckolab.main.gSync.parseMessage(com.synckolab.main.currentMessage.fileContent, com.synckolab.main.updateMessagesContent, (com.synckolab.main.gLaterMessages.pointer === 0));
 	}
 
@@ -1079,7 +1088,7 @@ com.synckolab.main.parseMessageRunner = function()
 		{
 			// fill info about the file and re-add it 
 			com.synckolab.main.gSyncFileKey[0] = com.synckolab.main.gSyncKeyInfo;
-			com.synckolab.main.gSyncFileKey[3] = com.synckolab.main.gSync.gConfig;
+			com.synckolab.main.gSyncFileKey[3] = com.synckolab.main.gSync.gConfig.name;
 			com.synckolab.main.gSyncFileKey[4] = com.synckolab.main.gSync.gCurUID;
 			// Add the key
 			com.synckolab.main.syncMessageDb.add(com.synckolab.main.gSyncFileKey);

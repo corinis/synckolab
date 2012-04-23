@@ -326,9 +326,20 @@ com.synckolab.calendarTools.equalsEvent = function (a, b) {
 	return com.synckolab.tools.equalsObject(a, b);
 };
 
+/**
+ * 
+ * @param fileContent this contains a message to parse or already a preparsed json object
+ * @param syncTasks true if we sync tasks
+ * @returns a parsed json object
+ */
 com.synckolab.calendarTools.message2json = function (fileContent, syncTasks) {
 	if (fileContent === null) {
 		return null;
+	}
+	
+	// if fileContent contains a synckolab field its already parsed
+	if(fileContent.synckolab) {
+		return fileContent;
 	}
 
 	if (fileContent.indexOf("<?xml") !== -1 || fileContent.indexOf("<?XML") !== -1)

@@ -68,8 +68,6 @@ com.synckolab.AddressBook = {
 	curItemInListStatus: '',
 	curItemInListContent: '',
 
-	dbFile: '', // the current sync database filen (a file with uid:size:date:localfile)
-	
 	forceServerCopy: false,
 	forceLocalCopy: false,
 
@@ -93,6 +91,7 @@ com.synckolab.AddressBook = {
 		} catch (e) {
 			return;
 		}
+		
 		
 		// get the rdf for the Addresbook list
 		// the addressbook type nsIAbDirectory
@@ -234,10 +233,9 @@ com.synckolab.AddressBook = {
 			}
 		}
 		
+		// the current sync database filen (a file with uid:size:date:localfile)
 		// uid -> filename database - main functions needs to know the name
-		config.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config + ".ab");
-		
-		// add a listener
+		config.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config.name + ".ab");
 	},
 
 	init: function (config) {
