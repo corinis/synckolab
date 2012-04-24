@@ -237,6 +237,10 @@ com.synckolab.Calendar = {
 	 * callback when a new message has arrived
 	 */
 	triggerParseAddMessage: function(message) {
+		// make sure not to parse messages while a full sync is running
+		if(com.synckolab.global.running || com.synckolab.global.triggerRunning) {
+			return;
+		}
 
 		// parse the content
 		var newEvent = com.synckolab.calendarTools.message2json(message.fileContent, message.config.type === "task");
@@ -277,6 +281,11 @@ com.synckolab.Calendar = {
 	 * callback when a message has been deleted which should contain a contact
 	 */
 	triggerParseDeleteMessage: function(message) {
+		// make sure not to parse messages while a full sync is running
+		if(com.synckolab.global.running || com.synckolab.global.triggerRunning) {
+			return;
+		}
+
 		var messageFields = new com.synckolab.dataBase();
 
 		// parse the content
@@ -287,7 +296,8 @@ com.synckolab.Calendar = {
 
 		// get the dbfile from the local disk
 		var cEntry = com.synckolab.tools.file.getSyncDbFile(message.config, cUID);
-
+		
+		// this might actually be a duplicate clean - make sure no second message with that uid exists
 		var filter = 0;
 		if (message.config.type === "task") {
 			filter = message.config.calendar.ITEM_FILTER_TYPE_TODO | message.config.calendar.ITEM_FILTER_COMPLETED_ALL;
