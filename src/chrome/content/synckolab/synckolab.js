@@ -828,6 +828,12 @@ com.synckolab.main.getMessage = function()
 			skipCMessage = true;
 
 		}
+		
+		if(!cur.mime2DecodedSubject || cur.mime2DecodedSubject === "" || cur.mime2DecodedSubject.indexOf(" ") !== -1) {
+			com.synckolab.tools.logMessage("Message '" + cur.mime2DecodedSubject + "' has an invalid subject!", com.synckolab.global.LOG_INFO);
+			// skip current and process next nessage	
+			skipCMessage = true;
+		}
 
 		// check if we can ignore this message because its too old (0=take all into accout)	
 		if(com.synckolab.main.gConfig.timeFrame && com.synckolab.main.gConfig.timeFrame > 0 && skipCMessage !== true)
