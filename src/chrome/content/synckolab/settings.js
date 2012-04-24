@@ -1372,6 +1372,8 @@ com.synckolab.settings = {
 					return;
 				}
 
+				var folders = [];
+				
 				while (subfolders !== null)
 				{
 					var cur = null;
@@ -1387,8 +1389,7 @@ com.synckolab.settings = {
 					}
 
 					cur = cur.QueryInterface(Components.interfaces.nsIMsgFolder);
-
-					this.updateFolderElements(cur, tChildren, appendChar);
+					folders.push(cur);
 
 					// break condition tbird3
 					if (subfolders.hasMoreElements && !subfolders.hasMoreElements()) {
@@ -1412,6 +1413,19 @@ com.synckolab.settings = {
 					}
 
 				}
+				folders.sort(function(a,b) {
+					
+					var sa = a.prettyName.toLowerCase();
+					var sb = b.prettyName.toLowerCase();
+					if(sa === sb) {
+						return 0;
+					}
+					return (sa < sb) ? -1 : 1;
+				});
+				for(var i = 0; i < folders.length; i++) {
+					this.updateFolderElements(folders[i], tChildren, appendChar);
+				}
+
 			}
 		},
 
