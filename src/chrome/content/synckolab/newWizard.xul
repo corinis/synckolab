@@ -139,9 +139,9 @@
 		
 			var actList = document.getElementById("ImapAcct");
 			if (actList.value.length &gt; 2)
-				document.getElementById("newConfigWizard").canAdvance = true; 
+				document.getElementById("newConfigWizard").canAdvance = true;
 			else
-				document.getElementById("newConfigWizard").canAdvance = false; 			
+				document.getElementById("newConfigWizard").canAdvance = false;
 		}
 		
 		// set the folder views
@@ -182,7 +182,7 @@
 			if (!document.getElementById ("syncContacts").checked)
 				document.getElementById("typePage").next = document.getElementById("conPage").next;
 			else
-				document.getElementById("typePage").next = "conPageId";						
+				document.getElementById("typePage").next = "conPageId";
 			
 		}
 		
@@ -190,7 +190,7 @@
 		function checkCalendar()
 		{
 			// disable options
-			if (com.synckolab.calendarTools.isCalendarAvailable() != true)
+			if (com.synckolab.calendarTools.isCalendarAvailable() === false)
 			{
 				document.getElementById ("syncCalendar").checked = false;
 				document.getElementById ("syncCalendar").disabled = true;

@@ -95,7 +95,7 @@ com.synckolab.calendarTools = {
 		isCalendarAvailable: function ()
 		{
 			var syncCals = this.getCalendars();
-			return syncCals !== [] && syncCals;
+			return syncCals?true:false;
 		},
 
 		/**
