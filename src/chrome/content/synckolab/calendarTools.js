@@ -522,8 +522,9 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 				}
 			}
 		}
-		if(cCat != "")
+		if(cCat && cCat !== "") {
 			jobj.categories = cCat;
+		}
 	}
 	else
 	{
@@ -549,8 +550,9 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 			jobj.recurrence.cycle = "weekly";
 			jobj.recurrence.days = []; 
 			// need to process the <day> value here
-			for (i in recRule.getComponent("BYDAY", {})) {
-				jobj.recurrence.days.push(com.synckolab.tools.kolab.getXmlDayName(i));
+			var curDay = recRule.getComponent("BYDAY", {});
+			if (curDay && curDay.length > 0 ) {
+				jobj.recurrence.days.push(com.synckolab.tools.kolab.getXmlDayName(curDay[0]));
 			}
 			break;
 		case "MONTHLY":
