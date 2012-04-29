@@ -113,7 +113,7 @@ com.synckolab.Calendar = {
 				config.useSyncListener = pref.getBoolPref("SyncKolab." + config.name + ".syncListenerTaskImap");
 			} catch (tfignore) {
 				// per default take all
-				com.synckolab.tools.logMessage("Sync Time frame is not specified. Syncing all.", this.global.LOG_WARNING);
+				com.synckolab.tools.logMessage("Sync Time frame is not specified. Syncing all.", com.synckolab.global.LOG_WARNING);
 				config.timeFrame = 180;
 				config.useSyncListener = false;
 			}
@@ -146,7 +146,7 @@ com.synckolab.Calendar = {
 				config.useSyncListener = pref.getBoolPref("SyncKolab." + config.name + ".syncListenerCalendarImap");
 			} catch (ignore2) {
 				// per default take all
-				com.synckolab.tools.logMessage("Sync Time frame is not specified. Syncing all.", this.global.LOG_WARNING);
+				com.synckolab.tools.logMessage("Sync Time frame is not specified. Syncing all.", com.synckolab.global.LOG_WARNING);
 				config.syncTimeFrame = -1;
 				config.useSyncListener = false;
 			}

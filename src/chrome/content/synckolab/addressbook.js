@@ -346,7 +346,14 @@ com.synckolab.AddressBook = {
 		
 		// a hashmap remembering all the cards - for faster use
 		this.gCardDB = new com.synckolab.hashMap();
+
+		// shouldnt happen, since we have a config...
+		if(!this.gConfig.addressBook) {
+			com.synckolab.tools.logMessage("address book missing, please restart or try again", com.synckolab.global.LOG_ERROR + com.synckolab.global.LOG_AB);
+			return null;
+		}
 		
+
 		// cache all the cards with the uid in the CardDB hashmap
 		// fill the hashmap
 		var lCards = this.gConfig.addressBook.childCards;
@@ -410,7 +417,7 @@ com.synckolab.AddressBook = {
 			}
 			catch (e)
 			{
-				com.synckolab.tools.logMessage("unable to delete card: " + cId, com.synckolab.global.LOG_ERROR + com.synckolab.global.LOG_AB);
+				com.synckolab.tools.logMessage("unable to delete card: " + curCard.uid, com.synckolab.global.LOG_ERROR + com.synckolab.global.LOG_AB);
 				return;
 			}
 
