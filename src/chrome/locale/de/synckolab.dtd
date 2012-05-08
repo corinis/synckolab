@@ -40,7 +40,7 @@
 <!ENTITY synckolab.settings.add				"Neu">
 <!ENTITY synckolab.settings.load			"Laden">
 <!ENTITY synckolab.settings.saveSingle		"Exportieren">
-<!ENTITY synckolab.settings.saveAll			"alle Exportieren">
+<!ENTITY synckolab.settings.saveAll			"alle Konfigurationen Exportieren">
 <!ENTITY synckolab.settings.del				"Löschen">
 <!ENTITY synckolab.settings.SyncCalendar	"Kalender abgleichen">
 <!ENTITY synckolab.settings.SyncCalendarTip	"Aktivieren wenn in dieser Konfiguration der Kalender abgeglichen werden sollen">
@@ -85,7 +85,7 @@
 <!-- New Config Wizard -->
 <!ENTITY synckolab.newwizard.title "SyncKolab Einrichtungs-Wizard">
 <!ENTITY synckolab.wizard.LongDescription	"Auf den folgenden Seiten können Sie für jeden Abgleichtyp (Kalender, Adressbuch und Aufgaben) das IMAP-Verzeichnis zum abgleichen auswählen. Zusätzlich können Sie angeben, ob in dieser Konfiguration der nur-lese Modus (lokale änderungen werden nicht auf den Server übertragen) und welcher Formattyp (XML oder vCard/iCal) verwendet wird.">
-<!ENTITY synckolab.newwizard.intro 		"ithilfe von SyncKolab können Sie Ihre Kontakt- und Kalenderdaten zwischen mehreren Rechnern abgleichen. Die einzige Voraussetzung ist ein IMAP Server.">
+<!ENTITY synckolab.newwizard.intro 		"Mithilfe von SyncKolab können Sie Ihre Kontakt- und Kalenderdaten zwischen mehreren Rechnern abgleichen. Die einzige Voraussetzung ist ein IMAP Server.">
 <!ENTITY synckolab.newwizard.selectAccount	"bitte wählen Sie ein IMAP Konto zur Synchronisierung aus">
 <!ENTITY synckolab.newwizard.configName	"Anzeigename">
 <!ENTITY synckolab.newwizard.descName "Mithilfe des Anzeigenamens können Sie, vor allem wenn sie mehrere Konfigurationen haben, die verschiedenen Einstellungen leichter finden. Versuchen Sie einen beschreibenden Namen zu wählen (z.B. gemeinsame Adressen, Firmentermine, private Aufgaben).">
