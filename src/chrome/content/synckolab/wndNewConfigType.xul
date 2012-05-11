@@ -1,0 +1,47 @@
+<?xml version="1.0"?> 
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://synckolab/skin/synckolab.css" type="text/css"?>
+
+<!DOCTYPE loc SYSTEM "chrome://synckolab/locale/synckolab.dtd">
+
+<dialog id="syncKolabNewConfigTypeDlg" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" 
+	buttons="accept,cancel"  ondialogaccept="return checkConfig();" 
+	ondialogcancel="return true;" persist="screenX screenY" width="0" title="&synckolab.newwizard.configName;">
+	
+	<script type="application/x-javascript" src="chrome://synckolab/content/tools/text.js"></script>
+	<script>
+		function checkConfigName(name)
+		{
+			if(name !== com.synckolab.tools.text.fixNameToMiniCharset(name)) {
+				document.getElementById("configName").value = com.synckolab.tools.text.fixNameToMiniCharset(name);
+			}
+		}
+		
+		function checkConfig() {
+			// check name
+			var name = document.getElementById("configName").value;
+			if(name.length &lt; 3) {
+				alert("&synckolab.wrong.input.name;")
+				return false;
+			}
+			
+			if(name !== com.synckolab.tools.text.fixNameToMiniCharset(name)) {
+				return false;
+			}
+			var retVals = window.arguments[0];
+			retVals.name = name;
+			return true;
+			
+		}
+	</script>
+	<vbox>
+		<hbox>
+			<label value="&synckolab.newwizard.configName;" style="font-weight:700"/>
+			<textbox id="configName" onkeyup="checkConfigName(this.value);"/>
+		</hbox>
+		<separator class="thin" />
+		<description style="width: 200px">
+			&synckolab.newwizard.descName;
+		</description>
+	</vbox>
+</dialog>
