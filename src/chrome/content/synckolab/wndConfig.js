@@ -207,9 +207,12 @@ com.synckolab.settings.writeConfiguration = function(config) {
 		}
 		
 		// write per account
+		alert("writing account config for " + config.accounts[i].name)
 		com.synckolab.settings.writeAccountConfig(pref, config.accounts[i], origAcct);
 		acctList += config.accounts[i].name + ";";
 	}
+	alert("writing accountlist ")
+
 	// write the acctList back
 	com.synckolab.tools.setConfigValue(pref, "accounts.list", com.synckolab.tools.CONFIG_TYPE_CHAR, acctList);
 	
@@ -225,10 +228,9 @@ com.synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
 	for(var type in acct) {
 		// skip volatiles/non-arrays
 		if(type !== "name" && acct[type].push) {
-			alert("writing acct config for: " + type);
-
 			// clear old ones
 			if(orig) {
+
 				for(i=0; i < orig[type].length; i++) {
 					found = false;
 					for(j=0; j < acct[type].length; j++) {
@@ -238,13 +240,19 @@ com.synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
 						}
 					}
 					// get rid of the deleted configuration branches
-					pref.resetBranch("SyncKolab.accounts." + acct.name + "." + type + ".configs." + orig[type][i].name);
+					if(!found) {
+						try {
+							pref.resetBranch("SyncKolab.accounts." + acct.name + "." + type + ".configs." + orig[type][i].name);
+						} catch (ex) {
+							
+						}
+					}
 				}
 			}
 
 			configs = "";
 			for(i=0; i < acct[type].length; i++) {
-				if(acct[type][i].name.length < 3) {
+				if(!acct[type][i] || !acct[type][i].name || acct[type][i].name.length < 3) {
 					continue;
 				}
 				
