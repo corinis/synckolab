@@ -166,11 +166,14 @@ com.synckolab.Calendar = {
 
 	},
 	
-	init : function (config) {
+	init : function (config, itemList, document) {
 		// package shortcuts:
 		this.global = com.synckolab.global;
 		this.tools = com.synckolab.tools;
 		this.calTools = com.synckolab.calendarTools;
+
+		this.itemList = itemList;
+		this.doc = document;
 
 		this.gConfig = config;
 

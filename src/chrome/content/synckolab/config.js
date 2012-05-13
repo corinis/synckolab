@@ -48,7 +48,29 @@ com.synckolab.config = {
 		PAUSE_ON_ERROR: false,
 		
 		// default version of configuration
-		VERSION: -1
+		VERSION: -1,
+		
+		// definition of settings that are the same for each part (contact/calendar/task)
+		baseSetting: {
+			// the address book / calendar
+			source: {type: com.synckolab.tools.CONFIG_TYPE_CHAR, def: null },
+			// the imap folder path
+			folderPath: {type: com.synckolab.tools.CONFIG_TYPE_CHAR, def: null },
+			// true if the config is enabled
+			enabled: {type: com.synckolab.tools.CONFIG_TYPE_BOOL, def: true },
+			// save changes to imap (vs. read only)
+			saveToImap: {type: com.synckolab.tools.CONFIG_TYPE_BOOL, def: true },
+			// automatically sync every X minutes (0 = disable)
+			syncInterval: {type: com.synckolab.tools.CONFIG_TYPE_INT, def: 0 },
+			// format to use: xml|vcard
+			format: {type: com.synckolab.tools.CONFIG_TYPE_CHAR, def: "xml" },
+			// timeframe to sync in (don't sync entries with an older start-date)
+			timeFrame: {type: com.synckolab.tools.CONFIG_TYPE_INT, def: 180}, 
+			// enable the sync listener
+			syncListener: {type: com.synckolab.tools.CONFIG_TYPE_BOOL, def: false },
+			// what to do with conflicts
+			defaultResolve: {type: com.synckolab.tools.CONFIG_TYPE_CHAR, def: "ask" }
+		}
 	};
 
 com.synckolab.global = {
@@ -78,9 +100,94 @@ com.synckolab.global = {
 };
 
 /**
+ * Reads the configuration into an object. the object structure is:
+ * config.accounts[NAME].[contact|calendar|task].CONFIGNAME
+ * @param pref the preference service (optional)
+ * @returns a configuration object
+ */
+com.synckolab.config.loadConfiguration = function(pref) {
+	if(!pref) {
+		pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+	}
+	
+	var config = {
+		version: com.synckolab.tools.getConfigValue(pref, "configVersion", com.synckolab.tools.CONFIG_TYPE_INT, 0),
+		debugLevel: com.synckolab.tools.getConfigValue(pref, "debugLevel", com.synckolab.tools.CONFIG_TYPE_INT, com.synckolab.global.LOG_WARNING),
+		// hide folder
+		hideFolder: com.synckolab.tools.getConfigValue(pref, "hideFolder", com.synckolab.tools.CONFIG_TYPE_BOOL, false),
+		// hide the window while sync
+		hiddenWindow: com.synckolab.tools.getConfigValue(pref, "hiddenWindow", com.synckolab.tools.CONFIG_TYPE_BOOL, false),
+		// sync automatically once on start
+		syncOnStart: com.synckolab.tools.getConfigValue(pref, "syncOnStart", com.synckolab.tools.CONFIG_TYPE_BOOL, false),
+		accounts: []
+	};
+	
+	var sAcct = com.synckolab.tools.getConfigValue(pref, "accounts.list");
+	if (sAcct) {
+		var sAccts = sAcct.split(';');
+		for(var i = 0; i < sAccts.length; i++) {
+			// skip empty configs
+			if(sAccts[i].length <= 3) {
+				continue;
+			}
+			var acct = {
+					name: sAccts[i], // name = incomingServer
+					contact: [],
+					calendar: [],
+					task: []
+			};
+			config.accounts.push(acct);
+			
+			com.synckolab.config.loadAccountConfig(pref, acct);
+		}
+	}
+	
+	return config;
+};
+
+
+/**
+ * read the account configuration into an object
+ * @param acct the account object to read the configuration into (name has to be existent)
+ */
+com.synckolab.config.loadAccountConfig = function (pref, acct) {
+	var sConf, sConfs, i;
+	for(var type in acct) {
+		// skip volatiles/non-arrays
+		if(type !== "name" && acct[type].push) {
+		
+			sConf = com.synckolab.tools.getConfigValue(pref, "accounts." + acct.name+"." + type + ".list");
+			sConfs = sConf.split(';');
+			if(sConfs) {
+				for(i = 0; i < sConfs.length; i++) {
+					// skip empty configs
+					if(sConfs[i].length <= 3) {
+						continue;
+					}
+					var cConf = {
+							name: sConfs[i]
+					};
+					acct[type].push(cConf);
+					
+					// read all the base settings
+					for(var n in com.synckolab.config.baseSetting) {
+						// skip unwanted prototypes (without type)
+						if(com.synckolab.config.baseSetting[n].type  >= 0) {
+							cConf[n] = com.synckolab.tools.getConfigValue(pref, "accounts." + acct.name+"." + type + ".configs." + cConf.name + "." + n, 
+									com.synckolab.config.baseSetting[n].type, 
+									com.synckolab.config.baseSetting[n].def);
+						}
+					}
+				}
+			}
+		}
+	}
+};
+
+/**
  * reads the configuration. 
  * This can also be used to refresh the configuration after a change.
- * It will read all thats necessary and also prepares teh required objects like
+ * It will read all thats necessary and also prepares the required objects like
  * <ul>
  * <li>sync db file
  * <li>the msgfolder
@@ -88,171 +195,62 @@ com.synckolab.global = {
  * </ul>
  */
 com.synckolab.config.readConfiguration = function() {
+	var i,j;
 	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
-	var i;
-	var curVersion = 0;
-	try {
-		curVersion = pref.getIntPref("SyncKolab.configVersion");
-	} catch (ex) {
-		// ignore
-	}
-
+	var curVersion = com.synckolab.tools.getConfigValue(pref, "configVersion", com.synckolab.tools.CONFIG_TYPE_INT, 0);
 	com.synckolab.tools.logMessage("Checking configuration ("+com.synckolab.config.VERSION+" - "+curVersion+")", com.synckolab.global.LOG_DEBUG);
 
-	var configs = [];
-	try {
-		configs = pref.getCharPref("SyncKolab.Configs").split(';');
-		configs.sort();
-	} catch(ex2) {
-		com.synckolab.tools.logMessage("ERROR: Reading 'SyncKolab.Configs' failed: " + ex2, com.synckolab.global.LOG_ERROR);
-	}
-
-	if (configs.length === 0)
-	{
-		com.synckolab.tools.logMessage("No Configuration found - please run setup.", com.synckolab.global.LOG_ERROR);
-		return;
-	}
-
 	if(curVersion === com.synckolab.config.VERSION) {
-		// check if we have an up-to-date config loaded
-		if (com.synckolab.main.syncConfigs && com.synckolab.main.syncConfigs.length > 0)
-		{
-			if (com.synckolab.main.syncConfigs.length === configs.length) {
+		// nothing changed and we have an active config
+		return;
+	} 
 	
-				// Check our previous configs against the current list of configs.
-				var configChanged = false;
-				for (i = 0; i < configs.length; i++) {
-					// skip empty configs
-					if(configs[i] === '') {
-						continue;
-					}
-					
-					var found = false;
-					for(var j = 0; j < com.synckolab.main.syncConfigs.length; j++) {
-						if(com.synckolab.main.syncConfigs[j]) {
-							if (configs[i] === com.synckolab.main.syncConfigs[j].name) {
-								found = true;
-								break;
-							}
-						}
-					}
-					// the config name was not found
-					if(!found) {
-						com.synckolab.tools.logMessage("unable to find " + configs[i], com.synckolab.global.LOG_DEBUG);
-						configChanged = true;
-						break;
-					}
-				}
+	// remember the config version
+	com.synckolab.config.VERSION = curVersion;
+	com.synckolab.tools.logMessage("Config Version has changed. ("+com.synckolab.config.VERSION+" - "+curVersion+")", com.synckolab.global.LOG_INFO);
 	
-				// skip re-reading of config - nothing changed
-				if(!configChanged) {
-					return;
-				}
-			}
-			com.synckolab.tools.logMessage("Config has changed - reloading.", com.synckolab.global.LOG_DEBUG);
-		}
-	} else {
-		// remember the config version
-		com.synckolab.config.VERSION = curVersion;
-		com.synckolab.tools.logMessage("Config Version has changed. ("+com.synckolab.config.VERSION+" - "+curVersion+")", com.synckolab.global.LOG_INFO);
-	}
+	// load the configuration (use existing pref service)
+	var config = com.synckolab.config.loadConfiguration(pref);
 
+	com.synckolab.main.config = config;
+	
 	// set the debug level
-	com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL = com.synckolab.global.LOG_ALL + com.synckolab.global.LOG_WARNING; // default: warn
-	try {
-		com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL = com.synckolab.global.LOG_ALL + pref.getIntPref("SyncKolab.debugLevel");
-	} catch (exdebugLvl) {
-		com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab.debugLevel' failed - setting default as WARNING: " + exdebugLvl, com.synckolab.global.LOG_WARNING);
-		pref.setIntPref("SyncKolab.debugLevel", com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL);
-	}
-	
-	com.synckolab.tools.logMessage("Reading configurations...", com.synckolab.global.LOG_DEBUG);
-
+	com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL = config.debugLevel;
+	// hide folder
+	com.synckolab.main.hideFolder = config.hideFolder;
 	// create an object for each configuration
 	com.synckolab.main.syncConfigs = [];
+	// hide window
+	com.synckolab.main.doHideWindow = config.hiddenWindow;
+
 	
-	var curConfig = null;
-	
-	// check if we want to "hide" the configured folders
-	try {
-		com.synckolab.main.hideFolder = pref.getBoolPref("SyncKolab.hideFolder");
-	} catch (hideEx) {
-		// default: don't hide
-		com.synckolab.main.hideFolder = false;
-	}
-	
-	// fill the configs
-	for (i=0; i < configs.length; i++)
+	// check for listener or autorun
+	for (i=0; i < config.accounts.length; i++)
 	{
-		// skip empty configs
-		if (configs[i] === '') {
-			continue;
-		}
-		
-		curConfig = {};
-		com.synckolab.main.syncConfigs[i] = curConfig;
-		
-		curConfig.syncTimer = 0;
-		curConfig.name = configs[i];
-		try
-		{
-			curConfig.autoRun = pref.getIntPref("SyncKolab."+configs[i]+".autoSync");
-		}catch (ex3)
-		{
-			com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab."+configs[i]+".autoSync' failed: " + ex3, com.synckolab.global.LOG_WARNING);
-			curConfig.autoRun = 0;
-		}
-
-		try
-		{
-			curConfig.autoHideWindow = pref.getBoolPref("SyncKolab."+configs[i]+".hiddenWindow");
-		}catch (ex4)
-		{
-			com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab."+configs[i]+".hiddenWindow' failed: " + ex4, com.synckolab.global.LOG_WARNING);
-			curConfig.autoHideWindow = false;
-		}
-		
-		curConfig.serverKey = pref.getCharPref("SyncKolab." + curConfig.name + ".IncomingServer");
-
-		curConfig.conflictResolve = "ask";
-		try {
-			curConfig.conflictResolve = pref.getCharPref("SyncKolab." + curConfig.name + ".Resolve");
-		} catch (ignore) {
-		}
-
-		
+		var account = config.accounts[i];
 		// read the messagefolder and save the object in the config
-		
-		// add the contact configuration info
-		curConfig.contact = com.synckolab.config.createEmptyconfig(curConfig, "contact");
-		com.synckolab.AddressBook.readConfig(curConfig.contact, pref);
-		com.synckolab.config.fillMsgFolder(curConfig.contact);
-
-		// add the calendar configuration info
-		curConfig.cal = com.synckolab.config.createEmptyconfig(curConfig, "cal");
-		com.synckolab.Calendar.readConfig(curConfig.cal, pref);
-		com.synckolab.config.fillMsgFolder(curConfig.cal);
-
-		// same for tasks
-		curConfig.task = com.synckolab.config.createEmptyconfig(curConfig, "task");
-		com.synckolab.Calendar.readConfig(curConfig.task, pref);
-		com.synckolab.config.fillMsgFolder(curConfig.task);
-
-		curConfig.startOnce = false;
-		try
-		{
-			if(pref.getBoolPref("SyncKolab."+configs[i]+".syncOnStart") === true)
-			{
-				com.synckolab.tools.logMessage("Run on Startup for "+ curConfig.name, com.synckolab.global.LOG_DEBUG);
-				// hide the window 
-				com.synckolab.main.doHideWindow = curConfig.autoHideWindow;
-				com.synckolab.main.forceConfig = curConfig.name;
-				com.synckolab.main.sync("timer");
+		for(j = 0; j < account.contact.length; j++) {
+			account.contact[j].serverKey = account.name;
+			com.synckolab.config.prepareConfig(account.contact[j], "contact");
+			if(account.contact[j].enabled) {
+				com.synckolab.main.syncConfigs.push(account.contact[j]);
 			}
-		}catch (ex5)
-		{
-			com.synckolab.tools.logMessage("WARNING: Reading 'SyncKolab."+configs[i]+".syncOnStart' failed: " + ex5, com.synckolab.global.LOG_WARNING);
-			curConfig.autoHideWindow = false;
+		}
+
+		for(j = 0; j < account.calendar.length; j++) {
+			account.calendar[j].serverKey = account.name;
+			com.synckolab.config.prepareConfig(account.calendar[j], "calendar");
+			if(account.calendar[j].enabled) {
+				com.synckolab.main.syncConfigs.push(account.calendar[j]);
+			}
+		}
+
+		for(j = 0; j < account.task.length; j++) {
+			account.task[j].serverKey = account.name;
+			com.synckolab.config.prepareConfig(account.task[j], "task");
+			if(account.task[j].enabled) {
+				com.synckolab.main.syncConfigs.push(account.task[j]);
+			}
 		}
 	}
 	
@@ -264,31 +262,58 @@ com.synckolab.config.readConfiguration = function() {
 /**
  * creates an empty config object
  */
-com.synckolab.config.createEmptyconfig = function(baseConfig, confType) {
-	var c = {
-		sync: false,
-		useSyncListener: false,
-		name: baseConfig.name,
-		type: confType,
-		serverKey: baseConfig.serverKey,
-		conflictResolve: baseConfig.conflictResolve,
-		hide: com.synckolab.main.hideFolder,
-		msgList: new com.synckolab.hashMap(), // keep a lookup of ALL messages in the folder for local trigger
-		addListener: false,
-		triggerParseAddMessage: function(msg, config){},
-		triggerParseDeleteMessage: function(msg, config) {}
-	};
-	
+com.synckolab.config.prepareConfig = function(baseConfig, confType) {
+	// if we dont wnat to - dont initialize it
+	if(!baseConfig.enabled) {
+		return;
+	}
+
+	// keep a lookup of ALL messages in the folder for local trigger
+	baseConfig.msgList = new com.synckolab.hashMap(); 
+
+	// add type
+	baseConfig.type = confType;
+
+	// trigger handler
 	if(confType === "contact") {
-		c.triggerParseAddMessage = com.synckolab.AddressBook.triggerParseAddMessage;
-		c.triggerParseDeleteMessage = com.synckolab.AddressBook.triggerParseDeleteMessage;
+		baseConfig.triggerParseAddMessage = com.synckolab.AddressBook.triggerParseAddMessage;
+		baseConfig.triggerParseDeleteMessage = com.synckolab.AddressBook.triggerParseDeleteMessage;
+		baseConfig.init = com.synckolab.AddressBook.init;
+		baseConfig.syncClass = com.synckolab.AddressBook;
+		// add some custom contact related stuff
+		com.synckolab.AddressBook.readConfig(baseConfig);
 	} else {
 		// tasks and events are handled by calendar
-		c.triggerParseAddMessage = com.synckolab.Calendar.triggerParseAddMessage;
-		c.triggerParseDeleteMessage = com.synckolab.Calendar.triggerParseDeleteMessage;
+		baseConfig.triggerParseAddMessage = com.synckolab.Calendar.triggerParseAddMessage;
+		baseConfig.triggerParseDeleteMessage = com.synckolab.Calendar.triggerParseDeleteMessage;
+		baseConfig.init = com.synckolab.Calendar.init;
+		baseConfig.syncClass = com.synckolab.Calendar;
+		// add some custom contact related stuff
+		com.synckolab.Calendar.readConfig(baseConfig);
 	}
 	
-	return c;
+
+	// get and set the message folder
+	baseConfig.folder = com.synckolab.tools.getMsgFolder(baseConfig.serverKey, baseConfig.folderPath);
+	baseConfig.folderMsgURI = baseConfig.folder.baseMessageURI;
+	baseConfig.email = com.synckolab.tools.getAccountEMail(baseConfig.serverKey);
+	baseConfig.mailname = com.synckolab.tools.getAccountName(baseConfig.serverKey);
+
+	com.synckolab.tools.logMessage("check listener for "+ baseConfig.folderMsgURI, com.synckolab.global.LOG_DEBUG);
+
+	if(baseConfig.addListener) {
+		com.synckolab.tools.logMessage("adding listener for "+ baseConfig.folderMsgURI, com.synckolab.global.LOG_DEBUG);
+	}
+
+	baseConfig.startOnce = false;
+	if(baseConfig.syncOnStart === true)
+	{
+		com.synckolab.tools.logMessage("Run on Startup for "+ baseConfig.name, com.synckolab.global.LOG_DEBUG);
+		// run the config 
+		com.synckolab.main.forceConfig = baseConfig;
+		com.synckolab.main.sync("timer");
+	}
+
 };
 
 com.synckolab.config.folderListener = {
@@ -404,29 +429,5 @@ com.synckolab.config.folderListener = {
 	}
 };
 
-/**
- * Helper function to init all the msg folder and everything thats
- * required to read/write messages.<br>
- * Make sure that serverKey and folderPath are already set correctly in the config object.
- * @param config the configuration object
- */
-com.synckolab.config.fillMsgFolder = function(config) {
-	// if we dont have it - dont initialize it
-	if(!config.sync) {
-		return;
-	}
-
-	// get and set the message folder
-	config.folder = com.synckolab.tools.getMsgFolder(config.serverKey, config.folderPath);
-	config.folderMsgURI = config.folder.baseMessageURI;
-	config.email = com.synckolab.tools.getAccountEMail(config.serverKey);
-	config.mailname = com.synckolab.tools.getAccountName(config.serverKey);
-
-	com.synckolab.tools.logMessage("check listener for "+ config.folderMsgURI, com.synckolab.global.LOG_DEBUG);
-
-	if(config.addListener) {
-		com.synckolab.tools.logMessage("adding listener for "+ config.folderMsgURI, com.synckolab.global.LOG_DEBUG);
-	}
-};
 
 

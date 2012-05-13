@@ -40,7 +40,7 @@ function load() {
 	document.getElementById("closeWnd").checked = gCloseWindow;
 }
 
-function setCloseWindow()() {
+function setCloseWindow() {
 	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 	gCloseWindow = document.getElementById("closeWnd").checked;
 	pref.setBoolPref("SyncKolab.closeWindow", gCloseWindow);

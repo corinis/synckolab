@@ -24,7 +24,6 @@
 	<script type="application/x-javascript" src="chrome://synckolab/content/calendar.js"/>
 
 	<!-- utils -->
-	<script type="application/x-javascript" src="chrome://synckolab/content/config.js"/>
 	<script type="application/x-javascript" src="chrome://synckolab/content/tools.js"/>
 	<script type="application/x-javascript" src="chrome://synckolab/content/tools/sha1.js"/>
 	<script type="application/x-javascript" src="chrome://synckolab/content/tools/kolab.js"/>
@@ -32,6 +31,7 @@
 	<script type="application/x-javascript" src="chrome://synckolab/content/addressbookTools.js"/>
 	<script type="application/x-javascript" src="chrome://synckolab/content/calendarTools.js"/>
 	<script type="application/x-javascript" src="chrome://synckolab/content/contactConflictTools.js"/>
+	<script type="application/x-javascript" src="chrome://synckolab/content/config.js"/>
 
 <!-- calendar -->
 <script type="application/x-javascript">
@@ -44,7 +44,7 @@
 		<menuseparator/>
 		<menuitem id="SyncKolab-Sync" oncommand="com.synckolab.main.sync('manual');" label="&synckolab.syncMenu.label;"/>
 		<menuitem id="SyncKolab-Options" 
-			oncommand="window.open('chrome://synckolab/content/synckolabPref.xul', 'options', 'chrome,resizable=1');"
+			oncommand="window.openDialog('chrome://synckolab/content/wndConfig.xul', 'options', 'chrome=yes,resizable=yes,modal=yes');"
 			label="&synckolab.optionMenu.label;"/>
 	</menupopup>
 

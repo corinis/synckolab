@@ -79,20 +79,6 @@ com.synckolab.AddressBook = {
 	readConfig: function(config, pref) {
 		com.synckolab.tools.logMessage("Reading Configuration:" + config.name, com.synckolab.global.LOG_WARNING);
 
-		try 
-		{
-			config.sync = pref.getBoolPref("SyncKolab." + config.name + ".syncContacts");
-			config.folderPath = pref.getCharPref("SyncKolab." + config.name + ".ContactFolderPath");
-			
-			config.addressBookName = pref.getCharPref("SyncKolab." + config.name + ".AddressBook");
-			config.format = pref.getCharPref("SyncKolab." + config.name + ".AddressBookFormat");
-			config.saveImap = pref.getBoolPref("SyncKolab." + config.name + ".saveToContactImap");
-			config.useSyncListener = pref.getBoolPref("SyncKolab." + config.name + ".syncListenerContactImap");
-		} catch (e) {
-			return;
-		}
-		
-		
 		// get the rdf for the Addresbook list
 		// the addressbook type nsIAbDirectory
 		
@@ -100,14 +86,14 @@ com.synckolab.AddressBook = {
 			getConfig: function(addressBokName) {
 				// search through the configs  
 				for(var j = 0; j < com.synckolab.main.syncConfigs.length; j++) {
-					if(com.synckolab.main.syncConfigs[j]) {
+					if(com.synckolab.main.syncConfigs[j] && com.synckolab.main.syncConfigs[j].type === "contact") {
 						var curConfig = com.synckolab.main.syncConfigs[j];
 						//com.synckolab.tools.logMessage("checking " + curConfig.contact.folderMsgURI + " vs. " + folder, com.synckolab.global.LOG_DEBUG);
 
-						if(curConfig.contact && curConfig.contact.sync && curConfig.contact.useSyncListener) {
-							if(curConfig.contact.addressBookName === addressBokName || com.synckolab.tools.text.fixNameToMiniCharset(curConfig.contact.addressBookName) === com.synckolab.tools.text.fixNameToMiniCharset(addressBokName))
+						if(curConfig.enabled && curConfig.useSyncListener) {
+							if(curConfig.source === addressBokName || com.synckolab.tools.text.fixNameToMiniCharset(curConfig.source) === com.synckolab.tools.text.fixNameToMiniCharset(addressBokName))
 							{
-								return curConfig.contact;
+								return curConfig;
 							}
 						}
 					}
@@ -307,7 +293,7 @@ com.synckolab.AddressBook = {
 		{
 			var cur = ABook.QueryInterface(Components.interfaces.nsIAbDirectory);
 			if (cur.dirName === config.addressBookName ||
-				com.synckolab.tools.text.fixNameToMiniCharset(config.addressBookName) === com.synckolab.tools.text.fixNameToMiniCharset(cur.dirName)
+				com.synckolab.tools.text.fixNameToMiniCharset(config.source) === com.synckolab.tools.text.fixNameToMiniCharset(cur.dirName)
 				)
 			{
 				config.addressBook = cur;
@@ -329,10 +315,13 @@ com.synckolab.AddressBook = {
 		config.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config.name + ".ab");
 	},
 
-	init: function (config) {
+	init: function (config, itemList, document) {
 		// shortcuts for some common used utils
 		this.tools = com.synckolab.addressbookTools;
 		
+		this.itemList = itemList;
+		this.doc = document;
+
 		this.forceServerCopy = false;
 		this.forceLocalCopy = false;
 		
@@ -348,7 +337,7 @@ com.synckolab.AddressBook = {
 		this.gCardDB = new com.synckolab.hashMap();
 
 		// shouldnt happen, since we have a config...
-		if(!this.gConfig.addressBook) {
+		if(this.gConfig.type !== "contact") {
 			com.synckolab.tools.logMessage("address book missing, please restart or try again", com.synckolab.global.LOG_ERROR + com.synckolab.global.LOG_AB);
 			return null;
 		}

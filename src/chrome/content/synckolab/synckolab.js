@@ -38,17 +38,17 @@ com.synckolab.main = {
 	 * Global Variables
 	 */
 	// this is the timer function.. will call itself once a minute and check the configs
+	config: null,
 	syncConfigs: null, // the configuration array
+	curConfig: 0, // the current configuration counter
+	
 	forceConfig: null, // per default go through ALL configurations
 	forceConfigType: null, // specify "contact"/"calendar"/"task" for only one special type of config
 	doHideWindow: false,
 	hideFolder: false, // true if we "hide" the folder and show the calendar/abook instead
 
-	gTmpFile: null, // temp file for writing stuff into
+	gTmpFile: null // temp file for writing stuff into
 
-	curConConfig: 0, // the current addressbook config counter
-	curCalConfig: 0, // the current calendar config counter
-	curTaskConfig: 0 // the current task config counter
 };
 
 
@@ -364,10 +364,8 @@ com.synckolab.main.startSync = function(event) {
 		com.synckolab.tools.logMessage("Starting sync with " + com.synckolab.main.syncConfigs.length + " configurations.", com.synckolab.global.LOG_DEBUG);
 	}
 	
-	// reset all counter
-	com.synckolab.main.curConConfig = 0;
-	com.synckolab.main.curCalConfig = 0;
-	com.synckolab.main.curTaskConfig = 0;
+	// reset the config counter
+	com.synckolab.main.curConfig = 0;
 
 	// all initialized, lets run
 	com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.nextSync();}}, com.synckolab.config.SWITCH_TIME, 0);
@@ -383,25 +381,25 @@ com.synckolab.main.nextSync = function()
 	var curConfig = null;
 		
 	if (com.synckolab.global.wnd) {
-		com.synckolab.main.totalMeter.setAttribute("value", (((com.synckolab.main.curConConfig+com.synckolab.main.curCalConfig+com.synckolab.main.curTaskConfig)*100)/(com.synckolab.main.syncConfigs.length*3)) +"%");
+		com.synckolab.main.totalMeter.setAttribute("value", ((com.synckolab.main.curConfig*100)/(com.synckolab.main.syncConfigs.length*3)) +"%");
 	}
 
-	if (com.synckolab.main.curConConfig < com.synckolab.main.syncConfigs.length)
+	if (com.synckolab.main.curConfig < com.synckolab.main.syncConfigs.length)
 	{
 		// empty or invalid config
-		if(!com.synckolab.main.syncConfigs[com.synckolab.main.curConConfig]) {
-			com.synckolab.main.curConConfig++;
+		if(!com.synckolab.main.syncConfigs[com.synckolab.main.curConfig]) {
+			com.synckolab.main.curConfig++;
 			com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.nextSync();}}, com.synckolab.config.SWITCH_TIME, 0);	
 			return;
 		}
 		
 		// contact config
-		curConfig = com.synckolab.main.syncConfigs[com.synckolab.main.curConConfig].contact;
+		curConfig = com.synckolab.main.syncConfigs[com.synckolab.main.curConfig];
 		
 		// skip problematic configs or if we don't want to sync this
-		if (!curConfig || !curConfig.sync)
+		if (!curConfig || !curConfig.enabled)
 		{
-			com.synckolab.main.curConConfig++;
+			com.synckolab.main.curConfig++;
 			com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.nextSync();}}, com.synckolab.config.SWITCH_TIME, 0);	
 			return;
 		}
@@ -412,182 +410,46 @@ com.synckolab.main.nextSync = function()
 			if (com.synckolab.main.forceConfig !== curConfig.name || 
 					(com.synckolab.main.forceConfigType && com.synckolab.main.forceConfigType !== "contact"))
 			{
-				com.synckolab.main.curConConfig++;
+				com.synckolab.main.curConfig++;
 				com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.nextSync();}}, com.synckolab.config.SWITCH_TIME, 0);	
 				return;
 			}
 		}
 
 		com.synckolab.main.gConfig = curConfig;
-		com.synckolab.tools.logMessage("Trying adressbook config " + curConfig.name, com.synckolab.global.LOG_DEBUG);
+		com.synckolab.tools.logMessage("Trying configuration " + curConfig.name, com.synckolab.global.LOG_DEBUG);
 
 		if (com.synckolab.main.processMsg) {
-			com.synckolab.main.processMsg.value ="AddressBook Configuration " + curConfig.name;
+			com.synckolab.main.processMsg.value ="Configuration " + curConfig.name;
 		}
-		// sync the address book
-		com.synckolab.AddressBook.init(curConfig);
-		com.synckolab.main.curConConfig++;
+		
+		// run the init callback
+		com.synckolab.main.curConfig++;
+
+		// remember the sync class
+		com.synckolab.main.gSync = curConfig.syncClass;
 
 		// display stuff
 		if (com.synckolab.global.wnd)
 		{
-			com.synckolab.AddressBook.itemList = com.synckolab.main.itemList;
-			com.synckolab.AddressBook.doc = com.synckolab.global.wnd.document;
+			curConfig.syncClass.init(curConfig, com.synckolab.main.itemList, com.synckolab.global.wnd.document);
 		}
 		else
 		{
-			com.synckolab.AddressBook.itemList = null;
-			com.synckolab.AddressBook.doc = document;
+			curConfig.syncClass.init(curConfig, null, document);
 		}
 
-		com.synckolab.tools.logMessage("Contacts: got folder: " + curConfig.folder.URI + 
+		com.synckolab.tools.logMessage("got folder: " + curConfig.folder.URI + 
 				"\nMessage Folder: " + curConfig.folderMsgURI, com.synckolab.global.LOG_DEBUG);
 
-		// remember the sync class
-		com.synckolab.main.gSync = com.synckolab.AddressBook;
+		
+		// the init2 does the goon for us		
+		if(curConfig.init2) {
+			curConfig.init2(com.synckolab.main.prepareContent, curConfig.syncClass);
+		}
+
 		com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.prepareContent();}}, com.synckolab.config.SWITCH_TIME, 0);
-	}
-	else if (com.synckolab.main.curCalConfig < com.synckolab.main.syncConfigs.length)
-	{
-		com.synckolab.tools.logMessage("next calendar config", com.synckolab.global.LOG_DEBUG);
-		// empty or invalid config
-		if(!com.synckolab.main.syncConfigs[com.synckolab.main.curCalConfig]) {
-			com.synckolab.main.curCalConfig++;
-			com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.nextSync();}}, com.synckolab.config.SWITCH_TIME, 0);	
-			return;
-		}
-		// contact config
-		curConfig = com.synckolab.main.syncConfigs[com.synckolab.main.curCalConfig].cal;
-		
-		// skip problematic configs or if we don't want to sync this
-		if (!curConfig || !curConfig.sync)
-		{
-			com.synckolab.tools.logMessage("skipping " + (!curConfig?"config not valid":"sync disabled"), com.synckolab.global.LOG_DEBUG);
-			com.synckolab.main.curCalConfig++;
-			com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.nextSync();}}, com.synckolab.config.SWITCH_TIME, 0);	
-			return;
-		}
-
-		// if we were called from timer - forceConfig defines one config which is loaded - skip the rest then
-		if (com.synckolab.main.forceConfig && com.synckolab.main.forceConfig !== "MANUAL-SYNC") {
-			// check if we skip that: name and type must match
-			if (com.synckolab.main.forceConfig !== curConfig.name || 
-					(com.synckolab.main.forceConfigType && com.synckolab.main.forceConfigType !== "calendar"))
-			{
-				com.synckolab.main.curCalConfig++;
-				com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.nextSync();}}, com.synckolab.config.SWITCH_TIME, 0);	
-				return;
-			}
-		}
-
-		com.synckolab.main.gConfig = curConfig;
-		
-		com.synckolab.tools.logMessage("Trying calendar config " + curConfig.name, com.synckolab.global.LOG_DEBUG);
-
-		if (com.synckolab.main.processMsg) {
-			com.synckolab.main.processMsg.value ="Calendar Configuration " + curConfig.name;
-		}
-
-		// init the sync
-		com.synckolab.Calendar.init(curConfig);
-
-		com.synckolab.tools.logMessage("Done Calendar init...", com.synckolab.global.LOG_DEBUG);
-
-		com.synckolab.main.curCalConfig++;
-		
-		com.synckolab.tools.logMessage("Calendar: getting calendar: " + curConfig.calendarName + 
-				"\nMessage Folder: " + curConfig.folderMsgURI, com.synckolab.global.LOG_DEBUG);
-
-		// display stuff
-		if (com.synckolab.global.wnd)
-		{
-			com.synckolab.Calendar.itemList = com.synckolab.main.itemList;
-			com.synckolab.Calendar.doc = com.synckolab.global.wnd.document;
-		}
-		else
-		{
-			com.synckolab.Calendar.itemList = null;
-			com.synckolab.Calendar.doc = document;
-		}
-
-		// remember the sync class
-		com.synckolab.main.gSync = com.synckolab.Calendar;
-
-		// the init2 does the goon for us		
-		com.synckolab.Calendar.init2(com.synckolab.main.prepareContent, com.synckolab.Calendar);
-
-		com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.prepareContent(com.synckolab.Calendar);}}, com.synckolab.config.SWITCH_TIME, 0);
-		return;
-	}
-	else if (com.synckolab.main.curTaskConfig < com.synckolab.main.syncConfigs.length)
-	{
-		com.synckolab.tools.logMessage("next task config", com.synckolab.global.LOG_DEBUG);
-		// empty or invalid config
-		if(!com.synckolab.main.syncConfigs[com.synckolab.main.curTaskConfig]) {
-			com.synckolab.main.curTaskConfig++;
-			com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.nextSync();}}, com.synckolab.config.SWITCH_TIME, 0);	
-			return;
-		}
-
-		// task config
-		curConfig = com.synckolab.main.syncConfigs[com.synckolab.main.curTaskConfig].task;
-		
-		// skip problematic configs or if we don't want to sync this
-		if (!curConfig || !curConfig.sync)
-		{
-			com.synckolab.tools.logMessage("skipping " + (!curConfig?"config not valid":"sync disabled"), com.synckolab.global.LOG_DEBUG);
-			com.synckolab.main.curTaskConfig++;
-			com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.nextSync();}}, com.synckolab.config.SWITCH_TIME, 0);	
-			return;
-		}
-
-		// if we were called from timer - forceConfig defines one config which is loaded - skip the rest then
-		if (com.synckolab.main.forceConfig && com.synckolab.main.forceConfig !== "MANUAL-SYNC") {
-			// check if we skip that: name and type must match
-			if (com.synckolab.main.forceConfig !== curConfig.name || 
-					(com.synckolab.main.forceConfigType && com.synckolab.main.forceConfigType !== "task"))
-			{
-				com.synckolab.main.curTaskConfig++;
-				com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.nextSync();}}, com.synckolab.config.SWITCH_TIME, 0);	
-				return;
-			}
-		}
-
-		com.synckolab.main.gConfig = curConfig;
-
-		com.synckolab.tools.logMessage("Trying task config " + curConfig.name, com.synckolab.global.LOG_DEBUG);
-
-		if (com.synckolab.main.processMsg) {
-			com.synckolab.main.processMsg.value ="Task Configuration " + curConfig.name;
-		}
-
-		// sync tasks
-		com.synckolab.Calendar.init(curConfig);
-		com.synckolab.main.curTaskConfig++;
-
-		// display stuff
-		if (com.synckolab.global.wnd)
-		{
-			com.synckolab.Calendar.itemList = com.synckolab.main.itemList;
-			com.synckolab.Calendar.doc = com.synckolab.global.wnd.document;
-		}
-		else
-		{
-			com.synckolab.Calendar.itemList = null;
-			com.synckolab.Calendar.doc = document;
-		}
-
-		com.synckolab.tools.logMessage("Task: getting calendar: " + curConfig.calendarName + 
-				"\nMessage Folder: " + curConfig.folderMsgURI, com.synckolab.global.LOG_DEBUG);
-
-		// remember the sync class
-		com.synckolab.main.gSync = com.synckolab.Calendar;
-
-		// the init2 does the goon for us		
-		com.synckolab.Calendar.init2(com.synckolab.main.prepareContent, com.synckolab.Calendar);
-
-		com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.prepareContent(com.synckolab.Calendar);}}, com.synckolab.config.SWITCH_TIME, 0);
-		return;
+		//com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.prepareContent(com.synckolab.Calendar);}}, com.synckolab.config.SWITCH_TIME, 0);
 	}
 	else //done
 	{
@@ -621,7 +483,7 @@ com.synckolab.main.nextSync = function()
 
 		// close the status window
 		var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
-		if (pref.getBoolPref("SyncKolab.closeWindow") && com.synckolab.global.wnd) {
+		if (com.synckolab.tools.getConfigValue(pref, "closeWindow", com.synckolab.tools.CONFIG_TYPE_BOOL, false) && com.synckolab.global.wnd) {
 			com.synckolab.global.wnd.close();
 		}
 

@@ -34,115 +34,12 @@ if(!com.synckolab) com.synckolab={};
 com.synckolab.settings = {
 		// string bundle use: strBundle.getString("KEYNAME")
 		strBundle: null,
-		// definition of settings that are the same for each part (contact/calendar/task)
-		baseSetting: {
-			// the address book / calendar
-			source: {type: com.synckolab.tools.CONFIG_TYPE_CHAR, def: null },
-			// the imap folder path
-			folderPath: {type: com.synckolab.tools.CONFIG_TYPE_CHAR, def: null },
-			// true if the config is enabled
-			enabled: {type: com.synckolab.tools.CONFIG_TYPE_BOOL, def: true },
-			// save changes to imap (vs. read only)
-			saveToImap: {type: com.synckolab.tools.CONFIG_TYPE_BOOL, def: true },
-			// automatically sync every X minutes (0 = disable)
-			syncInterval: {type: com.synckolab.tools.CONFIG_TYPE_INT, def: 0 },
-			// format to use: xml|vcard
-			format: {type: com.synckolab.tools.CONFIG_TYPE_CHAR, def: "xml" },
-			// timeframe to sync in (don't sync entries with an older start-date)
-			timeFrame: {type: com.synckolab.tools.CONFIG_TYPE_INT, def: 180}, 
-			// enable the sync listener
-			syncListener: {type: com.synckolab.tools.CONFIG_TYPE_BOOL, def: false },
-			// what to do with conflicts
-			defaultResolve: {type: com.synckolab.tools.CONFIG_TYPE_CHAR, def: "ask" }
-		},
 		// account types
 		baseTypes: ["contact", "calendar", "task"],
 		// the current configuration
 		config: null
 };
 
-
-/**
- * Reads the configuration into an object. the object structure is:
- * config.accounts[NAME].[contact|calendar|task].CONFIGNAME
- * @returns a configuration object
- */
-com.synckolab.settings.readConfiguration = function() {
-	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
-	
-	var config = {
-		version: com.synckolab.tools.getConfigValue(pref, "configVersion", com.synckolab.tools.CONFIG_TYPE_INT, 0),
-		debugLevel: com.synckolab.tools.getConfigValue(pref, "debugLevel", com.synckolab.tools.CONFIG_TYPE_INT, com.synckolab.global.LOG_WARNING),
-		// hide folder
-		hideFolder: com.synckolab.tools.getConfigValue(pref, "hideFolder", com.synckolab.tools.CONFIG_TYPE_BOOL, false),
-		// hide the window while sync
-		hiddenWindow: com.synckolab.tools.getConfigValue(pref, "hiddenWindow", com.synckolab.tools.CONFIG_TYPE_BOOL, false),
-		// sync automatically once on start
-		syncOnStart: com.synckolab.tools.getConfigValue(pref, "syncOnStart", com.synckolab.tools.CONFIG_TYPE_BOOL, false),
-		accounts: []
-	};
-	
-	var sAcct = com.synckolab.tools.getConfigValue(pref, "accounts.list");
-	if (sAcct) {
-		var sAccts = sAcct.split(';');
-		for(var i = 0; i < sAccts.length; i++) {
-			// skip empty configs
-			if(sAccts[i].length <= 3) {
-				continue;
-			}
-			var acct = {
-					name: sAccts[i], // name = incomingServer
-					contact: [],
-					calendar: [],
-					task: []
-			};
-			config.accounts.push(acct);
-			
-			com.synckolab.settings.readAccountConfig(pref, acct);
-		}
-	}
-	
-	return config;
-};
-
-
-/**
- * read the account configuration into an object
- * @param acct the account object to read the configuration into (name has to be existent)
- */
-com.synckolab.settings.readAccountConfig = function (pref, acct) {
-	var sConf, sConfs, i;
-	for(var type in acct) {
-		// skip volatiles/non-arrays
-		if(type !== "name" && acct[type].push) {
-		
-			sConf = com.synckolab.tools.getConfigValue(pref, "accounts." + acct.name+"." + type + ".list");
-			sConfs = sConf.split(';');
-			if(sConfs) {
-				for(i = 0; i < sConfs.length; i++) {
-					// skip empty configs
-					if(sConfs[i].length <= 3) {
-						continue;
-					}
-					var cConf = {
-							name: sConfs[i]
-					};
-					acct[type].push(cConf);
-					
-					// read all the base settings
-					for(var n in com.synckolab.settings.baseSetting) {
-						// skip unwanted prototypes (without type)
-						if(com.synckolab.settings.baseSetting[n].type  >= 0) {
-							cConf[n] = com.synckolab.tools.getConfigValue(pref, "accounts." + acct.name+"." + type + ".configs." + cConf.name + "." + n, 
-									com.synckolab.settings.baseSetting[n].type, 
-									com.synckolab.settings.baseSetting[n].def);
-						}
-					}
-				}
-			}
-		}
-	}
-};
 
 
 com.synckolab.settings.savePrefs = function () {
@@ -164,7 +61,7 @@ com.synckolab.settings.savePrefs = function () {
  * @return true if everything went ok
  */
 com.synckolab.settings.writeConfiguration = function(config) {
-	var orig = com.synckolab.settings.readConfiguration();
+	var orig = com.synckolab.config.loadConfiguration();
 	
 	// now we can start writing
 	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
@@ -255,12 +152,12 @@ com.synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
 				}
 				
 				// write all the base settings
-				for(var n in com.synckolab.settings.baseSetting) {
+				for(var n in com.synckolab.config.baseSetting) {
 					// skip unwanted prototypes (without type)
-					if(com.synckolab.settings.baseSetting[n].type >= 0) {
+					if(com.synckolab.config.baseSetting[n].type >= 0) {
 						com.synckolab.tools.setConfigValue(pref, 
 								"accounts." + acct.name+"." + type + ".configs." + acct[type][i].name + "." + n, 
-								com.synckolab.settings.baseSetting[n].type, 
+								com.synckolab.config.baseSetting[n].type, 
 								acct[type][i][n]);
 					}
 				}
@@ -285,9 +182,7 @@ com.synckolab.settings.init = function () {
 	// check if calendar is available
 	com.synckolab.settings.isCalendar = com.synckolab.calendarTools.isCalendarAvailable();
 	// read the current configuration
-	com.synckolab.settings.config = com.synckolab.settings.readConfiguration();
-
-
+	com.synckolab.settings.config = com.synckolab.config.loadConfiguration();
 
 	// the format selection boxes:
 	var abList = document.getElementById("contactFormat");
@@ -814,11 +709,9 @@ com.synckolab.settings.setSyncPrefView = function(viewName) {
 	{
 	// on welcome we return - no change config
 	case "Welcome":
-		alert("show welcome");
 		tabs.selectedPanel = document.getElementById("welcome");
 		return;
 	case "Acct":
-		alert("acc");
 		tabs.selectedPanel = document.getElementById("accountTab");
 		com.synckolab.settings.fillAccountInfo(opts[2]);
 		document.getElementById("loadConfig").setAttribute("disabled", false);
@@ -1155,10 +1048,10 @@ com.synckolab.settings.addConfig = function() {
 				};
 				
 				// read all the base settings
-				for(var n in com.synckolab.settings.baseSetting) {
+				for(var n in com.synckolab.config.baseSetting) {
 					// skip unwanted prototypes (without type)
-					if(com.synckolab.settings.baseSetting[n].type >= 0) {
-						cConf[n] = com.synckolab.settings.baseSetting[n].def;
+					if(com.synckolab.config.baseSetting[n].type >= 0) {
+						cConf[n] = com.synckolab.config.baseSetting[n].def;
 					}
 				}
 				
