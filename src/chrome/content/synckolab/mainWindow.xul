@@ -18,8 +18,10 @@
 		<command id="cmd_synckolab_sync"
 			tooltiptext="&synckolab.sync.tip;"
 			oncommand="com.synckolab.main.sync('manual');"/>
-		<command id="cmd_synckolab_options"
-	        oncommand="window.open('chrome://synckolab/content/synckolabPref.xul', 'options', 'chrome,resizable=1');"/>
+		<command id="cmd_synckolab_options" 
+			oncommand="window.openDialog('chrome://synckolab/content/wndConfig.xul', 'options', 'chrome=yes,resizable=yes,modal=yes');"/>
+		<command id="cmd_synckolab_settings" 
+			oncommand="window.openDialog('chrome://synckolab/content/synckolabPref.xul', 'options', 'chrome=yes,resizable=yes,modal=yes');"/>
 	</commandset>
 
 	<stringbundleset id="stringbundleset">
@@ -61,11 +63,12 @@
 </script>
 		
 	<menupopup id="taskPopup">
-        <menuseparator/>
+		<menuseparator/>
 		<menuitem id="SyncKolab-Sync" command="cmd_synckolab_sync" label="&synckolab.syncMenu.label;"/>
 		<menuitem id="SyncKolab-Options" command="cmd_synckolab_options" label="&synckolab.optionMenu.label;"/>
+		<menuitem id="SyncKolab-Settings" command="cmd_synckolab_settings" label="&synckolab.optionMenu.label;-old"/>
 	</menupopup>
-    <toolbarpalette id="MailToolbarPalette">
-        <toolbarbutton id="SyncKolab-button" command="cmd_synckolab_sync" class="toolbarbutton-1" label="&synckolab.sync.label;"/>
-    </toolbarpalette>
+	<toolbarpalette id="MailToolbarPalette">
+		<toolbarbutton id="SyncKolab-button" command="cmd_synckolab_sync" class="toolbarbutton-1" label="&synckolab.sync.label;"/>
+	</toolbarpalette>
 </overlay>

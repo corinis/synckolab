@@ -31,7 +31,6 @@
  * Package: com.synckolab.tools.text
  * 
  * Text handling:
- * * accountNameFix()
  * * fixToMiniCharset()
  * Text decoding/encoding: 
  * * base64.encode()/decode()
@@ -52,13 +51,6 @@ if (!com.synckolab.tools)
  * Basic text stuff
  */
 com.synckolab.tools.text = {
-	/**
-	 * Some accounts have special characters in their name which do not mix well with configs
-	 */
-	accountNameFix : function (name) {
-		return name.replace(/[ :@\%\'\"-\?\#\+\*\.\$\\\/]/g, "");
-	},
-
 	nodeWithContent : function (nodeName, nodeValue, createNonExist) {
 		if (!createNonExist && !this.checkExist(nodeValue)) {
 			return "";
@@ -80,6 +72,7 @@ com.synckolab.tools.text = {
 	 */
 	fixNameToMiniCharset : function (name) {
 		var ret = "";
+		// avoid double placeholders 
 		var placeHolder = false;
 		for ( var i = 0; i < name.length; i++) {
 			switch (name.charAt(i)) {
@@ -196,11 +189,12 @@ com.synckolab.tools.text = {
 				break;
 
 			// chars which are no problem just stay
-			case '~':
-			case '-':
-			case '.':
-				placeHolder = false;
-				ret += name.charAt(i);
+			case '_':
+				// make sure to print it only once
+				if(!placeHolder) {
+					ret += name.charAt(i);
+					placeHolder = true;
+				}
 				break;
 
 			default:

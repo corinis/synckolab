@@ -671,8 +671,8 @@ getAccountName: function (accountKey) {
 	for (var i = 0; i < accountManager.allServers.Count(); i++)
 	{
 		var account = accountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-		if (account.rootMsgFolder.baseMessageURI === accountKey || com.synckolab.tools.text.accountNameFix(account.rootMsgFolder.baseMessageURI) === accountKey ||
-				com.synckolab.tools.text.accountNameFix(account.prettyName) === accountKey)
+		if (account.rootMsgFolder.baseMessageURI === accountKey || com.synckolab.tools.text.fixNameToMiniCharset(account.rootMsgFolder.baseMessageURI) === accountKey ||
+				com.synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === accountKey)
 		{
 			return accountManager.getFirstIdentityForServer(account).fullName;
 		}
@@ -690,8 +690,8 @@ getAccountEMail: function (accountKey) {
 	for (var i = 0; i < accountManager.allServers.Count(); i++)
 	{
 		var account = accountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-		if (account.rootMsgFolder.baseMessageURI === accountKey || com.synckolab.tools.text.accountNameFix(account.rootMsgFolder.baseMessageURI) === accountKey ||
-				com.synckolab.tools.text.accountNameFix(account.prettyName) === accountKey)
+		if (account.rootMsgFolder.baseMessageURI === accountKey || com.synckolab.tools.text.fixNameToMiniCharset(account.rootMsgFolder.baseMessageURI) === accountKey ||
+				com.synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === accountKey)
 		{
 			return accountManager.getFirstIdentityForServer(account).email;
 		}
@@ -714,8 +714,8 @@ getMsgFolder: function (accountKey, path)
 	for (var i = 0; i < accountManager.allServers.Count(); i++)
 	{
 		var account = accountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-		if (account.rootMsgFolder.baseMessageURI === accountKey || com.synckolab.tools.text.accountNameFix(account.rootMsgFolder.baseMessageURI) === accountKey||
-				com.synckolab.tools.text.accountNameFix(account.prettyName) === accountKey)
+		if (account.rootMsgFolder.baseMessageURI === accountKey || com.synckolab.tools.text.fixNameToMiniCharset(account.rootMsgFolder.baseMessageURI) === accountKey||
+				com.synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === accountKey)
 		{
 			gInc = account;
 		}
@@ -1441,4 +1441,85 @@ com.synckolab.tools.fillMessageLookup = function(map, config, parseFunc) {
 		var cur = messages.getNext().QueryInterface(Components.interfaces.nsIMsgDBHdr);
 		map.put(cur.mime2DecodedSubject, cur);
 	}
+};
+
+com.synckolab.tools.CONFIG_TYPE_BOOL = 0;
+com.synckolab.tools.CONFIG_TYPE_CHAR = 1;
+com.synckolab.tools.CONFIG_TYPE_INT = 2;
+
+/**
+ * 
+ * @param pref the preference service (Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);)
+ * @param name the name of the configuration to get (every value is prefixed with SyncKolab.)
+ * @param type the type (see com.synckolab.tools.CONFIG_TYPE_*)
+ * @param def an optional default value
+ * @return the configuration value in the given type or the default value
+ */
+com.synckolab.tools.getConfigValue = function(pref, name, type, def) {
+	try {
+		if(type === com.synckolab.tools.CONFIG_TYPE_BOOL) {
+			return pref.getBoolPref("SyncKolab." + name);
+		} 
+		if(type === com.synckolab.tools.CONFIG_TYPE_INT) {
+			return pref.getIntPref("SyncKolab." + name);
+		} 
+		// default use char pref 
+		return pref.getCharPref("SyncKolab." + name);
+	}
+	catch (ex) {
+		com.synckolab.tools.logMessage("WARNING: failed to read SyncKolab."+name+": " + ex, com.synckolab.global.LOG_WARNING);
+		return def;
+	}
+};
+
+/**
+ * @param pref the preference service (Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);)
+ * @param name the name of the configuration to get (every value is prefixed with SyncKolab.)
+ * @param type the type (see com.synckolab.tools.CONFIG_TYPE_*)
+ * @param value the value to write
+ * @return true when the value has been written
+ */
+com.synckolab.tools.setConfigValue = function(pref, name, type, value) {
+	try {
+		if(type === com.synckolab.tools.CONFIG_TYPE_BOOL) {
+			pref.setBoolPref("SyncKolab." + name, value);
+		} 
+		if(type === com.synckolab.tools.CONFIG_TYPE_INT) {
+			pref.setIntPref("SyncKolab." + name, value);
+		} 
+		// default use char pref 
+		pref.setCharPref("SyncKolab." + name, value);
+	}
+	catch (ex) {
+		return false;
+	}
+	return true;
+};
+
+
+/**
+ * remove a preference
+ * @param pref the preference service (Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);)
+ * @param name the name of the configuration to get (every value is prefixed with SyncKolab.)
+ * @return true when the value has been written
+ */
+com.synckolab.tools.removeConfig = function(pref, name) {
+	try {
+		pref.clearUserPref("SyncKolab." + name);
+	}
+	catch (ex) {
+		return false;
+	}
+	return true;
+};
+
+
+/**
+ * opens a browser window with a given url
+ * @param aURL the external url to load
+ */
+com.synckolab.tools.launchUrl = function(aURL) {
+	var messenger = Components.classes["@mozilla.org/messenger;1"].createInstance();
+	messenger = messenger.QueryInterface(Components.interfaces.nsIMessenger);
+	messenger.launchExternalURL(aURL);	
 };

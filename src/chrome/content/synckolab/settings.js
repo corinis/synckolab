@@ -466,12 +466,12 @@ com.synckolab.settings = {
 				var actchild = document.createElement("menuitem");
 				actpopup.appendChild(actchild);
 				actchild.setAttribute("label", account.prettyName);
-				actchild.setAttribute("value", com.synckolab.tools.text.accountNameFix(account.prettyName));
+				actchild.setAttribute("value", com.synckolab.tools.text.fixNameToMiniCharset(account.prettyName));
 				if (isFirst)
 				{
 					actchild.setAttribute("selected", "true");
 					actList.setAttribute("label", account.prettyName);
-					actList.setAttribute("value", com.synckolab.tools.text.accountNameFix(account.prettyName));
+					actList.setAttribute("value", com.synckolab.tools.text.fixNameToMiniCharset(account.prettyName));
 					isFirst = false;
 				}
 			}
@@ -1216,7 +1216,7 @@ com.synckolab.settings = {
 				try
 				{
 					var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-					if (account.rootMsgFolder.baseMessageURI === act || com.synckolab.tools.text.accountNameFix(account.prettyName) === act)
+					if (account.rootMsgFolder.baseMessageURI === act || com.synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === act)
 					{
 
 						var cfold = document.getElementById("conImapFolder");
@@ -1463,7 +1463,7 @@ com.synckolab.settings = {
 				try
 				{
 					var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-					if (account.rootMsgFolder.baseMessageURI === act || com.synckolab.tools.text.accountNameFix(account.prettyName) === act)
+					if (account.rootMsgFolder.baseMessageURI === act || com.synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === act)
 					{
 						var cfold = document.getElementById("calImapFolder");
 						// delete the treechildren if exist
@@ -1504,7 +1504,7 @@ com.synckolab.settings = {
 				try
 				{
 					var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-					if (account.rootMsgFolder.baseMessageURI === act || com.synckolab.tools.text.accountNameFix(account.prettyName) === act)
+					if (account.rootMsgFolder.baseMessageURI === act || com.synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === act)
 					{
 						var cfold = document.getElementById("taskImapFolder");
 						// delete the treechildren if exist
@@ -2176,7 +2176,7 @@ com.synckolab.settings = {
 				var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
 				stream.init(thefile, 2, 0x200, false); // open as "write only"
 
-				var s = "# SyncKolab V1.0.1 Configuration File\n";
+				var s = "# SyncKolab V2.0.0 Configuration File\n";
 				stream.write(s, s.length);
 
 				// generate the configuration in the tree control

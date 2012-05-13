@@ -108,7 +108,7 @@
 							</menulist>
 							<separator class="thin" />
 
-							<tree class="synckolab" flex="7" id="conImapFolder" rows="7" height="150" width="250" hidecolumnpicker="true" seltype="single" onselect="com.synckolab.settings.setFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
+							<tree class="synckolab" flex="7" id="contactImapFolder" rows="7" height="150" width="250" hidecolumnpicker="true" seltype="single" onselect="com.synckolab.settings.setFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
 								<treecols>
 									<treecol id="conFolder" label="&synckolab.settings.ContactFolder;" primary="true" flex="1" />
 								</treecols>
@@ -121,7 +121,7 @@
 								</menulist>
 							</hbox>
 
-							<checkbox id="contactSync" label="&synckolab.settings.SyncContacts;" tooltiptext="&synckolab.settings.SyncContactsTip;" oncommand="com.synckolab.settings.setControlStateContacts(this.checked)" />
+							<checkbox id="contactSync" label="&synckolab.settings.SyncContacts;" tooltiptext="&synckolab.settings.SyncContactsTip;" oncommand="com.synckolab.settings.setControlState('contact', this.checked)" />
 
 							<checkbox id="contactSyncListenerImap" label="&synckolab.settings.SyncListener;"/>
 							<checkbox id="contactSaveToImap" label="&synckolab.settings.SaveToImap;" tooltiptext="&synckolab.settings.SaveToImapTip;" />
@@ -161,7 +161,7 @@
 
 							<separator class="thin" />
 
-							<tree class="synckolab" flex="7" id="calImapFolder" rows="7" height="150" width="250" hidecolumnpicker="true" seltype="single" onselect="com.synckolab.settings.setFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
+							<tree class="synckolab" flex="7" id="calendarImapFolder" rows="7" height="150" width="250" hidecolumnpicker="true" seltype="single" onselect="com.synckolab.settings.setFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
 								<treecols>
 									<treecol id="calFolder" label="&synckolab.settings.CalendarFolder;" primary="true" flex="1" />
 								</treecols>
@@ -176,7 +176,7 @@
 								<textbox id="calendarSyncTimeframe" maxlength="4" style="width: 30px" />
 								<label value="&synckolab.settings.TimeframeSyncDays;" />
 							</hbox>
-							<checkbox id="calendarSync" label="&synckolab.settings.SyncCalendar;" tooltiptext="&synckolab.settings.SyncCalendarTip;" oncommand="com.synckolab.settings.setControlStateCalendar(this.checked)" />
+							<checkbox id="calendarSync" label="&synckolab.settings.SyncCalendar;" tooltiptext="&synckolab.settings.SyncCalendarTip;" oncommand="com.synckolab.settings.setControlState('calendar', this.checked)" />
 
 							<checkbox id="calendarSyncListenerImap" label="&synckolab.settings.SyncListener;"/>
 							<checkbox id="calendarSaveToImap" label="&synckolab.settings.SaveToImap;" tooltiptext="&synckolab.settings.SaveToImapTip;" />
@@ -229,7 +229,7 @@
 								<textbox id="taskSyncTimeframe" maxlength="4" style="width: 30px" />
 								<label value="&synckolab.settings.TimeframeSyncDays;" />
 							</hbox>
-							<checkbox id="taskSync" label="&synckolab.settings.SyncTasks;" tooltiptext="&synckolab.settings.SyncTasksTip;" oncommand="com.synckolab.settings.setControlStateTasks(this.checked)" />
+							<checkbox id="taskSync" label="&synckolab.settings.SyncTasks;" tooltiptext="&synckolab.settings.SyncTasksTip;" oncommand="com.synckolab.settings.setControlState('task', this.checked)" />
 
 							<checkbox id="taskSyncListenerImap" label="&synckolab.settings.SyncListener;"/>
 							<checkbox id="taskSaveToImap" label="&synckolab.settings.SaveToImap;" tooltiptext="&synckolab.settings.SaveToImapTip;" />

@@ -11,6 +11,7 @@
 ]>
 
 <dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+		id="contactConfligGldWindow"
         buttons="accept,cancel"
         ondialogaccept="return com.synckolab.contactConflict.doOK();"
         ondialogcancel="return com.synckolab.contactConflict.doCancel();"

@@ -132,7 +132,7 @@ com.synckolab.settings.readAccountConfig = function (pref, acct) {
 					// read all the base settings
 					for(var n in com.synckolab.settings.baseSetting) {
 						// skip unwanted prototypes (without type)
-						if(!com.synckolab.settings.baseSetting[n].type) {
+						if(com.synckolab.settings.baseSetting[n].type  >= 0) {
 							cConf[n] = com.synckolab.tools.getConfigValue(pref, "accounts." + acct.name+"." + type + ".configs." + cConf.name + "." + n, 
 									com.synckolab.settings.baseSetting[n].type, 
 									com.synckolab.settings.baseSetting[n].def);
@@ -148,6 +148,8 @@ com.synckolab.settings.readAccountConfig = function (pref, acct) {
 com.synckolab.settings.savePrefs = function () {
 	// get base info back from ui
 	com.synckolab.settings.getBaseInfo();
+	com.synckolab.settings.getInfo();
+	
 	// write the configuration
 	com.synckolab.settings.writeConfiguration(com.synckolab.settings.config);
 	
@@ -190,9 +192,9 @@ com.synckolab.settings.writeConfiguration = function(config) {
 	
 	// now go through the existing ones
 	var acctList = "";
-	for(i = 0; config.accounts.length; i++) {
+	for(i = 0; i < config.accounts.length; i++) {
 		// skip invalid account names
-		if(config.accounts[i].name.length < 3) {
+		if(!config.accounts[i] || !config.accounts[i].name || config.accounts[i].name.length < 3) {
 			continue;
 		}
 		
@@ -209,7 +211,7 @@ com.synckolab.settings.writeConfiguration = function(config) {
 		acctList += config.accounts[i].name + ";";
 	}
 	// write the acctList back
-	com.synckolab.tools.setConfigValue(pref, "accounts.list", acctList);
+	com.synckolab.tools.setConfigValue(pref, "accounts.list", com.synckolab.tools.CONFIG_TYPE_CHAR, acctList);
 	
 	return true;
 };
@@ -223,6 +225,8 @@ com.synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
 	for(var type in acct) {
 		// skip volatiles/non-arrays
 		if(type !== "name" && acct[type].push) {
+			alert("writing acct config for: " + type);
+
 			// clear old ones
 			if(orig) {
 				for(i=0; i < orig[type].length; i++) {
@@ -247,7 +251,7 @@ com.synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
 				// write all the base settings
 				for(var n in com.synckolab.settings.baseSetting) {
 					// skip unwanted prototypes (without type)
-					if(!com.synckolab.settings.baseSetting[n].type) {
+					if(com.synckolab.settings.baseSetting[n].type >= 0) {
 						com.synckolab.tools.setConfigValue(pref, 
 								"accounts." + acct.name+"." + type + ".configs." + acct[type][i].name + "." + n, 
 								com.synckolab.settings.baseSetting[n].type, 
@@ -258,7 +262,7 @@ com.synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
 				configs += acct[type][i].name + ";";
 			}
 			// write the configList back
-			com.synckolab.tools.setConfigValue(pref, "accounts." + acct.name + "." + type + ".list", configs);
+			com.synckolab.tools.setConfigValue(pref, "accounts." + acct.name + "." + type + ".list", com.synckolab.tools.CONFIG_TYPE_CHAR, configs);
 		}
 	}
 };
@@ -519,6 +523,11 @@ com.synckolab.settings.repaintConfigTree = function(selectedNode) {
 	}
 };
 
+/**
+ * fills the addressbook select box
+ * @param cn the abook cn
+ * @param ABook the address book to use
+ */
 com.synckolab.settings.fillAddressBook = function (cn, ABook) {
 	var abList = document.getElementById("contactURL");
 	// delete the childs of the list
@@ -592,17 +601,22 @@ com.synckolab.settings.fillAddressBook = function (cn, ABook) {
 com.synckolab.settings.setFolders = function (act) {
 	
 	this.updateFolder(act, [{
-		prefix: "contacts",
-		node: document.getElementById("conImapFolder")
+		prefix: "contact",
+		node: document.getElementById("contactImapFolder")
 	},{
 		prefix: "calendar",
-		node: document.getElementById("calImapFolder")
+		node: document.getElementById("calendarImapFolder")
 	},{
 		prefix: "tasks",
 		node: document.getElementById("taskImapFolder")
 	}]);
 };
 
+/**
+ * update the folder based on the given account
+ * @param act the account to search for
+ * @param sets an array of prefix/node object for each element to fill
+ */
 com.synckolab.settings.updateFolder = function (act, sets) {
 	// dynamically read this...
 	var gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
@@ -788,17 +802,17 @@ com.synckolab.settings.setSyncPrefView = function(viewName) {
 			com.synckolab.settings.setFolders(com.synckolab.settings.activeAccount);
 		}
 	}
-	
 	// save changes if contact/cal or task was open before
 	com.synckolab.settings.getInfo();
-	
 	switch (opts[1])
 	{
 	// on welcome we return - no change config
 	case "Welcome":
+		alert("show welcome");
 		tabs.selectedPanel = document.getElementById("welcome");
 		return;
 	case "Acct":
+		alert("acc");
 		tabs.selectedPanel = document.getElementById("accountTab");
 		com.synckolab.settings.fillAccountInfo(opts[2]);
 		document.getElementById("loadConfig").setAttribute("disabled", false);
@@ -806,7 +820,7 @@ com.synckolab.settings.setSyncPrefView = function(viewName) {
 	case "contact":
 		if(opts.length > 3) {
 			tabs.selectedPanel = document.getElementById("contactTab");
-			com.synckolab.settings.fillContactInfo(opts[2],opts[3]);
+			com.synckolab.settings.fillInfo("contact", opts[2],opts[3]);
 			document.getElementById("delConfig").setAttribute("disabled", false);
 		} else {
 			document.getElementById("newConfig").setAttribute("disabled", false);
@@ -815,7 +829,7 @@ com.synckolab.settings.setSyncPrefView = function(viewName) {
 	case "calendar":
 		if (this.isCalendar && opts.length > 3) {
 			tabs.selectedPanel = document.getElementById("calTab");
-			com.synckolab.settings.fillCalendarInfo(opts[2],opts[3]);
+			com.synckolab.settings.fillInfo("calendar", opts[2],opts[3]);
 			document.getElementById("delConfig").setAttribute("disabled", false);
 		} else {
 			document.getElementById("newConfig").setAttribute("disabled", false);
@@ -824,7 +838,7 @@ com.synckolab.settings.setSyncPrefView = function(viewName) {
 	case "task":
 		if (this.isCalendar && opts.length > 3) {
 			tabs.selectedPanel = document.getElementById("taskTab");
-			com.synckolab.settings.fillTaskInfo(opts[2],opts[3]);
+			com.synckolab.settings.fillInfo("task", opts[2],opts[3]);
 			document.getElementById("delConfig").setAttribute("disabled", false);
 		} else {
 			document.getElementById("newConfig").setAttribute("disabled", false);
@@ -834,7 +848,9 @@ com.synckolab.settings.setSyncPrefView = function(viewName) {
 	}
 };
 
-
+/**
+ * fills the base info dialog from the current active config
+ */
 com.synckolab.settings.fillBaseInfo = function() {
 	
 	var conf = com.synckolab.settings.config;
@@ -860,6 +876,25 @@ com.synckolab.settings.fillBaseInfo = function() {
 		}
 	}
 	
+};
+
+/**
+ * Enables/disables the controls on the page
+ */
+com.synckolab.settings.setControlState = function (type, active) 
+{
+	var fieldsArray = [
+			"URL",
+			"ImapFolder",
+			"Format",
+			"SyncListenerImap",
+			"SaveToImap"
+	];
+	for(var i=0 ; i < fieldsArray.length ; i++ ) {
+		if(fieldsArray[i] !== '') {
+			document.getElementById(type + fieldsArray[i]).disabled = !active;
+		}
+	}
 };
 
 /**
@@ -900,6 +935,11 @@ com.synckolab.settings.getBaseInfo = function() {
 };
 
 
+/**
+ * Helper function that checks the globals for the currently active config.
+ * It is based on Account+Type+Config name
+ * @returns null if not found, otherwise the config sub-object
+ */
 com.synckolab.settings.getActiveConfig = function() {
 	// nothing to save back
 	if(!com.synckolab.settings.activeType || !com.synckolab.settings.activeAccount || !com.synckolab.settings.activeConfig) {
@@ -934,6 +974,11 @@ com.synckolab.settings.getInfo = function() {
 		return;
 	}
 	
+	if(com.synckolab.settings.activeType !== "contact" && com.synckolab.settings.activeType !== "calendar" && com.synckolab.settings.activeType !== "task") {
+		return;
+	} 
+		
+	
 	var config = com.synckolab.settings.getActiveConfig();
 	
 	// fill all fields
@@ -941,8 +986,8 @@ com.synckolab.settings.getInfo = function() {
 
 	// the address book / calendar
 	config.source = document.getElementById(prefix + "URL").value;
-	// the imap folder path
-	//config.folderPath: {type: com.synckolab.tools.CONFIG_TYPE_CHAR, def: null },
+	// the imap folder path is done by setFolder via callback
+	
 	// true if the config is enabled
 	config.enabled = document.getElementById(prefix + "Sync").checked;
 	// save changes to imap (vs. read only)
@@ -958,9 +1003,13 @@ com.synckolab.settings.getInfo = function() {
 	// what to do with conflicts
 	config.defaultResolve = document.getElementById(prefix + "DefaultResolve").value;
 	// enable the sync listener
-	config.snycListemer = document.getElementById(prefix + "SyncListenerImap").checked;
+	config.syncListener = document.getElementById(prefix + "SyncListenerImap").checked;
 };
 
+/**
+ * function for the folder listing. once a folder is selected this is called and sets the new folder in
+ * the active config. 
+ */
 com.synckolab.settings.setFolder = function (uri) {
 	var config = com.synckolab.settings.getActiveConfig();
 	if (config === null)
@@ -974,10 +1023,102 @@ com.synckolab.settings.fillAccountInfo = function(acctName) {
 	
 };
 
+/**
+ * fills the info in a config tab
+ * @param type the type of configuration (contac|calendar|task)
+ * @param acctName the account name
+ * @param confName the configuration name
+ */
 com.synckolab.settings.fillInfo = function(type, acctName, confName) {
 	com.synckolab.settings.activeType = type;
 	com.synckolab.settings.activeAccount = acctName;
 	com.synckolab.settings.activeConfig = confName;
+	
+	var config = com.synckolab.settings.getActiveConfig();
+	var prefix = com.synckolab.settings.activeType;
+
+	var sCurFolder = config.folderPath;
+	if (sCurFolder !== null && sCurFolder !== "")
+	{
+		var tree = document.getElementById(prefix + "ImapFolder");
+
+		// make sure we have the correct folder in the view
+		if (document.getElementById(prefix + sCurFolder) !== null)
+		{
+			var treei = tree.view.getIndexOfItem(document.getElementById(prefix + sCurFolder));
+			if (treei < 0) {
+				alert("Problem with treeview - unable to select " + treei);
+			} else
+			{
+				tree.view.selection.select(treei); 
+				if (tree.boxObject) {
+					tree.boxObject.scrollToRow(treei);
+				}
+			}
+		}
+	}
+	
+
+	// the address book / calendar
+	var actList = document.getElementById(prefix + "URL");
+	var cur = actList.firstChild.firstChild;
+	while (cur !== null)
+	{
+		if (cur.getAttribute("value") === config.source)
+		{
+			actList.selectedItem = cur;
+			actList.setAttribute("label", cur.getAttribute("label"));
+			actList.setAttribute("value", cur.getAttribute("value"));
+			break;
+		}
+		cur = cur.nextSibling;
+	}
+	
+	// true if the config is enabled
+	document.getElementById(prefix + "Sync").checked = config.enabled;
+	// save changes to imap (vs. read only)
+	document.getElementById(prefix + "SaveToImap").checked = config.saveToImap;
+	// automatically sync every X minutes (0 = disable)
+	document.getElementById(prefix + "SyncInterval").value = config.syncInterval;
+	// format to use: xml|vcard
+	actList = document.getElementById(prefix + "Format");
+	cur = actList.firstChild.firstChild;
+	while (cur !== null)
+	{
+		if (cur.getAttribute("value") === config.format)
+		{
+			actList.selectedItem = cur;
+			actList.setAttribute("label", cur.getAttribute("label"));
+			actList.setAttribute("value", cur.getAttribute("value"));
+			break;
+		}
+		cur = cur.nextSibling;
+	}
+
+	
+	if(prefix !== "contact") {
+		// timeframe to sync in (don't sync entries with an older start-date)
+		document.getElementById(prefix + "TimeFrame").value = config.timeFrame;
+	}
+	// what to do with conflicts
+	actList = document.getElementById(prefix + "DefaultResolve");
+	cur = actList.firstChild.firstChild;
+	while (cur !== null)
+	{
+		if (cur.getAttribute("value") === config.defaultResolve)
+		{
+			actList.selectedItem = cur;
+			actList.setAttribute("label", cur.getAttribute("label"));
+			actList.setAttribute("value", cur.getAttribute("value"));
+			break;
+		}
+		cur = cur.nextSibling;
+	}
+
+	// enable the sync listener
+	document.getElementById(prefix + "SyncListenerImap").checked = config.syncListener;
+
+	
 };
 
 
@@ -1010,7 +1151,7 @@ com.synckolab.settings.addConfig = function() {
 				// read all the base settings
 				for(var n in com.synckolab.settings.baseSetting) {
 					// skip unwanted prototypes (without type)
-					if(!com.synckolab.settings.baseSetting[n].type) {
+					if(com.synckolab.settings.baseSetting[n].type >= 0) {
 						cConf[n] = com.synckolab.settings.baseSetting[n].def;
 					}
 				}

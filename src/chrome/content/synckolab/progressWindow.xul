@@ -12,6 +12,7 @@
 <script>
 var gPauseSync = false;
 var gStopSync = false;
+var gCloseWindow = false;
 
 function pauseSync () {
 	if (gPauseSync == true)
@@ -30,6 +31,21 @@ function closeSync() {
 	gStopSync=true;
 	window.close();
 }
+
+function load() {
+	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+	try {
+		gCloseWindow = pref.getBoolPref("SyncKolab.closeWindow");
+	} catch (ex) {}
+	document.getElementById("closeWnd").checked = gCloseWindow;
+}
+
+function setCloseWindow()() {
+	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+	gCloseWindow = document.getElementById("closeWnd").checked;
+	pref.setBoolPref("SyncKolab.closeWindow", gCloseWindow);
+}
+
 </script>
   <vbox flex="1">
 	<groupbox orient="horizontal">
@@ -77,5 +93,6 @@ function closeSync() {
 			<button id="pause-button" default="false" oncommand="pauseSync()" label="&synckolab.progress.Pause;"/>
 			<button id="cancel-button" default="true" oncommand="closeSync()" label="&synckolab.progress.Cancel;"/>
 		</hbox>
+		<checkbox id="closeWnd" style="width: 300px" oncommand="setCloseWindow()" label="&synckolab.settings.CloseWindow;" />
 	</vbox>
 </window>

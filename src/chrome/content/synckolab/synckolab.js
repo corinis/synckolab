@@ -63,8 +63,8 @@ com.synckolab.main.syncKolabTimer = function () {
 	// check and load config
 	com.synckolab.config.readConfiguration();
 		
-	// only continue timer if nothing is running right now!
-	if (com.synckolab.main.forceConfig === null)
+	// only continue timer if nothing is running right now and if we have any configs!
+	if (com.synckolab.main.forceConfig === null && com.synckolab.main.syncConfigs)
 	{
 		// go through all configs
 		for (i=0; i < com.synckolab.main.syncConfigs.length; i++)
@@ -246,7 +246,7 @@ com.synckolab.main.sync =  function (event, syncconfig)
 	if (com.synckolab.main.doHideWindow) {
 		com.synckolab.global.wnd = null;
 	} else {
-		com.synckolab.global.wnd = window.open("chrome://synckolab/content/progressWindow.xul", "bmarks", "chrome,width=500,height=350,resizable=1");
+		com.synckolab.global.wnd = window.openDialog("chrome://synckolab/content/progressWindow.xul", "bmarks", "chrome,width=500,height=350,resizable=yes,alwaysRaised=yes,dependent=yes,modal=no");
 	}
 
 	// reset variables
@@ -359,8 +359,10 @@ com.synckolab.main.startSync = function(event) {
 
 	// check if the configuration is available and up to date
 	com.synckolab.config.readConfiguration(); 
-
-	com.synckolab.tools.logMessage("Starting sync with " + com.synckolab.main.syncConfigs.length + " configurations.", com.synckolab.global.LOG_DEBUG);
+	
+	if(com.synckolab.main.syncConfigs) {
+		com.synckolab.tools.logMessage("Starting sync with " + com.synckolab.main.syncConfigs.length + " configurations.", com.synckolab.global.LOG_DEBUG);
+	}
 	
 	// reset all counter
 	com.synckolab.main.curConConfig = 0;
