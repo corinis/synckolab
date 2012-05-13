@@ -897,7 +897,7 @@ com.synckolab.settings.getInfo = function() {
 	config.format = document.getElementById(prefix + "Format").value;
 	if(prefix !== "contact") {
 		// timeframe to sync in (don't sync entries with an older start-date)
-		config.timeFrame = document.getElementById(prefix + "TimeFrame").value;
+		config.timeFrame = document.getElementById(prefix + "SyncTimeframe").value;
 	}
 	// what to do with conflicts
 	config.defaultResolve = document.getElementById(prefix + "DefaultResolve").value;
@@ -997,7 +997,7 @@ com.synckolab.settings.fillInfo = function(type, acctName, confName) {
 	
 	if(prefix !== "contact") {
 		// timeframe to sync in (don't sync entries with an older start-date)
-		document.getElementById(prefix + "TimeFrame").value = config.timeFrame;
+		document.getElementById(prefix + "SyncTimeframe").value = config.timeFrame;
 	}
 	// what to do with conflicts
 	actList = document.getElementById(prefix + "DefaultResolve");

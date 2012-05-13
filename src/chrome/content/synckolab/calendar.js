@@ -82,79 +82,14 @@ com.synckolab.Calendar = {
 	 * @param pref a nsIPrefBranch for reading of the configuration
 	 */
 	readConfig: function(config, pref) {
-		if (!com.synckolab.calendarTools.isCalendarAvailable()) {
+		if (!com.synckolab.calendarTools.isCalendarAvailable() || !config.enabled) {
 			return;
 		}
-		com.synckolab.tools.logMessage("Reading Configuration:" + config.name, com.synckolab.global.LOG_WARNING);
-		config.forceServerCopy = false;
-		config.forceLocalCopy = false;
 
-		if (config.type === "task") {
-			// task config
-			try {
-				config.sync = pref.getBoolPref("SyncKolab." + config.name + ".syncTasks");
-			} catch (ex) {
-				return;
-			}
+		// uid -> filename database - main functions needs to know the name
+		// the current sync database filen (a file with uid:size:date:localfile)
+		config.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config.name + "." + config.type);
 			
-			if(!config.sync)
-			{
-				return;
-			}
-
-			config.folderPath = pref.getCharPref("SyncKolab." + config.name + ".TaskFolderPath");
-			config.calendarName = pref.getCharPref("SyncKolab." + config.name + ".Tasks");
-			
-			config.format = pref.getCharPref("SyncKolab." + config.name + ".TaskFormat");
-			config.saveImap = pref.getBoolPref("SyncKolab." + config.name + ".saveToTaskImap");
-			// use default timeframe if not specified
-			try {
-				config.timeFrame = pref.getIntPref("SyncKolab." + config.name + ".taskSyncTimeframe");
-				config.useSyncListener = pref.getBoolPref("SyncKolab." + config.name + ".syncListenerTaskImap");
-			} catch (tfignore) {
-				// per default take all
-				com.synckolab.tools.logMessage("Sync Time frame is not specified. Syncing all.", com.synckolab.global.LOG_WARNING);
-				config.timeFrame = 180;
-				config.useSyncListener = false;
-			}
-
-			// uid -> filename database - main functions needs to know the name
-			// the current sync database filen (a file with uid:size:date:localfile)
-			config.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config.name + ".task");
-			
-		} else {
-			// calendar config
-			try {
-				config.sync = pref.getBoolPref("SyncKolab." + config.name + ".syncCalendar");
-			} catch (gcalex) {
-				return;
-			}
-
-			if(!config.sync)
-			{
-				return;
-			}
-
-			config.folderPath = pref.getCharPref("SyncKolab." + config.name + ".CalendarFolderPath");
-			config.calendarName = pref.getCharPref("SyncKolab." + config.name + ".Calendar");
-			config.format = pref.getCharPref("SyncKolab." + config.name + ".CalendarFormat");
-			config.saveImap = pref.getBoolPref("SyncKolab." + config.name + ".saveToCalendarImap");
-			
-			// use default timeframe if not specified
-			try {
-				config.syncTimeFrame = pref.getIntPref("SyncKolab." + config.name + ".calSyncTimeframe");
-				config.useSyncListener = pref.getBoolPref("SyncKolab." + config.name + ".syncListenerCalendarImap");
-			} catch (ignore2) {
-				// per default take all
-				com.synckolab.tools.logMessage("Sync Time frame is not specified. Syncing all.", com.synckolab.global.LOG_WARNING);
-				config.syncTimeFrame = -1;
-				config.useSyncListener = false;
-			}
-			// uid -> filename database - main functions needs to know the name
-			// the current sync database filen (a file with uid:size:date:localfile)
-			config.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config.name + ".cal");
-		}
-		
 		// get the correct calendar instance
 		var calendars = com.synckolab.calendarTools.getCalendars();
 		for ( var i = 0; i < calendars.length; i++) {
@@ -172,6 +107,7 @@ com.synckolab.Calendar = {
 		this.tools = com.synckolab.tools;
 		this.calTools = com.synckolab.calendarTools;
 
+		// ui stuff
 		this.itemList = itemList;
 		this.doc = document;
 
