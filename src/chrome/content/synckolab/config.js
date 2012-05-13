@@ -204,18 +204,20 @@ com.synckolab.config.readConfiguration = function() {
 		// nothing changed and we have an active config
 		return;
 	} 
-	
-	// remember the config version
-	com.synckolab.config.VERSION = curVersion;
-	com.synckolab.tools.logMessage("Config Version has changed. ("+com.synckolab.config.VERSION+" - "+curVersion+")", com.synckolab.global.LOG_INFO);
-	
+
 	// load the configuration (use existing pref service)
 	var config = com.synckolab.config.loadConfiguration(pref);
 
+	// set the debug level
+	com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL = com.synckolab.global.LOG_ALL + config.debugLevel;
+
+	com.synckolab.tools.logMessage("Config Version has changed. ("+com.synckolab.config.VERSION+" - "+curVersion+") - LogLevel " + com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL, com.synckolab.global.LOG_INFO);
+
+	// remember the config version
+	com.synckolab.config.VERSION = curVersion;
+	
 	com.synckolab.main.config = config;
 	
-	// set the debug level
-	com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL = config.debugLevel;
 	// hide folder
 	com.synckolab.main.hideFolder = config.hideFolder;
 	// create an object for each configuration

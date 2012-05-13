@@ -1237,9 +1237,9 @@ com.synckolab.addressbookTools.card2Xml = function (card, fields) {
 
 	// if the mail format is set... 
 	if (this.getCardProperty(card, "PreferMailFormat") && this.getCardProperty(card, "PreferMailFormat") !== com.synckolab.addressbookTools.MAIL_FORMAT_UNKNOWN) {
-		if (this.getCardProperty(card, "PreferMailFormat") === this.MAIL_FORMAT_PLAINTEXT) {
+		if (Number(this.getCardProperty(card, "PreferMailFormat")) === this.MAIL_FORMAT_PLAINTEXT) {
 			xml += com.synckolab.tools.text.nodeWithContent("prefer-mail-format", "text", false);
-		} else if (this.getCardProperty(card, "PreferMailFormat") === this.MAIL_FORMAT_HTML) {
+		} else if (Number(this.getCardProperty(card, "PreferMailFormat")) === this.MAIL_FORMAT_HTML) {
 			xml += com.synckolab.tools.text.nodeWithContent("prefer-mail-format", "html", false);
 		}
 	}
@@ -1335,6 +1335,7 @@ com.synckolab.addressbookTools.equalsContact = function (a, b) {
 
 	// if one does not exist - they are definitely different!
 	if (!a || !b) {
+		com.synckolab.tools.logMessage("not equals: " + (a?"a":"b") + " does not exist" , com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 		return false;
 	}
 
@@ -1384,7 +1385,7 @@ com.synckolab.addressbookTools.equalsContact = function (a, b) {
 			if (sa === null && sb === null) {
 				continue;
 			} else {
-				com.synckolab.tools.logMessage("not equals " + fieldsArray[i] + " '" + sa + "' vs. '" + sb + "'", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
+				com.synckolab.tools.logMessage("not equals " + fieldsArray[i] + " '" + sa + "' vs. '" + sb + "'", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 				return false;
 			}
 		}
@@ -1399,7 +1400,7 @@ com.synckolab.addressbookTools.equalsContact = function (a, b) {
 				}
 			}
 
-			com.synckolab.tools.logMessage("not equals " + fieldsArray[i] + " '" + sa + "' vs. '" + sb + "'", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
+			com.synckolab.tools.logMessage("not equals " + fieldsArray[i] + " '" + sa + "' vs. '" + sb + "'", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 			return false;
 		}
 	}
