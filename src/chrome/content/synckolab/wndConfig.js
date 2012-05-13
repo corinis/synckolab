@@ -207,11 +207,9 @@ com.synckolab.settings.writeConfiguration = function(config) {
 		}
 		
 		// write per account
-		alert("writing account config for " + config.accounts[i].name)
 		com.synckolab.settings.writeAccountConfig(pref, config.accounts[i], origAcct);
 		acctList += config.accounts[i].name + ";";
 	}
-	alert("writing accountlist ")
 
 	// write the acctList back
 	com.synckolab.tools.setConfigValue(pref, "accounts.list", com.synckolab.tools.CONFIG_TYPE_CHAR, acctList);
