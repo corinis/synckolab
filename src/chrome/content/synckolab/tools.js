@@ -176,41 +176,48 @@ equalsObject: function(a, b)
 		return true;
 	}
 	
+	if(!a && !b) {
+		throw ("Trying to compare two nulls at " + new Error("s").stack);
+	}
+	
 	var p;
 	for(p in a) {
-		if(typeof(b[p]) === 'undefined' && a[p] !== null && a[p] !== "") {
-			com.synckolab.tools.logMessage("not equals: " + p, com.synckolab.global.LOG_DEBUG);
+		if(p !== "synckolab" && typeof(b[p]) === 'undefined' && a[p] !== null && a[p] !== "") {
+			com.synckolab.tools.logMessage("not equals: " + p + " a: " + a[p] + " b: " + b[p], com.synckolab.global.LOG_DEBUG);
 			return false;
 		}
 	}
 
 	for(p in a) {
-		if (a[p]) {
-			switch(typeof(a[p])) {
-			case 'object':
-				if (!this.equalsObject(a[p], b[p])) { 
-					com.synckolab.tools.logMessage("not equals: " + p, com.synckolab.global.LOG_DEBUG);
-					return false; 
-				} 
-				break;
-			case 'function': // skip functions
-				break;
-			default:
-				if (a[p] !== b[p]) { 
-					com.synckolab.tools.logMessage("not equals: " + p, com.synckolab.global.LOG_DEBUG);
-					return false; 
+		if (p !== "synckolab") {
+			if (a[p]) {
+				switch(typeof(a[p])) {
+				case 'object':
+					if (!this.equalsObject(a[p], b[p])) { 
+						com.synckolab.tools.logMessage("not equals: " + p + " a: " + a[p] + " b: " + b[p], com.synckolab.global.LOG_DEBUG);
+						return false; 
+					} 
+					break;
+				case 'function': // skip functions
+					break;
+				default:
+					if (a[p] !== b[p]) { 
+						com.synckolab.tools.logMessage("not equals: : " + p + " a: " + a[p] + " b: " + b[p], com.synckolab.global.LOG_DEBUG);
+						return false; 
+					}
 				}
-			}
-		} else {
-			if (b[p]) {
-				return false;
+			} else {
+				if (b[p]) {
+					com.synckolab.tools.logMessage("not equals: " + p + " a: not found b: " + b[p], com.synckolab.global.LOG_DEBUG);
+					return false;
+				}
 			}
 		}
 	}
 
 	for(p in b) {
-		if(typeof(a[p]) === 'undefined' && b[p] !== null && b[p] !== "") {
-			com.synckolab.tools.logMessage("not equals: " + p, com.synckolab.global.LOG_DEBUG);
+		if(p !== "synckolab" && (!a || typeof(a[p]) === 'undefined') && b[p] !== null && b[p] !== "") {
+			com.synckolab.tools.logMessage("not equals: " + p + " a: " + (a?a[p]:'is null') + " b: " + b[p], com.synckolab.global.LOG_DEBUG);
 			return false;
 		}
 	}

@@ -43,19 +43,12 @@ if(!com.synckolab) com.synckolab={};
  *  
  */
 com.synckolab.AddressBook = {
-	gConflictResolve : "ask", // conflict resolution (default: ask what to do; other values: server, client)
 
-	folderPath: '', // String - the path for the contacts
-	serverKey: '', // the incoming server
-	gSaveImap: true, // write back to folder
-	gSync: true, // sync this configuration
 	gConfig: null, // remember the configuration name
 	gCurUID: '', // save the last checked uid - for external use
 
 	gCards: '', // remember the current card list 
 	gCardDB: '', // hashmap for all the cards (faster than iterating on big numbers)
-	gSyncTimeFrame: 0, // time frame to take into account (for adress book always 0=all)
-	format: 'VCard', // the format VCard/Xml
 	folderMessageUids: '',
 	
 	email: '', // holds the account email
@@ -762,7 +755,7 @@ com.synckolab.AddressBook = {
 						conflictResolution.result = 0;
 
 						//Open the contact conflict dialog
-						switch (this.gConflictResolve) {
+						switch (this.gConfig.defaultResolve) {
 						case 'server':
 							conflictResolution.result = 1;
 							break;

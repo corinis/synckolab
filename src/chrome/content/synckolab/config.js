@@ -235,24 +235,32 @@ com.synckolab.config.readConfiguration = function() {
 			account.contact[j].serverKey = account.name;
 			com.synckolab.config.prepareConfig(account.contact[j], "contact");
 			if(account.contact[j].enabled) {
+				com.synckolab.tools.logMessage("Adding contact account " + account.contact[j].name, com.synckolab.global.LOG_INFO);
 				com.synckolab.main.syncConfigs.push(account.contact[j]);
 			}
 		}
-
-		for(j = 0; j < account.calendar.length; j++) {
-			account.calendar[j].serverKey = account.name;
-			com.synckolab.config.prepareConfig(account.calendar[j], "calendar");
-			if(account.calendar[j].enabled) {
-				com.synckolab.main.syncConfigs.push(account.calendar[j]);
+		if(account.calendar) {
+			for(j = 0; j < account.calendar.length; j++) {
+				com.synckolab.tools.logMessage("checking calendar " + account.calendar[j].name, com.synckolab.global.LOG_INFO);
+				account.calendar[j].serverKey = account.name;
+				com.synckolab.config.prepareConfig(account.calendar[j], "calendar");
+				com.synckolab.tools.logMessage("checking calendar " + account.calendar[j].name + " enabled? " + account.calendar[j].enabled, com.synckolab.global.LOG_INFO);
+				if(account.calendar[j].enabled) {
+					com.synckolab.tools.logMessage("Adding calendar account " + account.calendar[j].name, com.synckolab.global.LOG_INFO);
+					com.synckolab.main.syncConfigs.push(account.calendar[j]);
+				}
 			}
 		}
-
-		for(j = 0; j < account.task.length; j++) {
-			account.task[j].serverKey = account.name;
-			com.synckolab.config.prepareConfig(account.task[j], "task");
-			if(account.task[j].enabled) {
-				com.synckolab.main.syncConfigs.push(account.task[j]);
-			}
+		if(account.task) {
+			for(j = 0; j < account.task.length; j++) {
+				com.synckolab.tools.logMessage("checking task " + account.calendar[j].name, com.synckolab.global.LOG_INFO);
+				account.task[j].serverKey = account.name;
+				com.synckolab.config.prepareConfig(account.task[j], "task");
+				if(account.task[j].enabled) {
+					com.synckolab.tools.logMessage("Adding task account " + account.task[j].name, com.synckolab.global.LOG_INFO);
+					com.synckolab.main.syncConfigs.push(account.task[j]);
+				}
+		}
 		}
 	}
 	
@@ -267,14 +275,23 @@ com.synckolab.config.readConfiguration = function() {
 com.synckolab.config.prepareConfig = function(baseConfig, confType) {
 	// if we dont wnat to - dont initialize it
 	if(!baseConfig.enabled) {
+		com.synckolab.tools.logMessage("config " + baseConfig.name +"/"+confType + " is disabled!", com.synckolab.global.LOG_INFO);
 		return;
 	}
 	// no folder - not enabled
 	if(!baseConfig.folderPath || baseConfig.folderPath.length < 5) {
+		com.synckolab.tools.logMessage("disabling " + baseConfig.name +"/"+confType + "- no folderpath found", com.synckolab.global.LOG_INFO);
 		baseConfig.enabled = false;
 		return;
 	}
 	
+	// no source - not enabled
+	if(!baseConfig.source) {
+		com.synckolab.tools.logMessage("disabling " + baseConfig.name +"/"+confType + "- no source found", com.synckolab.global.LOG_INFO);
+		baseConfig.enabled = false;
+		return;
+	}
+
 	// keep a lookup of ALL messages in the folder for local trigger
 	baseConfig.msgList = new com.synckolab.hashMap(); 
 
@@ -303,6 +320,7 @@ com.synckolab.config.prepareConfig = function(baseConfig, confType) {
 	baseConfig.folder = com.synckolab.tools.getMsgFolder(baseConfig.serverKey, baseConfig.folderPath);
 	// disable config if it doesnt exist
 	if(!baseConfig.folder) {
+		com.synckolab.tools.logMessage("disabling " + baseConfig.name +"/"+confType + " - baseFolder missing " + baseConfig.folderPath, com.synckolab.global.LOG_INFO);
 		baseConfig.enabled = false;
 		return;
 	}
@@ -311,20 +329,23 @@ com.synckolab.config.prepareConfig = function(baseConfig, confType) {
 	baseConfig.email = com.synckolab.tools.getAccountEMail(baseConfig.serverKey);
 	baseConfig.mailname = com.synckolab.tools.getAccountName(baseConfig.serverKey);
 
-	com.synckolab.tools.logMessage("check listener for "+ baseConfig.folderMsgURI, com.synckolab.global.LOG_DEBUG);
+	com.synckolab.tools.logMessage(baseConfig.name +"/"+confType + ": check listener for "+ baseConfig.folderMsgURI, com.synckolab.global.LOG_DEBUG);
 
 	if(baseConfig.addListener) {
 		com.synckolab.tools.logMessage("adding listener for "+ baseConfig.folderMsgURI, com.synckolab.global.LOG_DEBUG);
 	}
 
+	com.synckolab.tools.logMessage(baseConfig.name +"/"+confType + ": check sync on start", com.synckolab.global.LOG_DEBUG);
+
 	baseConfig.startOnce = false;
-	if(baseConfig.syncOnStart === true)
+	if(baseConfig.syncOnStart)
 	{
 		com.synckolab.tools.logMessage("Run on Startup for "+ baseConfig.name, com.synckolab.global.LOG_DEBUG);
 		// run the config 
 		com.synckolab.main.forceConfig = baseConfig;
 		com.synckolab.main.sync("timer");
 	}
+	com.synckolab.tools.logMessage(baseConfig.name +"/"+confType + ": done ("+baseConfig.enabled+")", com.synckolab.global.LOG_DEBUG);
 
 };
 

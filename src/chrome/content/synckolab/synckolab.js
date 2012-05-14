@@ -442,10 +442,10 @@ com.synckolab.main.nextSync = function()
 		com.synckolab.tools.logMessage("got folder: " + curConfig.folder.URI + 
 				"\nMessage Folder: " + curConfig.folderMsgURI, com.synckolab.global.LOG_DEBUG);
 
-		
 		// the init2 does the goon for us		
-		if(curConfig.init2) {
-			curConfig.init2(com.synckolab.main.prepareContent, curConfig.syncClass);
+		if(curConfig.syncClass.init2) {
+			com.synckolab.tools.logMessage("runnint init2 on " + curConfig.name, com.synckolab.global.LOG_DEBUG);
+			curConfig.syncClass.init2(com.synckolab.main.prepareContent, curConfig.syncClass);
 		}
 
 		com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.prepareContent();}}, com.synckolab.config.SWITCH_TIME, 0);
