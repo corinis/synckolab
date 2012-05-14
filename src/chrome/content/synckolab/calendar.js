@@ -325,7 +325,8 @@ com.synckolab.Calendar = {
 		// parse the content
 		var newEvent = this.calTools.message2json(fileContent, this.gConfig.type === "task");
 
-		if (newEvent === null) {
+		// if we didnt get a valid event (emtpy or without uid) - skip
+		if (newEvent === null || !newEvent.uid) {
 			this.curItemInListId.setAttribute("label", com.synckolab.global.strBundle.getString("unparseable"));
 			return null;
 		}

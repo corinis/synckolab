@@ -693,7 +693,7 @@ com.synckolab.main.getMessage = function()
 
 		}
 		
-		if(!cur.mime2DecodedSubject || cur.mime2DecodedSubject === "" || cur.mime2DecodedSubject.indexOf(" ") !== -1) {
+		if(!cur.mime2DecodedSubject || cur.mime2DecodedSubject.length < 3 || cur.mime2DecodedSubject.indexOf(" ") !== -1) {
 			com.synckolab.tools.logMessage("Message '" + cur.mime2DecodedSubject + "' has an invalid subject!", com.synckolab.global.LOG_INFO);
 			// skip current and process next nessage	
 			skipCMessage = true;
@@ -712,7 +712,6 @@ com.synckolab.main.getMessage = function()
 				skipCMessage = true;
 			}
 		}
-
 
 		if (skipCMessage === true)
 		{
