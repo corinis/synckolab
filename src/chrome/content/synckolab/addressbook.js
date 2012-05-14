@@ -75,7 +75,7 @@ com.synckolab.AddressBook = {
 		// get the rdf for the Addresbook list
 		// the addressbook type nsIAbDirectory
 		
-		var cn = com.synckolab.addressbookTools.getABDirectory(!config.useSyncListener?null:{
+		var cn = com.synckolab.addressbookTools.getABDirectory(!config.syncListener?null:{
 			getConfig: function(addressBokName) {
 				// search through the configs  
 				for(var j = 0; j < com.synckolab.main.syncConfigs.length; j++) {
@@ -83,7 +83,7 @@ com.synckolab.AddressBook = {
 						var curConfig = com.synckolab.main.syncConfigs[j];
 						//com.synckolab.tools.logMessage("checking " + curConfig.contact.folderMsgURI + " vs. " + folder, com.synckolab.global.LOG_DEBUG);
 
-						if(curConfig.enabled && curConfig.useSyncListener) {
+						if(curConfig.enabled && curConfig.syncListener) {
 							if(curConfig.source === addressBokName || com.synckolab.tools.text.fixNameToMiniCharset(curConfig.source) === com.synckolab.tools.text.fixNameToMiniCharset(addressBokName))
 							{
 								return curConfig;
@@ -93,6 +93,21 @@ com.synckolab.AddressBook = {
 				}
 				
 			},
+			finishMsgfolderChange: function(folder) {
+				folder.updateFolder(msgWindow);
+				folder.compact({
+					OnStartRunningUrl: function ( url )
+					{	
+					},
+
+					OnStopRunningUrl: function ( url, exitCode )
+					{	
+						com.synckolab.tools.logMessage("Finished trigger", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+						com.synckolab.global.triggerRunning = false;
+					}
+				}, msgWindow);
+			},
+			
 			onItemAdded: function(parent, newCard) {
 				if(!parent) {
 					return;
@@ -150,8 +165,9 @@ com.synckolab.AddressBook = {
 					OnStartCopy: function () { },
 					SetMessageKey: function (key) {},
 					OnStopCopy: function (status) { 
-						com.synckolab.tools.logMessage("Finished writing contact entry to imap", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
-						com.synckolab.global.triggerRunning = false;
+						// update folder information from imap and make sure we got everything
+						com.synckolab.tools.logMessage("Finished writing contact entry to imap - compacting", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+						this.finishMsgfolderChange(cConfig.folder);
 					}
 				});
 				
@@ -198,7 +214,7 @@ com.synckolab.AddressBook = {
 					idxEntry.remove(false);
 				}
 
-				com.synckolab.global.triggerRunning = false;
+				this.finishMsgfolderChange(curConfig.folder);
 
 			},
 			onItemPropertyChanged: function(item, prop, oldval, newval) {
@@ -274,7 +290,7 @@ com.synckolab.AddressBook = {
 					SetMessageKey: function (key) {},
 					OnStopCopy: function (status) { 
 						com.synckolab.tools.logMessage("Finished writing contact entry to imap", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
-						com.synckolab.global.triggerRunning = false;
+						this.finishMsgfolderChange(curConfig.folder);
 					}
 				});
 

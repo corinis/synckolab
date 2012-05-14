@@ -360,11 +360,9 @@ com.synckolab.config.folderListener = {
 				var curConfig = com.synckolab.main.syncConfigs[j];
 				com.synckolab.tools.logMessage("checking " + curConfig.folderMsgURI + " vs. " + folder, com.synckolab.global.LOG_DEBUG);
 
-				if(curConfig.contact && curConfig.sync) {
-					if(curConfig.useSyncListener && curConfig.folderMsgURI === folder)
-					{
-						return curConfig;
-					}
+				if(curConfig.syncListener && curConfig.folderMsgURI === folder)
+				{
+					return curConfig;
 				}
 			}
 		}
