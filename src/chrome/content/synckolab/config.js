@@ -358,23 +358,12 @@ com.synckolab.config.folderListener = {
 		for(var j = 0; j < com.synckolab.main.syncConfigs.length; j++) {
 			if(com.synckolab.main.syncConfigs[j]) {
 				var curConfig = com.synckolab.main.syncConfigs[j];
-				com.synckolab.tools.logMessage("checking " + curConfig.contact.folderMsgURI + " vs. " + folder, com.synckolab.global.LOG_DEBUG);
+				com.synckolab.tools.logMessage("checking " + curConfig.folderMsgURI + " vs. " + folder, com.synckolab.global.LOG_DEBUG);
 
-				if(curConfig.contact && curConfig.contact.sync) {
-					if(curConfig.contact.useSyncListener && curConfig.contact.folderMsgURI === folder)
+				if(curConfig.contact && curConfig.sync) {
+					if(curConfig.useSyncListener && curConfig.folderMsgURI === folder)
 					{
-						return curConfig.contact;
-					}
-				}
-				if(curConfig.cal && curConfig.cal.sync) {
-					com.synckolab.tools.logMessage("cal: " + curConfig.cal.useSyncListener, com.synckolab.global.LOG_DEBUG);
-					if(curConfig.cal.useSyncListener && curConfig.cal.folderMsgURI === folder) {
-						return curConfig.cal;
-					}
-				}
-				if(curConfig.task && curConfig.task.sync) {
-					if(curConfig.task.useSyncListener && curConfig.task.folderMsgURI === folder) {
-						return curConfig.task;
+						return curConfig;
 					}
 				}
 			}

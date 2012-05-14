@@ -541,6 +541,7 @@ com.synckolab.main.prepareContent = function() {
 		return;
 	}
 	
+	
 	// update folder information from imap and make sure we got everything
 	com.synckolab.main.gConfig.folder.updateFolder(msgWindow);
 	// my UrlListener calls getContent
@@ -558,6 +559,8 @@ com.synckolab.main.prepareContent = function() {
 };
 
 com.synckolab.main.syncKolabCompact = function() {
+	// update folder and compact - this prevents event triggereing
+	com.synckolab.main.gConfig.folder.updateFolder(msgWindow);
 	// compact folder
 	try { 
 		com.synckolab.main.gConfig.folder.compact(null, null);  
