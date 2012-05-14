@@ -85,7 +85,12 @@ com.synckolab.Calendar = {
 		if (!com.synckolab.calendarTools.isCalendarAvailable() || !config.enabled) {
 			return;
 		}
-
+		
+		// skip config if no calendar name
+		if(!config.calendarName) {
+			config.enabled = false;
+			return;
+		}
 		// uid -> filename database - main functions needs to know the name
 		// the current sync database filen (a file with uid:size:date:localfile)
 		config.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config.name + "." + config.type);

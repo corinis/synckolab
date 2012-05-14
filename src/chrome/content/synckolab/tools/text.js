@@ -71,6 +71,9 @@ com.synckolab.tools.text = {
 	 * remove possible problematic chars from a name
 	 */
 	fixNameToMiniCharset : function (name) {
+		if(!name) {
+			com.synckolab.global.consoleService.logStringMessage("undefined string " + new Error("s").stack);
+		}
 		var ret = "";
 		// avoid double placeholders 
 		var placeHolder = false;
@@ -425,9 +428,10 @@ com.synckolab.tools.text = {
 		if (s === null) {
 			return "";
 		}
+		
 		if(!s) {
 			com.synckolab.global.consoleService.logStringMessage("undefined string " + new Error("s").stack);
-		} 
+		}
 
 		if (!s.replace) {
 			return s;

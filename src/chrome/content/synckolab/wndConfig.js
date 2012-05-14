@@ -150,7 +150,6 @@ com.synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
 				if(!acct[type][i] || !acct[type][i].name || acct[type][i].name.length < 3) {
 					continue;
 				}
-				
 				// write all the base settings
 				for(var n in com.synckolab.config.baseSetting) {
 					// skip unwanted prototypes (without type)
@@ -695,6 +694,10 @@ com.synckolab.settings.setSyncPrefView = function(viewName) {
 	var opts = viewName.split("-");
 	// display the correct view
 	var tabs = document.getElementById("tabs");
+
+	// save changes if contact/cal or task was open before
+	com.synckolab.settings.getInfo();
+
 	// remember the type
 	com.synckolab.settings.activeType = opts[1];
 	if(opts.length > 2) {
@@ -703,8 +706,6 @@ com.synckolab.settings.setSyncPrefView = function(viewName) {
 			com.synckolab.settings.setFolders(com.synckolab.settings.activeAccount);
 		}
 	}
-	// save changes if contact/cal or task was open before
-	com.synckolab.settings.getInfo();
 	switch (opts[1])
 	{
 	// on welcome we return - no change config
@@ -1058,6 +1059,32 @@ com.synckolab.settings.addConfig = function() {
 				acct[com.synckolab.settings.activeType].push(cConf);
 				// repaint the tree and select the newly created node
 				com.synckolab.settings.repaintConfigTree("tab-"+com.synckolab.settings.activeType+"-" + com.synckolab.settings.activeAccount + "-" + retVals.name);
+			}
+	}
+};
+
+/**
+ * adds a new configuration to an account
+ */
+com.synckolab.settings.delConfig = function() {
+	switch(com.synckolab.settings.activeType) {
+		case "contact":
+		case "calendar":
+		case "task":
+			if (confirm(this.strBundle.getFormattedString("configDelete", [com.synckolab.settings.activeConfig]))) {
+				
+				var acct = com.synckolab.settings.getAccount(com.synckolab.settings.config, com.synckolab.settings.activeAccount, false);
+				
+				// check the configs
+				for(var i = 0; i < acct[com.synckolab.settings.activeType].length; i++) {
+					// already go the configuration
+					if(com.synckolab.settings.activeConfig === acct[com.synckolab.settings.activeType][i].name) {
+						acct[com.synckolab.settings.activeType].splice(i, 1);
+						// repaint the tree and select the parent 
+						com.synckolab.settings.repaintConfigTree("tab-"+com.synckolab.settings.activeType+"-" + com.synckolab.settings.activeAccount);
+						return;
+					}
+				}
 			}
 	}
 };

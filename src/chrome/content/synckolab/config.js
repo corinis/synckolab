@@ -269,7 +269,12 @@ com.synckolab.config.prepareConfig = function(baseConfig, confType) {
 	if(!baseConfig.enabled) {
 		return;
 	}
-
+	// no folder - not enabled
+	if(!baseConfig.folderPath || baseConfig.folderPath.length < 5) {
+		baseConfig.enabled = false;
+		return;
+	}
+	
 	// keep a lookup of ALL messages in the folder for local trigger
 	baseConfig.msgList = new com.synckolab.hashMap(); 
 
@@ -294,9 +299,14 @@ com.synckolab.config.prepareConfig = function(baseConfig, confType) {
 		com.synckolab.Calendar.readConfig(baseConfig);
 	}
 	
-
 	// get and set the message folder
 	baseConfig.folder = com.synckolab.tools.getMsgFolder(baseConfig.serverKey, baseConfig.folderPath);
+	// disable config if it doesnt exist
+	if(!baseConfig.folder) {
+		baseConfig.enabled = false;
+		return;
+	}
+
 	baseConfig.folderMsgURI = baseConfig.folder.baseMessageURI;
 	baseConfig.email = com.synckolab.tools.getAccountEMail(baseConfig.serverKey);
 	baseConfig.mailname = com.synckolab.tools.getAccountName(baseConfig.serverKey);

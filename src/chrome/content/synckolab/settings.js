@@ -1712,7 +1712,6 @@ com.synckolab.settings = {
 		delConfig: function ()
 		{
 			var config = this.curConfig;
-			alert(config);
 			if (confirm(this.strBundle.getFormattedString("configDelete", [config])))
 			{
 				// get the treechildren item
