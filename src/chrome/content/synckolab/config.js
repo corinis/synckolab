@@ -269,6 +269,17 @@ com.synckolab.config.readConfiguration = function() {
 	
 };
 
+com.synckolab.config.checkIdProcessed = function(baseConfig, id) {
+	for(var i = 0; i < baseConfig.recentProcessed.length; i++) {
+		if(id === baseConfig.recentProcessed[i]) {
+			baseConfig.recentProcessed.splice(i, 1);
+			return true;
+		}
+	}
+	// not yet processed - remember
+	baseConfig.recentProcessed.push(id);
+	return false;
+};
 /**
  * creates an empty config object
  */
@@ -295,6 +306,9 @@ com.synckolab.config.prepareConfig = function(baseConfig, confType) {
 	// keep a lookup of ALL messages in the folder for local trigger
 	baseConfig.msgList = new com.synckolab.hashMap(); 
 
+	// keep a list of all IDs recently processed - this avoids double checking
+	baseConfig.recentProcessed = [];
+	
 	// add type
 	baseConfig.type = confType;
 
@@ -375,11 +389,18 @@ com.synckolab.config.folderListener = {
 		}
 		
 		var msg = aMsg.QueryInterface(Components.interfaces.nsIMsgDBHdr);
+		
 		//nsIMsgDBHdr - check folder
 		com.synckolab.tools.logMessage("ADDED to " + msg.folder.folderURL, com.synckolab.global.LOG_DEBUG);
 		// lets see if we have this folde rin the list
 		var curConfig = this.findConfig(msg.folder.folderURL);
 		if(curConfig) {
+			// check if this one hasnt been just added
+			if(com.synckolab.config.checkIdProcessed(curConfig, msg.mime2DecodedSubject)) {
+				com.synckolab.tools.logMessage("message recently processed - ignore", com.synckolab.global.LOG_DEBUG);
+				return;
+			}
+
 			com.synckolab.tools.logMessage("Found configuration for folder... calling", com.synckolab.global.LOG_DEBUG);
 			var content = {
 					message: "imap-message" + msg.folder.folderURL.substring(4) +"#"+msg.messageKey,
@@ -408,6 +429,12 @@ com.synckolab.config.folderListener = {
 			com.synckolab.tools.logMessage("DELETED from " + msg.folder.folderURL, com.synckolab.global.LOG_DEBUG);
 			var curConfig = this.findConfig(msg.folder.folderURL);
 			if(curConfig) {
+				// check if this one hasnt been just removed
+				if(com.synckolab.config.checkIdProcessed(curConfig, msg.mime2DecodedSubject)) {
+					com.synckolab.tools.logMessage("message recently processed - ignore", com.synckolab.global.LOG_DEBUG);
+					return;
+				}
+
 				var content = {
 						message: "imap-message" + msg.folder.folderURL.substring(4) +"#"+msg.messageKey,
 						fileContent: "",

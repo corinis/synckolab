@@ -138,13 +138,18 @@ com.synckolab.AddressBook = {
 					com.synckolab.global.triggerRunning = false;
 				}
 				
+				// remember that we just worked with this one
+				if(com.synckolab.config.checkIdProcessed(cConfig, cUID)) {
+					com.synckolab.tools.logMessage("skipping because recently processed", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+					return;
+				}
+
 				if (newCard.isMailList) {
 					com.synckolab.tools.logMessage("adding unsaved list: " + cUID, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 				} else {
 					com.synckolab.tools.logMessage("adding unsaved card: " + cUID, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 				}
 				
-
 				// and write the message
 				var abcontent = com.synckolab.addressbookTools.card2Message(newCard, cConfig.email, cConfig.format);
 				com.synckolab.tools.logMessage("New Card " + abcontent, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
@@ -190,7 +195,13 @@ com.synckolab.AddressBook = {
 				if(!cUID) {
 					return;
 				}
-				
+
+				// remember that we just worked with this one
+				if(com.synckolab.config.checkIdProcessed(cConfig, cUID)) {
+					com.synckolab.tools.logMessage("skipping because recently processed", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+					return;
+				}
+
 				// find the correct message to the given uid
 				if(cConfig.msgList.length() === 0) {
 					com.synckolab.tools.fillMessageLookup(cConfig.msgList, config, com.synckolab.addressbookTools.parseMessageContent);
@@ -247,6 +258,12 @@ com.synckolab.AddressBook = {
 					cUID = com.synckolab.addressbookTools.getUID(item);
 				}
 				
+				// remember that we just worked with this one
+				if(com.synckolab.config.checkIdProcessed(cConfig, cUID)) {
+					com.synckolab.tools.logMessage("skipping because recently processed", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+					return;
+				}
+
 				// and write the message
 				var abcontent = com.synckolab.addressbookTools.card2Message(item, cConfig.email, cConfig.format);
 				com.synckolab.tools.logMessage("Updated Card " + cUID, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
@@ -258,6 +275,7 @@ com.synckolab.AddressBook = {
 				if(cConfig.msgList.length() === 0) {
 					com.synckolab.tools.fillMessageLookup(cConfig.msgList, config, com.synckolab.addressbookTools.parseMessageContent);
 				}
+
 
 				com.synckolab.global.triggerRunning = true;
 
@@ -278,6 +296,9 @@ com.synckolab.AddressBook = {
 				
 				// add new
 				com.synckolab.tools.logMessage("Writing card to imap" , com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+
+				// remember that we just added this one
+				cConfig.recentProcessed.push(cUID);
 
 				// write the current content in the sync-db file (parse to json object first)
 				com.synckolab.tools.writeSyncDBFile(idxEntry, com.synckolab.addressbookTools.parseMessageContent(com.synckolab.tools.stripMailHeader(abcontent)));
@@ -339,8 +360,11 @@ com.synckolab.AddressBook = {
 		// get the sync config
 		this.gConfig = config;
 		
+		
 		// clean out cardDb to avoid conflicts with autosync
 		this.gConfig.cardDb = null;
+		// clean out recently processed - we are in manual mode
+		this.gConfig.recentProcessed = [];
 		
 		// a hashmap remembering all the cards - for faster use
 		this.gCardDB = new com.synckolab.hashMap();

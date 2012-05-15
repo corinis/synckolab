@@ -381,7 +381,7 @@ com.synckolab.main.nextSync = function()
 	var curConfig = null;
 		
 	if (com.synckolab.global.wnd) {
-		com.synckolab.main.totalMeter.setAttribute("value", ((com.synckolab.main.curConfig*100)/(com.synckolab.main.syncConfigs.length*3)) +"%");
+		com.synckolab.main.totalMeter.setAttribute("value", ((com.synckolab.main.curConfig*100)/(com.synckolab.main.syncConfigs.length)) +"%");
 	}
 
 	if (com.synckolab.main.curConfig < com.synckolab.main.syncConfigs.length)
@@ -1063,6 +1063,12 @@ com.synckolab.main.kolabCopyServiceListener = {
  * @param listener this is a callback that is used when the copy has been finished/failed
  */
 com.synckolab.main.writeImapMessage = function(skcontent, config, listener) {
+	// get temp file (might not yet be initialized)
+	var file = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("TmpD", Components.interfaces.nsIFile);
+	file.append("syncKolab.tmp");
+	file.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 600);
+	com.synckolab.main.gTmpFile = file.path;
+	
 	// write the message in the temp file
 	var sfile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
 	// temp path

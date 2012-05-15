@@ -162,13 +162,19 @@ com.synckolab.Calendar = {
 						return;
 					}
 
+					// remember that we just worked with this one
+					if(com.synckolab.config.checkIdProcessed(cConfig, cur.id)) {
+						com.synckolab.tools.logMessage("skipping because recently processed", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+						return;
+					}
+
 					com.synckolab.tools.logMessage("nextUpdate really writes event:" + cur.id, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
 					// and now really write the message
 					var msg = null;
 					var clonedEvent = cur;
-					clonedEvent = this.calTools.event2json(cur, cConfig.type === "task");
+					clonedEvent = com.synckolab.calendarTools.event2json(cur, cConfig.type === "task");
 
-					if (this.gConfig.format === "Xml") {
+					if (cConfig.format === "Xml") {
 						msg = com.synckolab.calendarTools.event2kolabXmlMsg(clonedEvent, cConfig.email, cConfig.type === "task");
 					} else {
 						var calComp = Components.classes["@mozilla.org/calendar/ics-service;1"].getService(Components.interfaces.calIICSService).createIcalComponent("VCALENDAR");
@@ -176,7 +182,7 @@ com.synckolab.Calendar = {
 						calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
 						calComp.addSubcomponent(cur.icalComponent);
 
-						if (this.gConfig.type === "task") {
+						if (cConfig.type === "task") {
 							msg = com.synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
 						} else {
 							msg = com.synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
@@ -222,14 +228,20 @@ com.synckolab.Calendar = {
 
 					com.synckolab.tools.logMessage("Calendar listener: modified " + aOldItem.id + " with " + cur.id, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_CAL);
 
+					// remember that we just worked with this one
+					if(com.synckolab.config.checkIdProcessed(cConfig, cur.id)) {
+						com.synckolab.tools.logMessage("skipping because recently processed", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+						return;
+					}
+
 					// get the dbfile from the local disk
 					var cUID = cur.id;
 					// and now really write the message
 					var msg = null;
 					var clonedEvent = cur;
-					clonedEvent = this.calTools.event2json(cur, cConfig.type === "task");
+					clonedEvent = com.synckolab.calendarTools.event2json(cur, cConfig.type === "task");
 
-					if (this.gConfig.format === "Xml") {
+					if (cConfig.format === "Xml") {
 						msg = com.synckolab.calendarTools.event2kolabXmlMsg(clonedEvent, cConfig.email, cConfig.type === "task");
 					} else {
 						var calComp = Components.classes["@mozilla.org/calendar/ics-service;1"].getService(Components.interfaces.calIICSService).createIcalComponent("VCALENDAR");
@@ -237,13 +249,16 @@ com.synckolab.Calendar = {
 						calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
 						calComp.addSubcomponent(cur.icalComponent);
 
-						if (this.gConfig.type === "task") {
+						if (cConfig.type === "task") {
 							msg = com.synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
 						} else {
 							msg = com.synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
 						}
 					}
 					
+					// remember that we just added this one
+					cConfig.recentProcessed.push(cur.id);
+
 					// finally update imap
 					// find the correct message to the given uid
 					if(cConfig.msgList.length() === 0) {
@@ -297,8 +312,16 @@ com.synckolab.Calendar = {
 					if(!cConfig) {
 						return;
 					}
+					
 					var cUID = cur.id;
 					com.synckolab.tools.logMessage("Calendar listener: deleted " + cur.id, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_CAL);
+					
+					// remember that we just worked with this one
+					if(com.synckolab.config.checkIdProcessed(cConfig, cur.id)) {
+						com.synckolab.tools.logMessage("skipping because recently processed", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+						return;
+					}
+
 					// find the correct message to the given uid
 					if(cConfig.msgList.length() === 0) {
 						com.synckolab.tools.fillMessageLookup(cConfig.msgList, config, com.synckolab.addressbookTools.parseMessageContent);
@@ -306,6 +329,9 @@ com.synckolab.Calendar = {
 					
 					com.synckolab.global.triggerRunning = true;
 					
+					// remember that we just added this one
+					cConfig.recentProcessed.push(cur.id);
+
 					// get and delete the message
 					var msg = cConfig.msgList.get(cUID);
 					if(msg) {
@@ -344,6 +370,8 @@ com.synckolab.Calendar = {
 		this.doc = document;
 
 		this.gConfig = config;
+		// clean out recently processed - we are in manual mode
+		this.gConfig.recentProcessed = [];
 
 		com.synckolab.tools.logMessage("Initialising calendar config: " + this.gConfig.name, com.synckolab.global.LOG_INFO);
 
