@@ -157,7 +157,7 @@ com.synckolab.AddressBook = {
 				com.synckolab.tools.logMessage("Writing card to imap" , com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 
 				com.synckolab.global.triggerRunning = true;
-
+				var listener = this;
 				com.synckolab.main.writeImapMessage(abcontent, cConfig, 
 				{
 					OnProgress: function (progress, progressMax) {},
@@ -166,7 +166,7 @@ com.synckolab.AddressBook = {
 					OnStopCopy: function (status) { 
 						// update folder information from imap and make sure we got everything
 						com.synckolab.tools.logMessage("Finished writing contact entry to imap - compacting", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
-						this.finishMsgfolderChange(cConfig.folder);
+						listener.finishMsgfolderChange(cConfig.folder);
 					}
 				});
 				
@@ -180,8 +180,8 @@ com.synckolab.AddressBook = {
 					return;
 				}
 				
-				var curConfig = this.getConfig(parent.dirName);
-				if(!curConfig) {
+				var cConfig = this.getConfig(parent.dirName);
+				if(!cConfig) {
 					return;
 				}
 
@@ -191,29 +191,29 @@ com.synckolab.AddressBook = {
 					return;
 				}
 				
-				//find the correct message to the given uid
-				if(curConfig.msgList.length() === 0) {
-					com.synckolab.tools.fillMessageLookup(curConfig.msgList, config, com.synckolab.addressbookTools.parseMessageContent);
+				// find the correct message to the given uid
+				if(cConfig.msgList.length() === 0) {
+					com.synckolab.tools.fillMessageLookup(cConfig.msgList, config, com.synckolab.addressbookTools.parseMessageContent);
 				}
 				
 				com.synckolab.global.triggerRunning = true;
 				
 				// get and delete the message
-				var msg = curConfig.msgList.get(cUID);
+				var msg = cConfig.msgList.get(cUID);
 				if(msg) {
 					var list = null;
 					// use mutablearray
 					list = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
 					com.synckolab.tools.logMessage("deleting [" + cUID + "]");
 					list.appendElement(msg, false);	
-					curConfig.folder.deleteMessages(list, msgWindow, true, false, null, true);
+					cConfig.folder.deleteMessages(list, msgWindow, true, false, null, true);
 					
 					// also remove sync db file
-					var idxEntry = com.synckolab.tools.file.getSyncDbFile(curConfig, cUID);
+					var idxEntry = com.synckolab.tools.file.getSyncDbFile(cConfig, cUID);
 					idxEntry.remove(false);
 				}
 
-				this.finishMsgfolderChange(curConfig.folder);
+				this.finishMsgfolderChange(cConfig.folder);
 
 			},
 			onItemPropertyChanged: function(item, prop, oldval, newval) {
@@ -228,8 +228,8 @@ com.synckolab.AddressBook = {
 				com.synckolab.tools.logMessage("item changed in "+ dirName, com.synckolab.global.LOG_INFO);
 				
 				// get the right config for this address book
-				var curConfig = this.getConfig(dirName);
-				if(!curConfig) {
+				var cConfig = this.getConfig(dirName);
+				if(!cConfig) {
 					return;
 				}
 
@@ -248,31 +248,31 @@ com.synckolab.AddressBook = {
 				}
 				
 				// and write the message
-				var abcontent = com.synckolab.addressbookTools.card2Message(item, curConfig.email, curConfig.format);
+				var abcontent = com.synckolab.addressbookTools.card2Message(item, cConfig.email, cConfig.format);
 				com.synckolab.tools.logMessage("Updated Card " + cUID, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 
 				com.synckolab.tools.logMessage("looking for message", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
 
 				// finally update imap
 				// find the correct message to the given uid
-				if(curConfig.msgList.length() === 0) {
-					com.synckolab.tools.fillMessageLookup(curConfig.msgList, config, com.synckolab.addressbookTools.parseMessageContent);
+				if(cConfig.msgList.length() === 0) {
+					com.synckolab.tools.fillMessageLookup(cConfig.msgList, config, com.synckolab.addressbookTools.parseMessageContent);
 				}
 
 				com.synckolab.global.triggerRunning = true;
 
 				// get the dbfile from the local disk
-				var idxEntry = com.synckolab.tools.file.getSyncDbFile(curConfig, cUID);
+				var idxEntry = com.synckolab.tools.file.getSyncDbFile(cConfig, cUID);
 
 				// get and delete the message
-				var msg = curConfig.msgList.get(cUID);
+				var msg = cConfig.msgList.get(cUID);
 				if(msg) {
 					var list = null;
 					// use mutablearray
 					list = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
 					com.synckolab.tools.logMessage("deleting [" + cUID + "]");
 					list.appendElement(msg, false);	
-					curConfig.folder.deleteMessages(list, msgWindow, true, false, null, true);
+					cConfig.folder.deleteMessages(list, msgWindow, true, false, null, true);
 					idxEntry.remove(false);
 				}
 				
@@ -282,14 +282,15 @@ com.synckolab.AddressBook = {
 				// write the current content in the sync-db file (parse to json object first)
 				com.synckolab.tools.writeSyncDBFile(idxEntry, com.synckolab.addressbookTools.parseMessageContent(com.synckolab.tools.stripMailHeader(abcontent)));
 
-				com.synckolab.main.writeImapMessage(abcontent, curConfig, 
+				var listener = this;
+				com.synckolab.main.writeImapMessage(abcontent, cConfig, 
 				{
 					OnProgress: function (progress, progressMax) {},
 					OnStartCopy: function () { },
 					SetMessageKey: function (key) {},
 					OnStopCopy: function (status) { 
 						com.synckolab.tools.logMessage("Finished writing contact entry to imap", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
-						this.finishMsgfolderChange(curConfig.folder);
+						listener.finishMsgfolderChange(cConfig.folder);
 					}
 				});
 

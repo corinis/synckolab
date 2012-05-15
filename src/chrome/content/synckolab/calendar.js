@@ -106,12 +106,12 @@ com.synckolab.Calendar = {
 				/**
 				 * private utility function to get the correct calendar (works for task and calendar).
 				 */
-				getConfig: function(name) {
+				getConfig: function(name, isCal) {
 					// search through the configs  
 					for(var j = 0; j < com.synckolab.main.syncConfigs.length; j++) {
 						if(com.synckolab.main.syncConfigs[j] && 
-								(com.synckolab.main.syncConfigs[j].type === "calendar" ||
-										com.synckolab.main.syncConfigs[j].type === "task")) {
+								(isCal && com.synckolab.main.syncConfigs[j].type === "calendar") ||
+								(!isCal && com.synckolab.main.syncConfigs[j].type === "task")) {
 							var curConfig = com.synckolab.main.syncConfigs[j];
 							//com.synckolab.tools.logMessage("checking " + curConfig.contact.folderMsgURI + " vs. " + folder, com.synckolab.global.LOG_DEBUG);
 
@@ -125,26 +125,203 @@ com.synckolab.Calendar = {
 					}
 				},
 				
+				finishMsgfolderChange: function(folder) {
+					folder.updateFolder(msgWindow);
+					folder.compact({
+						OnStartRunningUrl: function ( url )
+						{	
+						},
+
+						OnStopRunningUrl: function ( url, exitCode )
+						{	
+							com.synckolab.tools.logMessage("Finished trigger", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+							com.synckolab.global.triggerRunning = false;
+						}
+					}, msgWindow);
+				},
 				/**
 				 * add an item
 				 */
-				onAddItem: function(aItem) {
-					com.synckolab.tools.logMessage("Calendar listener: added " + aItem.id, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_CAL);
+				onAddItem: function(cur) {
+					// make sure not to parse messages while a full sync is running
+					if(com.synckolab.global.running || com.synckolab.global.triggerRunning) {
+						return;
+					}
+					
+					var cConfig = this.getConfig(cur.calendar.name, com.synckolab.tools.instanceOf(cur, Components.interfaces.calIEvent));
+					if(!cConfig) {
+						return;
+					}
+					
+					com.synckolab.tools.logMessage("Calendar listener: added " + cur.id, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_CAL);
+					
+					var cEntry = com.synckolab.tools.file.getSyncDbFile(cConfig, cur.id);
 
+					// skip if we have this one already
+					if (cEntry.exists() && !this.forceServerCopy) {
+						return;
+					}
+
+					com.synckolab.tools.logMessage("nextUpdate really writes event:" + cur.id, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+					// and now really write the message
+					var msg = null;
+					var clonedEvent = cur;
+					clonedEvent = this.calTools.event2json(cur, cConfig.type === "task");
+
+					if (this.gConfig.format === "Xml") {
+						msg = com.synckolab.calendarTools.event2kolabXmlMsg(clonedEvent, cConfig.email, cConfig.type === "task");
+					} else {
+						var calComp = Components.classes["@mozilla.org/calendar/ics-service;1"].getService(Components.interfaces.calIICSService).createIcalComponent("VCALENDAR");
+						calComp.version = "2.0";
+						calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
+						calComp.addSubcomponent(cur.icalComponent);
+
+						if (this.gConfig.type === "task") {
+							msg = com.synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
+						} else {
+							msg = com.synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
+						}
+					}
+
+					com.synckolab.tools.logMessage("New event:\n" + msg, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+
+					// add the new event into the db
+					cEntry = com.synckolab.tools.file.getSyncDbFile(cConfig, cur.id);
+					com.synckolab.tools.writeSyncDBFile(cEntry, clonedEvent);
+
+					com.synckolab.tools.logMessage("Writing entry to imap" , com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+
+					com.synckolab.global.triggerRunning = true;
+					var listener = this;
+					com.synckolab.main.writeImapMessage(msg, cConfig, 
+					{
+						OnProgress: function (progress, progressMax) {},
+						OnStartCopy: function () { },
+						SetMessageKey: function (key) {},
+						OnStopCopy: function (status) { 
+							// update folder information from imap and make sure we got everything
+							com.synckolab.tools.logMessage("Finished writing contact entry to imap - compacting", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+							listener.finishMsgfolderChange(cConfig.folder);
+						}
+					});
+					
 				},
 				/**
 				 * modify an item
 				 */
-				onModifyItem: function(aNewItem, aOldItem) {
-					com.synckolab.tools.logMessage("Calendar listener: modified " + aOldItem.id + " with " + aNewItem.id, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_CAL);
+				onModifyItem: function(cur, aOldItem) {
+					// make sure not to parse messages while a full sync is running
+					if(com.synckolab.global.running || com.synckolab.global.triggerRunning) {
+						return;
+					}
 					
+					var cConfig = this.getConfig(cur.calendar.name, com.synckolab.tools.instanceOf(cur, Components.interfaces.calIEvent));
+					if(!cConfig) {
+						return;
+					}
+
+					com.synckolab.tools.logMessage("Calendar listener: modified " + aOldItem.id + " with " + cur.id, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_CAL);
+
+					// get the dbfile from the local disk
+					var cUID = cur.id;
+					// and now really write the message
+					var msg = null;
+					var clonedEvent = cur;
+					clonedEvent = this.calTools.event2json(cur, cConfig.type === "task");
+
+					if (this.gConfig.format === "Xml") {
+						msg = com.synckolab.calendarTools.event2kolabXmlMsg(clonedEvent, cConfig.email, cConfig.type === "task");
+					} else {
+						var calComp = Components.classes["@mozilla.org/calendar/ics-service;1"].getService(Components.interfaces.calIICSService).createIcalComponent("VCALENDAR");
+						calComp.version = "2.0";
+						calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
+						calComp.addSubcomponent(cur.icalComponent);
+
+						if (this.gConfig.type === "task") {
+							msg = com.synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
+						} else {
+							msg = com.synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
+						}
+					}
+					
+					// finally update imap
+					// find the correct message to the given uid
+					if(cConfig.msgList.length() === 0) {
+						com.synckolab.tools.fillMessageLookup(cConfig.msgList, config, com.synckolab.addressbookTools.parseMessageContent);
+					}
+
+					var cEntry = com.synckolab.tools.file.getSyncDbFile(cConfig, cur.id);
+
+					// get and delete the message
+					var cmsg = cConfig.msgList.get(cUID);
+					if(cmsg) {
+						var list = null;
+						// use mutablearray
+						list = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
+						com.synckolab.tools.logMessage("deleting [" + cUID + "]");
+						list.appendElement(cmsg, false);	
+						cConfig.folder.deleteMessages(list, msgWindow, true, false, null, true);
+						cEntry.remove(false);
+					}
+					
+					com.synckolab.tools.logMessage("New event:\n" + msg, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+
+					// add the new event into the db
+					com.synckolab.tools.writeSyncDBFile(cEntry, clonedEvent);
+
+					com.synckolab.tools.logMessage("Writing entry to imap" , com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+					com.synckolab.global.triggerRunning = true;
+					var listener = this;
+					com.synckolab.main.writeImapMessage(msg, cConfig, 
+					{
+						OnProgress: function (progress, progressMax) {},
+						OnStartCopy: function () { },
+						SetMessageKey: function (key) {},
+						OnStopCopy: function (status) { 
+							// update folder information from imap and make sure we got everything
+							com.synckolab.tools.logMessage("Finished writing contact entry to imap - compacting", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+							listener.finishMsgfolderChange(cConfig.folder);
+						}
+					});
 				},
 				/**
 				 * delete an item
 				 */
-				onDeleteItem: function(aItem) {
-					com.synckolab.tools.logMessage("Calendar listener: deleted " + aItem.id, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_CAL);
+				onDeleteItem: function(cur) {
+					// make sure not to parse messages while a full sync is running
+					if(com.synckolab.global.running || com.synckolab.global.triggerRunning) {
+						return;
+					}
 					
+					var cConfig = this.getConfig(cur.calendar.name, com.synckolab.tools.instanceOf(cur, Components.interfaces.calIEvent));
+					if(!cConfig) {
+						return;
+					}
+					var cUID = cur.id;
+					com.synckolab.tools.logMessage("Calendar listener: deleted " + cur.id, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_CAL);
+					// find the correct message to the given uid
+					if(cConfig.msgList.length() === 0) {
+						com.synckolab.tools.fillMessageLookup(cConfig.msgList, config, com.synckolab.addressbookTools.parseMessageContent);
+					}
+					
+					com.synckolab.global.triggerRunning = true;
+					
+					// get and delete the message
+					var msg = cConfig.msgList.get(cUID);
+					if(msg) {
+						var list = null;
+						// use mutablearray
+						list = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
+						com.synckolab.tools.logMessage("deleting [" + cUID + "]");
+						list.appendElement(msg, false);	
+						cConfig.folder.deleteMessages(list, msgWindow, true, false, null, true);
+						
+						// also remove sync db file
+						var idxEntry = com.synckolab.tools.file.getSyncDbFile(cConfig, cUID);
+						idxEntry.remove(false);
+					}
+
+					this.finishMsgfolderChange(cConfig.folder);
 				}
 			});
 		}
