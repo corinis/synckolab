@@ -119,7 +119,7 @@ com.synckolab.settings.writeConfiguration = function(config) {
  * @param acct the account object to read the configuration into (name has to be existent)
  */
 com.synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
-	var configs, i, j, found;
+	var configs, i, j, k, found;
 	for(var type in acct) {
 		// skip volatiles/non-arrays
 		if(type !== "name" && acct[type].push) {
@@ -137,6 +137,7 @@ com.synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
 					// get rid of the deleted configuration branches
 					if(!found) {
 						try {
+							com.synckolab.settings.resetConfiguration(acct.name, type, orig[type][i].name);
 							pref.resetBranch("SyncKolab.accounts." + acct.name + "." + type + ".configs." + orig[type][i].name);
 						} catch (ex) {
 							
@@ -144,12 +145,31 @@ com.synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
 					}
 				}
 			}
+			
+			
+
 
 			configs = "";
 			for(i=0; i < acct[type].length; i++) {
 				if(!acct[type][i] || !acct[type][i].name || acct[type][i].name.length < 3) {
 					continue;
 				}
+				
+				// if some values change - the cache needs to reset
+				for(j=0; j < orig[type].length; j++) {
+					if(acct[type][i].name === orig[type][j].name) {
+						var resetTriggers = ["source", "folderPath", "format"];
+						for(k=0; k < resetTriggers.length; k++) {
+							if(acct[type][i][resetTriggers[k]] !== orig[type][j][resetTriggers[k]]) {
+								com.synckolab.settings.resetConfiguration(acct.name, type, acct[type][i].name);
+								break;
+							}
+						}
+						break;
+					}
+				}
+				
+
 				// write all the base settings
 				for(var n in com.synckolab.config.baseSetting) {
 					// skip unwanted prototypes (without type)
@@ -163,6 +183,7 @@ com.synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
 
 				configs += acct[type][i].name + ";";
 			}
+			
 			// write the configList back
 			com.synckolab.tools.setConfigValue(pref, "accounts." + acct.name + "." + type + ".list", com.synckolab.tools.CONFIG_TYPE_CHAR, configs);
 		}
@@ -1086,5 +1107,38 @@ com.synckolab.settings.delConfig = function() {
 					}
 				}
 			}
+	}
+};
+
+/**
+ * Delete all temp/cache - files/folders for this configuration
+ * @param config the config name
+ * @param type CALENDAR|TASK|CONTACT + FOLDER
+ */
+com.synckolab.settings.resetConfiguration = function (account, type, config)
+{
+	
+	com.synckolab.tools.logMessage("Resetting " + account.rootMsgFolder.baseMessageURI + " is not an imap account - skipping!", com.synckolab.global.LOG_INFO);
+
+	var file = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsIFile);
+	file.append("synckolab." + com.synckolab.tools.text.fixNameToMiniCharset(account) + "." + type + "." + config + ".hdb");
+	if (file.exists()) {
+		file.remove(true);
+	}
+
+	file = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsIFile);
+	file.append("synckolab");
+
+	if (!file.exists()) {
+		return;
+	}
+
+	file.append(com.synckolab.tools.text.fixNameToMiniCharset(account));
+	if (file.exists())
+	{
+		file.append(type + "_" + config);
+		if (file.exists()) {
+			file.remove(true);
+		}
 	}
 };

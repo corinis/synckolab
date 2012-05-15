@@ -44,10 +44,13 @@ if(!com.synckolab) com.synckolab={};
 com.synckolab.calendarTools = {
 		activeCalendarManager: null,
 
+		// make sure the listener is only registered ONCE
+		listenerRegistered: {},
+
 		/**
 		 * New and updated calendar functions (lightning 0.1)
 		 */
-		getCalendarManager: function ()
+		getCalendarManager: function (listener)
 		{
 			if (!this.activeCalendarManager || this.activeCalendarManager === null) {
 				this.activeCalendarManager = Components.classes["@mozilla.org/calendar/manager;1"].getService(Components.interfaces.calICalendarManager);
@@ -88,6 +91,15 @@ com.synckolab.calendarTools = {
 			}
 		},
 
+		/**
+		 * add a listener to a calendar. This makes sure a listener is not double-added.
+		 */
+		registerListener: function(calendar, listener) {
+			if(listener && !com.synckolab.calendarTools.listenerRegistered[calendar.id]) {
+				calendar.addObserver(listener);
+				com.synckolab.calendarTools.listenerRegistered[calendar.id] = true;
+			}
+		},
 
 		/**
 		 * @return true if the calendar exists
@@ -662,7 +674,7 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 			tmpobj = {};
 			jobj.attendess.push(tmpobj);
 			
-			var cmail = attendee.id.replace(/MAILTO:/i, '')
+			var cmail = attendee.id.replace(/MAILTO:/i, '');
 			if(cmail && cmail !== "unknown") {
 				tmpobj.mail = attendee.id.replace(/MAILTO:/i, '');
 			}

@@ -91,7 +91,6 @@ com.synckolab.AddressBook = {
 						}
 					}
 				}
-				
 			},
 			finishMsgfolderChange: function(folder) {
 				folder.updateFolder(msgWindow);
@@ -321,7 +320,7 @@ com.synckolab.AddressBook = {
 		
 		// the current sync database filen (a file with uid:size:date:localfile)
 		// uid -> filename database - main functions needs to know the name
-		config.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config.name + ".ab");
+		config.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config);
 	},
 
 	init: function (config, itemList, document) {
@@ -582,6 +581,7 @@ com.synckolab.AddressBook = {
 		// the new card might be a card OR a directory
 		var newCard = null;
 		var pName;	// temp for photos
+		var abcontent;
 		
 		// create a new item in the itemList for display
 		this.curItemInList = this.doc.createElement("listitem");
@@ -860,7 +860,7 @@ com.synckolab.AddressBook = {
 
 					if (bUpdateServer) {
 						// update on server
-						var abcontent = this.tools.card2Message(foundCard, this.gConfig.email, this.gConfig.format);
+						abcontent = this.tools.card2Message(foundCard, this.gConfig.email, this.gConfig.format);
 
 						// write the current content in the sync-db file
 						com.synckolab.tools.writeSyncDBFile(idxEntry, this.tools.parseMessageContent(com.synckolab.tools.stripMailHeader(abcontent)));
@@ -951,7 +951,7 @@ com.synckolab.AddressBook = {
 					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("updateOnServer"));
 					
 					// remember this message for update - generate mail message (incl. extra fields)
-					var abcontent = this.tools.card2Message(foundCard, this.gConfig.email, this.gConfig.format);
+					abcontent = this.tools.card2Message(foundCard, this.gConfig.email, this.gConfig.format);
 					// write the current content in the sync-db file
 					com.synckolab.tools.writeSyncDBFile(idxEntry, this.tools.parseMessageContent(com.synckolab.tools.stripMailHeader(abcontent)));
 					return abcontent;

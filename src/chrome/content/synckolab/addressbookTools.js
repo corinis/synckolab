@@ -40,6 +40,9 @@ com.synckolab.addressbookTools = {
 	// package shortcuts:
 	global : com.synckolab.global,
 	tools : com.synckolab.tools,
+	
+	// make sure the listener is only registered ONCE
+	listenerRegistered: false,
 
 	// globals
 	MAIL_FORMAT_UNKNOWN : 0,
@@ -302,9 +305,11 @@ com.synckolab.addressbookTools.getABDirectory = function (listener) {
 	// tbird >= 7
 	try {
 		var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+		
 		/* - ignore ab listener: if you change something locally - sync manual! */
-		if (listener) {
+		if (listener && !com.synckolab.addressbookTools.listenerRegistered) {
 			abManager.addAddressBookListener(listener, 0xFFFFFFFF); // all
+			com.synckolab.addressbookTools.listenerRegistered = true;
 		}
 		
 		return abManager.directories;
@@ -1307,19 +1312,19 @@ com.synckolab.addressbookTools.card2Xml = function (card, fields) {
  * Generate a sha1 key out of a vcard - used for database
  */
 com.synckolab.addressbookTools.genConSha1 = function (card) {
-	return com.synckolab.tools.sha1.hex_sha1(this.getCardProperty(card, "AimScreenName") + ":" + this.getCardProperty(card, "AnniversaryDay") + ":" + this.getCardProperty(card, "AnniversaryMonth") + ":" + this.getCardProperty(card, "AnniversaryYear") + ":" + this.getCardProperty(card, "BirthDay")
-			+ ":" + this.getCardProperty(card, "BirthMonth") + ":" + this.getCardProperty(card, "BirthYear") + ":" + this.getCardProperty(card, "CardType") + ":" + this.getCardProperty(card, "Category") + ":" + this.getCardProperty(card, "CellularNumber") + ":"
-			+ this.getCardProperty(card, "CellularNumberType") + ":" + this.getCardProperty(card, "Company") + ":" + this.getCardProperty(card, "Custom1") + ":" + this.getCardProperty(card, "Custom2") + ":" + this.getCardProperty(card, "Custom3") + ":" + this.getCardProperty(card, "Custom4") + ":" +
+	return com.synckolab.tools.sha1.hex_sha1(this.getCardProperty(card, "AimScreenName") + ":" + this.getCardProperty(card, "AnniversaryDay") + ":" + this.getCardProperty(card, "AnniversaryMonth") + ":" + this.getCardProperty(card, "AnniversaryYear") + ":" + this.getCardProperty(card, "BirthDay") +
+			":" + this.getCardProperty(card, "BirthMonth") + ":" + this.getCardProperty(card, "BirthYear") + ":" + this.getCardProperty(card, "CardType") + ":" + this.getCardProperty(card, "Category") + ":" + this.getCardProperty(card, "CellularNumber") + 
+			":" + this.getCardProperty(card, "CellularNumberType") + ":" + this.getCardProperty(card, "Company") + ":" + this.getCardProperty(card, "Custom1") + ":" + this.getCardProperty(card, "Custom2") + ":" + this.getCardProperty(card, "Custom3") + ":" + this.getCardProperty(card, "Custom4") + ":" +
 			//this.getCardProperty(card, "DefaultAddress") + ":" + @deprecated
-			this.getCardProperty(card, "Department") + ":" + this.getCardProperty(card, "DisplayName") + ":" + this.getCardProperty(card, "FamilyName") + ":" + this.getCardProperty(card, "FaxNumber") + ":" + this.getCardProperty(card, "FaxNumberType") + ":" + this.getCardProperty(card, "FirstName")
-			+ ":" + this.getCardProperty(card, "HomeAddress") + ":" + this.getCardProperty(card, "HomeAddress2") + ":" + this.getCardProperty(card, "HomeCity") + ":" + this.getCardProperty(card, "HomeCountry") + ":" + this.getCardProperty(card, "HomePhone") + ":"
-			+ this.getCardProperty(card, "HomePhoneType") + ":" + this.getCardProperty(card, "HomeState") + ":" + this.getCardProperty(card, "HomeZipCode") + ":" + this.getCardProperty(card, "JobTitle") + ":" + this.getCardProperty(card, "LastName") + ":" + this.getCardProperty(card, "NickName")
-			+ ":" + this.getCardProperty(card, "Notes") + ":" + this.getCardProperty(card, "PagerNumber") + ":" + this.getCardProperty(card, "PagerNumberType") + ":" + this.getCardProperty(card, "PhoneticFirstName") + ":" + this.getCardProperty(card, "PhoneticLastName") + ":"
-			+ this.getCardProperty(card, "PreferMailFormat") + ":" + //Added by Copart, will evidently create a lot of SHA mismatches on first update after sync, auto update will occur
+			this.getCardProperty(card, "Department") + ":" + this.getCardProperty(card, "DisplayName") + ":" + this.getCardProperty(card, "FamilyName") + ":" + this.getCardProperty(card, "FaxNumber") + ":" + this.getCardProperty(card, "FaxNumberType") + ":" + this.getCardProperty(card, "FirstName") +
+			":" + this.getCardProperty(card, "HomeAddress") + ":" + this.getCardProperty(card, "HomeAddress2") + ":" + this.getCardProperty(card, "HomeCity") + ":" + this.getCardProperty(card, "HomeCountry") + ":" + this.getCardProperty(card, "HomePhone") +
+			":" +this.getCardProperty(card, "HomePhoneType") + ":" + this.getCardProperty(card, "HomeState") + ":" + this.getCardProperty(card, "HomeZipCode") + ":" + this.getCardProperty(card, "JobTitle") + ":" + this.getCardProperty(card, "LastName") + ":" + this.getCardProperty(card, "NickName") +
+			":" + this.getCardProperty(card, "Notes") + ":" + this.getCardProperty(card, "PagerNumber") + ":" + this.getCardProperty(card, "PagerNumberType") + ":" + this.getCardProperty(card, "PhoneticFirstName") + ":" + this.getCardProperty(card, "PhoneticLastName") + 
+			":" + this.getCardProperty(card, "PreferMailFormat") + ":" + //Added by Copart, will evidently create a lot of SHA mismatches on first update after sync, auto update will occur
 			this.getCardProperty(card, "PrimaryEmail") + ":" + this.getCardProperty(card, "SecondEmail") + ":" + this.getCardProperty(card, "SpouseName") + ":" + this.getCardProperty(card, "WebPage1") + ":" + // WebPage1 is work web page
 			this.getCardProperty(card, "WebPage2") + ":" + // WebPage2 is home web page
-			this.getCardProperty(card, "WorkAddress") + ":" + this.getCardProperty(card, "WorkAddress2") + ":" + this.getCardProperty(card, "WorkCity") + ":" + this.getCardProperty(card, "WorkCountry") + ":" + this.getCardProperty(card, "WorkPhone") + ":"
-			+ this.getCardProperty(card, "WorkPhoneType") + ":" + this.getCardProperty(card, "WorkState") + ":" + this.getCardProperty(card, "AllowRemoteContent") + ":" + card.workZipCode);
+			this.getCardProperty(card, "WorkAddress") + ":" + this.getCardProperty(card, "WorkAddress2") + ":" + this.getCardProperty(card, "WorkCity") + ":" + this.getCardProperty(card, "WorkCountry") + ":" + this.getCardProperty(card, "WorkPhone") + 
+			":" + this.getCardProperty(card, "WorkPhoneType") + ":" + this.getCardProperty(card, "WorkState") + ":" + this.getCardProperty(card, "AllowRemoteContent") + ":" + card.workZipCode);
 };
 
 /**
@@ -2329,8 +2334,11 @@ com.synckolab.addressbookTools.card2Vcard = function (card, fields) {
 	// Date: Fri, 17 Dec 2004 15:06:42 +0100
 	var cdate = new Date(this.getCardProperty(card, "LastModifiedDate") * 1000);
 	var sTime = (cdate.getHours() < 10 ? "0" : "") + cdate.getHours() + ":" + (cdate.getMinutes() < 10 ? "0" : "") + cdate.getMinutes() + ":" + (cdate.getSeconds() < 10 ? "0" : "") + cdate.getSeconds();
-	var sdate = "DATE: " + com.synckolab.tools.text.getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " + com.synckolab.tools.text.getMonthString(cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime + " " + (((cdate.getTimezoneOffset() / 60) < 0) ? "-" : "+")
-			+ (((cdate.getTimezoneOffset() / 60) < 10) ? "0" : "") + cdate.getTimezoneOffset() + "\n";
+	var sdate = "DATE: " + com.synckolab.tools.text.getDayString(cdate.getDay()) + ", " + 
+		cdate.getDate() + " " + com.synckolab.tools.text.getMonthString(cdate.getMonth()) + " " + 
+		cdate.getFullYear() + " " + 
+		sTime + " " + (((cdate.getTimezoneOffset() / 60) < 0) ? "-" : "+") + 
+		(((cdate.getTimezoneOffset() / 60) < 10) ? "0" : "") + cdate.getTimezoneOffset() + "\n";
 
 	var msg = "BEGIN:VCARD\n";
 	// N:Lastname;Firstname;Other;Prefix;Suffix

@@ -864,22 +864,23 @@ com.synckolab.tools.file = {
 			if (!file.exists()) {
 				file.create(1, parseInt("0775", 8));
 			}
-	
-			file.append(config.type);
-	
+
+			file.append(com.synckolab.tools.text.fixNameToMiniCharset(config.serverKey));
+			if (!file.exists()) {
+				file.create(1, parseInt("0775", 8));
+			}
+
+			
+			file.append(config.type + "_" + config.name);
 			if (!file.exists()) {
 				file.create(1, parseInt("0775", 8));
 			}
 	
-			file.append(config.name);
-			if (!file.exists()) {
-				file.create(1, parseInt("0775", 8));
-			}
 			file.append(id);
 		}
 		catch (ex)
 		{
-			com.synckolab.tools.logMessage("Problem with getting syncDbFile:  (" +config.name + ": " + config.type + ": " + id + ")\n" + ex, com.synckolab.global.LOG_ERROR);
+			com.synckolab.tools.logMessage("Problem with getting syncDbFile:  (" +com.synckolab.tools.text.fixNameToMiniCharset(config.serverKey) + "/" + config.name + ": " + config.type + ": " + id + ")\n" + ex, com.synckolab.global.LOG_ERROR);
 			return null;
 		}
 		return file;
@@ -905,10 +906,11 @@ com.synckolab.tools.writeSyncDBFile = function (file, data, direct)
 	
 	// create a json file out of it
 	var skcontent = null;
-	if(direct)
+	if(direct) {
 		skcontent = data;
-	else
+	} else {
 		skcontent = JSON.stringify(data);
+	}
 	
 	file.create(file.NORMAL_FILE_TYPE, parseInt("0666", 8));
 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
@@ -977,37 +979,9 @@ com.synckolab.tools.readSyncDBFile = function (file, direct)
 com.synckolab.tools.file.getHashDataBaseFile = function (config)
 {
 	var file = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsIFile);
-	file.append(config+".hdb");
+	file.append("synckolab." + com.synckolab.tools.text.fixNameToMiniCharset(config.serverKey) + "." + config.name + "." + config.type+".hdb");
 	return file;
 };
-
-/**
- * Returns a file class for the given sync field file
- * this also creates the required subdirectories if not yet existant
- * you can use the .exists() function to check if we go this one already
- */
-com.synckolab.tools.file.getSyncFieldFile = function (config, type, id)
-{
-	id = id.replace(/[ :.;$\\\/]\#\@/g, "_");
-	var file = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsIFile);
-	file.append("synckolab");
-	if (!file.exists()) {
-		file.create(1, parseInt("0775", 8));
-	}
-	file.append(type);
-	if (!file.exists()) {
-		file.create(1, parseInt("0775", 8));
-	}
-
-	file.append(config);
-	if (!file.exists()) {
-		file.create(1, parseInt("0775", 8));
-	}
-	file.append(id + ".field");
-	
-	return file;
-};
-
 
 
 /**
@@ -1031,8 +1005,7 @@ com.synckolab.dataBase = function (file) {
 	}
 
 	// setup the input stream on the file
-	var istream = Components.classes["@mozilla.org/network/file-input-stream;1"]
-	                                 .createInstance(Components.interfaces.nsIFileInputStream);
+	var istream = Components.classes["@mozilla.org/network/file-input-stream;1"].createInstance(Components.interfaces.nsIFileInputStream);
 	istream.init(this.dbf, 0x01, 4, null);
 	var fileScriptableIO = Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance(Components.interfaces.nsIScriptableInputStream); 
 	fileScriptableIO.init(istream);
