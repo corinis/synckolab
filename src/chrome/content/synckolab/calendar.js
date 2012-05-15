@@ -650,11 +650,7 @@ com.synckolab.Calendar = {
 						}
 
 						com.synckolab.tools.logMessage("event modified", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
-
-						// update list item
-						this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localUpdate"));
-
-						return null;
+						break;
 					}
 				}
 

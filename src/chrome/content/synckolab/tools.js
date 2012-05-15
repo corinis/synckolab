@@ -216,7 +216,7 @@ equalsObject: function(a, b)
 	}
 
 	for(p in b) {
-		if(p !== "synckolab" && (!a || typeof(a[p]) === 'undefined') && b[p] !== null && b[p] !== "") {
+		if(p !== "synckolab" && p !== "type" && (!a || typeof(a[p]) === 'undefined') && b[p] !== null && b[p] !== "") {
 			com.synckolab.tools.logMessage("not equals: " + p + " a: " + (a?a[p]:'is null') + " b: " + b[p], com.synckolab.global.LOG_DEBUG);
 			return false;
 		}
@@ -857,6 +857,8 @@ com.synckolab.tools.file = {
 			return null;
 		}
 
+		com.synckolab.tools.logMessage("syncDbFile:  (" +com.synckolab.tools.text.fixNameToMiniCharset(config.serverKey) + "/" + config.type + "_" + config.name + "/" + id + ")", com.synckolab.global.LOG_ERROR);
+		
 		id = id.replace(/[ :.;$\\\/]\#\@/g, "_");
 		var file = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsIFile);
 		try {
