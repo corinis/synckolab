@@ -112,7 +112,7 @@ com.synckolab.settings.writeConfiguration = function(config) {
 		}
 		
 		// write per account
-		com.synckolab.settings.writeAccountConfig(pref, config.accounts[i], orig);
+		com.synckolab.settings.writeAccountConfig(pref, config.accounts[i], origAcct);
 		acctList += config.accounts[i].name + ";";
 	}
 
@@ -154,8 +154,6 @@ com.synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
 			}
 			
 			
-
-
 			configs = "";
 			for(i=0; i < acct[type].length; i++) {
 				if(!acct[type][i] || !acct[type][i].name || acct[type][i].name.length < 3) {
