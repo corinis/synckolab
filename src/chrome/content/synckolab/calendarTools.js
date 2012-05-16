@@ -419,7 +419,7 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 	// startdate = day_x, enddate = day_x
 	// Sunbird uses for 1-day-event:
 	// startdate = day_x, enddate = day_x + 1
-	if (isAllDay && endDate && endDate )
+	if (isAllDay && endDate)
 	{
 		var tmp_date = endDate;
 		tmp_date.setTime(tmp_date.getTime() - 24*60*60000);
@@ -436,8 +436,12 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 	// tasks have some additional fields
 	if (syncTasks === true)
 	{
-		jobj.startDate = com.synckolab.tools.text.calDateTime2String(event.entryDate, isAllDay);
-		jobj.endDate = com.synckolab.tools.text.calDateTime2String(endDate, isAllDay);
+		if(event.entryDate) {
+			jobj.startDate = com.synckolab.tools.text.calDateTime2String(event.entryDate, isAllDay);
+		}
+		if(endDate) {
+			jobj.endDate = com.synckolab.tools.text.calDateTime2String(endDate, isAllDay);
+		}
 		// jobj.completedDate =  com.synckolab.tools.text.calDateTime2String(completedDate, true);
 		if(event.priority && event.priority !== null && event.priority !== "") {
 			jobj.priority = event.priority;
@@ -755,17 +759,19 @@ com.synckolab.calendarTools.json2event = function (jobj, calendar) {
 	
 	// full day
 	if(!syncTasks && !jobj.startDate) {
-		throw ("Items MUST have a startdate");
+		throw ("Events MUST have a startdate");
 	}
 
-	if (jobj.startDate.indexOf(":") === -1) {
-		// entry date and start date can be handled the same way
-		com.synckolab.tools.logMessage("setting all day: " + (syncTasks?"entryDate":"startDate"), com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
-		this.setKolabItemProperty(event, syncTasks?"entryDate":"startDate", com.synckolab.tools.text.string2CalDate(jobj.startDate));
-	} else {
-		// entry date and start date can be handled the same way
-		com.synckolab.tools.logMessage("setting: " + (syncTasks?"entryDate":"startDate"), com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
-		this.setKolabItemProperty(event, syncTasks?"entryDate":"startDate", com.synckolab.tools.text.string2CalDateTime(jobj.startDate, true));
+	if(jobj.startDate) {
+		if (jobj.startDate.indexOf(":") === -1) {
+			// entry date and start date can be handled the same way
+			com.synckolab.tools.logMessage("setting all day: " + (syncTasks?"entryDate":"startDate"), com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+			this.setKolabItemProperty(event, syncTasks?"entryDate":"startDate", com.synckolab.tools.text.string2CalDate(jobj.startDate));
+		} else {
+			// entry date and start date can be handled the same way
+			com.synckolab.tools.logMessage("setting: " + (syncTasks?"entryDate":"startDate"), com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+			this.setKolabItemProperty(event, syncTasks?"entryDate":"startDate", com.synckolab.tools.text.string2CalDateTime(jobj.startDate, true));
+		}
 	}
 	
 	// full day
