@@ -44,12 +44,16 @@ com.synckolab.settings = {
 
 com.synckolab.settings.savePrefs = function () {
 	// get base info back from ui
+	com.synckolab.tools.logMessage("Saving preferences.", com.synckolab.global.LOG_DEBUG);
 	com.synckolab.settings.getBaseInfo();
+	com.synckolab.tools.logMessage("Getting info.", com.synckolab.global.LOG_DEBUG);
 	com.synckolab.settings.getInfo();
 	
+	com.synckolab.tools.logMessage("Write the configuration: " + com.synckolab.settings.config.toSource(), com.synckolab.global.LOG_DEBUG);
 	// write the configuration
 	com.synckolab.settings.writeConfiguration(com.synckolab.settings.config);
-	
+	com.synckolab.tools.logMessage("done saving.", com.synckolab.global.LOG_DEBUG);
+
 	return true;
 };
 
@@ -74,16 +78,18 @@ com.synckolab.settings.writeConfiguration = function(config) {
 	
 	// check if an account has been removed
 	var i,j,found;
-	for(i = 0; i < orig.accounts.length; i++) {
-		found = false;
-		for(j = 0; config.accounts.length; j++) {
-			if(orig.accounts[i].name === config.accounts[j].name) {
-				found = true;
-				break;
+	if (orig) {
+		for(i = 0; i < orig.accounts.length; i++) {
+			found = false;
+			for(j = 0; config.accounts.length; j++) {
+				if(orig.accounts[i].name === config.accounts[j].name) {
+					found = true;
+					break;
+				}
 			}
-		}
-		if(!found) {
-			pref.resetBranch("SyncKolab." + orig.accounts[i].name);
+			if(!found) {
+				pref.resetBranch("SyncKolab." + orig.accounts[i].name);
+			}
 		}
 	}
 	
@@ -96,15 +102,17 @@ com.synckolab.settings.writeConfiguration = function(config) {
 		}
 		
 		var origAcct = null;
-		for(j = 0; orig.accounts.length; j++) {
-			if(orig.accounts[j].name === config.accounts[i].name) {
-				origAcct = orig.accounts[j];
-				break;
+		if(orig) {
+			for(j = 0; orig.accounts.length; j++) {
+				if(orig.accounts[j].name === config.accounts[i].name) {
+					origAcct = orig.accounts[j];
+					break;
+				}
 			}
 		}
 		
 		// write per account
-		com.synckolab.settings.writeAccountConfig(pref, config.accounts[i], origAcct);
+		com.synckolab.settings.writeAccountConfig(pref, config.accounts[i], orig);
 		acctList += config.accounts[i].name + ";";
 	}
 
@@ -125,7 +133,6 @@ com.synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
 		if(type !== "name" && acct[type].push) {
 			// clear old ones
 			if(orig) {
-
 				for(i=0; i < orig[type].length; i++) {
 					found = false;
 					for(j=0; j < acct[type].length; j++) {
@@ -156,16 +163,18 @@ com.synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
 				}
 				
 				// if some values change - the cache needs to reset
-				for(j=0; j < orig[type].length; j++) {
-					if(acct[type][i].name === orig[type][j].name) {
-						var resetTriggers = ["source", "folderPath", "format"];
-						for(k=0; k < resetTriggers.length; k++) {
-							if(acct[type][i][resetTriggers[k]] !== orig[type][j][resetTriggers[k]]) {
-								com.synckolab.settings.resetConfiguration(acct.name, type, acct[type][i].name);
-								break;
+				if(orig) {
+					for(j=0; j < orig[type].length; j++) {
+						if(acct[type][i].name === orig[type][j].name) {
+							var resetTriggers = ["source", "folderPath", "format"];
+							for(k=0; k < resetTriggers.length; k++) {
+								if(acct[type][i][resetTriggers[k]] !== orig[type][j][resetTriggers[k]]) {
+									com.synckolab.settings.resetConfiguration(acct.name, type, acct[type][i].name);
+									break;
+								}
 							}
+							break;
 						}
-						break;
 					}
 				}
 				
@@ -1054,7 +1063,7 @@ com.synckolab.settings.addConfig = function() {
 			var retVals = { name: null };
 			var res = window.openDialog("chrome://synckolab/content/wndNewConfigType.xul", 
 					"newCfg", 
-					"modal,width=320,height=170,resizable=0", retVals, com.synckolab.settings.activeType, com.synckolab.settings.config);
+					"modal,width=330,height=180,resizable=0", retVals, com.synckolab.settings.activeType, com.synckolab.settings.config);
 			if(retVals.name !== null && retVals.name.length > 2) {
 				var acct = com.synckolab.settings.getAccount(com.synckolab.settings.config, com.synckolab.settings.activeAccount, true);
 				// check the configs

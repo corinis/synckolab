@@ -1450,7 +1450,7 @@ com.synckolab.tools.getConfigValue = function(pref, name, type, def) {
 		return pref.getCharPref("SyncKolab." + name);
 	}
 	catch (ex) {
-		com.synckolab.tools.logMessage("WARNING: failed to read SyncKolab."+name+": " + ex, com.synckolab.global.LOG_WARNING);
+		com.synckolab.tools.logMessage("SyncKolab."+name+" does not exist(yet).", com.synckolab.global.LOG_INFO);
 		return def;
 	}
 };
