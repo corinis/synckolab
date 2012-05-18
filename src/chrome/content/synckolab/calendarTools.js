@@ -1460,26 +1460,37 @@ com.synckolab.calendarTools.xml2json = function (xml, syncTasks)
 com.synckolab.calendarTools.getTaskStatus = function (tstatus, xmlvalue) {
 	var arrstatus = [];
 	arrstatus["IN-PROCESS"] = "in-progress";
+	arrstatus["IN-PROGRESS"] = "in-progress";
 	arrstatus["in-progress"] = "in-progress";
+	arrstatus["in-process"] = "in-progress";
 	arrstatus["NEEDS-ACTION"] = "waiting-on-someone-else";
 	arrstatus["CANCELLED"] = "deferred";
 	arrstatus["COMPLETED"] = "completed";
+	
+	var val = null;
 
 	if (xmlvalue) {
 		var info = arrstatus[tstatus];
 		// not found = not-started
 		if(!info) {
-			return "not-started";
+			val = "not-started";
 		}
-		return arrstatus[tstatus];
-	}
-	/* we want to return the Lightning value */
-	for (var icalval in arrstatus) {
-		if (arrstatus[icalval] === tstatus) {
-			return icalval;
+		else {
+			val = arrstatus[tstatus];
 		}
 	}
-	return (xmlvalue ? "not-started" : "NONE");
+	else {
+		/* we want to return the Lightning value */
+		for (var icalval in arrstatus) {
+			if (arrstatus[icalval] === tstatus) {
+				val =  icalval;
+			}
+		}
+	}
+	if(!val)
+		return (xmlvalue ? "not-started" : "NONE");
+	else
+		return val;
 };
 
 /**
