@@ -563,13 +563,16 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 			jobj.recurrence.cycle = "daily";
 			break;
 		case "WEEKLY":
+			//alert(event.icalString);
+			//alert(recRule.icalProperty.icalString);
+
 			jobj.recurrence.cycle = "weekly";
 			jobj.recurrence.days = []; 
 			// need to process the <day> value here
 			var curDay = recRule.getComponent("BYDAY", {});
 			if (curDay && curDay.length > 0 ) {
 				jobj.recurrence.days.push(com.synckolab.tools.kolab.getXmlDayName(curDay[0]));
-			}
+			} 
 			break;
 		case "MONTHLY":
 			// "daynumber" or "weekday"
@@ -873,7 +876,13 @@ com.synckolab.calendarTools.json2event = function (jobj, calendar) {
 			break;
 		case "weekly":
 			if(jobj.recurrence.days.length > 0) {
-				recRule.setComponent("BYDAY", jobj.recurrence.days.length, jobj.recurrence.days);
+				
+				//alert(recRule.icalProperty.icalString);
+				var weeklyRecurrence = [];
+				for(var recdays = 0; recdays < jobj.recurrence.days.length; recdays++) {
+					weeklyRecurrence.push(com.synckolab.tools.kolab.getDayIndex(jobj.recurrence.days[recdays]));
+				}
+				recRule.setComponent("BYDAY", weeklyRecurrence.length, weeklyRecurrence);
 			}
 			break;
 		case "monthly":
