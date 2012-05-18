@@ -43,6 +43,8 @@ com.synckolab.settings = {
 
 
 com.synckolab.settings.savePrefs = function () {
+	
+
 	// get base info back from ui
 	com.synckolab.tools.logMessage("Saving preferences.", com.synckolab.global.LOG_DEBUG);
 	com.synckolab.settings.getBaseInfo();
@@ -66,7 +68,6 @@ com.synckolab.settings.savePrefs = function () {
  */
 com.synckolab.settings.writeConfiguration = function(config) {
 	var orig = com.synckolab.config.loadConfiguration();
-	
 	// now we can start writing
 	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 	
@@ -153,21 +154,25 @@ com.synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
 				}
 			}
 			
-			
 			configs = "";
 			for(i=0; i < acct[type].length; i++) {
 				if(!acct[type][i] || !acct[type][i].name || acct[type][i].name.length < 3) {
 					continue;
 				}
-				
+
+				com.synckolab.tools.logMessage("checking " + type + "- " + acct[type][i].name, com.synckolab.global.LOG_DEBUG);
+
 				// if some values change - the cache needs to reset
-				if(orig) {
+				if(orig && orig[type]) {
 					for(j=0; j < orig[type].length; j++) {
 						if(acct[type][i].name === orig[type][j].name) {
 							var resetTriggers = ["source", "folderPath", "format"];
 							for(k=0; k < resetTriggers.length; k++) {
-								if(acct[type][i][resetTriggers[k]] !== orig[type][j][resetTriggers[k]]) {
+								var trigger = resetTriggers[k];
+								if(acct[type][i][trigger] !== orig[type][j][trigger]) {
+									com.synckolab.tools.logMessage("found change trigger - reset config", com.synckolab.global.LOG_DEBUG);
 									com.synckolab.settings.resetConfiguration(acct.name, type, acct[type][i].name);
+									com.synckolab.tools.logMessage("finished reset for " + acct.name + " " + type, com.synckolab.global.LOG_DEBUG);
 									break;
 								}
 							}
@@ -176,7 +181,6 @@ com.synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
 					}
 				}
 				
-
 				// write all the base settings
 				for(var n in com.synckolab.config.baseSetting) {
 					// skip unwanted prototypes (without type)
@@ -405,11 +409,12 @@ com.synckolab.settings.init = function () {
 
 /**
  * re-create the config tree,
- * @param selectNode the node that should be selected after repainting. If not given the old selection is restored (if possible)
  */
-com.synckolab.settings.repaintConfigTree = function(selectedNode) {
+com.synckolab.settings.repaintConfigTree = function() {
 	// remove all nodes under tab-account-[cal|con|task]
 	var conf = com.synckolab.settings.config;
+
+	com.synckolab.settings.batch = true;
 
 	for(var i = 0; i < conf.accounts.length; i++) {
 		var acctName = conf.accounts[i].name;
@@ -431,9 +436,10 @@ com.synckolab.settings.repaintConfigTree = function(selectedNode) {
 			// now re-create them
 			var tChildren = document.createElement("treechildren");
 			tItem.appendChild(tChildren);
+			var configs = conf.accounts[i][cType];
 			
-			for(var k = 0; k < conf.accounts[i][cType].length;k++) {
-				var confName = conf.accounts[i][cType][k].name;
+			for(var k = 0; k < configs.length;k++) {
+				var confName = configs[k].name;
 				
 				tItem = document.createElement("treeitem");
 				//tItem.setAttribute("container", "true");
@@ -449,6 +455,8 @@ com.synckolab.settings.repaintConfigTree = function(selectedNode) {
 			}
 		}
 	}
+
+	com.synckolab.settings.batch = false;
 };
 
 /**
@@ -714,6 +722,11 @@ com.synckolab.settings.setSyncPrefView = function(viewName) {
 		return;
 	}
 	
+	// skip this if we update the tree
+	if (com.synckolab.settings.batch) {
+		return;
+	}
+
 	// default: disable new and delete buttons
 	document.getElementById("newConfig").setAttribute("disabled", true);
 	document.getElementById("delConfig").setAttribute("disabled", true);
@@ -852,6 +865,22 @@ com.synckolab.settings.getAccount = function(config, name, create) {
 };
 
 /**
+ * gets the account object from the given configuration.
+ * @param config the config object to search in
+ * @param name the name of the account to find
+ * @param create set to true to create the account object if it doesnt exist
+ * @returns the account object and possibly null if create is false
+ */
+com.synckolab.settings.getAccountIdx = function(config, name) {
+	for(var i = 0; i < config.accounts.length; i++) {
+		if(config.accounts[i].name === name) {
+			return i;
+		}
+	}
+	return null;
+};
+
+/**
  * set the base information from the ui in the current conig object
  */
 com.synckolab.settings.getBaseInfo = function() {
@@ -906,7 +935,7 @@ com.synckolab.settings.getInfo = function() {
 		return;
 	} 
 		
-	
+
 	var config = com.synckolab.settings.getActiveConfig();
 	
 	// fill all fields
@@ -1058,6 +1087,9 @@ com.synckolab.settings.addConfig = function() {
 		case "contact":
 		case "calendar":
 		case "task":
+			// make sure active config is NOT set (we are creating here)
+			com.synckolab.settings.activeConfig = null;
+
 			var retVals = { name: null };
 			var res = window.openDialog("chrome://synckolab/content/wndNewConfigType.xul", 
 					"newCfg", 
@@ -1085,6 +1117,8 @@ com.synckolab.settings.addConfig = function() {
 				}
 				
 				acct[com.synckolab.settings.activeType].push(cConf);
+				
+				com.synckolab.tools.logMessage("New config: " + com.synckolab.settings.config.toSource(), com.synckolab.global.LOG_DEBUG);
 				// repaint the tree and select the newly created node
 				com.synckolab.settings.repaintConfigTree("tab-"+com.synckolab.settings.activeType+"-" + com.synckolab.settings.activeAccount + "-" + retVals.name);
 			}
@@ -1101,18 +1135,29 @@ com.synckolab.settings.delConfig = function() {
 		case "task":
 			if (confirm(this.strBundle.getFormattedString("configDelete", [com.synckolab.settings.activeConfig]))) {
 				
-				var acct = com.synckolab.settings.getAccount(com.synckolab.settings.config, com.synckolab.settings.activeAccount, false);
+				var acctIdx = com.synckolab.settings.getAccountIdx(com.synckolab.settings.config, com.synckolab.settings.activeAccount);
+				var acct = com.synckolab.settings.config.accounts[acctIdx];
 				
-				// check the configs
+				// update the configs
+				var configs = [];
 				for(var i = 0; i < acct[com.synckolab.settings.activeType].length; i++) {
 					// already go the configuration
-					if(com.synckolab.settings.activeConfig === acct[com.synckolab.settings.activeType][i].name) {
-						acct[com.synckolab.settings.activeType].splice(i, 1);
-						// repaint the tree and select the parent 
-						com.synckolab.settings.repaintConfigTree("tab-"+com.synckolab.settings.activeType+"-" + com.synckolab.settings.activeAccount);
-						return;
+					if(com.synckolab.settings.activeConfig !== acct[com.synckolab.settings.activeType][i].name) {
+						configs.push(acct[com.synckolab.settings.activeType][i]);
 					}
 				}
+				acct[com.synckolab.settings.activeType] = configs;
+				
+				com.synckolab.settings.activeConfig = null;
+				com.synckolab.settings.activeType = null;
+				
+				// repaint the tree and select the parent 
+				com.synckolab.settings.repaintConfigTree();
+				// select root
+				com.synckolab.settings.setSyncPrefView("Welcome-Welcome");
+
+				return;
+				
 			}
 	}
 };
@@ -1124,8 +1169,7 @@ com.synckolab.settings.delConfig = function() {
  */
 com.synckolab.settings.resetConfiguration = function (account, type, config)
 {
-	
-	com.synckolab.tools.logMessage("Resetting " + account.rootMsgFolder.baseMessageURI + " is not an imap account - skipping!", com.synckolab.global.LOG_INFO);
+	com.synckolab.tools.logMessage("Resetting " + account + "!", com.synckolab.global.LOG_INFO);
 
 	var file = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsIFile);
 	file.append("synckolab." + com.synckolab.tools.text.fixNameToMiniCharset(account) + "." + type + "." + config + ".hdb");
