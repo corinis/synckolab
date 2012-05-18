@@ -42,6 +42,7 @@ com.synckolab.tools.kolab={
 		 * @return a string with the name of the week day
 		 */
 		getXmlDayName: function(index) {
+			com.synckolab.tools.logMessage("converting " + index, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
 			var name = "sunday";
 			switch (index)
 			{
@@ -79,6 +80,7 @@ com.synckolab.tools.kolab={
 		 */
 		getDayIndex: function (name)
 		{
+			com.synckolab.tools.logMessage("converting " + name, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
 			var index = 1;
 			switch (name.toLowerCase())
 			{

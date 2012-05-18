@@ -415,6 +415,17 @@ com.synckolab.settings.repaintConfigTree = function() {
 	var conf = com.synckolab.settings.config;
 
 	com.synckolab.settings.batch = true;
+	
+	// sorter for configuration names
+	var configSorter = function(a,b) {
+		
+		var sa = a.name.toLowerCase();
+		var sb = b.name.toLowerCase();
+		if(sa === sb) {
+			return 0;
+		}
+		return (sa < sb) ? -1 : 1;
+	};
 
 	for(var i = 0; i < conf.accounts.length; i++) {
 		var acctName = conf.accounts[i].name;
@@ -437,6 +448,9 @@ com.synckolab.settings.repaintConfigTree = function() {
 			var tChildren = document.createElement("treechildren");
 			tItem.appendChild(tChildren);
 			var configs = conf.accounts[i][cType];
+			
+			// sort configs
+			configs.sort(configSorter);
 			
 			for(var k = 0; k < configs.length;k++) {
 				var confName = configs[k].name;

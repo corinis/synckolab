@@ -1028,13 +1028,14 @@ com.synckolab.main.writeContent = function()
 		return;
 	}
 
-	if (com.synckolab.main.gSync.gSaveImap)
+	if (com.synckolab.main.gConfig.saveToImap)
 	{
 		// write the temp file back to the original directory
 		com.synckolab.tools.logMessage("WriteContent Writing...", com.synckolab.global.LOG_INFO);
 		com.synckolab.main.writeImapMessage(skcontent, com.synckolab.main.gConfig, com.synckolab.main.kolabCopyServiceListener); 
 	}
 	else {
+		com.synckolab.tools.logMessage("Skipping write to imap because of read only config...", com.synckolab.global.LOG_INFO);
 		com.synckolab.main.writeContentAfterSave();
 	}
 };
