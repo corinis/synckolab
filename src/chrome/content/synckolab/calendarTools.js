@@ -571,7 +571,10 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 			// need to process the <day> value here
 			var curDay = recRule.getComponent("BYDAY", {});
 			if (curDay && curDay.length > 0 ) {
-				jobj.recurrence.days.push(com.synckolab.tools.kolab.getXmlDayName(curDay[0]));
+				// multiple recurrence possible
+				for(var recweekdays = 0; recweekdays < curDay.length; recweekdays ++) {
+					jobj.recurrence.days.push(com.synckolab.tools.kolab.getXmlDayName(curDay[recweekdays]));
+				}
 			} 
 			break;
 		case "MONTHLY":
