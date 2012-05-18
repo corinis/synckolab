@@ -1181,7 +1181,7 @@ com.synckolab.main.updateContent = function()
 	com.synckolab.tools.logMessage("updating content:", com.synckolab.global.LOG_DEBUG);
 	var i;
 	// first lets delete the old messages
-	if (com.synckolab.main.gSync.gSaveImap && com.synckolab.main.updateMessages.length > 0) 
+	if (com.synckolab.main.gConfig.saveToImap && com.synckolab.main.updateMessages.length > 0) 
 	{
 		try
 		{
@@ -1233,7 +1233,7 @@ com.synckolab.main.updateContentWrite = function()
 	{
 		var skcontent = com.synckolab.main.updateMessagesContent[com.synckolab.main.curMessage];
 		// write the message
-		if (com.synckolab.main.gSync.gSaveImap && skcontent !== "DELETEME" && skcontent!== null && skcontent.length > 1)
+		if (com.synckolab.main.gConfig.saveToImap && skcontent !== "DELETEME" && skcontent!== null && skcontent.length > 1)
 		{
 			com.synckolab.tools.logMessage("adding [" + skcontent + "] to messages", com.synckolab.global.LOG_DEBUG);
 			com.synckolab.main.writeImapMessage(skcontent, com.synckolab.main.gConfig, com.synckolab.main.kolabCopyServiceListener);
