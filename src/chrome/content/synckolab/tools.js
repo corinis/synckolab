@@ -183,6 +183,11 @@ equalsObject: function(a, b)
 	var p;
 	for(p in a) {
 		if(p !== "synckolab" && typeof(b[p]) === 'undefined' && a[p] !== null && a[p] !== "") {
+			// 0 == undefined
+			if((a[p] === "0" || a[p] === 0) && !b[p])
+			{
+				continue;
+			}
 			com.synckolab.tools.logMessage("not equals: " + p + " a: " + a[p] + " b: " + b[p], com.synckolab.global.LOG_DEBUG);
 			return false;
 		}
@@ -201,7 +206,7 @@ equalsObject: function(a, b)
 				case 'function': // skip functions
 					break;
 				default:
-					if (a[p] !== b[p]) { 
+					if (a[p] !== b[p] && Number(a[p]) !== Number(b[p])) { 
 						com.synckolab.tools.logMessage("not equals: : " + p + " a: " + a[p] + " b: " + b[p], com.synckolab.global.LOG_DEBUG);
 						return false; 
 					}

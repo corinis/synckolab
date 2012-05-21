@@ -175,7 +175,22 @@ com.synckolab.calendarTools = {
 				case "title":
 					item.title = value;
 					break;
-
+				case "priority":
+					if(!isNaN(value)) {
+						item.priority = Number(value);
+					} else
+					{
+						item.priority = 0;
+					}
+					break;
+				case "daynumber":
+					if(!isNaN(value)) {
+						item.daynumber = Number(value);
+					} else
+					{
+						item.daynumber = 0;
+					}
+					break;
 				default:
 					if (!value || value === "") {
 						item.deleteProperty(propertyName);
@@ -490,15 +505,13 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 		// Alarms (only allow relative alarms)
 		var alarm;
 		var alarms = event.getAlarms({});
-		
 		for(i=0; i < alarms.length; i++) {
 			alarm = alarms[i];
 			// skip absolute - ALARM_RELATED_ABSOLUTE = 0;
-			if (alarm.related === 0) {
+			if (alarm.related === alarm.ALARM_RELATED_ABSOLUTE) {
 				continue;
 			}
 			minutes = Math.floor(Math.abs(alarm.offset.inSeconds)/60);
-
 			tmpobj = {
 				offset: minutes,
 				related: 1
@@ -511,10 +524,11 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 		
 		// only create if there are alarms
 		if(calarms.length > 0) {
-			tmpobj.alarms = calarms;
+			jobj.alarms = calarms;
 		}
 	}
-	else if (event.alarmOffset && event.alarmOffset.inSeconds !== 0)
+	
+	if ((!jobj.alarms || jobj.alarms.length === 0) && event.alarmOffset && event.alarmOffset.inSeconds !== 0)
 	{
 		jobj.alarms = [];
 		minutes = Math.floor(Math.abs(event.alarmOffset.inSeconds)/60);
@@ -1262,7 +1276,7 @@ com.synckolab.calendarTools.xml2json = function (xml, syncTasks)
 						detail = cur.getChildNode("daynumber");
 						if ((detail) && (detail.nodeType === Node.ELEMENT_NODE) && (detail.nodeName.toUpperCase() === "DAYNUMBER"))
 						{
-							jobj.recurrence.daynumber = detail.firstChild.data;
+							jobj.recurrence.daynumber = Number(detail.firstChild.data);
 						}
 						break;
 					case "WEEKDAY":
@@ -1277,7 +1291,7 @@ com.synckolab.calendarTools.xml2json = function (xml, syncTasks)
 							}
 							if ((detail.nodeType === Node.ELEMENT_NODE) && (detail.nodeName.toUpperCase() === "DAYNUMBER"))
 							{
-								jobj.recurrence.daynumber = detail.firstChild.data;
+								jobj.recurrence.daynumber = Number(detail.firstChild.data);
 							}
 							detail = detail.nextSibling;
 						}
@@ -1297,7 +1311,7 @@ com.synckolab.calendarTools.xml2json = function (xml, syncTasks)
 						detail = cur.firstChild;
 						if ((detail) && (detail.nodeType === Node.ELEMENT_NODE) && (detail.nodeName.toUpperCase() === "DAYNUMBER"))
 						{
-							daynumber = detail.firstChild.data;
+							daynumber = Number(detail.firstChild.data);
 							// FIXME this needs to be written to the event when supported by Lightning
 						}
 						break;
@@ -1308,11 +1322,11 @@ com.synckolab.calendarTools.xml2json = function (xml, syncTasks)
 						{
 							if ((detail.nodeType === Node.ELEMENT_NODE) && (detail.nodeName.toUpperCase() === "MONTH"))
 							{
-								month = detail.firstChild.data;
+								month = Number(detail.firstChild.data);
 							}
 							if ((detail.nodeType === Node.ELEMENT_NODE) && (detail.nodeName.toUpperCase() === "DAYNUMBER"))
 							{
-								daynumber = detail.firstChild.data;
+								daynumber = Number(detail.firstChild.data);
 							}
 							detail = detail.nextSibling;
 						}
@@ -1333,7 +1347,7 @@ com.synckolab.calendarTools.xml2json = function (xml, syncTasks)
 							}
 							if ((detail.nodeType === Node.ELEMENT_NODE) && (detail.nodeName.toUpperCase() === "DAYNUMBER"))
 							{
-								daynumber = detail.firstChild.data;
+								daynumber = Number(detail.firstChild.data);
 							}
 							detail = detail.nextSibling;
 						}

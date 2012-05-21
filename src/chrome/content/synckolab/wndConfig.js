@@ -207,6 +207,8 @@ com.synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
  */
 com.synckolab.settings.init = function () {
 	var i = 0, j;
+	
+	com.synckolab.settings.checkOldConfig();
 
 	// load the string bundle for translation
 	com.synckolab.settings.strBundle = document.getElementById("synckolabBundle");
@@ -405,6 +407,68 @@ com.synckolab.settings.init = function () {
 
 	com.synckolab.settings.fillBaseInfo();
 	com.synckolab.settings.repaintConfigTree();
+};
+
+/**
+ * read the current configuration and see if its "old" style
+ */
+com.synckolab.settings.checkOldConfig = function() {
+	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+	
+	var configString = com.synckolab.tools.getConfigValue(pref, "Configs");
+	// no configs - no old config
+	if(!configString || configString.length === 0) {
+		return;
+	}
+	/*
+	if(!confirm( com.synckolab.global.strBundle.getString("config.convert"))) {
+		pref.resetBranch("SyncKolab");
+		return;
+	}
+	
+	configs = configString.split(';');
+	var curConfig = {
+			version: com.synckolab.tools.getConfigValue(pref, "configVersion", com.synckolab.tools.CONFIG_TYPE_INT, 0),
+			debugLevel: com.synckolab.tools.getConfigValue(pref, "debugLevel", com.synckolab.tools.CONFIG_TYPE_INT, com.synckolab.global.LOG_WARNING),
+			// hide folder
+			hideFolder: com.synckolab.tools.getConfigValue(pref, "hideFolder", com.synckolab.tools.CONFIG_TYPE_BOOL, false),
+			// hide the window while sync
+			hiddenWindow: com.synckolab.tools.getConfigValue(pref, "hiddenWindow", com.synckolab.tools.CONFIG_TYPE_BOOL, false),
+			// sync automatically once on start
+			syncOnStart: com.synckolab.tools.getConfigValue(pref, "syncOnStart", com.synckolab.tools.CONFIG_TYPE_BOOL, false),
+			accounts: []
+	};
+	
+	for(var i = 0; i < configs.length; i++) {
+		var config = configs[i];
+		var act = pref.getCharPref("SyncKolab."+config+".IncomingServer");
+		if(!act) {
+			continue;
+		}
+		
+		act = com.synckolab.tools.text.fixNameToMiniCharset(act);
+		
+		var acct = null;
+		var j;
+		for(j = 0; j < curConfig.accounts.length; j++) {
+			if(curConfig.accounts[j].name === act) {
+				acct = curConfig.accounts[j];
+			}
+		}
+		
+		if(acct == null) {
+			acct = {
+				name: act,
+				contact: [],
+				calendar: [],
+				task: []
+			}
+		}
+		
+		sConf = com.synckolab.tools.getConfigValue(pref, "accounts." + acct.name+"." + type + ".list");
+	}
+	
+	*/
 };
 
 /**
