@@ -12,8 +12,10 @@
  * for the specific language governing rights and limitations under the 
  * License. 
  * 
- * Contributor(s): Niko Berger <niko.berger@corinis.com> 
- *				Steven D Miller (Copart) <stevendm@rellims.com>
+ * Copyright (c) Niko Berger  2005-2012
+ * Copyright (c) Kolab Systems 2012
+ * Author: Niko Berger <berger(at)kolabsys.com>
+ * Contributor(s): Steven D Miller (Copart) <stevendm(at)rellims.com>
  *					
  * 
  * Alternatively, the contents of this file may be used under the terms of 

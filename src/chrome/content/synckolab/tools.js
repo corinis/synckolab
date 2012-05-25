@@ -10,9 +10,10 @@
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
  * for the specific language governing rights and limitations under the
  * License.
- *
- * Contributor(s):	Niko Berger <niko.berger(at)corinis.com>
- *					Andreas Gungl <a.gungl(at)gmx.de>
+ * 
+ * Copyright (c) Niko Berger 2005-2012
+ * Author: Niko Berger <niko.berger(at)corinis.com>
+ * Contributor(s):	Andreas Gungl <a.gungl(at)gmx.de>
  *					Arsen Stasic <arsen.stasic(at)wu-wien.ac.at>
  *
  * Alternatively, the contents of this file may be used under the terms of
