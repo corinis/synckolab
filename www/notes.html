@@ -17,40 +17,45 @@ bar <i>(4)</i><br/>
 <b>MAKE SURE YOU READ THE RELEASE NOTES OF THE VERSION!!!</b>
 </p>
 
-<h2>Configuration Wizard</h2>
-<img src="images/synckolab-wiz-1.png"/><br/>
-<i>(2)</i> Choose a configuration display name. Make sure you do not use any special characters (including "-,.+# ) as name. If you entered a non-existant valid name, the next button will become clickable.<br/>
-<img src="images/synckolab-wiz-2.png"/><br/>
-<i>(3)</i> Select an imap account. If you do not see anything in the account box, you probably do not have an imap account. Ask your Internet Provider or System Administrator for an IMAP Account.<br/>
-<img src="images/synckolab-wiz-3.png"/><br/>
-Select which kind of data you want to sync. Calendar and Tasks will only be selectable if you installed the lightning extension.<br/>
-<img src="images/synckolab-wiz-4.png"/><br/>
-For each data-type (Contacts, Calendar, Tasks) you will see a similar wizardpage.<br/>
-<i>(4)</i> select the adress book/calendar you want to use for syncing<br/>
-<i>(5)</i> select if you want the (prefered) xml/kolab format or the vcard/ical format. It is recommended to use the xml format because the vcard/ical format is very outdated and not as clearly specified. <br/>
-<i>(6)</i> select the folder that should be used for sync. Make sure you specify a different folder for calendar/adress book and tasks, otherwise the sync may fail<br/>
-<i>(7)</i> The checkbox is only important for shared folders where you have read-only access. This makes sure synckolab does not try to write any data into the imap folder<br/>
-Once you configured all of this the next Button will become clickable and take you to the next page. 
-
-<h2>Configuration</h2>
-<img src="images/synckolab-menu-options.png" alt="Option Menu under Tools"/><br/>
-<i>(1)</i> will open the configuration wizard (if its the first time you use synckolab) or the configuration dialog if you already have a configuration.<br/>
+<h2>Configuration 2.0.0+</h2>
+<p>
+You can enter the SyncKolab configuration either using the menu entry, or using the addon-konfiguration. Once there you will see:
+</p>
 
 <p>
-<img src="images/synckolab-settings.gif" alt="synkolab settings"/>
-<br>
+<img src="images/synckolab-setup1.png" alt="Basic Setup"/><br/>
 <ol>
-	<li>Here you see all your defined configurations. Under each configuration your find your sync-datapoints (clicking on an item will open one of the ocnfiguration screens as shown in the images)</li>
-	<li>This dropdown box lets you select the calendar/adressbook used for syncing</li>
-	<li>In the list of folders, select an imap folder to sync with</li>
-	<li>Contact Format: Select the (prefered) xml/kolab format or the vcard/ical format. It is recommended to use the xml format because the vcard/ical format is very outdated and not as clearly specified.</li>
-	<li>Save to Imap Folde: The checkbox is only important for shared folders where you have read-only access. This makes sure synckolab does not try to write any data into the imap folder uncheck this box. This will overwrite the local data on each sync.</li>
-	<li>Sync: Unchecking this box means that you do not want to sync the data at all.</li>
-	<li>Close Sync Window when done: unchecking this will keep the sync window open after a successfull sync</li>
-	<li>Account: Select the imap account which should be used for sync. Make sure that you configure the folder correctly after changing this or there will be errors</li>
-	<li>Sync Interval: The sync interval is 0 per default (do not sync automatically). You can change this to the number of minutes between each sync. If you want auto-sync use 5-10 Minutes for autosync in a workgroup. Depending on the internet connection and imap server you can decrease this number.</li>
-	<li>Add: Click here to open the configuration wizard for a new configuration</li>
-	<li>Delete: this will remove the currently selected configuration</li>
+<li>This shows the configuration tree. Every imap account you have configured in thunderbird will be visible there. Selecting the "About SyncKolab" entry allows to configure "global" parameters</li>
+<li>If you encounter any problems with synckolab (i.e. entries not synced correctly) use this to adjust the debug output. Debug will print pretty much everything on the javascript console.</li>
+<li>If you check "Automatically sync on start", synckolab will run every time you start thunderbird. All active configuration will then be executed</li>
+<li>"Hide selected Folders" will prevent you from accessing the imap folders you selected for sync. Instead of showing the imap content, the addressbook/calendar will open instead.</li>
+<li>""Hide the status window" will not show a status window when syncing automatically (i.e. on start or usign the timer). instead you can see the progress in the bottom right corner of thunderbird.</li>
 </ol>
 </p>
+
+<p>
+<img src="images/synckolab-setup2.png" alt="Add a new Configuration"/><br/>
+<ol>
+	<li>If you select either "Contacts", "Calendar" or "Tasks" you will be able to add new configurations.</li>
+	<li>is then active, if you click it</li>
+	<li>will show a dialog box where you can enter the name of the configuration. Make sure not to use any special characters there.</li>
+</ol>
+</p>
+
+<p>
+<img src="images/synckolab-setup3.png" alt="Modify the Configuration"/><br/>
+<br>
+<ol>
+	<li>Selecting a configuratio name will allow you to setup each element.</li>
+	<li>This dropdown box lets you select the calendar/adressbook used for syncing</li>
+	<li>In the list of folders, select an imap folder to sync with</li>
+	<li>Format: Select the (prefered) xml/kolab format or the vcard/ical format. It is recommended to use the xml format because the vcard/ical format is very outdated and not as clearly specified.</li>
+	<li>Ignore Entries: this is only available for calendar or tasks. The number of days entered is used to reduce the number ofitems synced. If an entry is older than that number of days, it will be ignored. -1 will sync EVERY item, no matter how old.</li>
+	<li>Sync: Unchecking this box means that you do not want to sync the data at all (disables this configuration)).</li>
+	<li>Automatic Sync: You need to restart thunderbird for this to be active. Once it is, synckolab will listen on the imap folder and the local calendar/address book for any changes you make and instantly sync. This means, you do not neet to actually run a sync any more. <b>Note:</b> this will only work on changes. To get the initial data, you will have to run the sync at least once!</li>
+	<li>Save to Imap Folder: The checkbox is only important for shared folders where you have read-only access. This makes sure synckolab does not try to write any data into the imap folder uncheck this box. This will overwrite the local data on each sync.</li>
+	<li>Sync Interval: The sync interval is 0 per default (do not sync automatically). You can change this to the number of minutes between each sync. If you want auto-sync use 5-10 Minutes for autosync in a workgroup. Depending on the internet connection and imap server you can decrease this number.</li>
+</ol>
+</p>
+
 <!--  ?php $local_conf_show_notes_form = ON; require(NOTES); ? -->
