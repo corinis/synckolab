@@ -35,9 +35,11 @@
 
 <!-- calendar -->
 <script type="application/x-javascript">
+/*
 	var gCalendarBundle = {
 		getString: function (s) { return s;}
 	};
+*/
 </script>  
 		
 	<menupopup id="taskPopup">

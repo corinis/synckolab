@@ -1,3 +1,9 @@
+SyncKolab 2.0.1
+===============
+
+* fix problem with settings window
+* got rid of global variables
+
 SynKolab 2.0.0
 ==============
     Major Clean Up:

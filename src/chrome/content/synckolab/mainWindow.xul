@@ -56,9 +56,11 @@
 	}, false);
 		
 	// calendar fix
+	/*
 	var gCalendarBundle = {
 		getString: function (s) { return s; }
 	};
+	*/
 </script>
 		
 	<menupopup id="taskPopup">
