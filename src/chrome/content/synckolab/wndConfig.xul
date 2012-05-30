@@ -47,7 +47,7 @@
 						<vbox>
 							<hbox>
 								<label value="&synckolab.settings.SyncKolabHeader;" style="font-size: 16pt;" />
-								<label value=" 2.0.1" />
+								<label value=" 2.0.2" />
 							</hbox>
 							<description flex="1" style="width: 300px">
                                 &synckolab.settings.SyncKolabDescription;

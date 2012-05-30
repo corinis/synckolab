@@ -1,3 +1,7 @@
+SyncKolab 2.0.2
+===============
+
+
 SyncKolab 2.0.1
 ===============
 
@@ -10,6 +14,41 @@ SynKolab 2.0.0
      - change all functions into namespace functions
      - clean up so jslint doesn't complain
 
+bugs fixed:
+    Problematic variable assignment(mozdev issue)
+    all jsLint issues resolved
+    runs from the address window as well
+    id column is now growing when changing the window
+    mailing list support readded, fixed and tested
+    rewrite of Event/Task integration
+    #24845 correctly check if lightning is installed 
+    #24850 calendar refresh
+    #24848 caching messages locally
+    #24202 conflict resolution without local sync db
+    wrong folder was used in new layout (missed account name)
+    cache was not deleted on config change 
+    #24859 fix recurrence parsing (now even supports more than one day for weekly)
+    #24904 fix problem with task field parsing and alarm sync
+    #24905 fix problem with entries not writing back to imap 
+
+new features:
+
+    listener: synckolab binds itself to changed mail and address books. If enabled, 
+    	you do not have to sync any more (except maybe on data corruption or at the
+    	very start). Synckolab will be notified on any change in the address book or
+    	on the imap server and update the data accordingly.
+    better contact db storage: the contacts are now stored as json objects. This 
+    	allows for a much quicker sync process.
+    new configuration: you now have a more straight foreward configuration tree 
+    	that allows the creation of multiple configs per account/sync type. This 
+    	simplifies configuration.
+    The internal structure has changed quite a bit allowing for much less code. 
+    	this should also allow for more performance.
+    The configuration changes are now recognized directly. You only need a restart
+    	if you enable listener because the service binds itself only at the 
+    	beginning (avoids double-binds).
+
+    
 SynKolab 1.5.3/1.5.4
 ====================
     #24281 encoding issues
