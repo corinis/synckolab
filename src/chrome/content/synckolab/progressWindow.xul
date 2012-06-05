@@ -38,7 +38,6 @@ function load() {
 	try {
 		gCloseWindow = pref.getBoolPref("SyncKolab.closeWindow");
 	} catch (ex) {}
-	alert("close window: " + gCloseWindow)
 	document.getElementById("closeWnd").checked = gCloseWindow;
 }
 
