@@ -72,7 +72,7 @@ com.synckolab.AddressBook = {
 	 * @param pref a nsIPrefBranch for reading of the configuration 
 	 */
 	readConfig: function(config, pref) {
-		com.synckolab.tools.logMessage("Reading Configuration:" + config.name, com.synckolab.global.LOG_WARNING);
+		com.synckolab.tools.logMessage("Reading Configuration:" + config.name, com.synckolab.global.LOG_DEBUG);
 
 		// get the rdf for the Addresbook list
 		// the addressbook type nsIAbDirectory
@@ -597,7 +597,7 @@ com.synckolab.AddressBook = {
 	 * new message content is returned otherwise null
 	 */	
 	parseMessage: function (fileContent, tmp, checkForLater) {
-		
+		// mailing lists should be kept for "after" the normal messages have been parsed
 		if (checkForLater)
 		{
 			if (this.tools.isMailList(fileContent))

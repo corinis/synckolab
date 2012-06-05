@@ -649,18 +649,22 @@ com.synckolab.main.getMessage = function()
 		return;
 	}
 
+	
 	var cur = null;
-	try
-	{
-		if (com.synckolab.main.gMessages.hasMoreElements() && com.synckolab.main.gLaterMessages.pointer === 0) {
-			cur = com.synckolab.main.gMessages.getNext().QueryInterface(Components.interfaces.nsIMsgDBHdr);
+	// still in first run...
+	if(com.synckolab.main.gLaterMessages.pointer === 0) {
+		try
+		{
+			if (com.synckolab.main.gMessages.hasMoreElements()) {
+				cur = com.synckolab.main.gMessages.getNext().QueryInterface(Components.interfaces.nsIMsgDBHdr);
+			}
 		}
-	}
-	catch (ex)
-	{
-		com.synckolab.tools.logMessage("skipping read of messages - since there are none :)", com.synckolab.global.LOG_INFO);
-		com.synckolab.main.updateContentAfterSave();
-		return;
+		catch (ex)
+		{
+			com.synckolab.tools.logMessage("skipping read of messages - since there are none :)", com.synckolab.global.LOG_INFO);
+			com.synckolab.main.updateContentAfterSave();
+			return;
+		}
 	}
 
 	var laterMsg = null;
@@ -668,6 +672,7 @@ com.synckolab.main.getMessage = function()
 	// get the messages we skipped
 	if (!cur)
 	{
+		// done with the second run
 		if (com.synckolab.main.gLaterMessages.pointer >= com.synckolab.main.gLaterMessages.msgs.length)
 		{
 			com.synckolab.main.gLaterMessages.msgs = [];
@@ -676,7 +681,8 @@ com.synckolab.main.getMessage = function()
 			return;
 		}
 
-		com.synckolab.tools.logMessage("msg:" + com.synckolab.main.gLaterMessages.pointer + " vs. " + com.synckolab.main.gLaterMessages.msgs.length, com.synckolab.global.LOG_INFO);
+		//process later message
+		com.synckolab.tools.logMessage("second round process message: message " + com.synckolab.main.gLaterMessages.pointer + " of " + com.synckolab.main.gLaterMessages.msgs.length, com.synckolab.global.LOG_INFO);
 
 		laterMsg = com.synckolab.main.gLaterMessages.msgs[com.synckolab.main.gLaterMessages.pointer++];
 		cur = laterMsg.hdr;
@@ -758,13 +764,20 @@ com.synckolab.main.getMessage = function()
 
 	com.synckolab.main.gSyncKeyInfo = cur.mime2DecodedSubject;
 	if (laterMsg) {
-		com.synckolab.tools.logMessage("getting " + cur.mime2DecodedSubject + " from fist round...", com.synckolab.global.LOG_DEBUG);
-		com.synckolab.main.fileContent = laterMsg.content;
+		com.synckolab.tools.logMessage("taking " + cur.mime2DecodedSubject + " from fist round...", com.synckolab.global.LOG_DEBUG);
+		
+		// get the message content into fileContent
+		// parseMessageRunner is called when we got the message
+		com.synckolab.main.currentMessage = {
+				message: com.synckolab.main.gConfig.folderMsgURI +"#"+cur.messageKey,
+				fileContent: laterMsg.content,
+				nextFunc: com.synckolab.main.parseMessageRunner
+		};
 		com.synckolab.main.gSyncFileKey = laterMsg.fileKey;
 		com.synckolab.main.parseMessageRunner();
 		return;
 	}
-	else
+	else {
 		if (com.synckolab.main.gSyncFileKey)
 		{
 			com.synckolab.tools.logMessage("we have " + cur.mime2DecodedSubject + " already locally...", com.synckolab.global.LOG_DEBUG);
@@ -785,11 +798,23 @@ com.synckolab.main.getMessage = function()
 					};
 					com.synckolab.main.parseMessageRunner();
 					return;
+				} else {
+					com.synckolab.tools.logMessage("unable to read read cached file", com.synckolab.global.LOG_DEBUG);
+					com.synckolab.main.syncMessageDb.remove(com.synckolab.main.gSyncFileKey);
+
+					// new netry
+					// remember the info
+					com.synckolab.main.gSyncFileKey = {}; // we not yet know the id
+					com.synckolab.main.gSyncFileKey[0] = '';
+					com.synckolab.main.gSyncFileKey[1] = cur.messageSize;
+					com.synckolab.main.gSyncFileKey[2] = cur.date;
+					
 				}
 			}
 			else
 			{
 				// some change happened... remove this entry (+ some update :P )
+				com.synckolab.tools.logMessage("Cached message does not match - skipping cache read", com.synckolab.global.LOG_DEBUG);
 				com.synckolab.main.syncMessageDb.remove(com.synckolab.main.gSyncFileKey);
 
 				// new netry
@@ -809,7 +834,7 @@ com.synckolab.main.getMessage = function()
 			com.synckolab.main.gSyncFileKey[1] = cur.messageSize;
 			com.synckolab.main.gSyncFileKey[2] = cur.date;
 		}
-
+	}
 
 	// get the message content into fileContent
 	// parseMessageRunner is called when we got the message
@@ -933,6 +958,7 @@ com.synckolab.main.parseMessageRunner = function()
 	}
 
 	if (skcontent === "LATER") {
+		com.synckolab.tools.logMessage("keeping message for later (possible a mailing list): #" + com.synckolab.main.gLaterMessages.msgs.length, com.synckolab.global.LOG_DEBUG);
 		var cMsg = {};
 		cMsg.content = com.synckolab.main.currentMessage.fileContent;
 		cMsg.hdr = com.synckolab.main.gLastMessageDBHdr;
@@ -960,7 +986,7 @@ com.synckolab.main.parseMessageRunner = function()
 			// fill info about the file and re-add it 
 			com.synckolab.main.gSyncFileKey[0] = com.synckolab.main.gSyncKeyInfo;
 			com.synckolab.main.gSyncFileKey[3] = com.synckolab.main.gSync.gConfig.name;
-			com.synckolab.main.gSyncFileKey[4] = com.synckolab.main.gSync.gCurUID;
+			com.synckolab.main.gSyncFileKey[4] = com.synckolab.main.gSyncKeyInfo; //gSync.gCurUID;
 			// Add the key
 			com.synckolab.main.syncMessageDb.add(com.synckolab.main.gSyncFileKey);
 		}
@@ -989,6 +1015,7 @@ com.synckolab.main.parseMessageRunner = function()
 	}
 	else
 	{
+		com.synckolab.tools.logMessage("Done parsing " + (com.synckolab.main.totalMessages+com.synckolab.main.gLaterMessages.msgs.length), com.synckolab.global.LOG_DEBUG);
 		com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.parseFolderToAddressFinish();}}, com.synckolab.config.SWITCH_TIME, 0);
 	}
 };
