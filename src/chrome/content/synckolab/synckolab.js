@@ -58,7 +58,7 @@ com.synckolab.main = {
  * runs periodically and checks if there is anything to do
  */
 com.synckolab.main.syncKolabTimer = function () {
-
+/*@deprecated: listener works better
 	com.synckolab.tools.logMessage("sync timer: check configuration", com.synckolab.global.LOG_DEBUG);
 	var i;
 	
@@ -106,6 +106,7 @@ com.synckolab.main.syncKolabTimer = function () {
 	// wait a minute
 	com.synckolab.tools.logMessage("sync timer: sleep for one minute", com.synckolab.global.LOG_DEBUG);
 	com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.syncKolabTimer();}}, 60000, 0);
+*/
 };
 
 com.synckolab.main.initGroupwareActions = function() {

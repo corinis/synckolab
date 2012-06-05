@@ -63,7 +63,7 @@ com.synckolab.config = {
 			// save changes to imap (vs. read only)
 			saveToImap: {type: com.synckolab.tools.CONFIG_TYPE_BOOL, def: true },
 			// automatically sync every X minutes (0 = disable)
-			syncInterval: {type: com.synckolab.tools.CONFIG_TYPE_INT, def: 0 },
+			//@deprecated syncInterval: {type: com.synckolab.tools.CONFIG_TYPE_INT, def: 0 },
 			// format to use: xml|vcard
 			format: {type: com.synckolab.tools.CONFIG_TYPE_CHAR, def: "xml" },
 			// timeframe to sync in (don't sync entries with an older start-date)
@@ -117,8 +117,8 @@ com.synckolab.config.loadConfiguration = function(pref) {
 		debugLevel: com.synckolab.tools.getConfigValue(pref, "debugLevel", com.synckolab.tools.CONFIG_TYPE_INT, com.synckolab.global.LOG_WARNING),
 		// hide folder
 		hideFolder: com.synckolab.tools.getConfigValue(pref, "hideFolder", com.synckolab.tools.CONFIG_TYPE_BOOL, false),
-		// hide the window while sync
-		hiddenWindow: com.synckolab.tools.getConfigValue(pref, "hiddenWindow", com.synckolab.tools.CONFIG_TYPE_BOOL, false),
+		// close window when done
+		closeWindow: com.synckolab.tools.getConfigValue(pref, "closeWindow", com.synckolab.tools.CONFIG_TYPE_BOOL, false),
 		// sync automatically once on start
 		syncOnStart: com.synckolab.tools.getConfigValue(pref, "syncOnStart", com.synckolab.tools.CONFIG_TYPE_BOOL, false),
 		accounts: []

@@ -76,7 +76,7 @@ com.synckolab.settings.writeConfiguration = function(config) {
 	com.synckolab.tools.setConfigValue(pref, "configVersion", com.synckolab.tools.CONFIG_TYPE_INT, config.version + 1);
 	com.synckolab.tools.setConfigValue(pref, "debugLevel", com.synckolab.tools.CONFIG_TYPE_INT, config.debugLevel);
 	com.synckolab.tools.setConfigValue(pref, "hideFolder", com.synckolab.tools.CONFIG_TYPE_BOOL, config.hideFolder);
-	com.synckolab.tools.setConfigValue(pref, "hiddenWindow", com.synckolab.tools.CONFIG_TYPE_BOOL, config.hiddenWindow);
+	com.synckolab.tools.setConfigValue(pref, "closeWindow", com.synckolab.tools.CONFIG_TYPE_BOOL, config.closeWindow);
 	com.synckolab.tools.setConfigValue(pref, "syncOnStart", com.synckolab.tools.CONFIG_TYPE_BOOL, config.syncOnStart);
 	
 	// check if an account has been removed
@@ -435,7 +435,7 @@ com.synckolab.settings.checkOldConfig = function() {
 			// hide folder
 			hideFolder: com.synckolab.tools.getConfigValue(pref, "hideFolder", com.synckolab.tools.CONFIG_TYPE_BOOL, false),
 			// hide the window while sync
-			hiddenWindow: com.synckolab.tools.getConfigValue(pref, "hiddenWindow", com.synckolab.tools.CONFIG_TYPE_BOOL, false),
+			closeWindow: com.synckolab.tools.getConfigValue(pref, "closeWindow", com.synckolab.tools.CONFIG_TYPE_BOOL, false),
 			// sync automatically once on start
 			syncOnStart: com.synckolab.tools.getConfigValue(pref, "syncOnStart", com.synckolab.tools.CONFIG_TYPE_BOOL, false),
 			accounts: []
@@ -876,7 +876,7 @@ com.synckolab.settings.fillBaseInfo = function() {
 	
 	var conf = com.synckolab.settings.config;
 	document.getElementById("hideFolder").checked = conf.hideFolder;
-	document.getElementById("hiddenWnd").checked = conf.hiddenWindow;
+	document.getElementById("closeWindow").checked = conf.closeWindow;
 	document.getElementById("syncOnStart").checked = conf.syncOnStart;
 	
 	if (conf.debugLevel) {
@@ -967,7 +967,7 @@ com.synckolab.settings.getBaseInfo = function() {
 	var conf = com.synckolab.settings.config;
 	conf.hideFolder = document.getElementById("hideFolder").checked;
 	conf.debugLevel = document.getElementById("debugLevel").value;
-	conf.hiddenWindow = document.getElementById("hiddenWnd").checked;
+	conf.closeWindow = document.getElementById("closeWindow").checked;
 	conf.syncOnStart = document.getElementById("syncOnStart").checked;
 };
 
@@ -1030,7 +1030,7 @@ com.synckolab.settings.getInfo = function() {
 	// save changes to imap (vs. read only)
 	config.saveToImap = document.getElementById(prefix + "SaveToImap").checked;
 	// automatically sync every X minutes (0 = disable)
-	config.syncInterval = document.getElementById(prefix + "SyncInterval").value;
+	//@deprecated config.syncInterval = document.getElementById(prefix + "SyncInterval").value;
 	// format to use: xml|vcard
 	config.format = document.getElementById(prefix + "Format").value;
 	if(prefix !== "contact") {
@@ -1116,7 +1116,7 @@ com.synckolab.settings.fillInfo = function(type, acctName, confName) {
 	// save changes to imap (vs. read only)
 	document.getElementById(prefix + "SaveToImap").checked = config.saveToImap;
 	// automatically sync every X minutes (0 = disable)
-	document.getElementById(prefix + "SyncInterval").value = config.syncInterval;
+	//@deprecated document.getElementById(prefix + "SyncInterval").value = config.syncInterval;
 	// format to use: xml|vcard
 	actList = document.getElementById(prefix + "Format");
 	cur = actList.firstChild.firstChild;

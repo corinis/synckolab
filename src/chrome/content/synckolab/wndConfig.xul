@@ -4,7 +4,7 @@
 
 <!DOCTYPE loc SYSTEM "chrome://synckolab/locale/synckolab.dtd">
 
-<dialog id="syncKolabConfigDlg" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" onload="com.synckolab.settings.init();" buttons="accept,cancel" ondialogaccept="return com.synckolab.settings.savePrefs();" persist="screenX screenY" width="0" title="SyncKolab 2.0.0">
+<dialog id="syncKolabConfigDlg" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" onload="com.synckolab.settings.init();" buttons="accept,cancel" ondialogaccept="return com.synckolab.settings.savePrefs();" persist="screenX screenY" width="0" title="SyncKolab 2.0.2">
 
 	<script type="application/x-javascript" src="chrome://synckolab/content/calendarTools.js" />
 	<script type="application/x-javascript" src="chrome://synckolab/content/addressbookTools.js"/>
@@ -84,7 +84,7 @@
 							
 							<checkbox id="syncOnStart" label="&synckolab.settings.SyncOnStart;" tooltiptext="&synckolab.settings.SyncOnStart;" />
 							<checkbox id="hideFolder" style="width: 300px" label="&synckolab.settings.hideFolder;"/>
-							<checkbox id="hiddenWnd" label="&synckolab.settings.HiddenWindow;" />
+							<checkbox id="closeWindow" style="width: 300px" label="&synckolab.settings.CloseWindow;" />
 							
 							<button label="&synckolab.settings.saveAll;" oncommand="com.synckolab.settings.saveAllConfig();" />
 						</vbox>
@@ -140,11 +140,11 @@
 									</menupopup>
 								</menulist>
 							</hbox>
-							<hbox>
-								<label value="&synckolab.settings.SyncInterval;" />
-								<textbox id="contactSyncInterval" maxlength="5" style="width: 50px" />
-								<label value="&synckolab.settings.SyncIntervalMinutes;" />
-							</hbox>
+<!-- 							<hbox> -->
+<!-- 								<label value="&synckolab.settings.SyncInterval;" /> -->
+<!-- 								<textbox id="contactSyncInterval" maxlength="5" style="width: 50px" /> -->
+<!-- 								<label value="&synckolab.settings.SyncIntervalMinutes;" /> -->
+<!-- 							</hbox> -->
 							<button label="&synckolab.settings.saveSingle;" oncommand="com.synckolab.settings.saveSingleConfig();" />
 
 						</vbox>
@@ -195,11 +195,11 @@
 									</menupopup>
 								</menulist>
 							</hbox>
-							<hbox>
-								<label value="&synckolab.settings.SyncInterval;" />
-								<textbox id="calendarSyncInterval" maxlength="5" style="width: 50px" />
-								<label value="&synckolab.settings.SyncIntervalMinutes;" />
-							</hbox>
+<!-- 							<hbox> -->
+<!-- 								<label value="&synckolab.settings.SyncInterval;" /> -->
+<!-- 								<textbox id="calendarSyncInterval" maxlength="5" style="width: 50px" /> -->
+<!-- 								<label value="&synckolab.settings.SyncIntervalMinutes;" /> -->
+<!-- 							</hbox> -->
 						</vbox>
 
 					</tabpanel>
@@ -248,11 +248,11 @@
 									</menupopup>
 								</menulist>
 							</hbox>
-							<hbox>
-								<label value="&synckolab.settings.SyncInterval;" />
-								<textbox id="taskSyncInterval" maxlength="5" style="width: 50px" />
-								<label value="&synckolab.settings.SyncIntervalMinutes;" />
-							</hbox>
+<!-- 							<hbox> -->
+<!-- 								<label value="&synckolab.settings.SyncInterval;" /> -->
+<!-- 								<textbox id="taskSyncInterval" maxlength="5" style="width: 50px" /> -->
+<!-- 								<label value="&synckolab.settings.SyncIntervalMinutes;" /> -->
+<!-- 							</hbox> -->
 						</vbox>
 
 					</tabpanel>
