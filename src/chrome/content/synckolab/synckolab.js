@@ -134,11 +134,11 @@ com.synckolab.main.initGroupwareActions = function() {
  */
 com.synckolab.main.groupwareActions = function () {
 
-	// check if the configuration is already available
-	com.synckolab.config.readConfiguration(); // TODO do we really need this here?
+	// make sure we have an up to date and valid configuration
+	com.synckolab.config.readConfiguration(); 
 	
 	// only do that if we really have to
-	if(!com.synckolab.main.hideFolder)
+	if(!com.synckolab.main.config.hideFolder)
 	{
 		return;
 	}
@@ -165,37 +165,33 @@ com.synckolab.main.groupwareActions = function () {
 			continue;
 		}
 		
-		if(curConfig.contact.hide) {
-			if (selected_foldername === curConfig.contact.folderPath) {
-				com.synckolab.tools.logMessage("In groupware Actions selected Calendar folder", com.synckolab.global.LOG_DEBUG);
+		if (selected_foldername === curConfig.folderPath) {
 
-				if (versionChecker.compare(Application.version, "3.0b4") >= 0) {
-					document.getElementById('tabmail').openTab('calendar', { title: document.getElementById('calendar-tab-button').getAttribute('tooltiptext') });
-					SelectFolder(inbox);
-				}
-				return;
-			}
-		}
-		if(curConfig.cal.hide) {
-			if (selected_foldername === curConfig.cal.folderPath) {
-				com.synckolab.tools.logMessage("In groupware Actions selected Task folder", com.synckolab.global.LOG_DEBUG);
+			switch(curConfig.type) {
+				case "calendar":
+					com.synckolab.tools.logMessage("In groupware Actions selected Calendar folder", com.synckolab.global.LOG_DEBUG);
+					if (versionChecker.compare(Application.version, "3.0b4") >= 0) {
+						document.getElementById('tabmail').openTab('calendar', { title: document.getElementById('calendar-tab-button').getAttribute('tooltiptext') });
+						SelectFolder(inbox);
+					}
+					break;
+				case "task":
+					com.synckolab.tools.logMessage("In groupware Actions selected Task folder", com.synckolab.global.LOG_DEBUG);
 
-				if (versionChecker.compare(Application.version, "3.0b4") >= 0) {
-					document.getElementById('tabmail').openTab('tasks', { title: document.getElementById('task-tab-button').getAttribute('tooltiptext') });
-					SelectFolder(inbox);
-				}
-				return;
+					if (versionChecker.compare(Application.version, "3.0b4") >= 0) {
+						document.getElementById('tabmail').openTab('tasks', { title: document.getElementById('task-tab-button').getAttribute('tooltiptext') });
+						SelectFolder(inbox);
+					}
+					break;
+				case "contact":
+					com.synckolab.tools.logMessage("In groupware Actions selected Contacts folder", com.synckolab.global.LOG_DEBUG);
+					if (versionChecker.compare(Application.version, "3.0b4") >= 0) {
+						document.getElementById('tabmail').openTab('contentTab', {contentPage: 'chrome://messenger/content/addressbook/addressbook.xul'});
+						SelectFolder(inbox);
+					}
+					break;
 			}
-		}
-		if(curConfig.task.hide) {
-			if (selected_foldername === curConfig.task.folderPath) {
-				com.synckolab.tools.logMessage("In groupware Actions selected Contacts folder", com.synckolab.global.LOG_DEBUG);
-				if (versionChecker.compare(Application.version, "3.0b4") >= 0) {
-					document.getElementById('tabmail').openTab('contentTab', {contentPage: 'chrome://messenger/content/addressbook/addressbook.xul'});
-					SelectFolder(inbox);
-				}
-				return;
-			}
+			return;
 		}
 	}
 };
