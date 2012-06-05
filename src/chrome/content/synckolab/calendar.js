@@ -1070,8 +1070,12 @@ com.synckolab.Calendar = {
 	},
 
 	doneParsing : function () {
-		// end batch processing 
-		this.gConfig.calendar.endBatch();
+		// end batch processing
+		try {
+			this.gConfig.calendar.endBatch();
+		} catch (ex) {
+			// might be possible when someone else called endbatch
+		}
 		// refresh the calendar
 		this.gConfig.calendar.refresh();
 	}
