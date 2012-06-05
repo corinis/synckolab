@@ -1173,7 +1173,7 @@ com.synckolab.settings.addConfig = function() {
 			var retVals = { name: null };
 			var res = window.openDialog("chrome://synckolab/content/wndNewConfigType.xul", 
 					"newCfg", 
-					"modal,width=330,height=180,resizable=0", retVals, com.synckolab.settings.activeType, com.synckolab.settings.config);
+					"modal,width=360,height=200,resizable=0", retVals, com.synckolab.settings.activeType, com.synckolab.settings.config);
 			if(retVals.name !== null && retVals.name.length > 2) {
 				var acct = com.synckolab.settings.getAccount(com.synckolab.settings.config, com.synckolab.settings.activeAccount, true);
 				// check the configs
