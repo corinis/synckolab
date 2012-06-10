@@ -707,6 +707,9 @@ com.synckolab.tools.text.quoted = {
 		// TYPE=FAX
 		s = s.replace("TYPE=CELL", "TYPE=3DCELL");
 		s = s.replace("TYPE=FAX", "TYPE=3DFAX");
+		// #24948 DTSTART;TZID=rope/Berlin
+		s = s.replace("=Eu", "=3DEu");
+		s = s.replace("=ro", "=3DEuro");
 		s = s.replace("=FALSE", "=3DFALSE");
 		s = s.replace("=ACCEPTED", "=3DACCEPTED");
 
