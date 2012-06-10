@@ -400,6 +400,10 @@ com.synckolab.Calendar = {
 		
 		// we are starting a batch operation here
 		this.gConfig.calendar.startBatch();
+		if(!this.gConfig.BatchCount) {
+			this.gConfig.BatchCount = 0;
+		}
+		this.gConfig.BatchCount++;
 
 		// gCalendar might be invalid if no calendar is selected in the settings
 		if (this.gConfig) {
@@ -1072,7 +1076,10 @@ com.synckolab.Calendar = {
 	doneParsing : function () {
 		// end batch processing
 		try {
-			this.gConfig.calendar.endBatch();
+			if(!this.gConfig.BatchCount && this.gConfig.BatchCount > 0) {
+				this.gConfig.BatchCount--;
+				this.gConfig.calendar.endBatch();
+			}
 		} catch (ex) {
 			// might be possible when someone else called endbatch
 		}
