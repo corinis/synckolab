@@ -1132,7 +1132,12 @@ com.synckolab.AddressBook = {
 					alert("UID is NULL???" + curItem.custom4);
 				}
 				
-				if (idxEntry.exists() && !this.forceServerCopy)
+				if(!idxEntry) {
+					alert("unable to get sync db file for " + curItem.custom4 + " please check the access rights in your profile folder!");
+					return;
+				}
+				
+				if (idxEntry && idxEntry.exists() && !this.forceServerCopy)
 				{
 					
 					if (!curItem.isMailList)
