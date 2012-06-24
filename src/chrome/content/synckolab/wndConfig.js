@@ -81,16 +81,17 @@ com.synckolab.settings.writeConfiguration = function(config) {
 	
 	// check if an account has been removed
 	var i,j,found;
-	if (orig) {
+	if (orig && orig.accounts) {
 		for(i = 0; i < orig.accounts.length; i++) {
 			found = false;
-			for(j = 0; config.accounts.length; j++) {
-				if(orig.accounts[i].name === config.accounts[j].name) {
+			for(j = 0; j < config.accounts.length; j++) {
+				if(orig.accounts[i] && config.accounts[j] && orig.accounts[i].name === config.accounts[j].name) {
 					found = true;
 					break;
 				}
 			}
 			if(!found) {
+				com.synckolab.tools.logMessage("resetting " + orig.accounts[i].name, com.synckolab.global.LOG_DEBUG);
 				pref.resetBranch("SyncKolab." + orig.accounts[i].name);
 			}
 		}
@@ -106,7 +107,7 @@ com.synckolab.settings.writeConfiguration = function(config) {
 		
 		var origAcct = null;
 		if(orig) {
-			for(j = 0; orig.accounts.length; j++) {
+			for(j = 0; j < orig.accounts.length; j++) {
 				if(orig.accounts[j].name === config.accounts[i].name) {
 					origAcct = orig.accounts[j];
 					break;
