@@ -266,10 +266,10 @@ com.synckolab.addressbookTools = {
 			try {
 				// sk always uses dirName
 				if (card.synckolab) {
-					return this.getCardProperty(card, "DisplayName");
+					return com.synckolab.tools.text.fixNameToMiniCharset(this.getCardProperty(card, "DisplayName"));
 				}
 				// tbird is more creative 
-				return this.getCardProperty(card, "Name");
+				return com.synckolab.tools.text.fixNameToMiniCharset(this.getCardProperty(card, "Name"));
 			} catch (err) {
 				com.synckolab.tools.logMessage("Error in getUID. ListNickName: '" + card.listNickName + "'\n\nStack:\n" + err.stack, com.synckolab.global.LOG_DEBUG);
 				throw err;
