@@ -103,10 +103,28 @@ com.synckolab.main.syncKolabTimer = function () {
 		com.synckolab.tools.logMessage("sync with config "+com.synckolab.main.forceConfig +" is still running...", com.synckolab.global.LOG_DEBUG);
 	}
 
+*/
+	// refresh all mail folders configured to trigger auto-sync
+	if(com.synckolab.main.syncConfigs) {
+		for(var j = 0; j < com.synckolab.main.syncConfigs.length; j++) {
+			if(com.synckolab.main.syncConfigs[j]) {
+				var curConfig = com.synckolab.main.syncConfigs[j];
+				if(curConfig.syncListener && curConfig.folder)
+				{
+					com.synckolab.tools.logMessage("refreshing " + curConfig.folderMsgURI + "...", com.synckolab.global.LOG_DEBUG);
+					try {
+						curConfig.folder.updateFolder();
+					} catch (ex) {
+						com.synckolab.tools.logMessage("unable to refresh " + curConfig.folderMsgURI + ": " + ex, com.synckolab.global.LOG_WARNING);
+					}
+				}
+			}
+		}
+	}
+	
 	// wait a minute
 	com.synckolab.tools.logMessage("sync timer: sleep for one minute", com.synckolab.global.LOG_DEBUG);
 	com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.syncKolabTimer();}}, 60000, 0);
-*/
 };
 
 com.synckolab.main.initGroupwareActions = function() {
