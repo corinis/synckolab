@@ -719,7 +719,7 @@ com.synckolab.main.getMessage = function()
 
 		}
 		
-		if(!cur.mime2DecodedSubject || cur.mime2DecodedSubject.length < 3 || cur.mime2DecodedSubject.indexOf(" ") !== -1) {
+		if(!cur.mime2DecodedSubject || cur.mime2DecodedSubject.length < 3) {
 			com.synckolab.tools.logMessage("Message '" + cur.mime2DecodedSubject + "' has an invalid subject!", com.synckolab.global.LOG_INFO);
 			// skip current and process next nessage	
 			skipCMessage = true;
@@ -777,12 +777,12 @@ com.synckolab.main.getMessage = function()
  cur.date (PRTime) ?
 	 */
 	com.synckolab.main.gLastMessageDBHdr = cur;
-	com.synckolab.tools.logMessage("checking for synckey in local db: " + cur.mime2DecodedSubject, com.synckolab.global.LOG_DEBUG);
-	com.synckolab.main.gSyncFileKey = com.synckolab.main.syncMessageDb.get(cur.mime2DecodedSubject);
+	com.synckolab.tools.logMessage("checking for synckey in local db: " + com.synckolab.tools.getUidFromHeader(cur.mime2DecodedSubject), com.synckolab.global.LOG_DEBUG);
+	com.synckolab.main.gSyncKeyInfo = com.synckolab.tools.getUidFromHeader(cur.mime2DecodedSubject);
+	com.synckolab.main.gSyncFileKey = com.synckolab.main.syncMessageDb.get(com.synckolab.main.gSyncKeyInfo);
 
-	com.synckolab.main.gSyncKeyInfo = cur.mime2DecodedSubject;
 	if (laterMsg) {
-		com.synckolab.tools.logMessage("taking " + cur.mime2DecodedSubject + " from fist round...", com.synckolab.global.LOG_DEBUG);
+		com.synckolab.tools.logMessage("taking " + com.synckolab.main.gSyncKeyInfo + " from fist round...", com.synckolab.global.LOG_DEBUG);
 		
 		// get the message content into fileContent
 		// parseMessageRunner is called when we got the message
@@ -798,7 +798,7 @@ com.synckolab.main.getMessage = function()
 	else {
 		if (com.synckolab.main.gSyncFileKey)
 		{
-			com.synckolab.tools.logMessage("we have " + cur.mime2DecodedSubject + " already locally...", com.synckolab.global.LOG_DEBUG);
+			com.synckolab.tools.logMessage("we have " + com.synckolab.main.gSyncKeyInfo + " already locally...", com.synckolab.global.LOG_DEBUG);
 			// check if the message has changed
 			if (cur.messageSize === Number(com.synckolab.main.gSyncFileKey[1]) && cur.date === Number(com.synckolab.main.gSyncFileKey[2]))
 			{

@@ -1512,3 +1512,26 @@ com.synckolab.tools.launchUrl = function(aURL) {
 	messenger = messenger.QueryInterface(Components.interfaces.nsIMessenger);
 	messenger.launchExternalURL(aURL);	
 };
+
+
+com.synckolab.tools.getUidFromHeader = function (header) {
+	if(!header) {
+		return header;
+	}
+	
+	var space = header.indexOf(' ');
+	if(space === -1) {
+		return header;
+	}
+	
+	if(header.indexOf("iCal ") || header.indexOf("ical ")) {
+		return header.substring(5);
+	}
+	
+	if(header.indexOf("vCard ") || header.indexOf("vcard ")) {
+		return header.substring(6);
+	}
+	
+	// might be a mailing list - name is the header and it might contain spaces!
+	return header;
+};
