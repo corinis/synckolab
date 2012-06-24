@@ -663,59 +663,79 @@ com.synckolab.tools.text.utf16 = {
  */
 com.synckolab.tools.text.quoted = {
 
-	encode : function (s) {
-		var SKIP = 202;
-		var NOSKIP = 'A';
-		var QpEncodeMap = [SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, NOSKIP, SKIP, SKIP, NOSKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, NOSKIP, SKIP, SKIP, SKIP, SKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP,
-				NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, SKIP, SKIP, NOSKIP, NOSKIP, SKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP,
-				NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, SKIP, SKIP, SKIP, SKIP, NOSKIP, SKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP,
-				NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, NOSKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP,
-				SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP,
-				SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP, SKIP,
-				SKIP, SKIP, SKIP, SKIP, SKIP];
-
-		// sometime we just do not want a new message :)
-		if (s === null) {
-			return null;
-		}
-
-		var fresult = "";
-		var cur = 0;
-
-		for (cur = 0; cur < s.length; cur++) {
-			var mid = s.charCodeAt(cur);
-			if (QpEncodeMap[mid] === SKIP) {
-				//add the hex value for the char...
-				fresult += "=";
-				fresult += mid.toString(16).toUpperCase();
-			} else {
-				//just add the char...
-				fresult += s.charAt(cur);
+	encode : function (str) {
+		// +   original by: Theriault
+		// +   improved by: Brett Zamir (http://brett-zamir.me)
+		// +   improved by: Theriault
+		// *     example 1: quoted_printable_encode('a=b=c');
+		// *     returns 1: 'a=3Db=3Dc'
+		// *     example 2: quoted_printable_encode('abc   \r\n123   \r\n');
+		// *     returns 2: 'abc  =20\r\n123  =20\r\n'
+		// *     example 3: quoted_printable_encode('0123456789012345678901234567890123456789012345678901234567890123456789012345');
+		// *     returns 3: '012345678901234567890123456789012345678901234567890123456789012345678901234=\r\n5'
+		// RFC 2045: 6.7.2: Octets with decimal values of 33 through 60 (bang to less-than) inclusive, and 62 through 126 (greater-than to tilde), inclusive, MAY be represented as the US-ASCII characters
+		// PHP does not encode any of the above; as does this function.
+		// RFC 2045: 6.7.3: Octets with values of 9 and 32 MAY be represented as US-ASCII TAB (HT) and SPACE characters, respectively, but MUST NOT be so represented at the end of an encoded line
+		// PHP does not encode spaces (octet 32) except before a CRLF sequence as stated above. PHP always encodes tabs (octet 9). This function replicates PHP.
+		// RFC 2045: 6.7.4: A line break in a text body, represented as a CRLF sequence in the text canonical form, must be represented by a (RFC 822) line break
+		// PHP does not encode a CRLF sequence, as does this function.
+		// RFC 2045: 6.7.5: The Quoted-Printable encoding REQUIRES that encoded lines be no more than 76 characters long. If longer lines are to be encoded with the Quoted-Printable encoding, "soft" line breaks must be used.
+		// PHP breaks lines greater than 76 characters; as does this function.
+		var hexChars = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'],
+		RFC2045Encode1IN = / \r\n|\r\n|[^!-<>-~ ]/gm,
+		RFC2045Encode1OUT = function (sMatch) {
+			// Encode space before CRLF sequence to prevent spaces from being stripped
+			// Keep hard line breaks intact; CRLF sequences
+			if (sMatch.length > 1) {
+				return sMatch.replace(' ', '=20');
 			}
-		}
-		return fresult;
+			// Encode matching character
+			var chr = sMatch.charCodeAt(0);
+			return '=' + hexChars[((chr >>> 4) & 15)] + hexChars[(chr & 15)];
+		},
+		// Split lines to 75 characters; the reason it's 75 and not 76 is because softline breaks are preceeded by an equal sign; which would be the 76th character.
+		// However, if the last line/string was exactly 76 characters, then a softline would not be needed. PHP currently softbreaks anyway; so this function replicates PHP.
+		RFC2045Encode2IN = /.{1,72}(?!\r\n)[^=]{0,3}/g,
+		RFC2045Encode2OUT = function (sMatch) {
+			if (sMatch.substr(sMatch.length - 2) === '\r\n') {
+				return sMatch;
+			}
+			return sMatch + '=\r\n';
+		};
+		str = str.replace(RFC2045Encode1IN, RFC2045Encode1OUT).replace(RFC2045Encode2IN, RFC2045Encode2OUT);
+		// Strip last softline break
+		return str.substr(0, str.length - 3);
 	},
 
-	decode : function (s) {
-		s = s.replace(/\=[\r\n]+/g, "");
+	decode : function (str) {
+		str = str.replace(/\=[\r\n]+/g, "");
 		// very bad - double =3D3D
-		s = s.replace("=3D3D", "=3D");
+		str = str.replace("=3D3D", "=3D");
 
-		// in order to avoid problematic decoding prepare the string
-		// known problems might arise with:
-		// TYPE=CELL
-		// TYPE=FAX
-		s = s.replace("TYPE=CELL", "TYPE=3DCELL");
-		s = s.replace("TYPE=FAX", "TYPE=3DFAX");
-		// #24948 DTSTART;TZID=rope/Berlin
-		s = s.replace("=Eu", "=3DEu");
-		s = s.replace("=ro", "=3DEuro");
-		s = s.replace("=FALSE", "=3DFALSE");
-		s = s.replace("=ACCEPTED", "=3DACCEPTED");
-
-		return s.replace(/\=[0-9A-F]{2}/gi, function (v) {
-			return String.fromCharCode(parseInt(v.substr(1), 16));
-		});
+		// http://kevin.vanzonneveld.net
+		// +   original by: Ole Vrijenhoek
+		// +   bugfixed by: Brett Zamir (http://brett-zamir.me)
+		// +   reimplemented by: Theriault
+		// +   improved by: Brett Zamir (http://brett-zamir.me)
+		// +   bugfixed by: Theriault
+		// *     example 1: quoted_printable_decode('a=3Db=3Dc');
+		// *     returns 1: 'a=b=c'
+		// *     example 2: quoted_printable_decode('abc  =20\r\n123  =20\r\n');
+		// *     returns 2: 'abc   \r\n123   \r\n'
+		// *     example 3: quoted_printable_decode('012345678901234567890123456789012345678901234567890123456789012345678901234=\r\n56789');
+		// *     returns 3: '01234567890123456789012345678901234567890123456789012345678901234567890123456789'
+		// *    example 4: quoted_printable_decode("Lorem ipsum dolor sit amet=23, consectetur adipisicing elit");
+		// *    returns 4: Lorem ipsum dolor sit amet#, consectetur adipisicing elit
+		// Removes softline breaks
+		var RFC2045Decode1 = /=\r\n/gm,
+		// Decodes all equal signs followed by two hex digits
+		RFC2045Decode2IN = /=([0-9A-F]{2})/gim,
+		// the RFC states against decoding lower case encodings, but following apparent PHP behavior
+		// RFC2045Decode2IN = /=([0-9A-F]{2})/gm,
+		RFC2045Decode2OUT = function (sMatch, sHex) {
+			return String.fromCharCode(parseInt(sHex, 16));
+		};
+		return str.replace(RFC2045Decode1, '').replace(RFC2045Decode2IN, RFC2045Decode2OUT);
 	}
 };
 
