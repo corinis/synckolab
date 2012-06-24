@@ -1427,7 +1427,17 @@ com.synckolab.addressbookTools.equalsContact = function (a, b) {
 		com.synckolab.tools.logMessage(a.toSource() + " vs. " + b.toSource(), com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
 
 		// length needs to be equal
-		if (a.contacts.length !== b.contacts.length) {
+		if (a.contacts && b.contacts && a.contacts.length !== b.contacts.length) {
+			com.synckolab.tools.logMessage("different amount of contacts in each list", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
+			return false;
+		}
+		
+		if(a.contacts && !b.contacts && a.contacts.length !== 0) {
+			com.synckolab.tools.logMessage("different amount of contacts in each list", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
+			return false;
+		}
+
+		if(!a.contacts && b.contacts && b.contacts.length !== 0) {
 			com.synckolab.tools.logMessage("different amount of contacts in each list", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
 			return false;
 		}
