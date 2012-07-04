@@ -964,6 +964,7 @@ com.synckolab.tools.readSyncDBFile = function (file, direct)
 		}
 		
 		cstream.close();
+		istream.close();
 		
 		// use json instead
 		if (direct) {
