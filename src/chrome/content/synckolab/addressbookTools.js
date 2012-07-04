@@ -1432,27 +1432,30 @@ com.synckolab.addressbookTools.equalsContact = function (a, b) {
 			return false;
 		}
 		
-		if(a.contacts && !b.contacts && a.contacts.length !== 0) {
-			com.synckolab.tools.logMessage("different amount of contacts in each list", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
-			return false;
-		}
-
-		if(!a.contacts && b.contacts && b.contacts.length !== 0) {
-			com.synckolab.tools.logMessage("different amount of contacts in each list", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
-			return false;
-		}
-
 		// create an array of all contacts of A
 		var aContacts = [];
-		for (i = 0; i < a.contacts.length; i++) {
-			aContacts.push(a.contacts[i]);
+		var bContacts = [];
+		if(a.contacts) {
+			for (i = 0; i < a.contacts.length; i++) {
+				aContacts.push(a.contacts[i]);
+			}
+		}
+		if(b.contacts) {
+			for (i = 0; i < b.contacts.length; i++) {
+				bContacts.push(b.contacts[i]);
+			}
+		}
+
+		if(aContacts.length !== bContacts.length) {
+			com.synckolab.tools.logMessage("different amount of contacts in each list (a:"+aContacts.length +" b: " + bContacts.length+")", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
+			return false;
 		}
 
 		// now go through b - if the entry exists in aContacts - remove
-		for (i = 0; i < b.contacts.length; i++) {
+		for (i = 0; i < bContacts.length; i++) {
 			var found = false;
 			for ( var j = 0; j < aContacts.length; j++) {
-				if (aContacts[j].UUID === b.contacts[i].UUID) {
+				if (aContacts[j].UUID === bContacts[i].UUID) {
 					found = true;
 					aContacts.splice(j, 1);
 					break;
@@ -1460,7 +1463,7 @@ com.synckolab.addressbookTools.equalsContact = function (a, b) {
 			}
 			// break at the first contact that has not been found
 			if (!found) {
-				com.synckolab.tools.logMessage("contact: " + b.contacts[i].UUID + " not in both lists!", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
+				com.synckolab.tools.logMessage("contact: " + bContacts[i].UUID + " not in both lists!", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
 				return false;
 			}
 		}

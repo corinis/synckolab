@@ -923,7 +923,12 @@ com.synckolab.tools.writeSyncDBFile = function (file, data, direct)
 	file.create(file.NORMAL_FILE_TYPE, parseInt("0666", 8));
 	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
 	stream.init(file, 2, 0x200, false); // open as "write only"
-	stream.write(skcontent, skcontent.length);
+	
+	var cstream = Components.classes["@mozilla.org/intl/converter-output-stream;1"].createInstance(Components.interfaces.nsIConverterOutputStream);
+	cstream.init(stream, "UTF-8", 0, 0);
+
+	cstream.writeString(skcontent);
+	cstream.close();
 	stream.close();
 };
 
@@ -953,19 +958,20 @@ com.synckolab.tools.readSyncDBFile = function (file, direct)
 		var istream = Components.classes["@mozilla.org/network/file-input-stream;1"]
 		                                 .createInstance(Components.interfaces.nsIFileInputStream);
 		istream.init(file, 0x01, 4, null);
-		var fileScriptableIO = Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance(Components.interfaces.nsIScriptableInputStream); 
-		fileScriptableIO.init(istream);
-		// parse the xml into our internal document
-		istream.QueryInterface(Components.interfaces.nsILineInputStream); 
+		
+		var cstream = Components.classes["@mozilla.org/intl/converter-input-stream;1"].createInstance(Components.interfaces.nsIConverterInputStream);
+		cstream.init(istream, "UTF-8", 0, 0);
+		
 		var fileContent = "";
 		var csize = 0; 
-		while ((csize = fileScriptableIO.available()) !== 0)
+		var str = {};
+		while (cstream.readString(4096, str) !== 0)
 		{
-			fileContent += fileScriptableIO.read( csize );
+			fileContent += str.value;
 		}
-		fileScriptableIO.close();
-		istream.close();
-
+		
+		cstream.close();
+		
 		// use json instead
 		if (direct) {
 			return fileContent;
