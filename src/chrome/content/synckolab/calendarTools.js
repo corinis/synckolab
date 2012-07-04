@@ -596,31 +596,22 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 		case "MONTHLY":
 			// "daynumber" or "weekday"
 			var days = recRule.getComponent("BYMONTHDAY", {});
-			if (days && days.length > 0 && days[0]) {
+			
+			if (days && days.length > 0) {
 				// daynumber has <daynumber>
 				jobj.recurrence.cycle = "monthly";
-				jobj.recurrence.daynumber = days[0];
+				jobj.recurrence.days = days;
 			}
 			else
 			{
 				jobj.recurrence.cycle = "monthly";
 				// weekday has <daynumber> and <day>
 				days = recRule.getComponent("BYDAY", {});
-				if (days && days.length > 0 && days[0] > 0)
+				if (days && days.length > 0)
 				{
 					dayindex = days[0] % 8;
 					daynumber = (days[0] - dayindex) / 8;
 					jobj.recurrence.daynumber = daynumber;
-					jobj.recurrence.weekday = com.synckolab.tools.kolab.getXmlDayName(dayindex);
-				}
-				else
-				{
-					jobj.recurrence.daynumber = -1;
-					if (days && days.length > 0 && days[0] < 0) {
-						dayindex = days[0] * -1 - 8;
-					} else {
-						dayindex = 1;
-					}
 					jobj.recurrence.weekday = com.synckolab.tools.kolab.getXmlDayName(dayindex);
 				}
 			}
@@ -906,7 +897,12 @@ com.synckolab.calendarTools.json2event = function (jobj, calendar) {
 			break;
 		case "monthly":
 			if(!jobj.recurrence.weekday) {
-				recRule.setComponent("BYMONTHDAY", 1, [jobj.recurrence.daynumber]);
+				if(jobj.recurrence.days) {
+					recRule.setComponent("BYMONTHDAY", jobj.recurrence.days.length, jobj.recurrence.days);
+				}
+				else if(jobj.recurrence.daynumber) {
+					recRule.setComponent("BYMONTHDAY", 1, [jobj.recurrence.daynumber]);
+				}
 			} else {
 				var dayindex = com.synckolab.tools.kolab.getDayIndex(jobj.recurrence.weekday);
 				if(jobj.recurrence.daynumber === -1) {
@@ -1251,13 +1247,14 @@ com.synckolab.calendarTools.xml2json = function (xml, syncTasks)
 					jobj.recurrence.cycle = "weekly";
 				}
 				
+				var recur;
 				switch (jobj.recurrence.cycle)
 				{
 				case "weekly":
 					// need to process the <day> value here
 					jobj.recurrence.days = []; 
 					// iterate over the DOM subtre
-					var recur = cur.firstChild;
+					recur = cur.firstChild;
 					while(recur)
 					{
 						if ((recur.nodeType === Node.ELEMENT_NODE) && (recur.nodeName.toUpperCase() === "DAY"))
@@ -1271,33 +1268,45 @@ com.synckolab.calendarTools.xml2json = function (xml, syncTasks)
 					// need to process extra type "type" which can be
 					// "daynumber" or "weekday"
 					var mode = cur.getAttribute("type");
-					switch (mode.toUpperCase())
-					{
-					case "DAYNUMBER":
-						// daynumber has <daynumber>
-						detail = cur.getChildNode("daynumber");
-						if ((detail) && (detail.nodeType === Node.ELEMENT_NODE) && (detail.nodeName.toUpperCase() === "DAYNUMBER"))
+					if(mode) {
+						switch (mode.toUpperCase())
 						{
-							jobj.recurrence.daynumber = Number(detail.firstChild.data);
-						}
-						break;
-					case "WEEKDAY":
-						// weekday has <daynumber> and <day>
-						detail = cur.firstChild;
-						jobj.recurrence.daynumber = -1;
-						while(detail)
-						{
-							if ((detail.nodeType === Node.ELEMENT_NODE) && (detail.nodeName.toUpperCase() === "DAY"))
+						case "DAYNUMBER":
+							jobj.recurrence.days = []; 
+
+							// iterate over the DOM subtre
+							recur = cur.firstChild;
+							while(recur)
 							{
-								jobj.recurrence.weekday = detail.firstChild.data;
+								if ((recur.nodeType === Node.ELEMENT_NODE) && (recur.nodeName.toUpperCase() === "DAYNUMBER"))
+								{
+									jobj.recurrence.days.push(recur.firstChild.data);
+								}
+								recur = recur.nextSibling;
 							}
-							if ((detail.nodeType === Node.ELEMENT_NODE) && (detail.nodeName.toUpperCase() === "DAYNUMBER"))
+							break;
+						case "WEEKDAY":
+							// weekday has <daynumber> and <day>
+							detail = cur.firstChild;
+							jobj.recurrence.daynumber = -1;
+							while(detail)
 							{
-								jobj.recurrence.daynumber = Number(detail.firstChild.data);
+								if ((detail.nodeType === Node.ELEMENT_NODE) && (detail.nodeName.toUpperCase() === "DAY"))
+								{
+									if(detail.firstChild.data) {
+										jobj.recurrence.weekday = detail.firstChild.data;
+									}
+								}
+								if ((detail.nodeType === Node.ELEMENT_NODE) && (detail.nodeName.toUpperCase() === "DAYNUMBER"))
+								{
+									if(detail.firstChild.data) {
+										jobj.recurrence.daynumber = Number(detail.firstChild.data);
+									}
+								}
+								detail = detail.nextSibling;
 							}
-							detail = detail.nextSibling;
-						}
-						break;
+							break;
+					}
 					}
 					break;
 				case "yearly":
@@ -1594,7 +1603,14 @@ com.synckolab.calendarTools.json2xml = function (jobj, syncTasks, email) {
 			}
 			break;
 		case "monthly":
-			if(!jobj.recurrence.weekday) {
+			if(!jobj.recurrence.daynumber && !jobj.recurrence.days) {
+				xml += " <recurrence cycle=\"monthly\">\n";
+			} else if(jobj.recurrence.days) {
+				xml += " <recurrence cycle=\"monthly\" type=\"daynumber\">\n";
+				for(i=0; i < jobj.recurrence.days.length; i++) {
+					xml += com.synckolab.tools.text.nodeWithContent("daynumber", jobj.recurrence.days[i], false);
+				}
+			} else if(!jobj.recurrence.weekday) {
 				xml += " <recurrence cycle=\"monthly\" type=\"daynumber\">\n";
 				xml += "  <daynumber>" + jobj.recurrence.daynumber + "</daynumber>\n";
 			} else {

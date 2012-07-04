@@ -116,18 +116,11 @@ scrollToBottom : function (itemList)
 	if (!itemList && com.synckolab.global.wnd && com.synckolab.global.document) {
 		itemList = com.synckolab.global.wnd.document.getElementById('itemList');
 	}
-	com.synckolab.tools.logMessage("checking itemlist: " + itemList);
 	if (itemList)
 	{
-		// select and deselect the newly appended item (makes it scroll to the bottom)
-		var lastItemPos = itemList.getRowCount ? itemList.getRowCount() - 1 : itemList.itemCount - 1;
-		com.synckolab.tools.logMessage("got itemlist: " + lastItemPos, com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_AB);
-		if (lastItemPos > 0)
-		{
-			itemList.selectedIndex = lastItemPos;
-			itemList.scrollToIndex(lastItemPos);
-			itemList.ensureIndexIsVisible(lastItemPos);
-		}
+		var boxobject = itemList.parentNode.boxObject;
+		boxobject.QueryInterface(Components.interfaces.nsITreeBoxObject);
+		boxobject.scrollByLines(100);
 	}
 },
 
