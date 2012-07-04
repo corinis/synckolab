@@ -70,19 +70,18 @@ function setCloseWindow() {
 
 	<spacer style="height: 10px"/>
 	
-	<listbox id="itemList" flex="1">
-		<listhead>
-			<listheader label="id"/>
-			<listheader label="&synckolab.progress.status;"/>
-			<listheader label="&synckolab.progress.content;"/>
-		</listhead>
+	<tree flex="1">
+		<treecols>
+			<treecol label="id" flex="1"/>
+			<splitter class="tree-splitter"/>
+			<treecol label="&synckolab.progress.status;"/>
+			<splitter class="tree-splitter"/>
+			<treecol label="&synckolab.progress.content;" flex="1"/>
+		</treecols>
+		<treechildren id="itemList">
+		</treechildren>
+	</tree>
 	
-		<listcols>
-			<listcol flex="1" />
-			<listcol />
-			<listcol flex="1" width="200px"/>
-		</listcols>
-	</listbox>
   <spacer style="height: 10px"/>
 		<hbox>
 			<label value="&synckolab.progress.CurrentProgress;"/>
@@ -95,5 +94,6 @@ function setCloseWindow() {
 			<button id="cancel-button" default="true" oncommand="closeSync()" label="&synckolab.progress.Cancel;"/>
 		</hbox>
 		<checkbox id="closeWnd" style="width: 300px" oncommand="setCloseWindow()" label="&synckolab.settings.CloseWindow;" />
+		
 	</vbox>
 </window>

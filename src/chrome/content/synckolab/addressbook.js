@@ -611,16 +611,13 @@ com.synckolab.AddressBook = {
 		var abcontent;
 		
 		// create a new item in the itemList for display
-		this.curItemInList = this.doc.createElement("listitem");
-		this.curItemInListId = this.doc.createElement("listcell");
-		this.curItemInListStatus = this.doc.createElement("listcell");
-		this.curItemInListContent = this.doc.createElement("listcell");
+		this.curItemInList = this.doc.createElement("treerow");
+		this.curItemInListId = this.doc.createElement("treecell");
+		this.curItemInListStatus = this.doc.createElement("treecell");
+		this.curItemInListContent = this.doc.createElement("treecell");
 		this.curItemInListId.setAttribute("label", com.synckolab.global.strBundle.getString("unknown"));
-		this.curItemInListId.setAttribute("value", "-");
 		this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("parsing"));
-		this.curItemInListStatus.setAttribute("value", "-");
 		this.curItemInListContent.setAttribute("label", com.synckolab.global.strBundle.getString("unknown"));
-		this.curItemInListContent.setAttribute("value", "-");
 		
 		this.curItemInList.appendChild(this.curItemInListId);
 		this.curItemInList.appendChild(this.curItemInListStatus);
@@ -628,7 +625,9 @@ com.synckolab.AddressBook = {
 		
 		if (this.itemList)
 		{
-			this.itemList.appendChild(this.curItemInList);
+			var curListItem = this.doc.createElement("treeitem");
+			curListItem.appendChild(this.curItemInList);
+			this.itemList.appendChild(curListItem);
 			com.synckolab.tools.scrollToBottom(this.itemList);
 		}
 				
@@ -1073,10 +1072,10 @@ com.synckolab.AddressBook = {
 			this.gConfig.addressBook.modifyCard(cur);
 			
 			// create a new item in the itemList for display
-			this.curItemInList = this.doc.createElement("listitem");
-			this.curItemInListId = this.doc.createElement("listcell");
-			this.curItemInListStatus = this.doc.createElement("listcell");
-			this.curItemInListContent = this.doc.createElement("listcell");
+			this.curItemInList = this.doc.createElement("treerow");
+			this.curItemInListId = this.doc.createElement("treecell");
+			this.curItemInListStatus = this.doc.createElement("treecell");
+			this.curItemInListContent = this.doc.createElement("treecell");
 			this.curItemInListId.setAttribute("label", this.tools.getUID(curItem));
 			this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("addToServer"));
 			if (curItem.isMailList) {
@@ -1085,17 +1084,18 @@ com.synckolab.AddressBook = {
 				this.curItemInListContent.setAttribute("label", cur.firstName + " " + curItem.lastName + " <" + curItem.primaryEmail + ">");
 			}
 			
-	
 			this.curItemInList.appendChild(this.curItemInListId);
 			this.curItemInList.appendChild(this.curItemInListStatus);
 			this.curItemInList.appendChild(this.curItemInListContent);
 			
 			if (this.itemList)
 			{
-				this.itemList.appendChild(this.curItemInList);
+				var curListItem = this.doc.createElement("treeitem");
+				curListItem.appendChild(this.curItemInList);
+				this.itemList.appendChild(curListItem);
 				com.synckolab.tools.scrollToBottom(this.itemList);
 			}
-			
+
 			// and write the message
 			abcontent = com.synckolab.addressbookTools.card2Message(curItem, this.gConfig.email, this.gConfig.format);
 			com.synckolab.tools.logMessage("New Card " + this.tools.getUID(curItem), com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
@@ -1149,10 +1149,10 @@ com.synckolab.AddressBook = {
 					}
 					
 					// create a new item in the itemList for display
-					this.curItemInList = this.doc.createElement("listitem");
-					this.curItemInListId = this.doc.createElement("listcell");
-					this.curItemInListStatus = this.doc.createElement("listcell");
-					this.curItemInListContent = this.doc.createElement("listcell");
+					this.curItemInList = this.doc.createElement("treerow");
+					this.curItemInListId = this.doc.createElement("treecell");
+					this.curItemInListStatus = this.doc.createElement("treecell");
+					this.curItemInListContent = this.doc.createElement("treecell");
 					this.curItemInListId.setAttribute("label", this.tools.getUID(curItem));
 					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localDelete"));
 					if (curItem.isMailList) {
@@ -1160,17 +1160,19 @@ com.synckolab.AddressBook = {
 					} else {
 						this.curItemInListContent.setAttribute("label", curItem.firstName + " " + curItem.lastName + " <" + curItem.primaryEmail + ">");
 					}
-			
+					
 					this.curItemInList.appendChild(this.curItemInListId);
 					this.curItemInList.appendChild(this.curItemInListStatus);
 					this.curItemInList.appendChild(this.curItemInListContent);
 					
 					if (this.itemList)
 					{
-						this.itemList.appendChild(this.curItemInList);
+						var curListItem = this.doc.createElement("treeitem");
+						curListItem.appendChild(this.curItemInList);
+						this.itemList.appendChild(curListItem);
 						com.synckolab.tools.scrollToBottom(this.itemList);
 					}
-					
+
 					// also remove the local db file since we deleted the contact on the server
 					idxEntry.remove(false);
 					
@@ -1180,10 +1182,10 @@ com.synckolab.AddressBook = {
 				{
 					
 					// create a new item in the itemList for display
-					this.curItemInList = this.doc.createElement("listitem");
-					this.curItemInListId = this.doc.createElement("listcell");
-					this.curItemInListStatus = this.doc.createElement("listcell");
-					this.curItemInListContent = this.doc.createElement("listcell");
+					this.curItemInList = this.doc.createElement("treerow");
+					this.curItemInListId = this.doc.createElement("treecell");
+					this.curItemInListStatus = this.doc.createElement("treecell");
+					this.curItemInListContent = this.doc.createElement("treecell");
 					this.curItemInListId.setAttribute("label", this.tools.getUID(curItem));
 					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("addToServer"));
 					if (curItem.isMailList) {
@@ -1191,13 +1193,16 @@ com.synckolab.AddressBook = {
 					} else {
 						this.curItemInListContent.setAttribute("label", curItem.firstName + " " + curItem.lastName + " <" + curItem.primaryEmail + ">");
 					}
+					
 					this.curItemInList.appendChild(this.curItemInListId);
 					this.curItemInList.appendChild(this.curItemInListStatus);
 					this.curItemInList.appendChild(this.curItemInListContent);
 					
 					if (this.itemList)
 					{
-						this.itemList.appendChild(this.curItemInList);
+						var curListItem = this.doc.createElement("treeitem");
+						curListItem.appendChild(this.curItemInList);
+						this.itemList.appendChild(curListItem);
 						com.synckolab.tools.scrollToBottom(this.itemList);
 					}
 					

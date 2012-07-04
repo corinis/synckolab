@@ -578,20 +578,23 @@ com.synckolab.Calendar = {
 	parseMessage : function (fileContent) {
 
 		// create a new item in the itemList for display
-		this.curItemInList = this.doc.createElement("listitem");
-		this.curItemInListId = this.doc.createElement("listcell");
-		this.curItemInListStatus = this.doc.createElement("listcell");
-		this.curItemInListContent = this.doc.createElement("listcell");
+		this.curItemInList = this.doc.createElement("treerow");
+		this.curItemInListId = this.doc.createElement("treecell");
+		this.curItemInListStatus = this.doc.createElement("treecell");
+		this.curItemInListContent = this.doc.createElement("treecell");
 		this.curItemInListId.setAttribute("label", com.synckolab.global.strBundle.getString("unknown"));
 		this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("parsing"));
 		this.curItemInListContent.setAttribute("label", com.synckolab.global.strBundle.getString("unknown"));
-
+		
 		this.curItemInList.appendChild(this.curItemInListId);
 		this.curItemInList.appendChild(this.curItemInListStatus);
 		this.curItemInList.appendChild(this.curItemInListContent);
-
-		if (this.itemList) {
-			this.itemList.appendChild(this.curItemInList);
+		
+		if (this.itemList)
+		{
+			var curListItem = this.doc.createElement("treeitem");
+			curListItem.appendChild(this.curItemInList);
+			this.itemList.appendChild(curListItem);
 			com.synckolab.tools.scrollToBottom(this.itemList);
 		}
 
@@ -984,6 +987,8 @@ com.synckolab.Calendar = {
 			// not on the imap acct. if we got this entry in our internal db
 			// it has been deleted on the server and we dont know about it yet
 			if (writeCur) {
+				var curListItem;
+				
 				com.synckolab.tools.logMessage("nextUpdate decided to write event:" + cur.id, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_INFO);
 
 				cEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, cur.id);
@@ -1001,39 +1006,45 @@ com.synckolab.Calendar = {
 					}
 
 					// create a new item in the itemList for display
-					this.curItemInList = this.doc.createElement("listitem");
-					this.curItemInListId = this.doc.createElement("listcell");
-					this.curItemInListStatus = this.doc.createElement("listcell");
-					this.curItemInListContent = this.doc.createElement("listcell");
+					this.curItemInList = this.doc.createElement("treerow");
+					this.curItemInListId = this.doc.createElement("treecell");
+					this.curItemInListStatus = this.doc.createElement("treecell");
+					this.curItemInListContent = this.doc.createElement("treecell");
 					this.curItemInListId.setAttribute("label", cur.id);
 					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localDelete"));
 					this.curItemInListContent.setAttribute("label", cur.title);
-
+					
 					this.curItemInList.appendChild(this.curItemInListId);
 					this.curItemInList.appendChild(this.curItemInListStatus);
 					this.curItemInList.appendChild(this.curItemInListContent);
-
-					if (this.itemList) {
-						this.itemList.appendChild(this.curItemInList);
+					
+					if (this.itemList)
+					{
+						curListItem = this.doc.createElement("treeitem");
+						curListItem.appendChild(this.curItemInList);
+						this.itemList.appendChild(curListItem);
 						com.synckolab.tools.scrollToBottom(this.itemList);
 					}
 
 				} else {
 					// create a new item in the itemList for display
-					this.curItemInList = this.doc.createElement("listitem");
-					this.curItemInListId = this.doc.createElement("listcell");
-					this.curItemInListStatus = this.doc.createElement("listcell");
-					this.curItemInListContent = this.doc.createElement("listcell");
+					this.curItemInList = this.doc.createElement("treerow");
+					this.curItemInListId = this.doc.createElement("treecell");
+					this.curItemInListStatus = this.doc.createElement("treecell");
+					this.curItemInListContent = this.doc.createElement("treecell");
 					this.curItemInListId.setAttribute("label", cur.id);
 					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("addToServer"));
 					this.curItemInListContent.setAttribute("label", cur.title);
-
+					
 					this.curItemInList.appendChild(this.curItemInListId);
 					this.curItemInList.appendChild(this.curItemInListStatus);
 					this.curItemInList.appendChild(this.curItemInListContent);
-
-					if (this.itemList) {
-						this.itemList.appendChild(this.curItemInList);
+					
+					if (this.itemList)
+					{
+						curListItem = this.doc.createElement("treeitem");
+						curListItem.appendChild(this.curItemInList);
+						this.itemList.appendChild(curListItem);
 						com.synckolab.tools.scrollToBottom(this.itemList);
 					}
 				}
