@@ -36,6 +36,7 @@ if(!com.synckolab) com.synckolab={};
 //synckolab interface
 com.synckolab.main = {
 	timer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
+	backgroundTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
 	/************************
 	 * Global Variables
 	 */
@@ -58,12 +59,12 @@ com.synckolab.main = {
  * runs periodically and checks if there is anything to do
  */
 com.synckolab.main.syncKolabTimer = function () {
-/*@deprecated: listener works better
-	com.synckolab.tools.logMessage("sync timer: check configuration", com.synckolab.global.LOG_DEBUG);
-	var i;
-	
-	// check and load config
+	com.synckolab.tools.logMessage("sync timer starting", com.synckolab.global.LOG_DEBUG);
 	com.synckolab.config.readConfiguration();
+	
+	/*@deprecated: listener works better
+	var i;
+	// check and load config
 		
 	// only continue timer if nothing is running right now and if we have any configs!
 	if (com.synckolab.main.forceConfig === null && com.synckolab.main.syncConfigs)
@@ -109,11 +110,13 @@ com.synckolab.main.syncKolabTimer = function () {
 		for(var j = 0; j < com.synckolab.main.syncConfigs.length; j++) {
 			if(com.synckolab.main.syncConfigs[j]) {
 				var curConfig = com.synckolab.main.syncConfigs[j];
+				com.synckolab.tools.logMessage("sync timer: checking config " + curConfig.name, com.synckolab.global.LOG_DEBUG);
+
 				if(curConfig.syncListener && curConfig.folder)
 				{
 					com.synckolab.tools.logMessage("refreshing " + curConfig.folderMsgURI + "...", com.synckolab.global.LOG_DEBUG);
 					try {
-						curConfig.folder.updateFolder();
+						curConfig.folder.updateFolder(null);
 					} catch (ex) {
 						com.synckolab.tools.logMessage("unable to refresh " + curConfig.folderMsgURI + ": " + ex, com.synckolab.global.LOG_WARNING);
 					}
@@ -123,8 +126,14 @@ com.synckolab.main.syncKolabTimer = function () {
 	}
 	
 	// wait a minute
-	com.synckolab.tools.logMessage("sync timer: sleep for one minute", com.synckolab.global.LOG_DEBUG);
-	com.synckolab.main.timer.initWithCallback({notify:function (){com.synckolab.main.syncKolabTimer();}}, 60000, 0);
+	com.synckolab.tools.logMessage("sync timer: sleep for 30s minute", com.synckolab.global.LOG_INFO);
+	
+	com.synckolab.main.backgroundTimer.initWithCallback({
+		notify:
+			function () {
+			com.synckolab.main.syncKolabTimer();
+		}
+	}, 30000, 0);
 };
 
 com.synckolab.main.initGroupwareActions = function() {
