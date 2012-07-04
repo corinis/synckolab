@@ -1,6 +1,18 @@
 SyncKolab 2.0.2
 ===============
-
+* #24933 hide folders does not work
+* Remove periodic sync option (this is deprecated by the listener)
+* Add close-window-when-done option to configuration dialog
+* #24934 message date checking on contacts removed
+* #24938 fix for window to small
+* #24936 fix problem with list sync
+* #24954 Fix problem with auto sync
+* #24957 fix problem with list names with spaces
+* Fix problems with name in the uid (i.e. for mailing lists or irregular clients)
+* #24959 Fix problem with multiple accounts
+* #24967Add utf-8 en-/decoding when writing the sync cache files
+* #24986: Make status columns resizable
+* #24960: fix monthly recurrence rules
 
 SyncKolab 2.0.1
 ===============
