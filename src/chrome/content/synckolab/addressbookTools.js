@@ -1048,8 +1048,10 @@ com.synckolab.addressbookTools.list2Vcard = function (card, fields) {
 	// Date: Fri, 17 Dec 2004 15:06:42 +0100
 	var cdate = new Date(this.getCardProperty(card, "LastModifiedDate") * 1000);
 	var sTime = (cdate.getHours() < 10 ? "0" : "") + cdate.getHours() + ":" + (cdate.getMinutes() < 10 ? "0" : "") + cdate.getMinutes() + ":" + (cdate.getSeconds() < 10 ? "0" : "") + cdate.getSeconds();
-	var sdate = "DATE: " + com.synckolab.tools.text.getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " + com.synckolab.tools.text.getMonthString(cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime + " " + (((cdate.getTimezoneOffset() / 60) < 0) ? "-" : "+")
-			+ (((cdate.getTimezoneOffset() / 60) < 10) ? "0" : "") + cdate.getTimezoneOffset() + "\n";
+	var sdate = "DATE: " + com.synckolab.tools.text.getDayString(cdate.getDay()) + ", " + 
+		cdate.getDate() + " " + com.synckolab.tools.text.getMonthString(cdate.getMonth()) + " " + 
+		cdate.getFullYear() + " " + sTime + " " + (((cdate.getTimezoneOffset() / 60) < 0) ? "-" : "+") + 
+		(((cdate.getTimezoneOffset() / 60) < 10) ? "0" : "") + cdate.getTimezoneOffset() + "\n";
 
 	var msg = "BEGIN:VCARD\n";
 
@@ -2059,12 +2061,32 @@ com.synckolab.addressbookTools.message2Card = function (lines, card, startI, end
 			found = true;
 			break;
 		case "BDAY":
-			// BDAY:1987-09-27T08:30:00-06:00
-			cur = tok[1].split("-");
-			this.setCardProperty(card, "BirthYear", cur[0]);
-			this.setCardProperty(card, "BirthMonth", cur[1]);
-			this.setCardProperty(card, "BirthDay", (cur[2].indexOf("T") !== -1) ? cur[2].substring(0, cur[2].indexOf("T")) : cur[2]);
-			found = true;
+			if(tok[1].indexOf("-") !== -1) {
+				// BDAY:1987-09-27T08:30:00-06:00
+				cur = tok[1].split("-");
+				this.setCardProperty(card, "BirthYear", cur[0]);
+				this.setCardProperty(card, "BirthMonth", cur[1]);
+				this.setCardProperty(card, "BirthDay", (cur[2].indexOf("T") !== -1) ? cur[2].substring(0, cur[2].indexOf("T")) : cur[2]);
+				found = true;
+			} else if(tok[1].length === 8){
+				// BDAY:YYYYMMDD
+				this.setCardProperty(card, "BirthYear", tok[1].substring(0, 4));
+				this.setCardProperty(card, "BirthMonth", tok[1].substring(4, 6));
+				this.setCardProperty(card, "BirthDay", tok[1].substring(6));
+				found = true;
+			} else if(tok[1].length === 6){
+				// BDAY:YYMMDD
+				var yy = tok[1].substring(0, 2);
+				if(Number(yy) > 50) {
+					yy = "19" + yy;
+				} else {
+					yy = "20" + yy;
+				}
+				this.setCardProperty(card, "BirthYear", yy);
+				this.setCardProperty(card, "BirthMonth", tok[1].substring(2, 4));
+				this.setCardProperty(card, "BirthDay", tok[1].substring(4));
+				found = true;
+			}
 			break;
 		case "ANNIVERSARY":
 			// This is not a standard vCard entry.
