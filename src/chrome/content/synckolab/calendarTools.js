@@ -829,7 +829,9 @@ com.synckolab.calendarTools.json2event = function (jobj, calendar) {
 	event.id = jobj.uid;
 	this.setKolabItemProperty(event, "title", jobj.title);
 	this.setKolabItemProperty(event, "DESCRIPTION", jobj.body);
-	this.setKolabItemProperty(event, "CLASS", jobj.sensitivity.toUpperCase());
+	if(jobj.sensitivity) {
+		this.setKolabItemProperty(event, "CLASS", jobj.sensitivity.toUpperCase());
+	}
 	
 	if(jobj.location) {
 		this.setKolabItemProperty(event, "LOCATION", jobj.location);
