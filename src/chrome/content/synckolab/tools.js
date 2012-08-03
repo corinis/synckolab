@@ -483,7 +483,7 @@ stripMailHeader: function (skcontent) {
 		}
 	}
 	
-	// content might still be quotted printable... doublecheck
+	// content might still be quoted printable... doublecheck
 	// check if we have to decode quoted printable
 	if (skcontent.indexOf(" version=3D") !== -1 || skcontent.indexOf("TZID=3D")) // we know from the version (or in case of citadel from the tzid)
 	{

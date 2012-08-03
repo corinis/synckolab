@@ -185,9 +185,9 @@ com.synckolab.Calendar = {
 						calComp.addSubcomponent(cur.icalComponent);
 
 						if (cConfig.type === "task") {
-							msg = com.synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
+							msg = com.synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
 						} else {
-							msg = com.synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
+							msg = com.synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
 						}
 					}
 
@@ -252,9 +252,9 @@ com.synckolab.Calendar = {
 						calComp.addSubcomponent(cur.icalComponent);
 
 						if (cConfig.type === "task") {
-							msg = com.synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
+							msg = com.synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
 						} else {
-							msg = com.synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
+							msg = com.synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
 						}
 					}
 					
@@ -815,9 +815,9 @@ com.synckolab.Calendar = {
 						calComp.addSubcomponent(tmpEventObj.icalComponent);
 
 						if (this.gConfig.type === "task") {
-							msg = com.synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
+							msg = com.synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
 						} else {
-							msg = com.synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
+							msg = com.synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
 						}
 					}
 
@@ -904,9 +904,9 @@ com.synckolab.Calendar = {
 					calComp.addSubcomponent(tmpEventObj.icalComponent);
 
 					if (this.gConfig.type === "task") {
-						msg = com.synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
+						msg = com.synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
 					} else {
-						msg = com.synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
+						msg = com.synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
 					}
 				}
 				
@@ -1066,9 +1066,9 @@ com.synckolab.Calendar = {
 					calComp.addSubcomponent(cur.icalComponent);
 
 					if (this.gConfig.type === "task") {
-						msg = com.synckolab.tools.generateMail(cur.id, this.gConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
+						msg = com.synckolab.tools.generateMail(cur.id, this.gConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
 					} else {
-						msg = com.synckolab.tools.generateMail(cur.id, this.gConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.utf8.encode(calComp.serializeToICS()), null);
+						msg = com.synckolab.tools.generateMail(cur.id, this.gConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
 					}
 				}
 

@@ -63,8 +63,8 @@ com.synckolab.calendarTools = {
 				var homeCalendar = this.activeCalendarManager.createCalendar("storage", makeURL("moz-profile-calendar://"));
 				this.activeCalendarManager.registerCalendar(homeCalendar);
 
-				var sbs = Components.classes["@mozilla.org/intl/stringbundle;1"]
-				.getService(Components.interfaces.nsIStringBundleService);
+				var sbs = Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService);
+				
 				var props = sbs.createBundle("chrome://calendar/locale/calendar.properties");
 				homeCalendar.name = props.GetStringFromName("homeCalendarName");
 
@@ -378,7 +378,13 @@ com.synckolab.calendarTools.message2json = function (fileContent, syncTasks) {
 
 	// for ical - use the way through the lightning decoder to json
 	var parsedEvent = null;
-	fileContent = com.synckolab.tools.text.utf8.decode(com.synckolab.tools.text.quoted.decode(fileContent));
+	if(fileContent.indexof("=3D") !== -1) {
+		fileContent = com.synckolab.tools.text.quoted.decode(fileContent);
+	}
+	// sepcial fix for Europe bug
+	if (fileContent.indexOf("TZIDID=rope")) {
+		fileContent = fileContent.replace(/TZID=rope/g,"TZID=Europe");
+	}
 	// this.format === 'iCal'
 	parsedEvent = this.ical2event(fileContent, syncTasks);
 
