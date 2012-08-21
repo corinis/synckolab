@@ -384,7 +384,7 @@ com.synckolab.calendarTools.message2json = function (fileContent, syncTasks) {
 
 	// for ical - use the way through the lightning decoder to json
 	var parsedEvent = null;
-	if(fileContent.indexof("=3D") !== -1) {
+	if(fileContent.indexOf("=3D") !== -1) {
 		fileContent = com.synckolab.tools.text.quoted.decode(fileContent);
 	}
 	// sepcial fix for Europe bug
