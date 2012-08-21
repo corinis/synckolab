@@ -371,6 +371,12 @@ com.synckolab.calendarTools.message2json = function (fileContent, syncTasks) {
 		return fileContent;
 	}
 
+	// fileContent should be a string - with indexOf
+	if(!fileContent.indexOf) {
+		com.synckolab.tools.logMessage("Unknown fileContent: " + fileContent.toSource(), com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_WARNING);
+		return null;
+	}
+	
 	if (fileContent.indexOf("<?xml") !== -1 || fileContent.indexOf("<?XML") !== -1)
 	{
 		return this.xml2json(fileContent, syncTasks);
