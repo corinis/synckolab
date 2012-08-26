@@ -73,9 +73,10 @@ com.synckolab.tools.text = {
 	 * remove possible problematic chars from a name
 	 */
 	fixNameToMiniCharset : function (name) {
-		if(!name) {
+		if (typeof name === 'undefined' || !name.length) {
 			com.synckolab.global.consoleService.logStringMessage("undefined string " + new Error("s").stack);
 		}
+		
 		var ret = "";
 		// avoid double placeholders 
 		var placeHolder = false;
