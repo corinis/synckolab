@@ -9,11 +9,10 @@
  */
 "use strict";
 
-if(!com) var com={};
-if(!com.synckolab) com.synckolab={};
-if(!com.synckolab.tools) {com.synckolab.tools={};}
+if(!synckolab) var synckolab={};
+if(!synckolab.tools) {synckolab.tools={};}
 
-com.synckolab.tools.sha1 = {
+synckolab.tools.sha1 = {
 	/*
 	 * Configurable variables. You may need to tweak these to be compatible with
 	 * the server-side, but the defaults work in most cases.

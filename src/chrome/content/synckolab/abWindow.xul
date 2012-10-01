@@ -44,14 +44,14 @@
 		
 	<menupopup id="taskPopup">
 		<menuseparator/>
-		<menuitem id="SyncKolab-Sync" oncommand="com.synckolab.main.sync('manual');" label="&synckolab.syncMenu.label;"/>
+		<menuitem id="SyncKolab-Sync" oncommand="synckolab.main.sync('manual');" label="&synckolab.syncMenu.label;"/>
 		<menuitem id="SyncKolab-Options" 
 			oncommand="window.openDialog('chrome://synckolab/content/wndConfig.xul', 'options', 'chrome=yes,resizable=yes,modal=yes');"
 			label="&synckolab.optionMenu.label;"/>
 	</menupopup>
 
 	<toolbarpalette id="AddressBookToolbarPalette">
-		<toolbarbutton id="SyncKolab-button-ab" oncommand="com.synckolab.main.sync('manual');" class="toolbarbutton-1" label="&synckolab.sync.label;"/>
+		<toolbarbutton id="SyncKolab-button-ab" oncommand="synckolab.main.sync('manual');" class="toolbarbutton-1" label="&synckolab.sync.label;"/>
 	</toolbarpalette>
 
 </overlay>

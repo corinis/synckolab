@@ -30,10 +30,9 @@
  * 
  ***** END LICENSE BLOCK ***** */
 "use strict";
-if(!com) var com={};
-if(!com.synckolab) com.synckolab={};
+if(!synckolab) var synckolab={};
 
-com.synckolab.contactConflict = {
+synckolab.contactConflict = {
 
 	localCard:null,
 	serverCard: null,
@@ -61,12 +60,12 @@ com.synckolab.contactConflict = {
 		} else {
 			//Updating both copies with new values
 			for ( i=0 ; i < this.conflictsArray.length ; i++ ) {
-				var serverValue = com.synckolab.addressbookTools.getCardProperty(this.serverCard, this.conflictsArray[i]);
-				var localValue = com.synckolab.addressbookTools.getCardProperty(this.localCard, this.conflictsArray[i]);
+				var serverValue = synckolab.addressbookTools.getCardProperty(this.serverCard, this.conflictsArray[i]);
+				var localValue = synckolab.addressbookTools.getCardProperty(this.localCard, this.conflictsArray[i]);
 				if (document.getElementById(this.conflictsArray[i]).selectedIndex === 0) {
-					com.synckolab.addressbookTools.setCardProperty(this.localCard, this.conflictsArray[i], serverValue);
+					synckolab.addressbookTools.setCardProperty(this.localCard, this.conflictsArray[i], serverValue);
 				} else {
-					com.synckolab.addressbookTools.setCardProperty(this.serverCard, this.conflictsArray[i], localValue);
+					synckolab.addressbookTools.setCardProperty(this.serverCard, this.conflictsArray[i], localValue);
 				}
 			}
 			this.conflictResolution.result = 3;
@@ -88,7 +87,7 @@ com.synckolab.contactConflict = {
 				document.getElementById(this.conflictsArray[i]).selectedIndex = 0;
 			}
 			else {
-				com.synckolab.tools.logMessage("unable to find element for conflict " + this.conflictsArray[i], com.synckolab.global.LOG_ERROR + com.synckolab.global.LOG_AB);
+				synckolab.tools.logMessage("unable to find element for conflict " + this.conflictsArray[i], synckolab.global.LOG_ERROR + synckolab.global.LOG_AB);
 			}
 		}
 		return false;
@@ -113,18 +112,18 @@ com.synckolab.contactConflict = {
 		this.localCard = window.arguments[3];
 			
 		//Show static elements for the following so that we always know who's record we are looking at	
-		document.getElementById("firstNameStatic").value = com.synckolab.addressbookTools.getCardProperty(this.localCard, 'FirstName');
-		document.getElementById("lastNameStatic").value = com.synckolab.addressbookTools.getCardProperty(this.localCard, 'LastName');
-		document.getElementById("displayNameStatic").value = com.synckolab.addressbookTools.getCardProperty(this.localCard, 'DisplayName');
-		document.getElementById("nickNameStatic").value = com.synckolab.addressbookTools.getCardProperty(this.localCard, 'NickName');
+		document.getElementById("firstNameStatic").value = synckolab.addressbookTools.getCardProperty(this.localCard, 'FirstName');
+		document.getElementById("lastNameStatic").value = synckolab.addressbookTools.getCardProperty(this.localCard, 'LastName');
+		document.getElementById("displayNameStatic").value = synckolab.addressbookTools.getCardProperty(this.localCard, 'DisplayName');
+		document.getElementById("nickNameStatic").value = synckolab.addressbookTools.getCardProperty(this.localCard, 'NickName');
 		
 		var serverValue;
 		var localValue;
 		
 		//Loop through the conflicted fields, set their current values, unhide from the dialog
 		for (var i=0 ; i < this.conflictsArray.length ; i++ ) {
-			serverValue = com.synckolab.addressbookTools.getCardProperty(this.serverCard, this.conflictsArray[i]);
-			localValue = com.synckolab.addressbookTools.getCardProperty(this.localCard, this.conflictsArray[i]);
+			serverValue = synckolab.addressbookTools.getCardProperty(this.serverCard, this.conflictsArray[i]);
+			localValue = synckolab.addressbookTools.getCardProperty(this.localCard, this.conflictsArray[i]);
 			
 			if (serverValue === 0 || serverValue === null || serverValue === "0" || serverValue === "null")
 				serverValue = "";

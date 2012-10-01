@@ -45,12 +45,10 @@
  */
 "use strict";
 
-if (!com)
-	var com = {};
-if (!com.synckolab)
-	com.synckolab = {};
+if (!synckolab)
+	var synckolab = {};
 
-com.synckolab.Calendar = {
+synckolab.Calendar = {
 
 	gConfig : null, // remember the configuration name
 	gCurUID : '', // save the last checked uid - for external use
@@ -77,18 +75,18 @@ com.synckolab.Calendar = {
 	 * @param pref a nsIPrefBranch for reading of the configuration
 	 */
 	readConfig: function(config, pref) {
-		if (!com.synckolab.calendarTools.isCalendarAvailable() || !config.enabled) {
+		if (!synckolab.calendarTools.isCalendarAvailable() || !config.enabled) {
 			return;
 		}
 		
 		// uid -> filename database - main functions needs to know the name
 		// the current sync database filen (a file with uid:size:date:localfile)
-		config.dbFile = com.synckolab.tools.file.getHashDataBaseFile(config);
+		config.dbFile = synckolab.tools.file.getHashDataBaseFile(config);
 			
 		// get the correct calendar instance
-		var calendars = com.synckolab.calendarTools.getCalendars();
+		var calendars = synckolab.calendarTools.getCalendars();
 		for ( var i = 0; i < calendars.length; i++) {
-			if (calendars[i].name === config.source || com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name) === com.synckolab.tools.text.fixNameToMiniCharset(config.source)) {
+			if (calendars[i].name === config.source || synckolab.tools.text.fixNameToMiniCharset(calendars[i].name) === synckolab.tools.text.fixNameToMiniCharset(config.source)) {
 				config.calendar = calendars[i];
 				break;
 			}
@@ -97,7 +95,7 @@ com.synckolab.Calendar = {
 		// check if we want to add an observer to this calendar 
 		if(config.calendar && config.syncListener) {
 			//add an calIObserver http://doxygen.db48x.net/mozilla-full/html/de/d2d/interfacecalIObserver.html
-			com.synckolab.calendarTools.registerListener(config.calendar, {
+			synckolab.calendarTools.registerListener(config.calendar, {
 				onStartBatch: function() {},
 				onEndBatch: function() {},
 				onLoad: function() {},
@@ -110,15 +108,15 @@ com.synckolab.Calendar = {
 				 */
 				getConfig: function(name, isCal) {
 					// search through the configs  
-					for(var j = 0; j < com.synckolab.main.syncConfigs.length; j++) {
-						if(com.synckolab.main.syncConfigs[j] && 
-								(isCal && com.synckolab.main.syncConfigs[j].type === "calendar") ||
-								(!isCal && com.synckolab.main.syncConfigs[j].type === "task")) {
-							var curConfig = com.synckolab.main.syncConfigs[j];
-							//com.synckolab.tools.logMessage("checking " + curConfig.contact.folderMsgURI + " vs. " + folder, com.synckolab.global.LOG_DEBUG);
+					for(var j = 0; j < synckolab.main.syncConfigs.length; j++) {
+						if(synckolab.main.syncConfigs[j] && 
+								(isCal && synckolab.main.syncConfigs[j].type === "calendar") ||
+								(!isCal && synckolab.main.syncConfigs[j].type === "task")) {
+							var curConfig = synckolab.main.syncConfigs[j];
+							//synckolab.tools.logMessage("checking " + curConfig.contact.folderMsgURI + " vs. " + folder, synckolab.global.LOG_DEBUG);
 
 							if(curConfig.enabled && curConfig.syncListener) {
-								if(curConfig.source === name || com.synckolab.tools.text.fixNameToMiniCharset(curConfig.source) === com.synckolab.tools.text.fixNameToMiniCharset(name))
+								if(curConfig.source === name || synckolab.tools.text.fixNameToMiniCharset(curConfig.source) === synckolab.tools.text.fixNameToMiniCharset(name))
 								{
 									return curConfig;
 								}
@@ -136,8 +134,8 @@ com.synckolab.Calendar = {
 
 						OnStopRunningUrl: function ( url, exitCode )
 						{	
-							com.synckolab.tools.logMessage("Finished trigger", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
-							com.synckolab.global.triggerRunning = false;
+							synckolab.tools.logMessage("Finished trigger", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
+							synckolab.global.triggerRunning = false;
 						}
 					}, msgWindow);
 				},
@@ -146,18 +144,18 @@ com.synckolab.Calendar = {
 				 */
 				onAddItem: function(cur) {
 					// make sure not to parse messages while a full sync is running
-					if(com.synckolab.global.running || com.synckolab.global.triggerRunning) {
+					if(synckolab.global.running || synckolab.global.triggerRunning) {
 						return;
 					}
 					
-					var cConfig = this.getConfig(cur.calendar.name, com.synckolab.tools.instanceOf(cur, Components.interfaces.calIEvent));
+					var cConfig = this.getConfig(cur.calendar.name, synckolab.tools.instanceOf(cur, Components.interfaces.calIEvent));
 					if(!cConfig) {
 						return;
 					}
 					
-					com.synckolab.tools.logMessage("Calendar listener: added " + cur.id, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_CAL);
+					synckolab.tools.logMessage("Calendar listener: added " + cur.id, synckolab.global.LOG_INFO + synckolab.global.LOG_CAL);
 					
-					var cEntry = com.synckolab.tools.file.getSyncDbFile(cConfig, cur.id);
+					var cEntry = synckolab.tools.file.getSyncDbFile(cConfig, cur.id);
 
 					// skip if we have this one already
 					if (cEntry.exists() && !this.forceServerCopy) {
@@ -165,19 +163,19 @@ com.synckolab.Calendar = {
 					}
 
 					// remember that we just worked with this one
-					if(com.synckolab.config.checkIdProcessed(cConfig, cur.id)) {
-						com.synckolab.tools.logMessage("skipping because recently processed", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+					if(synckolab.config.checkIdProcessed(cConfig, cur.id)) {
+						synckolab.tools.logMessage("skipping because recently processed", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 						return;
 					}
 
-					com.synckolab.tools.logMessage("nextUpdate really writes event:" + cur.id, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+					synckolab.tools.logMessage("nextUpdate really writes event:" + cur.id, synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 					// and now really write the message
 					var msg = null;
 					var clonedEvent = cur;
-					clonedEvent = com.synckolab.calendarTools.event2json(cur, cConfig.type === "task");
+					clonedEvent = synckolab.calendarTools.event2json(cur, cConfig.type === "task");
 
 					if (cConfig.format === "Xml") {
-						msg = com.synckolab.calendarTools.event2kolabXmlMsg(clonedEvent, cConfig.email, cConfig.type === "task");
+						msg = synckolab.calendarTools.event2kolabXmlMsg(clonedEvent, cConfig.email, cConfig.type === "task");
 					} else {
 						var calComp = Components.classes["@mozilla.org/calendar/ics-service;1"].getService(Components.interfaces.calIICSService).createIcalComponent("VCALENDAR");
 						calComp.version = "2.0";
@@ -185,30 +183,30 @@ com.synckolab.Calendar = {
 						calComp.addSubcomponent(cur.icalComponent);
 
 						if (cConfig.type === "task") {
-							msg = com.synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
+							msg = synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/todo", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
 						} else {
-							msg = com.synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
+							msg = synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/calendar", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
 						}
 					}
 
-					com.synckolab.tools.logMessage("New event:\n" + msg, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+					synckolab.tools.logMessage("New event:\n" + msg, synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 
 					// add the new event into the db
-					cEntry = com.synckolab.tools.file.getSyncDbFile(cConfig, cur.id);
-					com.synckolab.tools.writeSyncDBFile(cEntry, clonedEvent);
+					cEntry = synckolab.tools.file.getSyncDbFile(cConfig, cur.id);
+					synckolab.tools.writeSyncDBFile(cEntry, clonedEvent);
 
-					com.synckolab.tools.logMessage("Writing entry to imap" , com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+					synckolab.tools.logMessage("Writing entry to imap" , synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 
-					com.synckolab.global.triggerRunning = true;
+					synckolab.global.triggerRunning = true;
 					var listener = this;
-					com.synckolab.main.writeImapMessage(msg, cConfig, 
+					synckolab.main.writeImapMessage(msg, cConfig, 
 					{
 						OnProgress: function (progress, progressMax) {},
 						OnStartCopy: function () { },
 						SetMessageKey: function (key) {},
 						OnStopCopy: function (status) { 
 							// update folder information from imap and make sure we got everything
-							com.synckolab.tools.logMessage("Finished writing contact entry to imap - compacting", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+							synckolab.tools.logMessage("Finished writing contact entry to imap - compacting", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 							listener.finishMsgfolderChange(cConfig.folder);
 						}
 					});
@@ -219,20 +217,20 @@ com.synckolab.Calendar = {
 				 */
 				onModifyItem: function(cur, aOldItem) {
 					// make sure not to parse messages while a full sync is running
-					if(com.synckolab.global.running || com.synckolab.global.triggerRunning) {
+					if(synckolab.global.running || synckolab.global.triggerRunning) {
 						return;
 					}
 					
-					var cConfig = this.getConfig(cur.calendar.name, com.synckolab.tools.instanceOf(cur, Components.interfaces.calIEvent));
+					var cConfig = this.getConfig(cur.calendar.name, synckolab.tools.instanceOf(cur, Components.interfaces.calIEvent));
 					if(!cConfig) {
 						return;
 					}
 
-					com.synckolab.tools.logMessage("Calendar listener: modified " + aOldItem.id + " with " + cur.id, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_CAL);
+					synckolab.tools.logMessage("Calendar listener: modified " + aOldItem.id + " with " + cur.id, synckolab.global.LOG_INFO + synckolab.global.LOG_CAL);
 
 					// remember that we just worked with this one
-					if(com.synckolab.config.checkIdProcessed(cConfig, cur.id)) {
-						com.synckolab.tools.logMessage("skipping because recently processed", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+					if(synckolab.config.checkIdProcessed(cConfig, cur.id)) {
+						synckolab.tools.logMessage("skipping because recently processed", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 						return;
 					}
 
@@ -241,10 +239,10 @@ com.synckolab.Calendar = {
 					// and now really write the message
 					var msg = null;
 					var clonedEvent = cur;
-					clonedEvent = com.synckolab.calendarTools.event2json(cur, cConfig.type === "task");
+					clonedEvent = synckolab.calendarTools.event2json(cur, cConfig.type === "task");
 
 					if (cConfig.format === "Xml") {
-						msg = com.synckolab.calendarTools.event2kolabXmlMsg(clonedEvent, cConfig.email, cConfig.type === "task");
+						msg = synckolab.calendarTools.event2kolabXmlMsg(clonedEvent, cConfig.email, cConfig.type === "task");
 					} else {
 						var calComp = Components.classes["@mozilla.org/calendar/ics-service;1"].getService(Components.interfaces.calIICSService).createIcalComponent("VCALENDAR");
 						calComp.version = "2.0";
@@ -252,9 +250,9 @@ com.synckolab.Calendar = {
 						calComp.addSubcomponent(cur.icalComponent);
 
 						if (cConfig.type === "task") {
-							msg = com.synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
+							msg = synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/todo", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
 						} else {
-							msg = com.synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
+							msg = synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/calendar", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
 						}
 					}
 					
@@ -264,10 +262,10 @@ com.synckolab.Calendar = {
 					// finally update imap
 					// find the correct message to the given uid
 					if(cConfig.msgList.length() === 0) {
-						com.synckolab.tools.fillMessageLookup(cConfig.msgList, config, com.synckolab.addressbookTools.parseMessageContent);
+						synckolab.tools.fillMessageLookup(cConfig.msgList, config, synckolab.addressbookTools.parseMessageContent);
 					}
 
-					var cEntry = com.synckolab.tools.file.getSyncDbFile(cConfig, cur.id);
+					var cEntry = synckolab.tools.file.getSyncDbFile(cConfig, cur.id);
 
 					// get and delete the message
 					var cmsg = cConfig.msgList.get(cUID);
@@ -275,28 +273,28 @@ com.synckolab.Calendar = {
 						var list = null;
 						// use mutablearray
 						list = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
-						com.synckolab.tools.logMessage("deleting [" + cUID + "]");
+						synckolab.tools.logMessage("deleting [" + cUID + "]");
 						list.appendElement(cmsg, false);	
 						cConfig.folder.deleteMessages(list, msgWindow, true, false, null, true);
 						cEntry.remove(false);
 					}
 					
-					com.synckolab.tools.logMessage("New event:\n" + msg, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+					synckolab.tools.logMessage("New event:\n" + msg, synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 
 					// add the new event into the db
-					com.synckolab.tools.writeSyncDBFile(cEntry, clonedEvent);
+					synckolab.tools.writeSyncDBFile(cEntry, clonedEvent);
 
-					com.synckolab.tools.logMessage("Writing entry to imap" , com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
-					com.synckolab.global.triggerRunning = true;
+					synckolab.tools.logMessage("Writing entry to imap" , synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
+					synckolab.global.triggerRunning = true;
 					var listener = this;
-					com.synckolab.main.writeImapMessage(msg, cConfig, 
+					synckolab.main.writeImapMessage(msg, cConfig, 
 					{
 						OnProgress: function (progress, progressMax) {},
 						OnStartCopy: function () { },
 						SetMessageKey: function (key) {},
 						OnStopCopy: function (status) { 
 							// update folder information from imap and make sure we got everything
-							com.synckolab.tools.logMessage("Finished writing contact entry to imap - compacting", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+							synckolab.tools.logMessage("Finished writing contact entry to imap - compacting", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 							listener.finishMsgfolderChange(cConfig.folder);
 						}
 					});
@@ -306,30 +304,30 @@ com.synckolab.Calendar = {
 				 */
 				onDeleteItem: function(cur) {
 					// make sure not to parse messages while a full sync is running
-					if(com.synckolab.global.running || com.synckolab.global.triggerRunning) {
+					if(synckolab.global.running || synckolab.global.triggerRunning) {
 						return;
 					}
 					
-					var cConfig = this.getConfig(cur.calendar.name, com.synckolab.tools.instanceOf(cur, Components.interfaces.calIEvent));
+					var cConfig = this.getConfig(cur.calendar.name, synckolab.tools.instanceOf(cur, Components.interfaces.calIEvent));
 					if(!cConfig) {
 						return;
 					}
 					
 					var cUID = cur.id;
-					com.synckolab.tools.logMessage("Calendar listener: deleted " + cur.id, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_CAL);
+					synckolab.tools.logMessage("Calendar listener: deleted " + cur.id, synckolab.global.LOG_INFO + synckolab.global.LOG_CAL);
 					
 					// remember that we just worked with this one
-					if(com.synckolab.config.checkIdProcessed(cConfig, cur.id)) {
-						com.synckolab.tools.logMessage("skipping because recently processed", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+					if(synckolab.config.checkIdProcessed(cConfig, cur.id)) {
+						synckolab.tools.logMessage("skipping because recently processed", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 						return;
 					}
 
 					// find the correct message to the given uid
 					if(cConfig.msgList.length() === 0) {
-						com.synckolab.tools.fillMessageLookup(cConfig.msgList, config, com.synckolab.addressbookTools.parseMessageContent);
+						synckolab.tools.fillMessageLookup(cConfig.msgList, config, synckolab.addressbookTools.parseMessageContent);
 					}
 					
-					com.synckolab.global.triggerRunning = true;
+					synckolab.global.triggerRunning = true;
 					
 					// remember that we just added this one
 					cConfig.recentProcessed.push(cur.id);
@@ -340,12 +338,12 @@ com.synckolab.Calendar = {
 						var list = null;
 						// use mutablearray
 						list = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
-						com.synckolab.tools.logMessage("deleting [" + cUID + "]");
+						synckolab.tools.logMessage("deleting [" + cUID + "]");
 						list.appendElement(msg, false);	
 						cConfig.folder.deleteMessages(list, msgWindow, true, false, null, true);
 						
 						// also remove sync db file
-						var idxEntry = com.synckolab.tools.file.getSyncDbFile(cConfig, cUID);
+						var idxEntry = synckolab.tools.file.getSyncDbFile(cConfig, cUID);
 						idxEntry.remove(false);
 					}
 
@@ -363,9 +361,9 @@ com.synckolab.Calendar = {
 	 */
 	init : function (config, itemList, document) {
 		// package shortcuts:
-		com.synckolab.global = com.synckolab.global;
-		this.tools = com.synckolab.tools;
-		this.calTools = com.synckolab.calendarTools;
+		synckolab.global = synckolab.global;
+		this.tools = synckolab.tools;
+		this.calTools = synckolab.calendarTools;
 
 		// ui stuff
 		this.itemList = itemList;
@@ -375,7 +373,7 @@ com.synckolab.Calendar = {
 		// clean out recently processed - we are in manual mode
 		this.gConfig.recentProcessed = [];
 
-		com.synckolab.tools.logMessage("Initialising calendar config: " + this.gConfig.name, com.synckolab.global.LOG_INFO);
+		synckolab.tools.logMessage("Initialising calendar config: " + this.gConfig.name, synckolab.global.LOG_INFO);
 
 		this.forceServerCopy = false;
 		this.forceLocalCopy = false;
@@ -383,7 +381,7 @@ com.synckolab.Calendar = {
 		this.folderMessageUids = []; // the checked uids - for better sync
 
 		// remember all the items we already worked with
-		this.gCalDB = new com.synckolab.hashMap();
+		this.gCalDB = new synckolab.hashMap();
 		
 		// make sure its up-to date: call refresh
 		this.gConfig.calendar.refresh();
@@ -391,7 +389,7 @@ com.synckolab.Calendar = {
 
 	init2 : function (nextFunc, sync) {
 
-		com.synckolab.tools.logMessage("Init2 for " + this.gConfig.type, com.synckolab.global.LOG_DEBUG);
+		synckolab.tools.logMessage("Init2 for " + this.gConfig.type, synckolab.global.LOG_DEBUG);
 		// get ALL the items from calendar - when done call nextfunc
 		this.gEvents.nextFunc = nextFunc;
 		this.gEvents.events = [];
@@ -424,14 +422,14 @@ com.synckolab.Calendar = {
 		sync : '',
 		ready : false,
 		onOperationComplete : function (aCalendar, aStatus, aOperator, aId, aDetail) {
-			com.synckolab.tools.logMessage("operation " + com.synckolab.Calendar.gConfig.type + ": status=" + aStatus + " Op=" + aOperator + " Detail=" + aDetail, com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_CAL);
+			synckolab.tools.logMessage("operation " + synckolab.Calendar.gConfig.type + ": status=" + aStatus + " Op=" + aOperator + " Detail=" + aDetail, synckolab.global.LOG_DEBUG + synckolab.global.LOG_CAL);
 			if (aStatus === 2152333316) {
-				com.synckolab.tools.logMessage(com.synckolab.Calendar.gConfig.type + ": duplicate id - for additem", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_CAL);
+				synckolab.tools.logMessage(synckolab.Calendar.gConfig.type + ": duplicate id - for additem", synckolab.global.LOG_INFO + synckolab.global.LOG_CAL);
 			}
 			this.ready = true;
 		},
 		onGetResult : function (aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {
-			com.synckolab.tools.logMessage("got results: " + aCount + " items", com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_CAL);
+			synckolab.tools.logMessage("got results: " + aCount + " items", synckolab.global.LOG_DEBUG + synckolab.global.LOG_CAL);
 			for ( var i = 0; i < aCount; i++) {
 				this.events.push(aItems[i]);
 			}
@@ -443,25 +441,25 @@ com.synckolab.Calendar = {
 	 */
 	triggerParseAddMessage: function(message) {
 		// make sure not to parse messages while a full sync is running
-		if(com.synckolab.global.running || com.synckolab.global.triggerRunning) {
+		if(synckolab.global.running || synckolab.global.triggerRunning) {
 			return;
 		}
 
 		// parse the content
-		var newEvent = com.synckolab.calendarTools.message2json(message.fileContent, message.config.type === "task");
+		var newEvent = synckolab.calendarTools.message2json(message.fileContent, message.config.type === "task");
 		
 		// get the dbfile from the local disk
 		var cUid = newEvent.uid;
-		var cEntry = com.synckolab.tools.file.getSyncDbFile(message.config, cUid);
+		var cEntry = synckolab.tools.file.getSyncDbFile(message.config, cUid);
 
 		// write the pojo into a file for faster comparison in later sync
-		com.synckolab.tools.writeSyncDBFile(cEntry, newEvent);
+		synckolab.tools.writeSyncDBFile(cEntry, newEvent);
 		
-		com.synckolab.tools.logMessage("event is new, add to calendar: " + cUid, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+		synckolab.tools.logMessage("event is new, add to calendar: " + cUid, synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 
 		// add the new event
 		try {
-			var tmpEventObj = com.synckolab.calendarTools.json2event(newEvent, message.config.calendar);
+			var tmpEventObj = synckolab.calendarTools.json2event(newEvent, message.config.calendar);
 			// update the newEvent timestamp so it wont display a window
 			var lastAckTime = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
 			lastAckTime.jsDate = new Date();
@@ -476,9 +474,9 @@ com.synckolab.Calendar = {
 			
 			message.config.calendar.addItem(tmpEventObj, null);
 			message.config.calendar.refresh();
-			com.synckolab.tools.logMessage("added locally:" + cUid, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_INFO);
+			synckolab.tools.logMessage("added locally:" + cUid, synckolab.global.LOG_CAL + synckolab.global.LOG_INFO);
 		} catch (addEx) {
-			com.synckolab.tools.logMessage("unable to add item:" + cUid + "\n" + addEx, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_ERR);
+			synckolab.tools.logMessage("unable to add item:" + cUid + "\n" + addEx, synckolab.global.LOG_CAL + synckolab.global.LOG_ERR);
 		}
 
 	},
@@ -487,20 +485,20 @@ com.synckolab.Calendar = {
 	 */
 	triggerParseDeleteMessage: function(message) {
 		// make sure not to parse messages while a full sync is running
-		if(com.synckolab.global.running || com.synckolab.global.triggerRunning) {
+		if(synckolab.global.running || synckolab.global.triggerRunning) {
 			return;
 		}
 
-		var messageFields = new com.synckolab.dataBase();
+		var messageFields = new synckolab.dataBase();
 
 		// parse the content
-		var newEvent = com.synckolab.calendarTools.message2json(message.fileContent, message.config.type === "task");
+		var newEvent = synckolab.calendarTools.message2json(message.fileContent, message.config.type === "task");
 		
 		// remember current uid
 		var cUID = newEvent.uid;
 
 		// get the dbfile from the local disk
-		var cEntry = com.synckolab.tools.file.getSyncDbFile(message.config, cUID);
+		var cEntry = synckolab.tools.file.getSyncDbFile(message.config, cUID);
 		
 		// this might actually be a duplicate clean - make sure no second message with that uid exists
 		var filter = 0;
@@ -516,13 +514,13 @@ com.synckolab.Calendar = {
 			eventId: cUID,
 			calObj: message.config.calendar,
 			onOperationComplete : function (aCalendar, aStatus, aOperator, aId, aDetail) {
-				com.synckolab.tools.logMessage("operation " + com.synckolab.Calendar.gConfig.type + ": status=" + aStatus + " Op=" + aOperator + " Detail=" + aDetail, com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_CAL);
+				synckolab.tools.logMessage("operation " + synckolab.Calendar.gConfig.type + ": status=" + aStatus + " Op=" + aOperator + " Detail=" + aDetail, synckolab.global.LOG_DEBUG + synckolab.global.LOG_CAL);
 				if (aStatus === 2152333316) {
-					com.synckolab.tools.logMessage(com.synckolab.Calendar.gConfig.type + ": duplicate id - for additem", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_CAL);
+					synckolab.tools.logMessage(synckolab.Calendar.gConfig.type + ": duplicate id - for additem", synckolab.global.LOG_INFO + synckolab.global.LOG_CAL);
 				}
 			},
 			onGetResult : function (aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {
-				com.synckolab.tools.logMessage("got results: " + aCount + " items - looking for "+ this.eventId, com.synckolab.global.LOG_DEBUG + com.synckolab.global.LOG_CAL);
+				synckolab.tools.logMessage("got results: " + aCount + " items - looking for "+ this.eventId, synckolab.global.LOG_DEBUG + synckolab.global.LOG_CAL);
 				var workItem;
 				for ( var i = 0; i < aCount; i++) {
 					if(aItems[i].id === this.eventId) {
@@ -557,9 +555,9 @@ com.synckolab.Calendar = {
 		for ( var i = 0; i < this.gEvents.events.length; i++) {
 			this.gCalDB.put(this.gEvents.events[i].id, this.gEvents.events[i]);
 		}
-		com.synckolab.tools.logMessage("Indexed " + this.gCalDB.length() + " Entries", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+		synckolab.tools.logMessage("Indexed " + this.gCalDB.length() + " Entries", synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 
-		com.synckolab.tools.logMessage("Getting items for " + this.gConfig.type, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+		synckolab.tools.logMessage("Getting items for " + this.gConfig.type, synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 
 		return true;
 	},
@@ -582,9 +580,9 @@ com.synckolab.Calendar = {
 		this.curItemInListId = this.doc.createElement("treecell");
 		this.curItemInListStatus = this.doc.createElement("treecell");
 		this.curItemInListContent = this.doc.createElement("treecell");
-		this.curItemInListId.setAttribute("label", com.synckolab.global.strBundle.getString("unknown"));
-		this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("parsing"));
-		this.curItemInListContent.setAttribute("label", com.synckolab.global.strBundle.getString("unknown"));
+		this.curItemInListId.setAttribute("label", synckolab.global.strBundle.getString("unknown"));
+		this.curItemInListStatus.setAttribute("label", synckolab.global.strBundle.getString("parsing"));
+		this.curItemInListContent.setAttribute("label", synckolab.global.strBundle.getString("unknown"));
 		
 		this.curItemInList.appendChild(this.curItemInListId);
 		this.curItemInList.appendChild(this.curItemInListStatus);
@@ -595,7 +593,7 @@ com.synckolab.Calendar = {
 			var curListItem = this.doc.createElement("treeitem");
 			curListItem.appendChild(this.curItemInList);
 			this.itemList.appendChild(curListItem);
-			com.synckolab.tools.scrollToBottom(this.itemList);
+			synckolab.tools.scrollToBottom(this.itemList);
 		}
 
 		// parse the content
@@ -603,11 +601,11 @@ com.synckolab.Calendar = {
 
 		// if we didnt get a valid event (emtpy or without uid) - skip
 		if (newEvent === null || !newEvent.uid) {
-			this.curItemInListId.setAttribute("label", com.synckolab.global.strBundle.getString("unparseable"));
+			this.curItemInListId.setAttribute("label", synckolab.global.strBundle.getString("unparseable"));
 			return null;
 		}
 		
-		com.synckolab.tools.logMessage("parsed event (message2Event) \n" + newEvent.toSource(), com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+		synckolab.tools.logMessage("parsed event (message2Event) \n" + newEvent.toSource(), synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 		
 		var tmpEventObj;
 		
@@ -616,7 +614,7 @@ com.synckolab.Calendar = {
 
 		// update list item
 		this.curItemInListId.setAttribute("label", newEvent.uid);
-		this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("checking"));
+		this.curItemInListStatus.setAttribute("label", synckolab.global.strBundle.getString("checking"));
 		var info = newEvent.title;
 		var i;
 		var msg;
@@ -631,8 +629,8 @@ com.synckolab.Calendar = {
 		// check for duplicate events
 		for (i = 0; i < this.folderMessageUids.length; i++) {
 			if (newEvent.uid === this.folderMessageUids[i]) {
-				com.synckolab.tools.logMessage("event is is already parsed.. deleting duplicate: " + newEvent.uid, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_INFO);
-				this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("deleteOnServer"));
+				synckolab.tools.logMessage("event is is already parsed.. deleting duplicate: " + newEvent.uid, synckolab.global.LOG_CAL + synckolab.global.LOG_INFO);
+				this.curItemInListStatus.setAttribute("label", synckolab.global.strBundle.getString("deleteOnServer"));
 				return "DELETEME";
 			}
 		}
@@ -641,26 +639,26 @@ com.synckolab.Calendar = {
 		this.folderMessageUids.push(newEvent.uid);
 
 		// get event from calendar based on the uid - and convert to json
-		foundEvent = com.synckolab.calendarTools.event2json(this.calTools.findEvent(this.gCalDB, newEvent.uid), this.gConfig.type === "task");
+		foundEvent = synckolab.calendarTools.event2json(this.calTools.findEvent(this.gCalDB, newEvent.uid), this.gConfig.type === "task");
 		
-		com.synckolab.tools.logMessage("findevent returned :" + foundEvent + "(" + (foundEvent === null ? 'null' : foundEvent.uid) + ") for " + newEvent.uid + " caching " + this.gCalDB.length() + " events", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+		synckolab.tools.logMessage("findevent returned :" + foundEvent + "(" + (foundEvent === null ? 'null' : foundEvent.uid) + ") for " + newEvent.uid + " caching " + this.gCalDB.length() + " events", synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 
 		// get the dbfile from the local disk
-		var idxEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, newEvent.uid);
+		var idxEntry = synckolab.tools.file.getSyncDbFile(this.gConfig, newEvent.uid);
 		
-		com.synckolab.tools.logMessage("idxEntry:" + idxEntry, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+		synckolab.tools.logMessage("idxEntry:" + idxEntry, synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 
 		// always add if the forceLocalCopy flag is set (happens when you change the configuration)
 		if (foundEvent === null || this.forceLocalCopy) {
 			// a new event
-			com.synckolab.tools.logMessage("a new event, locally unknown:" + newEvent.uid, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+			synckolab.tools.logMessage("a new event, locally unknown:" + newEvent.uid, synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 			if (!idxEntry.exists() || !this.calTools.allowSyncEvent(foundEvent, newEvent, this)) {
 				// write the pojo into a file for faster comparison in later sync
-				com.synckolab.tools.writeSyncDBFile(idxEntry, newEvent);
+				synckolab.tools.writeSyncDBFile(idxEntry, newEvent);
 
-				this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localAdd"));
+				this.curItemInListStatus.setAttribute("label", synckolab.global.strBundle.getString("localAdd"));
 
-				tmpEventObj = com.synckolab.calendarTools.json2event(newEvent, this.gConfig.calendar);
+				tmpEventObj = synckolab.calendarTools.json2event(newEvent, this.gConfig.calendar);
 
 				// update the newEvent timestamp so it wont display a window
 				var lastAckTime = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
@@ -676,20 +674,20 @@ com.synckolab.Calendar = {
 
 				// add the new event
 				try {
-					com.synckolab.tools.logMessage("adding obj with startdate:" + tmpEventObj.startDate, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_INFO);
+					synckolab.tools.logMessage("adding obj with startdate:" + tmpEventObj.startDate, synckolab.global.LOG_CAL + synckolab.global.LOG_INFO);
 					
 					this.gConfig.calendar.addItem(tmpEventObj, this.gEvents);
 					// also add to the hash-database
 					this.gCalDB.put(newEvent.uid, newEvent);
-					com.synckolab.tools.logMessage("added locally:" + newEvent.uid, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_INFO);
+					synckolab.tools.logMessage("added locally:" + newEvent.uid, synckolab.global.LOG_CAL + synckolab.global.LOG_INFO);
 				} catch (addEx) {
-					com.synckolab.tools.logMessage("unable to add item:" + newEvent.uid + "\n" + addEx, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_ERR);
+					synckolab.tools.logMessage("unable to add item:" + newEvent.uid + "\n" + addEx, synckolab.global.LOG_CAL + synckolab.global.LOG_ERR);
 					this.curItemInListStatus.setAttribute("label", "ERROR");
 				}
 			} else {
 				// now this should be deleted, since it was in the db already
-				com.synckolab.tools.logMessage("Delete event on server and in db: " + newEvent.uid, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_INFO);
-				this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("deleteOnServer"));
+				synckolab.tools.logMessage("Delete event on server and in db: " + newEvent.uid, synckolab.global.LOG_CAL + synckolab.global.LOG_INFO);
+				this.curItemInListStatus.setAttribute("label", synckolab.global.strBundle.getString("deleteOnServer"));
 
 				// also remove the local db file since we deleted the contact
 				if (idxEntry.exists()) {
@@ -700,50 +698,50 @@ com.synckolab.Calendar = {
 			}
 		} else {
 			// event exists in local calendar
-			com.synckolab.tools.logMessage("Event exists local: " + newEvent.uid, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+			synckolab.tools.logMessage("Event exists local: " + newEvent.uid, synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 
-			var cEvent = com.synckolab.tools.readSyncDBFile(idxEntry);
+			var cEvent = synckolab.tools.readSyncDBFile(idxEntry);
 			
 			var cEvent_equals_foundEvent, cEvent_equals_newEvent, foundEvent_equals_newEvent;
 			if(cEvent === null) {
-				com.synckolab.tools.logMessage("cEvent is null!", com.synckolab.global.LOG_DEBUG);
+				synckolab.tools.logMessage("cEvent is null!", synckolab.global.LOG_DEBUG);
 			}
 			if(foundEvent === null) {
-				com.synckolab.tools.logMessage("foundEvent is null!", com.synckolab.global.LOG_DEBUG);
+				synckolab.tools.logMessage("foundEvent is null!", synckolab.global.LOG_DEBUG);
 			}
 			if(newEvent === null) {
-				com.synckolab.tools.logMessage("newEvent is null!", com.synckolab.global.LOG_DEBUG);
+				synckolab.tools.logMessage("newEvent is null!", synckolab.global.LOG_DEBUG);
 			}
 			// Streamline card comparisons
-			if (com.synckolab.calendarTools.equalsEvent(cEvent, foundEvent)) {
+			if (synckolab.calendarTools.equalsEvent(cEvent, foundEvent)) {
 				cEvent_equals_foundEvent = true;
-				com.synckolab.tools.logMessage("In parse Message cEvent equals foundEvent", com.synckolab.global.LOG_DEBUG);
+				synckolab.tools.logMessage("In parse Message cEvent equals foundEvent", synckolab.global.LOG_DEBUG);
 			} else {
 				cEvent_equals_foundEvent = false;
-				com.synckolab.tools.logMessage("In parse Message cEvent DOES NOT EQUALS foundEvent\n ", com.synckolab.global.LOG_DEBUG);
+				synckolab.tools.logMessage("In parse Message cEvent DOES NOT EQUALS foundEvent\n ", synckolab.global.LOG_DEBUG);
 			}
 			
-			if (com.synckolab.calendarTools.equalsEvent(cEvent, newEvent)) {
+			if (synckolab.calendarTools.equalsEvent(cEvent, newEvent)) {
 				cEvent_equals_newEvent = true;
-				com.synckolab.tools.logMessage("In parse Message cEvent equals newEvent", com.synckolab.global.LOG_DEBUG);
+				synckolab.tools.logMessage("In parse Message cEvent equals newEvent", synckolab.global.LOG_DEBUG);
 			} else {
 				cEvent_equals_newEvent = false;
-				com.synckolab.tools.logMessage("In parse Message cEvent DOES NOT equal newEvent", com.synckolab.global.LOG_DEBUG);
+				synckolab.tools.logMessage("In parse Message cEvent DOES NOT equal newEvent", synckolab.global.LOG_DEBUG);
 			}
 
-			if (com.synckolab.calendarTools.equalsEvent(foundEvent, newEvent)) {
+			if (synckolab.calendarTools.equalsEvent(foundEvent, newEvent)) {
 				foundEvent_equals_newEvent = true;
-				com.synckolab.tools.logMessage("In parse Message foundEvent equals newEvent", com.synckolab.global.LOG_DEBUG);
+				synckolab.tools.logMessage("In parse Message foundEvent equals newEvent", synckolab.global.LOG_DEBUG);
 			} else {
 				foundEvent_equals_newEvent = false;
-				com.synckolab.tools.logMessage("In parse Message foundEvent DOES NOT equal newEvent", com.synckolab.global.LOG_DEBUG);
+				synckolab.tools.logMessage("In parse Message foundEvent DOES NOT equal newEvent", synckolab.global.LOG_DEBUG);
 			}
 
 			// change for conflict
 			if ((idxEntry.exists() && !cEvent_equals_foundEvent && !cEvent_equals_newEvent) || (!idxEntry.exists() && !foundEvent_equals_newEvent))
 			{
 				// changed locally and on server side
-				com.synckolab.tools.logMessage("Changed on server and local: " + newEvent.uid, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+				synckolab.tools.logMessage("Changed on server and local: " + newEvent.uid, synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 
 				//Holds the users response, must be an object so that we can pass by reference
 				var conflictResolution = {};
@@ -756,7 +754,7 @@ com.synckolab.Calendar = {
 					conflictResolution.result = 2;
 				} else
 				// display a dialog asking for whats going on
-				if (window.confirm(com.synckolab.global.strBundle.getFormattedString("calConflictUseServer", [ foundEvent.title, foundEvent.uid, newEvent.title, newEvent.uid ]))) {
+				if (window.confirm(synckolab.global.strBundle.getFormattedString("calConflictUseServer", [ foundEvent.title, foundEvent.uid, newEvent.title, newEvent.uid ]))) {
 					conflictResolution.result = 1;
 				} else {
 					conflictResolution.result = 2;
@@ -764,13 +762,13 @@ com.synckolab.Calendar = {
 				
 				if (conflictResolution.result === 1) {
 					// take event from server
-					com.synckolab.tools.logMessage("Take event from server: " + newEvent.uid, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_INFO);
+					synckolab.tools.logMessage("Take event from server: " + newEvent.uid, synckolab.global.LOG_CAL + synckolab.global.LOG_INFO);
 
-					com.synckolab.tools.writeSyncDBFile(idxEntry, newEvent);
+					synckolab.tools.writeSyncDBFile(idxEntry, newEvent);
 
 					for (i = 0; i < this.gEvents.events.length; i++) {
 						if (this.gEvents.events[i].id === newEvent.uid) {
-							tmpEventObj = com.synckolab.calendarTools.json2event(newEvent, this.gConfig.calendar);
+							tmpEventObj = synckolab.calendarTools.json2event(newEvent, this.gConfig.calendar);
 							// set the calendar
 							tmpEventObj.calendar = this.gConfig.calendar;
 
@@ -784,17 +782,17 @@ com.synckolab.Calendar = {
 								// because they will break the sync process
 								this.gConfig.calendar.modifyItem(tmpEventObj, this.gEvents.events[i], this.gEvents);
 							} catch (e) {
-								com.synckolab.tools.logMessage("gCalendar.modifyItem() failed: " + e, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_WARNING);
+								synckolab.tools.logMessage("gCalendar.modifyItem() failed: " + e, synckolab.global.LOG_CAL + synckolab.global.LOG_WARNING);
 							}
 
 							//update list item
-							this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localUpdate"));
+							this.curItemInListStatus.setAttribute("label", synckolab.global.strBundle.getString("localUpdate"));
 							return null;
 						}
 					}
 				} else {
 					// local change to server
-					com.synckolab.tools.logMessage("put event on server: " + newEvent.uid, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_INFO);
+					synckolab.tools.logMessage("put event on server: " + newEvent.uid, synckolab.global.LOG_CAL + synckolab.global.LOG_INFO);
 
 					// first check privacy info
 					//foundEvent = this.calTools.checkEventOnDeletion(foundEvent, newEvent, this);
@@ -807,7 +805,7 @@ com.synckolab.Calendar = {
 					if (this.gConfig.format === "Xml") {
 						msg = this.calTools.event2kolabXmlMsg(foundEvent, this.gConfig.email, this.gConfig.type === "task");
 					} else {
-						tmpEventObj = com.synckolab.calendarTools.json2event(newEvent);
+						tmpEventObj = synckolab.calendarTools.json2event(newEvent);
 
 						calComp = Components.classes["@mozilla.org/calendar/ics-service;1"].getService(Components.interfaces.calIICSService).createIcalComponent("VCALENDAR");
 						calComp.version = "2.0";
@@ -815,16 +813,16 @@ com.synckolab.Calendar = {
 						calComp.addSubcomponent(tmpEventObj.icalComponent);
 
 						if (this.gConfig.type === "task") {
-							msg = com.synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
+							msg = synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/todo", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
 						} else {
-							msg = com.synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
+							msg = synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/calendar", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
 						}
 					}
 
-					com.synckolab.tools.writeSyncDBFile(idxEntry, foundEvent);
+					synckolab.tools.writeSyncDBFile(idxEntry, foundEvent);
 
 					// update list item
-					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("updateOnServer"));
+					this.curItemInListStatus.setAttribute("label", synckolab.global.strBundle.getString("updateOnServer"));
 
 					// remember this message for update
 					return msg;
@@ -834,69 +832,69 @@ com.synckolab.Calendar = {
 			if (!idxEntry.exists() || (cEvent_equals_foundEvent && !cEvent_equals_newEvent))
 			{
 				if (!idxEntry.exists()) {
-					com.synckolab.tools.logMessage("In parse Message idxEntry does not exist", com.synckolab.global.LOG_DEBUG);
+					synckolab.tools.logMessage("In parse Message idxEntry does not exist", synckolab.global.LOG_DEBUG);
 				}
 
 				if(foundEvent_equals_newEvent){
-					com.synckolab.tools.logMessage("no change, but sync file missing: " + foundEvent.uid, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+					synckolab.tools.logMessage("no change, but sync file missing: " + foundEvent.uid, synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 				} else {
-					com.synckolab.tools.logMessage("server changed: " + foundEvent.uid, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+					synckolab.tools.logMessage("server changed: " + foundEvent.uid, synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 				}
 				
 				// server changed - update local
 				for (i = 0; i < this.gEvents.events.length; i++) {
 					if (this.gEvents.events[i].id === newEvent.uid) {
-						tmpEventObj = com.synckolab.calendarTools.json2event(newEvent, this.gConfig.calendar);
+						tmpEventObj = synckolab.calendarTools.json2event(newEvent, this.gConfig.calendar);
 
 						// if we change a local event make sure to set alarmLastAck
 						if (this.gEvents.events[i].alarmLastAck) {
 							tmpEventObj.alarmLastAck = this.gEvents.events[i].alarmLastAck.clone();
 						}
 
-						com.synckolab.tools.logMessage("start modify item", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+						synckolab.tools.logMessage("start modify item", synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 
 						try {
 							// modify the item - catch exceptions due to triggered alarms
 							// because they will break the sync process								
 							this.gConfig.calendar.modifyItem(tmpEventObj, this.gEvents.events[i], this.gEvents);
 						} catch (e1) {
-							com.synckolab.tools.logMessage("gCalendar.modifyItem() failed: " + e1, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_WARNING);
+							synckolab.tools.logMessage("gCalendar.modifyItem() failed: " + e1, synckolab.global.LOG_CAL + synckolab.global.LOG_WARNING);
 						}
 
-						com.synckolab.tools.logMessage("event modified", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+						synckolab.tools.logMessage("event modified", synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 						break;
 					}
 				}
 
 				
-				com.synckolab.tools.logMessage("write sync db " + foundEvent.uid, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+				synckolab.tools.logMessage("write sync db " + foundEvent.uid, synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 				
 				// write the current content in the sync-db file
-				com.synckolab.tools.writeSyncDBFile(idxEntry, newEvent);
+				synckolab.tools.writeSyncDBFile(idxEntry, newEvent);
 				
 				// update list item
 				if(foundEvent_equals_newEvent){
-					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("noChange"));
+					this.curItemInListStatus.setAttribute("label", synckolab.global.strBundle.getString("noChange"));
 				}
 				else {
-					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localUpdate"));
+					this.curItemInListStatus.setAttribute("label", synckolab.global.strBundle.getString("localUpdate"));
 				}
 				return null;
 			}
 			// is the db file equals server, but not local.. we got a local change
 			else if (idxEntry.exists() && !cEvent_equals_foundEvent && cEvent_equals_newEvent)
 			{
-				com.synckolab.tools.logMessage("client changed " + foundEvent.uid + " - " + cEvent.primaryEmail, com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
+				synckolab.tools.logMessage("client changed " + foundEvent.uid + " - " + cEvent.primaryEmail, synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 				
 				// update list item
-				this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("updateOnServer"));
+				this.curItemInListStatus.setAttribute("label", synckolab.global.strBundle.getString("updateOnServer"));
 				
 				// remember this message for update - generate mail message (incl. extra fields)
 				msg = null;
 				if (this.gConfig.format === "Xml") {
 					msg = this.calTools.event2kolabXmlMsg(foundEvent, this.gConfig.email, this.gConfig.type === "task");
 				} else {
-					tmpEventObj = com.synckolab.calendarTools.json2event(foundEvent);
+					tmpEventObj = synckolab.calendarTools.json2event(foundEvent);
 
 					calComp = Components.classes["@mozilla.org/calendar/ics-service;1"].getService(Components.interfaces.calIICSService).createIcalComponent("VCALENDAR");
 					calComp.version = "2.0";
@@ -904,19 +902,19 @@ com.synckolab.Calendar = {
 					calComp.addSubcomponent(tmpEventObj.icalComponent);
 
 					if (this.gConfig.type === "task") {
-						msg = com.synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
+						msg = synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/todo", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
 					} else {
-						msg = com.synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
+						msg = synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/calendar", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
 					}
 				}
 				
 				// write the current content in the sync-db file
-				com.synckolab.tools.writeSyncDBFile(idxEntry, foundEvent);
+				synckolab.tools.writeSyncDBFile(idxEntry, foundEvent);
 				return msg;
 			}
 			else {
-				com.synckolab.tools.logMessage("events are equals", com.synckolab.global.LOG_INFO + com.synckolab.global.LOG_AB);
-				this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("noChange"));
+				synckolab.tools.logMessage("events are equals", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
+				this.curItemInListStatus.setAttribute("label", synckolab.global.strBundle.getString("noChange"));
 			}
 
 		}
@@ -934,14 +932,14 @@ com.synckolab.Calendar = {
 	 * @return "done" to specify that the sync is finished
 	 */
 	nextUpdate : function () {
-		com.synckolab.tools.logMessage("next update...", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+		synckolab.tools.logMessage("next update...", synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 		// if there happens an exception, we are done
 		if ((this.gEvents === null || this.gCurEvent >= this.gEvents.events.length)) {
-			com.synckolab.tools.logMessage("done update...", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_INFO);
+			synckolab.tools.logMessage("done update...", synckolab.global.LOG_CAL + synckolab.global.LOG_INFO);
 			// we are done
 			return "done";
 		}
-		com.synckolab.tools.logMessage("get event ( " + this.gCurEvent + " of " + this.gEvents.events.length + ")", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+		synckolab.tools.logMessage("get event ( " + this.gCurEvent + " of " + this.gEvents.events.length + ")", synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 		var msg = null;
 		var cEntry;
 		
@@ -950,10 +948,10 @@ com.synckolab.Calendar = {
 			var writeCur = true;
 			msg = null;
 
-			com.synckolab.tools.logMessage("nextUpdate for " + (this.gConfig.type === "task" ? "task" : "event") + ":" + cur.id, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+			synckolab.tools.logMessage("nextUpdate for " + (this.gConfig.type === "task" ? "task" : "event") + ":" + cur.id, synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 
 			if (cur.id === null) {
-				com.synckolab.tools.logMessage("no id found for this element! skipping.", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_WARNING);
+				synckolab.tools.logMessage("no id found for this element! skipping.", synckolab.global.LOG_CAL + synckolab.global.LOG_WARNING);
 				return null;
 			}
 
@@ -961,23 +959,23 @@ com.synckolab.Calendar = {
 			var endDate = this.calTools.getEndDate(cur, this.gConfig.type === "task");
 
 			if (endDate && this.gConfig.timeFrame > 0 && (endDate.getTime() + (this.gConfig.timeFrame * 86400000) < (new Date()).getTime())) {
-				com.synckolab.tools.logMessage("skipping event because its too old: " + cur.id, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_INFO);
+				synckolab.tools.logMessage("skipping event because its too old: " + cur.id, synckolab.global.LOG_CAL + synckolab.global.LOG_INFO);
 				return null;
 			}
 
 			/* skip if event is PRIVATE */
 			if (this.calTools.isPrivateEvent(cur)) {
-				com.synckolab.tools.logMessage("skipping event because it is marked as PRIVATE: " + cur.id, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_INFO);
+				synckolab.tools.logMessage("skipping event because it is marked as PRIVATE: " + cur.id, synckolab.global.LOG_CAL + synckolab.global.LOG_INFO);
 				return null;
 			}
 
-			com.synckolab.tools.logMessage("processing event", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+			synckolab.tools.logMessage("processing event", synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 
 			// check if we have this uid in the messages, skip it if it
 			// has been processed already when reading the IMAP msgs
 			for ( var i = 0; i < this.folderMessageUids.length; i++) {
 				if (cur.id === this.folderMessageUids[i]) {
-					com.synckolab.tools.logMessage("event is known from IMAP lookup: " + cur.id, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_INFO);
+					synckolab.tools.logMessage("event is known from IMAP lookup: " + cur.id, synckolab.global.LOG_CAL + synckolab.global.LOG_INFO);
 					writeCur = false;
 					break;
 				}
@@ -989,13 +987,13 @@ com.synckolab.Calendar = {
 			if (writeCur) {
 				var curListItem;
 				
-				com.synckolab.tools.logMessage("nextUpdate decided to write event:" + cur.id, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_INFO);
+				synckolab.tools.logMessage("nextUpdate decided to write event:" + cur.id, synckolab.global.LOG_CAL + synckolab.global.LOG_INFO);
 
-				cEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, cur.id);
+				cEntry = synckolab.tools.file.getSyncDbFile(this.gConfig, cur.id);
 
 				if (cEntry.exists() && !this.forceServerCopy) {
 					// we have it in our database - don't write back to server but delete locally
-					com.synckolab.tools.logMessage("nextUpdate assumes 'delete on server', better don't write event:" + cur.id, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_INFO);
+					synckolab.tools.logMessage("nextUpdate assumes 'delete on server', better don't write event:" + cur.id, synckolab.global.LOG_CAL + synckolab.global.LOG_INFO);
 
 					writeCur = false;
 					this.gConfig.calendar.deleteItem(cur, this.gEvents);
@@ -1011,7 +1009,7 @@ com.synckolab.Calendar = {
 					this.curItemInListStatus = this.doc.createElement("treecell");
 					this.curItemInListContent = this.doc.createElement("treecell");
 					this.curItemInListId.setAttribute("label", cur.id);
-					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localDelete"));
+					this.curItemInListStatus.setAttribute("label", synckolab.global.strBundle.getString("localDelete"));
 					this.curItemInListContent.setAttribute("label", cur.title);
 					
 					this.curItemInList.appendChild(this.curItemInListId);
@@ -1023,7 +1021,7 @@ com.synckolab.Calendar = {
 						curListItem = this.doc.createElement("treeitem");
 						curListItem.appendChild(this.curItemInList);
 						this.itemList.appendChild(curListItem);
-						com.synckolab.tools.scrollToBottom(this.itemList);
+						synckolab.tools.scrollToBottom(this.itemList);
 					}
 
 				} else {
@@ -1033,7 +1031,7 @@ com.synckolab.Calendar = {
 					this.curItemInListStatus = this.doc.createElement("treecell");
 					this.curItemInListContent = this.doc.createElement("treecell");
 					this.curItemInListId.setAttribute("label", cur.id);
-					this.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("addToServer"));
+					this.curItemInListStatus.setAttribute("label", synckolab.global.strBundle.getString("addToServer"));
 					this.curItemInListContent.setAttribute("label", cur.title);
 					
 					this.curItemInList.appendChild(this.curItemInListId);
@@ -1045,13 +1043,13 @@ com.synckolab.Calendar = {
 						curListItem = this.doc.createElement("treeitem");
 						curListItem.appendChild(this.curItemInList);
 						this.itemList.appendChild(curListItem);
-						com.synckolab.tools.scrollToBottom(this.itemList);
+						synckolab.tools.scrollToBottom(this.itemList);
 					}
 				}
 			}
 
 			if (writeCur) {
-				com.synckolab.tools.logMessage("nextUpdate really writes event:" + cur.id, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+				synckolab.tools.logMessage("nextUpdate really writes event:" + cur.id, synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 				// and now really write the message
 				msg = null;
 				var clonedEvent = cur;
@@ -1066,17 +1064,17 @@ com.synckolab.Calendar = {
 					calComp.addSubcomponent(cur.icalComponent);
 
 					if (this.gConfig.type === "task") {
-						msg = com.synckolab.tools.generateMail(cur.id, this.gConfig.email, "iCal", "text/todo", false, com.synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
+						msg = synckolab.tools.generateMail(cur.id, this.gConfig.email, "iCal", "text/todo", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
 					} else {
-						msg = com.synckolab.tools.generateMail(cur.id, this.gConfig.email, "iCal", "text/calendar", false, com.synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
+						msg = synckolab.tools.generateMail(cur.id, this.gConfig.email, "iCal", "text/calendar", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
 					}
 				}
 
-				com.synckolab.tools.logMessage("New event:\n" + msg, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+				synckolab.tools.logMessage("New event:\n" + msg, synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 
 				// add the new event into the db
-				cEntry = com.synckolab.tools.file.getSyncDbFile(this.gConfig, cur.id);
-				com.synckolab.tools.writeSyncDBFile(cEntry, clonedEvent);
+				cEntry = synckolab.tools.file.getSyncDbFile(this.gConfig, cur.id);
+				synckolab.tools.writeSyncDBFile(cEntry, clonedEvent);
 			}
 		}
 

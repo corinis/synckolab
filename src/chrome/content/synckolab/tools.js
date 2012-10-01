@@ -32,9 +32,7 @@
 
 //////////////////////////////////HELP FUNCTIONS /////////////////////////////////////////
 "use strict";
-if(!com) var com={};
-if(!com.synckolab) com.synckolab={};
-if(!com.synckolab.tools) com.synckolab.tools={};
+if(!synckolab) var synckolab={};
 
 try {
 	Components.utils.import("resource://calendar/modules/calUtils.jsm");
@@ -43,7 +41,7 @@ try {
 	// ignore exception if lightning is not installed
 }
 
-com.synckolab.tools = {
+synckolab.tools = {
 
 	logStart: -1,
 	lastmsg: -1,
@@ -54,11 +52,11 @@ com.synckolab.tools = {
 	 */
 logMessage: function (msg, level) {
 	if (!level) {
-		level = com.synckolab.global.LOG_INFO;
+		level = synckolab.global.LOG_INFO;
 	}
 
-	var infolvl = com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL%4;
-	var infostate = com.synckolab.config.DEBUG_SYNCKOLAB_LEVEL - infolvl;
+	var infolvl = synckolab.config.DEBUG_SYNCKOLAB_LEVEL%4;
+	var infostate = synckolab.config.DEBUG_SYNCKOLAB_LEVEL - infolvl;
 	var clvl = level%4;
 	var cstate = level - clvl;
 
@@ -69,14 +67,14 @@ logMessage: function (msg, level) {
 
 	// now lets see if we want the same type of error NORMAL|CALENDAR|ADRESSBOOK|ALL		
 
-	// if the two states are diffeent and infostate !== com.synckolab.global.LOG_ALL we want outta here
-	if (infostate !== cstate && infostate !== com.synckolab.global.LOG_ALL) {
+	// if the two states are diffeent and infostate !== synckolab.global.LOG_ALL we want outta here
+	if (infostate !== cstate && infostate !== synckolab.global.LOG_ALL) {
 		return;
 	}
 
-	if (com.synckolab.config.DEBUG_SYNCKOLAB || clvl === com.synckolab.global.LOG_ERROR)
+	if (synckolab.config.DEBUG_SYNCKOLAB || clvl === synckolab.global.LOG_ERROR)
 	{
-		if (com.synckolab.config.PERFLOG_SYNCKOLAB === true)
+		if (synckolab.config.PERFLOG_SYNCKOLAB === true)
 		{
 			if (this.logStart === -1)
 			{
@@ -91,30 +89,30 @@ logMessage: function (msg, level) {
 			}
 		}
 		// report errors as error
-		if (clvl === com.synckolab.global.LOG_ERROR && Components.utils.reportError) {
+		if (clvl === synckolab.global.LOG_ERROR && Components.utils.reportError) {
 			var err = new Error("" + msg);
 			Components.utils.reportError("" + msg + err.stack);
 		} else 
-		if (clvl === com.synckolab.global.LOG_ERROR) {
-			com.synckolab.global.consoleService.logStringMessage("" + msg + new Error("" + msg).stack);
+		if (clvl === synckolab.global.LOG_ERROR) {
+			synckolab.global.consoleService.logStringMessage("" + msg + new Error("" + msg).stack);
 		} else {
-			com.synckolab.global.consoleService.logStringMessage(msg);
+			synckolab.global.consoleService.logStringMessage(msg);
 		}
 	}
 
 	// pause the sync on error if defined by globals
-	if (com.synckolab.config.PAUSE_ON_ERROR && clvl === com.synckolab.global.LOG_ERROR) {
+	if (synckolab.config.PAUSE_ON_ERROR && clvl === synckolab.global.LOG_ERROR) {
 		// TODO this will NOT work...
-		if (typeof com.synckolab !== "undefined" && com.synckolab.global.wnd && com.synckolab.global.wnd.pauseSync) {
-			com.synckolab.global.wnd.pauseSync();
+		if (typeof synckolab !== "undefined" && synckolab.global.wnd && synckolab.global.wnd.pauseSync) {
+			synckolab.global.wnd.pauseSync();
 		}
 	}
 },
 
 scrollToBottom : function (itemList)
 {
-	if (!itemList && com.synckolab.global.wnd && com.synckolab.global.document) {
-		itemList = com.synckolab.global.wnd.document.getElementById('itemList');
+	if (!itemList && synckolab.global.wnd && synckolab.global.document) {
+		itemList = synckolab.global.wnd.document.getElementById('itemList');
 	}
 	if (itemList)
 	{
@@ -124,6 +122,10 @@ scrollToBottom : function (itemList)
 	}
 },
 
+parseXml: function(content) {
+	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser);
+	return parser.parseFromString(content, "text/xml");
+},
 
 /**
  * Return a boolean value telling whether
@@ -176,24 +178,24 @@ equalsObject: function(a, b)
 	
 	var p;
 	for(p in a) {
-		if(p !== "synckolab" && typeof(b[p]) === 'undefined' && a[p] !== null && a[p] !== "") {
+		if(p !== "ts" && p !== "sha1" && p !== "synckolab" && typeof(b[p]) === 'undefined' && a[p] !== null && a[p] !== "") {
 			// 0 == undefined
 			if((a[p] === "0" || a[p] === 0) && !b[p])
 			{
 				continue;
 			}
-			com.synckolab.tools.logMessage("not equals: " + p + " a: " + a[p] + " b: " + b[p], com.synckolab.global.LOG_DEBUG);
+			synckolab.tools.logMessage("not equals: " + p + " a: " + a[p] + " b: " + b[p], synckolab.global.LOG_DEBUG);
 			return false;
 		}
 	}
 
 	for(p in a) {
-		if (p !== "synckolab") {
+		if (p !== "ts" && p !== "sha1" && p !== "synckolab") {
 			if (a[p]) {
 				switch(typeof(a[p])) {
 				case 'object':
 					if (!this.equalsObject(a[p], b[p])) { 
-						com.synckolab.tools.logMessage("not equals: " + p + " a: " + a[p] + " b: " + b[p], com.synckolab.global.LOG_DEBUG);
+						synckolab.tools.logMessage("not equals: " + p + " a: " + a[p] + " b: " + b[p], synckolab.global.LOG_DEBUG);
 						return false; 
 					} 
 					break;
@@ -201,13 +203,13 @@ equalsObject: function(a, b)
 					break;
 				default:
 					if (a[p] !== b[p] && Number(a[p]) !== Number(b[p])) { 
-						com.synckolab.tools.logMessage("not equals: : " + p + " a: " + a[p] + " b: " + b[p], com.synckolab.global.LOG_DEBUG);
+						synckolab.tools.logMessage("not equals: : " + p + " a: " + a[p] + " b: " + b[p], synckolab.global.LOG_DEBUG);
 						return false; 
 					}
 				}
 			} else {
 				if (b[p]) {
-					com.synckolab.tools.logMessage("not equals: " + p + " a: not found b: " + b[p], com.synckolab.global.LOG_DEBUG);
+					synckolab.tools.logMessage("not equals: " + p + " a: not found b: " + b[p], synckolab.global.LOG_DEBUG);
 					return false;
 				}
 			}
@@ -215,8 +217,8 @@ equalsObject: function(a, b)
 	}
 
 	for(p in b) {
-		if(p !== "synckolab" && p !== "type" && (!a || typeof(a[p]) === 'undefined') && b[p] !== null && b[p] !== "") {
-			com.synckolab.tools.logMessage("not equals: " + p + " a: " + (a?a[p]:'is null') + " b: " + b[p], com.synckolab.global.LOG_DEBUG);
+		if(p !== "ts" && p !== "sha1" && p !== "synckolab" && p !== "type" && (!a || typeof(a[p]) === 'undefined') && b[p] !== null && b[p] !== "") {
+			synckolab.tools.logMessage("not equals: " + p + " a: " + (a?a[p]:'is null') + " b: " + b[p], synckolab.global.LOG_DEBUG);
 			return false;
 		}
 	}
@@ -250,20 +252,20 @@ stripMailHeader: function (skcontent) {
 		}
 
 		isQP = skcontent.search(/Content-Transfer-Encoding:[ \t\r\n]+quoted-printable/i);
-		this.logMessage("Stripping header from Message (QP=" + isQP + ")", com.synckolab.global.LOG_DEBUG);
+		this.logMessage("Stripping header from Message (QP=" + isQP + ")", synckolab.global.LOG_DEBUG);
 		if(isQP !== -1 || skcontent.indexOf("=3D") !== -1)
 		{
-			skcontent = com.synckolab.tools.text.quoted.decode(skcontent.substring(startPos, skcontent.length));
-			this.logMessage("unquoted content: " + skcontent, com.synckolab.global.LOG_DEBUG);
+			skcontent = synckolab.tools.text.quoted.decode(skcontent.substring(startPos, skcontent.length));
+			this.logMessage("unquoted content: " + skcontent, synckolab.global.LOG_DEBUG);
 			
 		} else {
 			skcontent = skcontent.substring(startPos, skcontent.length);
 		}
 
-		return com.synckolab.tools.text.trim(skcontent);
+		return synckolab.tools.text.trim(skcontent);
 	}
 
-	this.logMessage("Stripping header from multipart message", com.synckolab.global.LOG_DEBUG);
+	this.logMessage("Stripping header from multipart message", synckolab.global.LOG_DEBUG);
 
 	// we got a multipart message - strip it apart
 
@@ -272,7 +274,7 @@ stripMailHeader: function (skcontent) {
 	boundary = skcontent.substring(skcontent.search(/boundary=/)+9);
 
 	// lets trim boundary (in case we have whitespace after the =
-	boundary = com.synckolab.tools.text.trim(boundary);
+	boundary = synckolab.tools.text.trim(boundary);
 
 	// if the boundary string starts with "... we look for an end
 	if (boundary.charAt(0) === '"')
@@ -339,7 +341,7 @@ stripMailHeader: function (skcontent) {
 		}
 		catch (ex) {
 			// still continue
-			this.logMessage("Error while handling image: " + ex + "\nStream:\n" + imgC, com.synckolab.global.LOG_INFO);
+			this.logMessage("Error while handling image: " + ex + "\nStream:\n" + imgC, synckolab.global.LOG_INFO);
 		}
 		
 		fileIO.close();
@@ -405,7 +407,7 @@ stripMailHeader: function (skcontent) {
 		
 		if (isBase64 !== -1)
 		{
-			this.logMessage("Base64 Decoding message. (Boundary: "+boundary+")", com.synckolab.global.LOG_INFO);
+			this.logMessage("Base64 Decoding message. (Boundary: "+boundary+")", synckolab.global.LOG_INFO);
 			// get rid of the header
 			skcontent = skcontent.substring(isBase64, skcontent.length);
 			startPos = skcontent.indexOf("\r\n\r\n");
@@ -422,7 +424,7 @@ stripMailHeader: function (skcontent) {
 
 			skcontent = skcontent.substring(startPos, endPos).replace(/[\r\n \t]+/g, "");
 
-			this.logMessage("Base64 message: " + skcontent, com.synckolab.global.LOG_DEBUG);
+			this.logMessage("Base64 message: " + skcontent, synckolab.global.LOG_DEBUG);
 
 			// for base64 we use a two storied approach
 			// first: use atob 
@@ -434,13 +436,13 @@ stripMailHeader: function (skcontent) {
 				// out of memory error... this can be handled :)
 				if (e.result === Components.results.NS_ERROR_OUT_OF_MEMORY)
 				{
-					skcontent = com.synckolab.text.base64.decode(skcontent);
-					this.logMessage("decoded base64: " + skcontent, com.synckolab.global.LOG_DEBUG);
+					skcontent = synckolab.text.base64.decode(skcontent);
+					this.logMessage("decoded base64: " + skcontent, synckolab.global.LOG_DEBUG);
 
 				}
 				else
 				{
-					this.logMessage("Error decoding base64 (" + e + "): " + skcontent, com.synckolab.global.LOG_ERROR);
+					this.logMessage("Error decoding base64 (" + e + "): " + skcontent, synckolab.global.LOG_ERROR);
 					return null;
 				}
 			}
@@ -451,7 +453,7 @@ stripMailHeader: function (skcontent) {
 		if (isQP !== -1)
 		{
 			skcontent = skcontent.substring(isQP, skcontent.length);
-			skcontent = com.synckolab.tools.text.quoted.decode(skcontent);
+			skcontent = synckolab.tools.text.quoted.decode(skcontent);
 		}
 		
 		
@@ -459,7 +461,7 @@ stripMailHeader: function (skcontent) {
 		if (isQP === -1 && isBase64 === -1)
 		{
 			// so this message has no <xml>something</xml> area
-			this.logMessage("Error parsing this message: no xml segment found\n" + skcontent, com.synckolab.global.LOG_ERROR);
+			this.logMessage("Error parsing this message: no xml segment found\n" + skcontent, synckolab.global.LOG_ERROR);
 			return null;
 		}
 		
@@ -487,11 +489,11 @@ stripMailHeader: function (skcontent) {
 	// check if we have to decode quoted printable
 	if (skcontent.indexOf(" version=3D") !== -1 || skcontent.indexOf("TZID=3D")) // we know from the version (or in case of citadel from the tzid)
 	{
-		this.logMessage("Message is quoted", com.synckolab.global.LOG_INFO);
-		skcontent = com.synckolab.tools.text.quoted.decode(skcontent);
+		this.logMessage("Message is quoted", synckolab.global.LOG_INFO);
+		skcontent = synckolab.tools.text.quoted.decode(skcontent);
 	}
 
-	return com.synckolab.tools.text.trim(skcontent);
+	return synckolab.tools.text.trim(skcontent);
 },
 
 /**
@@ -512,12 +514,12 @@ generateMail: function (cid, mail, adsubject, mime, part, skcontent, hr, image){
 	}
 
 	var msg = "";
-	var bound = com.synckolab.tools.text.randomVcardId();
+	var bound = synckolab.tools.text.randomVcardId();
 	var cdate = new Date();
 	var sTime = (cdate.getHours()<10?"0":"") + cdate.getHours() + ":" + (cdate.getMinutes()<10?"0":"") + cdate.getMinutes() + ":" +
 	(cdate.getSeconds()<10?"0":"") + cdate.getSeconds();		
-	var sdate = "Date: " + com.synckolab.tools.text.getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " +
-		com.synckolab.tools.text.getMonthString(cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime +
+	var sdate = "Date: " + synckolab.tools.text.getDayString(cdate.getDay()) + ", " + cdate.getDate() + " " +
+		synckolab.tools.text.getMonthString(cdate.getMonth()) + " " + cdate.getFullYear() + " " + sTime +
 		" " + ((cdate.getTimezoneOffset() < 0)?"+":"-") +
 		(Math.abs(cdate.getTimezoneOffset()/60)<10?"0":"") + Math.abs(cdate.getTimezoneOffset()/60) +"00\n"; 
 
@@ -542,7 +544,7 @@ generateMail: function (cid, mail, adsubject, mime, part, skcontent, hr, image){
 	if (!part) {
 		msg += "Content-Transfer-Encoding: quoted-printable\n";
 	}
-	msg += "User-Agent: SyncKolab " + com.synckolab.config.version + "\n";
+	msg += "User-Agent: SyncKolab " + synckolab.config.version + "\n";
 	if (part) {
 		msg += "X-Kolab-Type: "+mime+"\n";
 	}
@@ -626,7 +628,7 @@ generateMail: function (cid, mail, adsubject, mime, part, skcontent, hr, image){
 				fileIO.close();
 				istream.close();
 
-				this.logMessage("got " + fileContent.length + " bytes", com.synckolab.global.LOG_WARNING);
+				this.logMessage("got " + fileContent.length + " bytes", synckolab.global.LOG_WARNING);
 				
 				// now we got the image into fileContent - lets attach
 				
@@ -639,7 +641,7 @@ generateMail: function (cid, mail, adsubject, mime, part, skcontent, hr, image){
 		}
 		catch (ex)
 		{
-			this.logMessage("Unable to read image: "+image+"\n" + ex, com.synckolab.global.LOG_WARNING);
+			this.logMessage("Unable to read image: "+image+"\n" + ex, synckolab.global.LOG_WARNING);
 			return null;
 		}
 		
@@ -677,8 +679,8 @@ getAccountName: function (accountKey) {
 	for (var i = 0; i < accountManager.allServers.Count(); i++)
 	{
 		var account = accountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-		if (account.rootMsgFolder.baseMessageURI === accountKey || com.synckolab.tools.text.fixNameToMiniCharset(account.rootMsgFolder.baseMessageURI) === accountKey ||
-				com.synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === accountKey)
+		if (account.rootMsgFolder.baseMessageURI === accountKey || synckolab.tools.text.fixNameToMiniCharset(account.rootMsgFolder.baseMessageURI) === accountKey ||
+				synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === accountKey)
 		{
 			return accountManager.getFirstIdentityForServer(account).fullName;
 		}
@@ -696,8 +698,8 @@ getAccountEMail: function (accountKey) {
 	for (var i = 0; i < accountManager.allServers.Count(); i++)
 	{
 		var account = accountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-		if (account.rootMsgFolder.baseMessageURI === accountKey || com.synckolab.tools.text.fixNameToMiniCharset(account.rootMsgFolder.baseMessageURI) === accountKey ||
-				com.synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === accountKey)
+		if (account.rootMsgFolder.baseMessageURI === accountKey || synckolab.tools.text.fixNameToMiniCharset(account.rootMsgFolder.baseMessageURI) === accountKey ||
+				synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === accountKey)
 		{
 			return accountManager.getFirstIdentityForServer(account).email;
 		}
@@ -713,15 +715,15 @@ getAccountEMail: function (accountKey) {
 getMsgFolder: function (accountKey, path)
 {
 
-	this.logMessage("trying to get folder: '" +  path + "' for account " + accountKey, com.synckolab.global.LOG_DEBUG);
+	this.logMessage("trying to get folder: '" +  path + "' for account " + accountKey, synckolab.global.LOG_DEBUG);
 
 	var accountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
 	var gInc = null;
 	for (var i = 0; i < accountManager.allServers.Count(); i++)
 	{
 		var account = accountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-		if (account.rootMsgFolder.baseMessageURI === accountKey || com.synckolab.tools.text.fixNameToMiniCharset(account.rootMsgFolder.baseMessageURI) === accountKey||
-				com.synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === accountKey)
+		if (account.rootMsgFolder.baseMessageURI === accountKey || synckolab.tools.text.fixNameToMiniCharset(account.rootMsgFolder.baseMessageURI) === accountKey||
+				synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === accountKey)
 		{
 			gInc = account;
 		}
@@ -773,7 +775,7 @@ getMsgFolder: function (accountKey, path)
 			// we found it
 			if (path === cur.URI)
 			{
-				this.logMessage("we found our path!!!: " + cur.URI, com.synckolab.global.LOG_DEBUG);
+				this.logMessage("we found our path!!!: " + cur.URI, synckolab.global.LOG_DEBUG);
 				return cur;
 			}
 
@@ -782,7 +784,7 @@ getMsgFolder: function (accountKey, path)
 
 			if (cp === cur.URI)
 			{
-				this.logMessage("got subpath: " + cur.URI, com.synckolab.global.LOG_DEBUG);
+				this.logMessage("got subpath: " + cur.URI, synckolab.global.LOG_DEBUG);
 
 				cFolder = cur;
 				break;
@@ -824,7 +826,7 @@ getMsgFolder: function (accountKey, path)
 };
 
 
-com.synckolab.tools.file = {
+synckolab.tools.file = {
 	/**
 	 * Copies a local file into any mail folder.
 	 * In order to be displayed correct, make sure to create a complete message file!!!
@@ -833,7 +835,7 @@ com.synckolab.tools.file = {
 	 */
 	copyToLocalFolder: function (fileName, folderUri)
 	{
-		var mailFolder = com.synckolab.global.rdf.GetResource(folderUri).QueryInterface(Components.interfaces.nsIMsgFolder);
+		var mailFolder = synckolab.global.rdf.GetResource(folderUri).QueryInterface(Components.interfaces.nsIMsgFolder);
 		// ok give out the folder info
 	
 		// ok now get the filespec
@@ -852,11 +854,11 @@ com.synckolab.tools.file = {
 	getSyncDbFile: function (config, id) {
 		if (id === null)
 		{
-			com.synckolab.tools.logMessage("Error: entry has no id (" +config.name + ": " + config.type + ")", com.synckolab.global.LOG_ERROR);
+			synckolab.tools.logMessage("Error: entry has no id (" +config.name + ": " + config.type + ")", synckolab.global.LOG_ERROR);
 			return null;
 		}
 
-		com.synckolab.tools.logMessage("syncDbFile:  (" +com.synckolab.tools.text.fixNameToMiniCharset(config.serverKey) + "/" + config.type + "_" + config.name + "/" + id + ")", com.synckolab.global.LOG_ERROR);
+		synckolab.tools.logMessage("syncDbFile:  (" +synckolab.tools.text.fixNameToMiniCharset(config.serverKey) + "/" + config.type + "_" + config.name + "/" + id + ")", synckolab.global.LOG_ERROR);
 		
 		id = id.replace(/[ :.;$\\\/]\#\@/g, "_");
 		var file = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsIFile);
@@ -866,7 +868,7 @@ com.synckolab.tools.file = {
 				file.create(1, parseInt("0775", 8));
 			}
 
-			file.append(com.synckolab.tools.text.fixNameToMiniCharset(config.serverKey));
+			file.append(synckolab.tools.text.fixNameToMiniCharset(config.serverKey));
 			if (!file.exists()) {
 				file.create(1, parseInt("0775", 8));
 			}
@@ -881,7 +883,7 @@ com.synckolab.tools.file = {
 		}
 		catch (ex)
 		{
-			com.synckolab.tools.logMessage("Problem with getting syncDbFile:  (" +com.synckolab.tools.text.fixNameToMiniCharset(config.serverKey) + "/" + config.name + ": " + config.type + ": " + id + ")\n" + ex, com.synckolab.global.LOG_ERROR);
+			synckolab.tools.logMessage("Problem with getting syncDbFile:  (" +synckolab.tools.text.fixNameToMiniCharset(config.serverKey) + "/" + config.name + ": " + config.type + ": " + id + ")\n" + ex, synckolab.global.LOG_ERROR);
 			return null;
 		}
 		return file;
@@ -895,7 +897,7 @@ com.synckolab.tools.file = {
  * @param data the data object that will be converted to json and written
  * @param direct do not use json, write content as is
  */
-com.synckolab.tools.writeSyncDBFile = function (file, data, direct)
+synckolab.tools.writeSyncDBFile = function (file, data, direct)
 {
 	if (data === null) {
 		return;
@@ -933,11 +935,11 @@ com.synckolab.tools.writeSyncDBFile = function (file, data, direct)
  * @param direct do not use json, write content as is
  * @returns the json object from the file
  */
-com.synckolab.tools.readSyncDBFile = function (file, direct)
+synckolab.tools.readSyncDBFile = function (file, direct)
 {	
 	if (file === null)
 	{
-		com.synckolab.tools.logMessage("readSyncDBFile ERROR: file is null");
+		synckolab.tools.logMessage("readSyncDBFile ERROR: file is null");
 		return null;
 	}
 
@@ -975,7 +977,7 @@ com.synckolab.tools.readSyncDBFile = function (file, direct)
 	}
 	catch (ex)
 	{
-		com.synckolab.tools.logMessage("readSyncDBFile ERROR while reading file" + ex);
+		synckolab.tools.logMessage("readSyncDBFile ERROR while reading file" + ex);
 	}
 	return null;
 };
@@ -984,10 +986,10 @@ com.synckolab.tools.readSyncDBFile = function (file, direct)
  * Retrieves a file in the user profile dir which includes the config database
  * make sure to add .cal, .con or .task at the config so there are no duplicate names
  */
-com.synckolab.tools.file.getHashDataBaseFile = function (config)
+synckolab.tools.file.getHashDataBaseFile = function (config)
 {
 	var file = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsIFile);
-	file.append("synckolab." + com.synckolab.tools.text.fixNameToMiniCharset(config.serverKey) + "." + config.name + "." + config.type+".hdb");
+	file.append("synckolab." + synckolab.tools.text.fixNameToMiniCharset(config.serverKey) + "." + config.name + "." + config.type+".hdb");
 	return file;
 };
 
@@ -996,10 +998,10 @@ com.synckolab.tools.file.getHashDataBaseFile = function (config)
  * Database class: read a file into a hashmap
  * @param file the file to read/write the data to/from
  */
-com.synckolab.dataBase = function (file) {
+synckolab.dataBase = function (file) {
 	// the database file
 	this.dbf = file;
-	this.db = new com.synckolab.hashMap();
+	this.db = new synckolab.hashMap();
 	
 	// no file specified - memory only
 	if(!file) {
@@ -1008,7 +1010,7 @@ com.synckolab.dataBase = function (file) {
 
 	// if the file is not readable - dont bother
 	if (!file.exists() || !file.isReadable()) {
-		com.synckolab.tools.logMessage("File not readable: " + file, com.synckolab.global.LOG_WARNING);
+		synckolab.tools.logMessage("File not readable: " + file, synckolab.global.LOG_WARNING);
 		return;
 	}
 
@@ -1040,7 +1042,7 @@ com.synckolab.dataBase = function (file) {
 				fv = fv.replace(/\\\\/g, "\\");
 			}
 			// split now
-			fv = com.synckolab.tools.text.trim(fv).split(":");
+			fv = synckolab.tools.text.trim(fv).split(":");
 			for (var j =0; j < fv.length; j++)
 			{
 				if (fv[j].replace) {
@@ -1058,11 +1060,11 @@ com.synckolab.dataBase = function (file) {
 /**
  * returns the position of this entry in the db
  */
-com.synckolab.dataBase.prototype.get = function (key) {
+synckolab.dataBase.prototype.get = function (key) {
 	return this.db.get(key);
 };
 
-com.synckolab.dataBase.prototype.remove = function (entry) {
+synckolab.dataBase.prototype.remove = function (entry) {
 	this.db.remove(entry[0]);
 };
 
@@ -1070,7 +1072,7 @@ com.synckolab.dataBase.prototype.remove = function (entry) {
  * add an array - the first entry is the key!
  * @param entry
  */
-com.synckolab.dataBase.prototype.add = function (entry) {
+synckolab.dataBase.prototype.add = function (entry) {
 	this.db.put(entry[0], entry);
 };
 
@@ -1079,7 +1081,7 @@ com.synckolab.dataBase.prototype.add = function (entry) {
  * @param entry
  * @return
  */
-com.synckolab.dataBase.prototype.addField = function (name, value) {
+synckolab.dataBase.prototype.addField = function (name, value) {
 	// ignore errornous fields!
 	if (name === null || value === null) {
 		return;
@@ -1088,11 +1090,11 @@ com.synckolab.dataBase.prototype.addField = function (name, value) {
 	this.db.put(entry[0], entry);
 };
 
-com.synckolab.dataBase.prototype.length = function () {
+synckolab.dataBase.prototype.length = function () {
 	return this.db.length();
 };
 
-com.synckolab.dataBase.prototype.toString = function () {
+synckolab.dataBase.prototype.toString = function () {
 	this.db.iterate();
 	var cur;
 	var str = "";
@@ -1103,13 +1105,13 @@ com.synckolab.dataBase.prototype.toString = function () {
 	return str;
 };
 
-com.synckolab.dataBase.prototype.toXmlString = function () {
+synckolab.dataBase.prototype.toXmlString = function () {
 	this.db.iterate();
 	var cur;
 	var str = "";
 	while ((cur = this.db.next()))
 	{
-		str += com.synckolab.tools.text.nodeWithContent(cur[0], cur[1], false);
+		str += synckolab.tools.text.nodeWithContent(cur[0], cur[1], false);
 	}
 	return str;
 };
@@ -1117,7 +1119,7 @@ com.synckolab.dataBase.prototype.toXmlString = function () {
  * writes a database file (key:hashvalue:h2)
  * @param file an optional new filename to write into
  */
-com.synckolab.dataBase.prototype.write = function (file) {
+synckolab.dataBase.prototype.write = function (file) {
 	if (!file && !this.dbf) {
 		return;
 	}
@@ -1156,7 +1158,7 @@ com.synckolab.dataBase.prototype.write = function (file) {
 			s += ":" + fv;
 		}
 		s += "\n";
-		com.synckolab.tools.logMessage("writing " + s, com.synckolab.global.LOG_DEBUG);
+		synckolab.tools.logMessage("writing " + s, synckolab.global.LOG_DEBUG);
 		stream.write(s, s.length);
 	}
 	// write newlines at the end
@@ -1170,7 +1172,7 @@ com.synckolab.dataBase.prototype.write = function (file) {
 /**
  * Initial prime number used as seed: 521
  */
-com.synckolab.hashMap = function ()
+synckolab.hashMap = function ()
 {
 	this.len = 0;
 	this.seed = 521;
@@ -1182,7 +1184,7 @@ com.synckolab.hashMap = function ()
 };
 
 // starts an iteration
-com.synckolab.hashMap.prototype.iterate = function () {
+synckolab.hashMap.prototype.iterate = function () {
 	this.hashIdx = 0;
 	this.idx = 0;
 };
@@ -1190,7 +1192,7 @@ com.synckolab.hashMap.prototype.iterate = function () {
 /**
  * gets the next element or null
  */
-com.synckolab.hashMap.prototype.next = function () {
+synckolab.hashMap.prototype.next = function () {
 	// check if we still have room in the current hash
 	this.idx++;
 	while (this.idx >= this.array[this.hashIdx].length)
@@ -1211,14 +1213,14 @@ com.synckolab.hashMap.prototype.next = function () {
 /**
  * HashMap class to speed up searches
  */ 
-com.synckolab.hashMap.entry = function ( key, value )
+synckolab.hashMap.entry = function ( key, value )
 {
 	this.key = key;
 	this.value = value;
 };
 
 
-com.synckolab.hashMap.prototype.getIKey = function (key)
+synckolab.hashMap.prototype.getIKey = function (key)
 {
 	if(!key) {
 		var err = new Error("");
@@ -1233,7 +1235,7 @@ com.synckolab.hashMap.prototype.getIKey = function (key)
 	return sum;
 };
 
-com.synckolab.hashMap.prototype.put = function ( key, value )
+synckolab.hashMap.prototype.put = function ( key, value )
 {
 	if(!key) {
 		var err = new Error("");
@@ -1252,11 +1254,11 @@ com.synckolab.hashMap.prototype.put = function ( key, value )
 			return;
 		}
 	}
-	car[car.length] = new com.synckolab.hashMap.entry( key, value );
+	car[car.length] = new synckolab.hashMap.entry( key, value );
 	this.len++;
 };
 
-com.synckolab.hashMap.prototype.clear = function ()
+synckolab.hashMap.prototype.clear = function ()
 {
 	for (var k = 0; k < this.seed; k++) {
 		this.array[k] = [];
@@ -1264,7 +1266,7 @@ com.synckolab.hashMap.prototype.clear = function ()
 	this.len = 0;
 };
 
-com.synckolab.hashMap.prototype.remove = function ( key )
+synckolab.hashMap.prototype.remove = function ( key )
 {
 	// get a key
 	var ikey = this.getIKey(key) % this.seed;
@@ -1281,7 +1283,7 @@ com.synckolab.hashMap.prototype.remove = function ( key )
 	return false;
 };
 
-com.synckolab.hashMap.prototype.get = function ( key )
+synckolab.hashMap.prototype.get = function ( key )
 {
 	// get a key
 	var ikey = this.getIKey(key) % this.seed;
@@ -1296,7 +1298,7 @@ com.synckolab.hashMap.prototype.get = function ( key )
 	return null;
 };
 
-com.synckolab.hashMap.prototype.length = function ()
+synckolab.hashMap.prototype.length = function ()
 {
 	return this.len;
 };
@@ -1304,7 +1306,7 @@ com.synckolab.hashMap.prototype.length = function ()
 /**
  * synckolab node (standard node with a twist)
  */
-com.synckolab.Node = function (node) {
+synckolab.Node = function (node) {
 	if (node === null) {
 		return null;
 	}
@@ -1312,21 +1314,21 @@ com.synckolab.Node = function (node) {
 	this.nodeName = node.nodeName;
 	this.nodeType = node.nodeType;
 	this.firstChild = node.firstChild;
-	this.nextSibling = new com.synckolab.Node(node.nextSibling);
+	this.nextSibling = new synckolab.Node(node.nextSibling);
 };
 
-com.synckolab.Node.prototype.getFirstData =  function () {
+synckolab.Node.prototype.getFirstData =  function () {
 	if (!this.node.firstChild) {
 		return null;
 	}
-	return com.synckolab.tools.text.decode4XML(this.node.firstChild.data);
+	return synckolab.tools.text.decode4XML(this.node.firstChild.data);
 };
 
 /**
  * return the content of a child node with name "name" of the node "node"
  * or the given default "def" if no such node exists
  */
-com.synckolab.Node.prototype.getXmlResult =  function (name, def)
+synckolab.Node.prototype.getXmlResult =  function (name, def)
 {
 	var cur = this.node.firstChild;
 	while(cur)
@@ -1338,7 +1340,7 @@ com.synckolab.Node.prototype.getXmlResult =  function (name, def)
 				var value = cur.firstChild.nodeValue;
 				// decode the value
 				if (value) {
-					return com.synckolab.tools.text.decode4XML(value);
+					return synckolab.tools.text.decode4XML(value);
 				}
 			}
 		}
@@ -1351,7 +1353,7 @@ com.synckolab.Node.prototype.getXmlResult =  function (name, def)
 /**
  * return a direct child node with the name "name" of the node "node"
  */
-com.synckolab.Node.prototype.getChildNode = function (name)
+synckolab.Node.prototype.getChildNode = function (name)
 {
 	var cur = this.node.firstChild;
 	while(cur)
@@ -1369,7 +1371,7 @@ com.synckolab.Node.prototype.getChildNode = function (name)
  * return the value of the attribute with name "attrName" of the node "node"
  * or null, if no attribute with that name exists
  */
-com.synckolab.Node.prototype.getAttribute = function (attrName)
+synckolab.Node.prototype.getAttribute = function (attrName)
 {
 	if (!this.node) {
 		return null;
@@ -1395,7 +1397,7 @@ com.synckolab.Node.prototype.getAttribute = function (attrName)
  * This function falla back to using QueryInterface to check whether the interface
  * is implemented.
  */
-com.synckolab.tools.instanceOf = function (aObject, aInterface) {
+synckolab.tools.instanceOf = function (aObject, aInterface) {
 	// We first try instanceof which is assumed to be faster than querying the object:
 	if (!(aObject instanceof aInterface)) {
 		// if the passed object in not wrapped (but a plain implementation),
@@ -1417,7 +1419,7 @@ com.synckolab.tools.instanceOf = function (aObject, aInterface) {
  * @param config the config (to read the right folder)
  * @param parseFunc a function that parses the messages into objects
  */
-com.synckolab.tools.fillMessageLookup = function(map, config, parseFunc) {
+synckolab.tools.fillMessageLookup = function(map, config, parseFunc) {
 	var messages;
 	// get the message keys
 	if (config.folder.getMessages) {
@@ -1432,31 +1434,31 @@ com.synckolab.tools.fillMessageLookup = function(map, config, parseFunc) {
 	}
 };
 
-com.synckolab.tools.CONFIG_TYPE_BOOL = 0;
-com.synckolab.tools.CONFIG_TYPE_CHAR = 1;
-com.synckolab.tools.CONFIG_TYPE_INT = 2;
+synckolab.tools.CONFIG_TYPE_BOOL = 0;
+synckolab.tools.CONFIG_TYPE_CHAR = 1;
+synckolab.tools.CONFIG_TYPE_INT = 2;
 
 /**
  * 
  * @param pref the preference service (Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);)
  * @param name the name of the configuration to get (every value is prefixed with SyncKolab.)
- * @param type the type (see com.synckolab.tools.CONFIG_TYPE_*)
+ * @param type the type (see synckolab.tools.CONFIG_TYPE_*)
  * @param def an optional default value
  * @return the configuration value in the given type or the default value
  */
-com.synckolab.tools.getConfigValue = function(pref, name, type, def) {
+synckolab.tools.getConfigValue = function(pref, name, type, def) {
 	try {
-		if(type === com.synckolab.tools.CONFIG_TYPE_BOOL) {
+		if(type === synckolab.tools.CONFIG_TYPE_BOOL) {
 			return pref.getBoolPref("SyncKolab." + name);
 		} 
-		if(type === com.synckolab.tools.CONFIG_TYPE_INT) {
+		if(type === synckolab.tools.CONFIG_TYPE_INT) {
 			return pref.getIntPref("SyncKolab." + name);
 		} 
 		// default use char pref 
 		return pref.getCharPref("SyncKolab." + name);
 	}
 	catch (ex) {
-		com.synckolab.tools.logMessage("SyncKolab."+name+" does not exist(yet).", com.synckolab.global.LOG_INFO);
+		synckolab.tools.logMessage("SyncKolab."+name+" does not exist(yet).", synckolab.global.LOG_INFO);
 		return def;
 	}
 };
@@ -1464,16 +1466,16 @@ com.synckolab.tools.getConfigValue = function(pref, name, type, def) {
 /**
  * @param pref the preference service (Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);)
  * @param name the name of the configuration to get (every value is prefixed with SyncKolab.)
- * @param type the type (see com.synckolab.tools.CONFIG_TYPE_*)
+ * @param type the type (see synckolab.tools.CONFIG_TYPE_*)
  * @param value the value to write
  * @return true when the value has been written
  */
-com.synckolab.tools.setConfigValue = function(pref, name, type, value) {
+synckolab.tools.setConfigValue = function(pref, name, type, value) {
 	try {
-		if(type === com.synckolab.tools.CONFIG_TYPE_BOOL) {
+		if(type === synckolab.tools.CONFIG_TYPE_BOOL) {
 			pref.setBoolPref("SyncKolab." + name, value);
 		} 
-		if(type === com.synckolab.tools.CONFIG_TYPE_INT) {
+		if(type === synckolab.tools.CONFIG_TYPE_INT) {
 			pref.setIntPref("SyncKolab." + name, value);
 		} 
 		// default use char pref 
@@ -1492,7 +1494,7 @@ com.synckolab.tools.setConfigValue = function(pref, name, type, value) {
  * @param name the name of the configuration to get (every value is prefixed with SyncKolab.)
  * @return true when the value has been written
  */
-com.synckolab.tools.removeConfig = function(pref, name) {
+synckolab.tools.removeConfig = function(pref, name) {
 	try {
 		pref.clearUserPref("SyncKolab." + name);
 	}
@@ -1507,14 +1509,14 @@ com.synckolab.tools.removeConfig = function(pref, name) {
  * opens a browser window with a given url
  * @param aURL the external url to load
  */
-com.synckolab.tools.launchUrl = function(aURL) {
+synckolab.tools.launchUrl = function(aURL) {
 	var messenger = Components.classes["@mozilla.org/messenger;1"].createInstance();
 	messenger = messenger.QueryInterface(Components.interfaces.nsIMessenger);
 	messenger.launchExternalURL(aURL);	
 };
 
 
-com.synckolab.tools.getUidFromHeader = function (header) {
+synckolab.tools.getUidFromHeader = function (header) {
 	if(!header) {
 		return header;
 	}

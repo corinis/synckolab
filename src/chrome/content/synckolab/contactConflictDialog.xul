@@ -13,10 +13,10 @@
 <dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
 		id="contactConfligGldWindow"
         buttons="accept,cancel"
-        ondialogaccept="return com.synckolab.contactConflict.doOK();"
-        ondialogcancel="return com.synckolab.contactConflict.doCancel();"
+        ondialogaccept="return synckolab.contactConflict.doOK();"
+        ondialogcancel="return synckolab.contactConflict.doCancel();"
         buttonlabelcancel="Skip"
-        onload="com.synckolab.contactConflict.init();"
+        onload="synckolab.contactConflict.init();"
         persist="screenX screenY"
         title="&synckolab.contactConflict.dialogTitle;">
 
@@ -250,8 +250,8 @@
 </scrollbox>
 
 <box align="left">
-	<button label="Keep Server" oncommand="com.synckolab.contactConflict.keepServer(); return false;"/>
-	<button label="Keep Local" oncommand="com.synckolab.contactConflict.keepLocal(); return false;"/>
+	<button label="Keep Server" oncommand="synckolab.contactConflict.keepServer(); return false;"/>
+	<button label="Keep Local" oncommand="synckolab.contactConflict.keepLocal(); return false;"/>
 </box>
 
 </dialog>

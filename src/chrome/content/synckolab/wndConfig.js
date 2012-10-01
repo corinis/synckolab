@@ -30,10 +30,9 @@
  * ***** END LICENSE BLOCK ***** */
 "use strict";
 
-if(!com) var com={};
-if(!com.synckolab) com.synckolab={};
+if(!synckolab) var synckolab={};
 
-com.synckolab.settings = {
+synckolab.settings = {
 		// string bundle use: strBundle.getString("KEYNAME")
 		strBundle: null,
 		// account types
@@ -44,19 +43,19 @@ com.synckolab.settings = {
 
 
 
-com.synckolab.settings.savePrefs = function () {
+synckolab.settings.savePrefs = function () {
 	
 
 	// get base info back from ui
-	com.synckolab.tools.logMessage("Saving preferences.", com.synckolab.global.LOG_DEBUG);
-	com.synckolab.settings.getBaseInfo();
-	com.synckolab.tools.logMessage("Getting info.", com.synckolab.global.LOG_DEBUG);
-	com.synckolab.settings.getInfo();
+	synckolab.tools.logMessage("Saving preferences.", synckolab.global.LOG_DEBUG);
+	synckolab.settings.getBaseInfo();
+	synckolab.tools.logMessage("Getting info.", synckolab.global.LOG_DEBUG);
+	synckolab.settings.getInfo();
 	
-	com.synckolab.tools.logMessage("Write the configuration: " + com.synckolab.settings.config.toSource(), com.synckolab.global.LOG_DEBUG);
+	synckolab.tools.logMessage("Write the configuration: " + synckolab.settings.config.toSource(), synckolab.global.LOG_DEBUG);
 	// write the configuration
-	com.synckolab.settings.writeConfiguration(com.synckolab.settings.config);
-	com.synckolab.tools.logMessage("done saving.", com.synckolab.global.LOG_DEBUG);
+	synckolab.settings.writeConfiguration(synckolab.settings.config);
+	synckolab.tools.logMessage("done saving.", synckolab.global.LOG_DEBUG);
 
 	return true;
 };
@@ -68,16 +67,16 @@ com.synckolab.settings.savePrefs = function () {
  * @param conf the configuration to write
  * @return true if everything went ok
  */
-com.synckolab.settings.writeConfiguration = function(config) {
-	var orig = com.synckolab.config.loadConfiguration();
+synckolab.settings.writeConfiguration = function(config) {
+	var orig = synckolab.config.loadConfiguration();
 	// now we can start writing
 	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 	
-	com.synckolab.tools.setConfigValue(pref, "configVersion", com.synckolab.tools.CONFIG_TYPE_INT, config.version + 1);
-	com.synckolab.tools.setConfigValue(pref, "debugLevel", com.synckolab.tools.CONFIG_TYPE_INT, config.debugLevel);
-	com.synckolab.tools.setConfigValue(pref, "hideFolder", com.synckolab.tools.CONFIG_TYPE_BOOL, config.hideFolder);
-	com.synckolab.tools.setConfigValue(pref, "closeWindow", com.synckolab.tools.CONFIG_TYPE_BOOL, config.closeWindow);
-	com.synckolab.tools.setConfigValue(pref, "syncOnStart", com.synckolab.tools.CONFIG_TYPE_BOOL, config.syncOnStart);
+	synckolab.tools.setConfigValue(pref, "configVersion", synckolab.tools.CONFIG_TYPE_INT, config.version + 1);
+	synckolab.tools.setConfigValue(pref, "debugLevel", synckolab.tools.CONFIG_TYPE_INT, config.debugLevel);
+	synckolab.tools.setConfigValue(pref, "hideFolder", synckolab.tools.CONFIG_TYPE_BOOL, config.hideFolder);
+	synckolab.tools.setConfigValue(pref, "closeWindow", synckolab.tools.CONFIG_TYPE_BOOL, config.closeWindow);
+	synckolab.tools.setConfigValue(pref, "syncOnStart", synckolab.tools.CONFIG_TYPE_BOOL, config.syncOnStart);
 	
 	// check if an account has been removed
 	var i,j,found;
@@ -91,7 +90,7 @@ com.synckolab.settings.writeConfiguration = function(config) {
 				}
 			}
 			if(!found) {
-				com.synckolab.tools.logMessage("resetting " + orig.accounts[i].name, com.synckolab.global.LOG_DEBUG);
+				synckolab.tools.logMessage("resetting " + orig.accounts[i].name, synckolab.global.LOG_DEBUG);
 				pref.resetBranch("SyncKolab." + orig.accounts[i].name);
 			}
 		}
@@ -116,12 +115,12 @@ com.synckolab.settings.writeConfiguration = function(config) {
 		}
 		
 		// write per account
-		com.synckolab.settings.writeAccountConfig(pref, config.accounts[i], origAcct);
+		synckolab.settings.writeAccountConfig(pref, config.accounts[i], origAcct);
 		acctList += config.accounts[i].name + ";";
 	}
 
 	// write the acctList back
-	com.synckolab.tools.setConfigValue(pref, "accounts.list", com.synckolab.tools.CONFIG_TYPE_CHAR, acctList);
+	synckolab.tools.setConfigValue(pref, "accounts.list", synckolab.tools.CONFIG_TYPE_CHAR, acctList);
 	
 	return true;
 };
@@ -130,7 +129,7 @@ com.synckolab.settings.writeConfiguration = function(config) {
  * read the account configuration into an object
  * @param acct the account object to read the configuration into (name has to be existent)
  */
-com.synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
+synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
 	var configs, i, j, k, found;
 	for(var type in acct) {
 		// skip volatiles/non-arrays
@@ -148,7 +147,7 @@ com.synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
 					// get rid of the deleted configuration branches
 					if(!found) {
 						try {
-							com.synckolab.settings.resetConfiguration(acct.name, type, orig[type][i].name);
+							synckolab.settings.resetConfiguration(acct.name, type, orig[type][i].name);
 							pref.resetBranch("SyncKolab.accounts." + acct.name + "." + type + ".configs." + orig[type][i].name);
 						} catch (ex) {
 							
@@ -163,7 +162,7 @@ com.synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
 					continue;
 				}
 
-				com.synckolab.tools.logMessage("checking " + type + "- " + acct[type][i].name, com.synckolab.global.LOG_DEBUG);
+				synckolab.tools.logMessage("checking " + type + "- " + acct[type][i].name, synckolab.global.LOG_DEBUG);
 
 				// if some values change - the cache needs to reset
 				if(orig && orig[type]) {
@@ -173,9 +172,9 @@ com.synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
 							for(k=0; k < resetTriggers.length; k++) {
 								var trigger = resetTriggers[k];
 								if(acct[type][i][trigger] !== orig[type][j][trigger]) {
-									com.synckolab.tools.logMessage("found change trigger - reset config", com.synckolab.global.LOG_DEBUG);
-									com.synckolab.settings.resetConfiguration(acct.name, type, acct[type][i].name);
-									com.synckolab.tools.logMessage("finished reset for " + acct.name + " " + type, com.synckolab.global.LOG_DEBUG);
+									synckolab.tools.logMessage("found change trigger - reset config", synckolab.global.LOG_DEBUG);
+									synckolab.settings.resetConfiguration(acct.name, type, acct[type][i].name);
+									synckolab.tools.logMessage("finished reset for " + acct.name + " " + type, synckolab.global.LOG_DEBUG);
 									break;
 								}
 							}
@@ -185,12 +184,12 @@ com.synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
 				}
 				
 				// write all the base settings
-				for(var n in com.synckolab.config.baseSetting) {
+				for(var n in synckolab.config.baseSetting) {
 					// skip unwanted prototypes (without type)
-					if(com.synckolab.config.baseSetting[n].type >= 0) {
-						com.synckolab.tools.setConfigValue(pref, 
+					if(synckolab.config.baseSetting[n].type >= 0) {
+						synckolab.tools.setConfigValue(pref, 
 								"accounts." + acct.name+"." + type + ".configs." + acct[type][i].name + "." + n, 
-								com.synckolab.config.baseSetting[n].type, 
+								synckolab.config.baseSetting[n].type, 
 								acct[type][i][n]);
 					}
 				}
@@ -199,7 +198,7 @@ com.synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
 			}
 			
 			// write the configList back
-			com.synckolab.tools.setConfigValue(pref, "accounts." + acct.name + "." + type + ".list", com.synckolab.tools.CONFIG_TYPE_CHAR, configs);
+			synckolab.tools.setConfigValue(pref, "accounts." + acct.name + "." + type + ".list", synckolab.tools.CONFIG_TYPE_CHAR, configs);
 		}
 	}
 };
@@ -208,17 +207,17 @@ com.synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
  * Init function. This is called when the configuration dialog or wizard is started.
  * This will read the current configuration and the window elements.
  */
-com.synckolab.settings.init = function () {
+synckolab.settings.init = function () {
 	var i = 0, j;
 	
-	com.synckolab.settings.checkOldConfig();
+	synckolab.settings.checkOldConfig();
 
 	// load the string bundle for translation
-	com.synckolab.settings.strBundle = document.getElementById("synckolabBundle");
+	synckolab.settings.strBundle = document.getElementById("synckolabBundle");
 	// check if calendar is available
-	com.synckolab.settings.isCalendar = com.synckolab.calendarTools.isCalendarAvailable();
+	synckolab.settings.isCalendar = synckolab.calendarTools.isCalendarAvailable();
 	// read the current configuration
-	com.synckolab.settings.config = com.synckolab.config.loadConfiguration();
+	synckolab.settings.config = synckolab.config.loadConfiguration();
 
 	// the format selection boxes:
 	var abList = document.getElementById("contactFormat");
@@ -271,7 +270,7 @@ com.synckolab.settings.init = function () {
 	
 	// the adress book list
 	// fill the contact selection
-	var cn = com.synckolab.addressbookTools.getABDirectory();
+	var cn = synckolab.addressbookTools.getABDirectory();
 	var ABook = cn.getNext();
 
 	// we only have ONE address book - means a fresh install - notify the user
@@ -285,9 +284,9 @@ com.synckolab.settings.init = function () {
 
 	// the calendar
 	// if we do not have a calendar, we can easily skip this
-	if (com.synckolab.settings.isCalendar)
+	if (synckolab.settings.isCalendar)
 	{
-		var calendars = com.synckolab.calendarTools.getCalendars();
+		var calendars = synckolab.calendarTools.getCalendars();
 		abList = document.getElementById("calendarURL");
 		abpopup = document.createElement("menupopup");
 		abList.appendChild(abpopup);
@@ -303,23 +302,23 @@ com.synckolab.settings.init = function () {
 			abchild = document.createElement("menuitem");
 			abpopup.appendChild(abchild);
 			abchild.setAttribute("label", calendars[i].name);
-			abchild.setAttribute("value", com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
+			abchild.setAttribute("value", synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
 			if (i === 0)
 			{
 				abchild.setAttribute("selected", "true");
 				abList.setAttribute("label", calendars[i].name);
-				abList.setAttribute("value", com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
+				abList.setAttribute("value", synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
 			}
 
 			abchild = document.createElement("menuitem");
 			taskpopup.appendChild(abchild);
 			abchild.setAttribute("label", calendars[i].name);
-			abchild.setAttribute("value", com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
+			abchild.setAttribute("value", synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
 			if (i === 0)
 			{
 				abchild.setAttribute("selected", "true");
 				taskList.setAttribute("label", calendars[i].name);
-				taskList.setAttribute("value", com.synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
+				taskList.setAttribute("value", synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
 			}
 		}
 	}
@@ -365,14 +364,14 @@ com.synckolab.settings.init = function () {
 	for (i = 0; i < gAccountManager.allServers.Count(); i++)
 	{
 		var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-		com.synckolab.tools.logMessage("Account found: " + account.rootMsgFolder.baseMessageURI, com.synckolab.global.LOG_DEBUG);		
+		synckolab.tools.logMessage("Account found: " + account.rootMsgFolder.baseMessageURI, synckolab.global.LOG_DEBUG);		
 		if (account.rootMsgFolder.baseMessageURI.toLowerCase().indexOf("imap") === -1)
 		{
-			com.synckolab.tools.logMessage("Account " + account.rootMsgFolder.baseMessageURI + " is not an imap account - skipping!", com.synckolab.global.LOG_INFO);
+			synckolab.tools.logMessage("Account " + account.rootMsgFolder.baseMessageURI + " is not an imap account - skipping!", synckolab.global.LOG_INFO);
 			continue;
 		}
 		
-		var acctName = com.synckolab.tools.text.fixNameToMiniCharset(account.prettyName);
+		var acctName = synckolab.tools.text.fixNameToMiniCharset(account.prettyName);
 		
 		tItem = document.createElement("treeitem");
 		tItem.setAttribute("container", "true");
@@ -390,7 +389,7 @@ com.synckolab.settings.init = function () {
 		var tChildren = document.createElement("treechildren");
 		tItem.appendChild(tChildren);
 		
-		for (j = 0; j < com.synckolab.settings.baseTypes.length;j++) {
+		for (j = 0; j < synckolab.settings.baseTypes.length;j++) {
 			
 			// fill in the childs with the configs
 			tItem = document.createElement("treeitem");
@@ -401,44 +400,44 @@ com.synckolab.settings.init = function () {
 			tItem.appendChild(tRow);
 			tCell = document.createElement("treecell");
 			tRow.appendChild(tCell);
-			tItem.setAttribute("id", "tab-"+com.synckolab.settings.baseTypes[j]+"-" + acctName);
-			tCell.setAttribute("label", this.strBundle.getString(com.synckolab.settings.baseTypes[j]));
-			tCell.setAttribute("value", "tab-"+com.synckolab.settings.baseTypes[j]+"-" + acctName);
+			tItem.setAttribute("id", "tab-"+synckolab.settings.baseTypes[j]+"-" + acctName);
+			tCell.setAttribute("label", this.strBundle.getString(synckolab.settings.baseTypes[j]));
+			tCell.setAttribute("value", "tab-"+synckolab.settings.baseTypes[j]+"-" + acctName);
 			
 		}
 	}
 
-	com.synckolab.settings.fillBaseInfo();
-	com.synckolab.settings.repaintConfigTree();
+	synckolab.settings.fillBaseInfo();
+	synckolab.settings.repaintConfigTree();
 };
 
 /**
  * read the current configuration and see if its "old" style
  */
-com.synckolab.settings.checkOldConfig = function() {
+synckolab.settings.checkOldConfig = function() {
 	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 	
-	var configString = com.synckolab.tools.getConfigValue(pref, "Configs");
+	var configString = synckolab.tools.getConfigValue(pref, "Configs");
 	// no configs - no old config
 	if(!configString || configString.length === 0) {
 		return;
 	}
 	/*
-	if(!confirm( com.synckolab.global.strBundle.getString("config.convert"))) {
+	if(!confirm( synckolab.global.strBundle.getString("config.convert"))) {
 		pref.resetBranch("SyncKolab");
 		return;
 	}
 	
 	configs = configString.split(';');
 	var curConfig = {
-			version: com.synckolab.tools.getConfigValue(pref, "configVersion", com.synckolab.tools.CONFIG_TYPE_INT, 0),
-			debugLevel: com.synckolab.tools.getConfigValue(pref, "debugLevel", com.synckolab.tools.CONFIG_TYPE_INT, com.synckolab.global.LOG_WARNING),
+			version: synckolab.tools.getConfigValue(pref, "configVersion", synckolab.tools.CONFIG_TYPE_INT, 0),
+			debugLevel: synckolab.tools.getConfigValue(pref, "debugLevel", synckolab.tools.CONFIG_TYPE_INT, synckolab.global.LOG_WARNING),
 			// hide folder
-			hideFolder: com.synckolab.tools.getConfigValue(pref, "hideFolder", com.synckolab.tools.CONFIG_TYPE_BOOL, false),
+			hideFolder: synckolab.tools.getConfigValue(pref, "hideFolder", synckolab.tools.CONFIG_TYPE_BOOL, false),
 			// hide the window while sync
-			closeWindow: com.synckolab.tools.getConfigValue(pref, "closeWindow", com.synckolab.tools.CONFIG_TYPE_BOOL, false),
+			closeWindow: synckolab.tools.getConfigValue(pref, "closeWindow", synckolab.tools.CONFIG_TYPE_BOOL, false),
 			// sync automatically once on start
-			syncOnStart: com.synckolab.tools.getConfigValue(pref, "syncOnStart", com.synckolab.tools.CONFIG_TYPE_BOOL, false),
+			syncOnStart: synckolab.tools.getConfigValue(pref, "syncOnStart", synckolab.tools.CONFIG_TYPE_BOOL, false),
 			accounts: []
 	};
 	
@@ -449,7 +448,7 @@ com.synckolab.settings.checkOldConfig = function() {
 			continue;
 		}
 		
-		act = com.synckolab.tools.text.fixNameToMiniCharset(act);
+		act = synckolab.tools.text.fixNameToMiniCharset(act);
 		
 		var acct = null;
 		var j;
@@ -468,7 +467,7 @@ com.synckolab.settings.checkOldConfig = function() {
 			}
 		}
 		
-		sConf = com.synckolab.tools.getConfigValue(pref, "accounts." + acct.name+"." + type + ".list");
+		sConf = synckolab.tools.getConfigValue(pref, "accounts." + acct.name+"." + type + ".list");
 	}
 	
 	*/
@@ -477,11 +476,11 @@ com.synckolab.settings.checkOldConfig = function() {
 /**
  * re-create the config tree,
  */
-com.synckolab.settings.repaintConfigTree = function() {
+synckolab.settings.repaintConfigTree = function() {
 	// remove all nodes under tab-account-[cal|con|task]
-	var conf = com.synckolab.settings.config;
+	var conf = synckolab.settings.config;
 
-	com.synckolab.settings.batch = true;
+	synckolab.settings.batch = true;
 	
 	// sorter for configuration names
 	var configSorter = function(a,b) {
@@ -496,8 +495,8 @@ com.synckolab.settings.repaintConfigTree = function() {
 
 	for(var i = 0; i < conf.accounts.length; i++) {
 		var acctName = conf.accounts[i].name;
-		for (var j = 0; j < com.synckolab.settings.baseTypes.length;j++) {
-			var cType = com.synckolab.settings.baseTypes[j];
+		for (var j = 0; j < synckolab.settings.baseTypes.length;j++) {
+			var cType = synckolab.settings.baseTypes[j];
 			var tItem = document.getElementById("tab-" + cType +"-" + acctName);
 			// delete the treechildren if exist
 			var cnode = tItem.firstChild;
@@ -537,7 +536,7 @@ com.synckolab.settings.repaintConfigTree = function() {
 		}
 	}
 
-	com.synckolab.settings.batch = false;
+	synckolab.settings.batch = false;
 };
 
 /**
@@ -545,7 +544,7 @@ com.synckolab.settings.repaintConfigTree = function() {
  * @param cn the abook cn
  * @param ABook the address book to use
  */
-com.synckolab.settings.fillAddressBook = function (cn, ABook) {
+synckolab.settings.fillAddressBook = function (cn, ABook) {
 	var abList = document.getElementById("contactURL");
 	// delete the childs of the list
 	var cnode = abList.firstChild;
@@ -615,7 +614,7 @@ com.synckolab.settings.fillAddressBook = function (cn, ABook) {
 /**
  * set all folders after an account change
  */
-com.synckolab.settings.setFolders = function (act) {
+synckolab.settings.setFolders = function (act) {
 	
 	this.updateFolder(act, [{
 		prefix: "contact",
@@ -634,7 +633,7 @@ com.synckolab.settings.setFolders = function (act) {
  * @param act the account to search for
  * @param sets an array of prefix/node object for each element to fill
  */
-com.synckolab.settings.updateFolder = function (act, sets) {
+synckolab.settings.updateFolder = function (act, sets) {
 	// dynamically read this...
 	var gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
 	for (var i = 0; i < gAccountManager.allServers.Count(); i++)
@@ -642,7 +641,7 @@ com.synckolab.settings.updateFolder = function (act, sets) {
 		try
 		{
 			var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-			if (account.rootMsgFolder.baseMessageURI === act || com.synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === act)
+			if (account.rootMsgFolder.baseMessageURI === act || synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === act)
 			{
 				for(var j = 0; j < sets.length; j++) {
 					var cfold = sets[j].node;
@@ -663,7 +662,7 @@ com.synckolab.settings.updateFolder = function (act, sets) {
 					cfold.appendChild(tChildren);
 					sets[j].node = tChildren;
 				}
-				com.synckolab.settings.updateFolderElements(account.rootFolder, sets, "");
+				synckolab.settings.updateFolderElements(account.rootFolder, sets, "");
 				return;
 
 			}
@@ -680,7 +679,7 @@ com.synckolab.settings.updateFolder = function (act, sets) {
  * @param msgFolder the current folder
  * @param root the current dom root
  */
-com.synckolab.settings.updateFolderElements = function (msgFolder, origSets)
+synckolab.settings.updateFolderElements = function (msgFolder, origSets)
 {
 	var j, tItem, tRow, tCell, tChildren;
 	var sets = [];
@@ -780,7 +779,7 @@ com.synckolab.settings.updateFolderElements = function (msgFolder, origSets)
 			return (sa < sb) ? -1 : 1;
 		});
 		for(var i = 0; i < folders.length; i++) {
-			com.synckolab.settings.updateFolderElements(folders[i], sets);
+			synckolab.settings.updateFolderElements(folders[i], sets);
 		}
 
 	}
@@ -796,7 +795,7 @@ com.synckolab.settings.updateFolderElements = function (msgFolder, origSets)
  * </ul>
  * @param viewname the item selected
  */
-com.synckolab.settings.setSyncPrefView = function(viewName) {
+synckolab.settings.setSyncPrefView = function(viewName) {
 	if (viewName.indexOf("-") === -1)
 	{
 		alert("Fatal ERROR - unable to get view - Pleasere install!");
@@ -804,7 +803,7 @@ com.synckolab.settings.setSyncPrefView = function(viewName) {
 	}
 	
 	// skip this if we update the tree
-	if (com.synckolab.settings.batch) {
+	if (synckolab.settings.batch) {
 		return;
 	}
 
@@ -818,14 +817,14 @@ com.synckolab.settings.setSyncPrefView = function(viewName) {
 	var tabs = document.getElementById("tabs");
 
 	// save changes if contact/cal or task was open before
-	com.synckolab.settings.getInfo();
+	synckolab.settings.getInfo();
 
 	// remember the type
-	com.synckolab.settings.activeType = opts[1];
+	synckolab.settings.activeType = opts[1];
 	if(opts.length > 2) {
-		if(com.synckolab.settings.activeAccount !== opts[2]) {
-			com.synckolab.settings.activeAccount = opts[2];
-			com.synckolab.settings.setFolders(com.synckolab.settings.activeAccount);
+		if(synckolab.settings.activeAccount !== opts[2]) {
+			synckolab.settings.activeAccount = opts[2];
+			synckolab.settings.setFolders(synckolab.settings.activeAccount);
 		}
 	}
 	switch (opts[1])
@@ -836,13 +835,13 @@ com.synckolab.settings.setSyncPrefView = function(viewName) {
 		return;
 	case "Acct":
 		tabs.selectedPanel = document.getElementById("accountTab");
-		com.synckolab.settings.fillAccountInfo(opts[2]);
+		synckolab.settings.fillAccountInfo(opts[2]);
 		document.getElementById("loadConfig").setAttribute("disabled", false);
 		break;
 	case "contact":
 		if(opts.length > 3) {
 			tabs.selectedPanel = document.getElementById("contactTab");
-			com.synckolab.settings.fillInfo("contact", opts[2],opts[3]);
+			synckolab.settings.fillInfo("contact", opts[2],opts[3]);
 			document.getElementById("delConfig").setAttribute("disabled", false);
 		} else {
 			document.getElementById("newConfig").setAttribute("disabled", false);
@@ -851,7 +850,7 @@ com.synckolab.settings.setSyncPrefView = function(viewName) {
 	case "calendar":
 		if (this.isCalendar && opts.length > 3) {
 			tabs.selectedPanel = document.getElementById("calTab");
-			com.synckolab.settings.fillInfo("calendar", opts[2],opts[3]);
+			synckolab.settings.fillInfo("calendar", opts[2],opts[3]);
 			document.getElementById("delConfig").setAttribute("disabled", false);
 		} else {
 			document.getElementById("newConfig").setAttribute("disabled", false);
@@ -860,7 +859,7 @@ com.synckolab.settings.setSyncPrefView = function(viewName) {
 	case "task":
 		if (this.isCalendar && opts.length > 3) {
 			tabs.selectedPanel = document.getElementById("taskTab");
-			com.synckolab.settings.fillInfo("task", opts[2],opts[3]);
+			synckolab.settings.fillInfo("task", opts[2],opts[3]);
 			document.getElementById("delConfig").setAttribute("disabled", false);
 		} else {
 			document.getElementById("newConfig").setAttribute("disabled", false);
@@ -873,9 +872,9 @@ com.synckolab.settings.setSyncPrefView = function(viewName) {
 /**
  * fills the base info dialog from the current active config
  */
-com.synckolab.settings.fillBaseInfo = function() {
+synckolab.settings.fillBaseInfo = function() {
 	
-	var conf = com.synckolab.settings.config;
+	var conf = synckolab.settings.config;
 	document.getElementById("hideFolder").checked = conf.hideFolder;
 	document.getElementById("closeWindow").checked = conf.closeWindow;
 	document.getElementById("syncOnStart").checked = conf.syncOnStart;
@@ -894,7 +893,7 @@ com.synckolab.settings.fillBaseInfo = function() {
 		if (cLabel !== null) {
 			debugEle.setAttribute("label", cLabel.getAttribute("label"));
 		} else {
-			com.synckolab.tools.logMessage("WARNING: could not find Label " + sCLabel, com.synckolab.global.LOG_WARNING);
+			synckolab.tools.logMessage("WARNING: could not find Label " + sCLabel, synckolab.global.LOG_WARNING);
 		}
 	}
 	
@@ -903,7 +902,7 @@ com.synckolab.settings.fillBaseInfo = function() {
 /**
  * Enables/disables the controls on the page
  */
-com.synckolab.settings.setControlState = function (type, active) 
+synckolab.settings.setControlState = function (type, active) 
 {
 	var fieldsArray = [
 			"URL",
@@ -926,7 +925,7 @@ com.synckolab.settings.setControlState = function (type, active)
  * @param create set to true to create the account object if it doesnt exist
  * @returns the account object and possibly null if create is false
  */
-com.synckolab.settings.getAccount = function(config, name, create) {
+synckolab.settings.getAccount = function(config, name, create) {
 	for(var i = 0; i < config.accounts.length; i++) {
 		if(config.accounts[i].name === name) {
 			return config.accounts[i];
@@ -952,7 +951,7 @@ com.synckolab.settings.getAccount = function(config, name, create) {
  * @param create set to true to create the account object if it doesnt exist
  * @returns the account object and possibly null if create is false
  */
-com.synckolab.settings.getAccountIdx = function(config, name) {
+synckolab.settings.getAccountIdx = function(config, name) {
 	for(var i = 0; i < config.accounts.length; i++) {
 		if(config.accounts[i].name === name) {
 			return i;
@@ -964,8 +963,8 @@ com.synckolab.settings.getAccountIdx = function(config, name) {
 /**
  * set the base information from the ui in the current conig object
  */
-com.synckolab.settings.getBaseInfo = function() {
-	var conf = com.synckolab.settings.config;
+synckolab.settings.getBaseInfo = function() {
+	var conf = synckolab.settings.config;
 	conf.hideFolder = document.getElementById("hideFolder").checked;
 	conf.debugLevel = document.getElementById("debugLevel").value;
 	conf.closeWindow = document.getElementById("closeWindow").checked;
@@ -978,26 +977,26 @@ com.synckolab.settings.getBaseInfo = function() {
  * It is based on Account+Type+Config name
  * @returns null if not found, otherwise the config sub-object
  */
-com.synckolab.settings.getActiveConfig = function() {
+synckolab.settings.getActiveConfig = function() {
 	// nothing to save back
-	if(!com.synckolab.settings.activeType || !com.synckolab.settings.activeAccount || !com.synckolab.settings.activeConfig) {
+	if(!synckolab.settings.activeType || !synckolab.settings.activeAccount || !synckolab.settings.activeConfig) {
 		return null;
 	}
 	
 	// get the right tree in the configuration object
-	var conf = com.synckolab.settings.config;
-	var account = com.synckolab.settings.getAccount(conf, com.synckolab.settings.activeAccount, true);
+	var conf = synckolab.settings.config;
+	var account = synckolab.settings.getAccount(conf, synckolab.settings.activeAccount, true);
 	var config = null;
-	for (var i=0; i < account[com.synckolab.settings.activeType].length; i++) {
-		if(account[com.synckolab.settings.activeType][i].name === com.synckolab.settings.activeConfig) {
-			config = account[com.synckolab.settings.activeType][i];
+	for (var i=0; i < account[synckolab.settings.activeType].length; i++) {
+		if(account[synckolab.settings.activeType][i].name === synckolab.settings.activeConfig) {
+			config = account[synckolab.settings.activeType][i];
 			break;
 		}
 	}
 	
 	if(config === null) {
-		config = { name: com.synckolab.settings.activeConfig };
-		account[com.synckolab.settings.activeType].push(config);
+		config = { name: synckolab.settings.activeConfig };
+		account[synckolab.settings.activeType].push(config);
 	}
 	
 	return config;
@@ -1006,21 +1005,21 @@ com.synckolab.settings.getActiveConfig = function() {
 /**
  * set the configuration of the open contact/calendar/task info
  */
-com.synckolab.settings.getInfo = function() {
+synckolab.settings.getInfo = function() {
 	// nothing to save back
-	if(!com.synckolab.settings.activeType || !com.synckolab.settings.activeAccount || !com.synckolab.settings.activeConfig) {
+	if(!synckolab.settings.activeType || !synckolab.settings.activeAccount || !synckolab.settings.activeConfig) {
 		return;
 	}
 	
-	if(com.synckolab.settings.activeType !== "contact" && com.synckolab.settings.activeType !== "calendar" && com.synckolab.settings.activeType !== "task") {
+	if(synckolab.settings.activeType !== "contact" && synckolab.settings.activeType !== "calendar" && synckolab.settings.activeType !== "task") {
 		return;
 	} 
 		
 
-	var config = com.synckolab.settings.getActiveConfig();
+	var config = synckolab.settings.getActiveConfig();
 	
 	// fill all fields
-	var prefix = com.synckolab.settings.activeType;
+	var prefix = synckolab.settings.activeType;
 
 	// the address book / calendar
 	config.source = document.getElementById(prefix + "URL").value;
@@ -1048,8 +1047,8 @@ com.synckolab.settings.getInfo = function() {
  * function for the folder listing. once a folder is selected this is called and sets the new folder in
  * the active config. 
  */
-com.synckolab.settings.setFolder = function (uri) {
-	var config = com.synckolab.settings.getActiveConfig();
+synckolab.settings.setFolder = function (uri) {
+	var config = synckolab.settings.getActiveConfig();
 	if (config === null)
 	{
 		return;
@@ -1057,7 +1056,7 @@ com.synckolab.settings.setFolder = function (uri) {
 	config.folderPath = uri;
 };
 
-com.synckolab.settings.fillAccountInfo = function(acctName) {
+synckolab.settings.fillAccountInfo = function(acctName) {
 	
 };
 
@@ -1067,13 +1066,13 @@ com.synckolab.settings.fillAccountInfo = function(acctName) {
  * @param acctName the account name
  * @param confName the configuration name
  */
-com.synckolab.settings.fillInfo = function(type, acctName, confName) {
-	com.synckolab.settings.activeType = type;
-	com.synckolab.settings.activeAccount = acctName;
-	com.synckolab.settings.activeConfig = confName;
+synckolab.settings.fillInfo = function(type, acctName, confName) {
+	synckolab.settings.activeType = type;
+	synckolab.settings.activeAccount = acctName;
+	synckolab.settings.activeConfig = confName;
 	
-	var config = com.synckolab.settings.getActiveConfig();
-	var prefix = com.synckolab.settings.activeType;
+	var config = synckolab.settings.getActiveConfig();
+	var prefix = synckolab.settings.activeType;
 
 	var sCurFolder = config.folderPath;
 	if (sCurFolder !== null && sCurFolder !== "")
@@ -1163,24 +1162,24 @@ com.synckolab.settings.fillInfo = function(type, acctName, confName) {
 /**
  * adds a new configuration to an account
  */
-com.synckolab.settings.addConfig = function() {
-	switch(com.synckolab.settings.activeType) {
+synckolab.settings.addConfig = function() {
+	switch(synckolab.settings.activeType) {
 		case "contact":
 		case "calendar":
 		case "task":
 			// make sure active config is NOT set (we are creating here)
-			com.synckolab.settings.activeConfig = null;
+			synckolab.settings.activeConfig = null;
 
 			var retVals = { name: null };
 			var res = window.openDialog("chrome://synckolab/content/wndNewConfigType.xul", 
 					"newCfg", 
-					"modal,width=360,height=200,resizable=0", retVals, com.synckolab.settings.activeType, com.synckolab.settings.config);
+					"modal,width=360,height=200,resizable=0", retVals, synckolab.settings.activeType, synckolab.settings.config);
 			if(retVals.name !== null && retVals.name.length > 2) {
-				var acct = com.synckolab.settings.getAccount(com.synckolab.settings.config, com.synckolab.settings.activeAccount, true);
+				var acct = synckolab.settings.getAccount(synckolab.settings.config, synckolab.settings.activeAccount, true);
 				// check the configs
-				for(var i = 0; i < acct[com.synckolab.settings.activeType].length; i++) {
+				for(var i = 0; i < acct[synckolab.settings.activeType].length; i++) {
 					// already go the configuration
-					if(retVals.name === acct[com.synckolab.settings.activeType][i].name) {
+					if(retVals.name === acct[synckolab.settings.activeType][i].name) {
 						return;
 					}
 				}
@@ -1190,18 +1189,18 @@ com.synckolab.settings.addConfig = function() {
 				};
 				
 				// read all the base settings
-				for(var n in com.synckolab.config.baseSetting) {
+				for(var n in synckolab.config.baseSetting) {
 					// skip unwanted prototypes (without type)
-					if(com.synckolab.config.baseSetting[n].type >= 0) {
-						cConf[n] = com.synckolab.config.baseSetting[n].def;
+					if(synckolab.config.baseSetting[n].type >= 0) {
+						cConf[n] = synckolab.config.baseSetting[n].def;
 					}
 				}
 				
-				acct[com.synckolab.settings.activeType].push(cConf);
+				acct[synckolab.settings.activeType].push(cConf);
 				
-				com.synckolab.tools.logMessage("New config: " + com.synckolab.settings.config.toSource(), com.synckolab.global.LOG_DEBUG);
+				synckolab.tools.logMessage("New config: " + synckolab.settings.config.toSource(), synckolab.global.LOG_DEBUG);
 				// repaint the tree and select the newly created node
-				com.synckolab.settings.repaintConfigTree("tab-"+com.synckolab.settings.activeType+"-" + com.synckolab.settings.activeAccount + "-" + retVals.name);
+				synckolab.settings.repaintConfigTree("tab-"+synckolab.settings.activeType+"-" + synckolab.settings.activeAccount + "-" + retVals.name);
 			}
 	}
 };
@@ -1209,33 +1208,33 @@ com.synckolab.settings.addConfig = function() {
 /**
  * adds a new configuration to an account
  */
-com.synckolab.settings.delConfig = function() {
-	switch(com.synckolab.settings.activeType) {
+synckolab.settings.delConfig = function() {
+	switch(synckolab.settings.activeType) {
 		case "contact":
 		case "calendar":
 		case "task":
-			if (confirm(this.strBundle.getFormattedString("configDelete", [com.synckolab.settings.activeConfig]))) {
+			if (confirm(this.strBundle.getFormattedString("configDelete", [synckolab.settings.activeConfig]))) {
 				
-				var acctIdx = com.synckolab.settings.getAccountIdx(com.synckolab.settings.config, com.synckolab.settings.activeAccount);
-				var acct = com.synckolab.settings.config.accounts[acctIdx];
+				var acctIdx = synckolab.settings.getAccountIdx(synckolab.settings.config, synckolab.settings.activeAccount);
+				var acct = synckolab.settings.config.accounts[acctIdx];
 				
 				// update the configs
 				var configs = [];
-				for(var i = 0; i < acct[com.synckolab.settings.activeType].length; i++) {
+				for(var i = 0; i < acct[synckolab.settings.activeType].length; i++) {
 					// already go the configuration
-					if(com.synckolab.settings.activeConfig !== acct[com.synckolab.settings.activeType][i].name) {
-						configs.push(acct[com.synckolab.settings.activeType][i]);
+					if(synckolab.settings.activeConfig !== acct[synckolab.settings.activeType][i].name) {
+						configs.push(acct[synckolab.settings.activeType][i]);
 					}
 				}
-				acct[com.synckolab.settings.activeType] = configs;
+				acct[synckolab.settings.activeType] = configs;
 				
-				com.synckolab.settings.activeConfig = null;
-				com.synckolab.settings.activeType = null;
+				synckolab.settings.activeConfig = null;
+				synckolab.settings.activeType = null;
 				
 				// repaint the tree and select the parent 
-				com.synckolab.settings.repaintConfigTree();
+				synckolab.settings.repaintConfigTree();
 				// select root
-				com.synckolab.settings.setSyncPrefView("Welcome-Welcome");
+				synckolab.settings.setSyncPrefView("Welcome-Welcome");
 
 				return;
 				
@@ -1248,12 +1247,12 @@ com.synckolab.settings.delConfig = function() {
  * @param config the config name
  * @param type CALENDAR|TASK|CONTACT + FOLDER
  */
-com.synckolab.settings.resetConfiguration = function (account, type, config)
+synckolab.settings.resetConfiguration = function (account, type, config)
 {
-	com.synckolab.tools.logMessage("Resetting " + account + "!", com.synckolab.global.LOG_INFO);
+	synckolab.tools.logMessage("Resetting " + account + "!", synckolab.global.LOG_INFO);
 
 	var file = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsIFile);
-	file.append("synckolab." + com.synckolab.tools.text.fixNameToMiniCharset(account) + "." + type + "." + config + ".hdb");
+	file.append("synckolab." + synckolab.tools.text.fixNameToMiniCharset(account) + "." + type + "." + config + ".hdb");
 	if (file.exists()) {
 		file.remove(true);
 	}
@@ -1265,7 +1264,7 @@ com.synckolab.settings.resetConfiguration = function (account, type, config)
 		return;
 	}
 
-	file.append(com.synckolab.tools.text.fixNameToMiniCharset(account));
+	file.append(synckolab.tools.text.fixNameToMiniCharset(account));
 	if (file.exists())
 	{
 		file.append(type + "_" + config);

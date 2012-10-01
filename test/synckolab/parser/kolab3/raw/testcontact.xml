@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<contact version="3.0dev1" xmlns="http://kolab.org">
+  <!-- Common fields -->
+  <uid>uid</uid>
+  <body></body>
+  <categories></categories>
+  <creation-date>2004-05-04T15:00:00Z</creation-date>
+  <last-modification-date>2004-05-04T15:00:00Z</last-modification-date>
+  <sensitivity>public</sensitivity>
+  <inline-attachment></inline-attachment>
+  <link-attachment></link-attachment>
+  <product-id></product-id>
+  <!-- Contact specific fields -->
+  <name>
+    <given-name>(string, default empty)</given-name>
+    <middle-names>(string, default empty)</middle-names>
+    <last-name>(string, default empty)</last-name>
+    <full-name>(string, default empty)</full-name>
+    <initials>(string, default empty)</initials>
+    <prefix>(string, default empty)</prefix>
+    <suffix>(string, default empty)</suffix>
+  </name>
+  <free-busy-url>(string, default empty)</free-busy-url>
+  <organization>(string, default empty)</organization>
+  <web-page>(string, default empty)</web-page>
+  <im-address>(string, default empty)</im-address>
+  <department>(string, default empty)</department>
+  <office-location>(string, default empty)</office-location>
+  <profession>(string, default empty)</profession>
+  <job-title>(string, default empty)</job-title>
+  <manager-name>(string, default empty)</manager-name>
+  <assistant>(string, default empty)</assistant>
+  <nick-name>(string, default empty)</nick-name>
+  <spouse-name>(string, default empty)</spouse-name>
+  <birthday>(date, no default)</birthday>
+  <anniversary>(date, no default)</anniversary>
+  <picture>(string(attachment filename), default empty)</picture>
+  <children>(string, default empty)</children>
+  <gender>(string, default empty)</gender>
+  <language>(string, default empty)</language>
+  <phone>
+    <type>(string, no default)</type>
+    <number>(string, default empty)</number>
+  </phone>
+  <email>
+    <display-name>(string, default empty)</display-name>
+    <smtp-address>(string, default empty)</smtp-address>
+  </email>
+  <address>
+    <type>(string, default home)</type>
+    <street>(string, default empty)</street>
+    <locality>(string, default empty)</locality>
+    <region>(string, default empty)</region>
+    <postal-code>(string, default empty)</postal-code>
+    <country>(string, default empty)</country>
+  </address>
+  <preferred-address>(string, default none)</preferred-address>
+  <latitude>3.23</latitude>
+  <longitude>5.222</longitude>
+</contact>
+

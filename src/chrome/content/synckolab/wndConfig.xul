@@ -4,7 +4,7 @@
 
 <!DOCTYPE loc SYSTEM "chrome://synckolab/locale/synckolab.dtd">
 
-<dialog id="syncKolabConfigDlg" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" onload="com.synckolab.settings.init();" buttons="accept,cancel" ondialogaccept="return com.synckolab.settings.savePrefs();" persist="screenX screenY" width="0" title="SyncKolab 2.0.3">
+<dialog id="syncKolabConfigDlg" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" onload="synckolab.settings.init();" buttons="accept,cancel" ondialogaccept="return synckolab.settings.savePrefs();" persist="screenX screenY" width="0" title="SyncKolab 2.0.3">
 
 	<script type="application/x-javascript" src="chrome://synckolab/content/calendarTools.js" />
 	<script type="application/x-javascript" src="chrome://synckolab/content/addressbookTools.js"/>
@@ -23,7 +23,7 @@
 		<hbox flex="1">
 			<vbox flex="1">
 				<!--  Tree with all configurations -->
-				<tree class="synckolab" hidecolumnpicker="true" id="configTree" flex="1" onselect="com.synckolab.settings.setSyncPrefView(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));" width="150">
+				<tree class="synckolab" hidecolumnpicker="true" id="configTree" flex="1" onselect="synckolab.settings.setSyncPrefView(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));" width="150">
 					<treecols>
 						<treecol id="name" flex="1" primary="true" />
 					</treecols>
@@ -32,9 +32,9 @@
 					</treechildren>
 				</tree>
 				<hbox>
-					<button id="newConfig" label="&synckolab.settings.add;" orient="vertical" oncommand="com.synckolab.settings.addConfig();" />
-					<button id="loadConfig" label="&synckolab.settings.load;" orient="vertical" oncommand="com.synckolab.settings.loadConfig();" />
-					<button id="delConfig" label="&synckolab.settings.del;" orient="vertical" oncommand="com.synckolab.settings.delConfig();" />
+					<button id="newConfig" label="&synckolab.settings.add;" orient="vertical" oncommand="synckolab.settings.addConfig();" />
+					<button id="loadConfig" label="&synckolab.settings.load;" orient="vertical" oncommand="synckolab.settings.loadConfig();" />
+					<button id="delConfig" label="&synckolab.settings.del;" orient="vertical" oncommand="synckolab.settings.delConfig();" />
 				</hbox>
 			</vbox>
 			<splitter collapse="before" resizeafter="farthest">
@@ -54,19 +54,19 @@
 							</description>
 							<hbox>
 								<label value="&synckolab.settings.Updates;" />
-								<label class="text-link" onclick="com.synckolab.tools.launchUrl('http://www.gargan.org')">www.gargan.org</label>
+								<label class="text-link" onclick="synckolab.tools.launchUrl('http://www.gargan.org')">www.gargan.org</label>
 							</hbox>
 							
 							<description style="width: 300px">
                                 &synckolab.settings.DescKolabServer;
 							</description>
 
-							<label class="text-link" onclick="com.synckolab.tools.launchUrl('http://www.kolab.org')">www.kolab.org</label>
+							<label class="text-link" onclick="synckolab.tools.launchUrl('http://www.kolab.org')">www.kolab.org</label>
 
 							<description style="width: 300px" flex="1">&synckolab.settings.DescOtherClients;</description>
-							<label class="text-link" onclick="com.synckolab.tools.launchUrl('http://www.kontact.org')">KDE Client (Kontact) (GPL)</label>
-							<label class="text-link" onclick="com.synckolab.tools.launchUrl('http://www.horde.org')">Horde Webmail (GPL)</label>
-							<label class="text-link" onclick="com.synckolab.tools.launchUrl('http://code.google.com/p/kolab-android/')">Kolab Android</label>
+							<label class="text-link" onclick="synckolab.tools.launchUrl('http://www.kontact.org')">KDE Client (Kontact) (GPL)</label>
+							<label class="text-link" onclick="synckolab.tools.launchUrl('http://www.horde.org')">Horde Webmail (GPL)</label>
+							<label class="text-link" onclick="synckolab.tools.launchUrl('http://code.google.com/p/kolab-android/')">Kolab Android</label>
 
 							<separator class="thin" />
 							<hbox>
@@ -86,7 +86,7 @@
 							<checkbox id="hideFolder" style="width: 300px" label="&synckolab.settings.hideFolder;"/>
 							<checkbox id="closeWindow" style="width: 300px" label="&synckolab.settings.CloseWindow;" />
 							
-							<button label="&synckolab.settings.saveAll;" oncommand="com.synckolab.settings.saveAllConfig();" />
+							<button label="&synckolab.settings.saveAll;" oncommand="synckolab.settings.saveAllConfig();" />
 						</vbox>
 					</tabpanel>
 					<tabpanel id="accountTab" style="border:0px solid #000" flex="1">
@@ -95,7 +95,7 @@
 								<label value="&synckolab.settings.SyncKolabHeader;" style="font-size: 16pt;" />
 							</hbox>
 							<label value="&synckolab.settings.Updates;" />
-							<label class="text-link" onclick="com.synckolab.tools.launchUrl('http://www.gargan.org')">www.gargan.org</label>
+							<label class="text-link" onclick="synckolab.tools.launchUrl('http://www.gargan.org')">www.gargan.org</label>
 							<separator class="thin" />
 						</vbox>
 					</tabpanel>
@@ -108,7 +108,7 @@
 							</menulist>
 							<separator class="thin" />
 
-							<tree class="synckolab" flex="7" id="contactImapFolder" rows="7" height="150" width="250" hidecolumnpicker="true" seltype="single" onselect="com.synckolab.settings.setFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
+							<tree class="synckolab" flex="7" id="contactImapFolder" rows="7" height="150" width="250" hidecolumnpicker="true" seltype="single" onselect="synckolab.settings.setFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
 								<treecols>
 									<treecol id="conFolder" label="&synckolab.settings.ContactFolder;" primary="true" flex="1" />
 								</treecols>
@@ -121,7 +121,7 @@
 								</menulist>
 							</hbox>
 
-							<checkbox id="contactSync" label="&synckolab.settings.SyncContacts;" tooltiptext="&synckolab.settings.SyncContactsTip;" oncommand="com.synckolab.settings.setControlState('contact', this.checked)" />
+							<checkbox id="contactSync" label="&synckolab.settings.SyncContacts;" tooltiptext="&synckolab.settings.SyncContactsTip;" oncommand="synckolab.settings.setControlState('contact', this.checked)" />
 
 							<checkbox id="contactSyncListenerImap" label="&synckolab.settings.SyncListener;"/>
 							<checkbox id="contactSaveToImap" label="&synckolab.settings.SaveToImap;" tooltiptext="&synckolab.settings.SaveToImapTip;" />
@@ -145,7 +145,7 @@
 <!-- 								<textbox id="contactSyncInterval" maxlength="5" style="width: 50px" /> -->
 <!-- 								<label value="&synckolab.settings.SyncIntervalMinutes;" /> -->
 <!-- 							</hbox> -->
-							<button label="&synckolab.settings.saveSingle;" oncommand="com.synckolab.settings.saveSingleConfig();" />
+							<button label="&synckolab.settings.saveSingle;" oncommand="synckolab.settings.saveSingleConfig();" />
 
 						</vbox>
 
@@ -161,7 +161,7 @@
 
 							<separator class="thin" />
 
-							<tree class="synckolab" flex="7" id="calendarImapFolder" rows="7" height="150" width="250" hidecolumnpicker="true" seltype="single" onselect="com.synckolab.settings.setFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
+							<tree class="synckolab" flex="7" id="calendarImapFolder" rows="7" height="150" width="250" hidecolumnpicker="true" seltype="single" onselect="synckolab.settings.setFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
 								<treecols>
 									<treecol id="calFolder" label="&synckolab.settings.CalendarFolder;" primary="true" flex="1" />
 								</treecols>
@@ -176,7 +176,7 @@
 								<textbox id="calendarSyncTimeframe" maxlength="4" style="width: 30px" />
 								<label value="&synckolab.settings.TimeframeSyncDays;" />
 							</hbox>
-							<checkbox id="calendarSync" label="&synckolab.settings.SyncCalendar;" tooltiptext="&synckolab.settings.SyncCalendarTip;" oncommand="com.synckolab.settings.setControlState('calendar', this.checked)" />
+							<checkbox id="calendarSync" label="&synckolab.settings.SyncCalendar;" tooltiptext="&synckolab.settings.SyncCalendarTip;" oncommand="synckolab.settings.setControlState('calendar', this.checked)" />
 
 							<checkbox id="calendarSyncListenerImap" label="&synckolab.settings.SyncListener;"/>
 							<checkbox id="calendarSaveToImap" label="&synckolab.settings.SaveToImap;" tooltiptext="&synckolab.settings.SaveToImapTip;" />
@@ -213,7 +213,7 @@
 
 							<separator class="thin" />
 
-							<tree class="synckolab" flex="7" id="taskImapFolder" rows="7" height="150" width="250" hidecolumnpicker="true" seltype="single" onselect="com.synckolab.settings.setFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
+							<tree class="synckolab" flex="7" id="taskImapFolder" rows="7" height="150" width="250" hidecolumnpicker="true" seltype="single" onselect="synckolab.settings.setFolder(this.view.getItemAtIndex(this.currentIndex).firstChild.firstChild.getAttribute('value'));">
 								<treecols>
 									<treecol id="taskFolder" label="&synckolab.settings.TaskFolder;" primary="true" flex="1" />
 								</treecols>
@@ -229,7 +229,7 @@
 								<textbox id="taskSyncTimeframe" maxlength="4" style="width: 30px" />
 								<label value="&synckolab.settings.TimeframeSyncDays;" />
 							</hbox>
-							<checkbox id="taskSync" label="&synckolab.settings.SyncTasks;" tooltiptext="&synckolab.settings.SyncTasksTip;" oncommand="com.synckolab.settings.setControlState('task', this.checked)" />
+							<checkbox id="taskSync" label="&synckolab.settings.SyncTasks;" tooltiptext="&synckolab.settings.SyncTasksTip;" oncommand="synckolab.settings.setControlState('task', this.checked)" />
 
 							<checkbox id="taskSyncListenerImap" label="&synckolab.settings.SyncListener;"/>
 							<checkbox id="taskSaveToImap" label="&synckolab.settings.SaveToImap;" tooltiptext="&synckolab.settings.SaveToImapTip;" />

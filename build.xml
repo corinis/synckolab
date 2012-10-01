@@ -1,54 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- ====================================================================== 
-     Dec 21, 2009 5:30:28 PM
-
-     SyncKolab    
-     Sync your contacts with imap
-                   
-     gargan
-     ====================================================================== -->
+	SyncKolab: Sync your contacts with imap 
+	Author: Niko Berger
+	====================================================================== -->
 <project name="SyncKolab" default="default">
-    <description>
-            Sync your contacts with imap
-    </description>
-	<property name="version" value="2.0.3"/>	
+	<description>
+		Sync your contacts with imap
+	</description>
+	<property name="version" value="2.0.3" />
 
-    <!-- ================================= 
-          target: default              
-         ================================= -->
-    <target name="default" depends="depends" description="Sync your contacts with imap">
-    	<delete>
-    		<fileset dir="build">
-        		<include name="**/*.*"/>
-    		</fileset>
-    	</delete>
-        <copy todir="build">
-        	<fileset dir="src">
-        		<include name="**/*.*"/>
-        		<exclude name="**/*.orig"/>
-        	</fileset>
-        </copy>
-    	<zip destfile="build/chrome/synckolab.jar" basedir="build/chrome"/>
-    	<zip destfile="synckolab-${version}.xpi" basedir="build"/>
-    </target>
+	<!-- ================================= target: default ================================= -->
+	<target name="default" depends="depends" description="Sync your contacts with imap">
+		<delete>
+			<fileset dir="build">
+				<include name="**/*.*" />
+			</fileset>
+		</delete>
+		<copy todir="build">
+			<fileset dir="src">
+				<include name="**/*.*" />
+				<exclude name="**/*.orig" />
+			</fileset>
+		</copy>
+		<zip destfile="build/chrome/synckolab.jar" basedir="build/chrome" />
+		<zip destfile="synckolab-${version}.xpi" basedir="build" />
+	</target>
 
 	<target name="nightly" description="nighlty build">
-		
-        <copy todir="build">
-        	<fileset dir="src">
-        		<include name="**/*.*"/>
-        	</fileset>
-        </copy>
-		<replace dir="build" value="http://www.gargan.org/extensions/update.rdf">
-			<include name="**/*.*"/>
-		</replace>
-		
-    	<zip destfile="synckolab-AMO-${version}.xpi"/>
-	</target>
-    <!-- - - - - - - - - - - - - - - - - - 
-          target: depends                      
-         - - - - - - - - - - - - - - - - - -->
-    <target name="depends">
-    </target>
 
+		<copy todir="build">
+			<fileset dir="src">
+				<include name="**/*.*" />
+			</fileset>
+		</copy>
+		<replace dir="build" value="http://www.gargan.org/extensions/update.rdf">
+			<include name="**/*.*" />
+		</replace>
+
+		<zip destfile="synckolab-AMO-${version}.xpi" />
+	</target>
+	<!-- - - - - - - - - - - - - - - - - - 
+		target: depends
+	- - - - - - - - - - - - - - - - - -->
+	<target name="depends">
+	</target>
+
+	<!-- Run QUnit -->
+	<target name="test" description="run qunit tests">
+		<java dir="." fork="true" classname="org.mozilla.javascript.tools.shell.Main">
+			<classpath>
+				<fileset dir="test/lib"><include name="js.jar"/></fileset>
+			</classpath>
+			<arg value="-opt"/>
+			<arg value="-1"/>
+			<arg value="-debug"/>
+			<arg value="test/suite.js"/>
+		</java>
+	</target>
 </project>

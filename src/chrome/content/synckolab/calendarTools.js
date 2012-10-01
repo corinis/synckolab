@@ -38,12 +38,11 @@ try {
 	// ignore exception if lightning is not installed
 }
 
-if(!com) var com={};
-if(!com.synckolab) com.synckolab={};
+if(!synckolab) var synckolab={};
 
 /* ----- general functions to access calendar and events ----- */
 
-com.synckolab.calendarTools = {
+synckolab.calendarTools = {
 		activeCalendarManager: null,
 
 		// make sure the listener is only registered ONCE
@@ -88,7 +87,7 @@ com.synckolab.calendarTools = {
 				return syncCalManager.getCalendars({});
 			}
 			catch (e) {
-				com.synckolab.tools.logMessage("Error getting calendars: " + e, com.synckolab.global.LOG_ERROR);
+				synckolab.tools.logMessage("Error getting calendars: " + e, synckolab.global.LOG_ERROR);
 				return null;
 			}
 		},
@@ -97,9 +96,9 @@ com.synckolab.calendarTools = {
 		 * add a listener to a calendar. This makes sure a listener is not double-added.
 		 */
 		registerListener: function(calendar, listener) {
-			if(listener && !com.synckolab.calendarTools.listenerRegistered[calendar.id]) {
+			if(listener && !synckolab.calendarTools.listenerRegistered[calendar.id]) {
 				calendar.addObserver(listener);
-				com.synckolab.calendarTools.listenerRegistered[calendar.id] = true;
+				synckolab.calendarTools.listenerRegistered[calendar.id] = true;
 			}
 		},
 
@@ -146,7 +145,7 @@ com.synckolab.calendarTools = {
 		 * This is taken from the lightning extension (calendar-event-dialog.js#938ff setItemProperty)
 		 */
 		setKolabItemProperty: function (item, propertyName, value) {
-			//com.synckolab.tools.logMessage("setting property: " + propertyName + " with value " + value, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+			//synckolab.tools.logMessage("setting property: " + propertyName + " with value " + value, synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 			try
 			{
 				switch(propertyName) {
@@ -172,7 +171,7 @@ com.synckolab.calendarTools = {
 					item.isCompleted = value;
 					break;
 				case "status":
-					item.status = com.synckolab.calendarTools.getTaskStatus(value,false);
+					item.status = synckolab.calendarTools.getTaskStatus(value,false);
 					break;
 				case "title":
 					item.title = value;
@@ -203,7 +202,7 @@ com.synckolab.calendarTools = {
 				}
 			}
 			catch (ex){
-				com.synckolab.tools.logMessage("unable to set property: " + propertyName + " with value " + value, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_ERROR);
+				synckolab.tools.logMessage("unable to set property: " + propertyName + " with value " + value, synckolab.global.LOG_CAL + synckolab.global.LOG_ERROR);
 			}
 		},
 
@@ -266,7 +265,7 @@ com.synckolab.calendarTools = {
 				rorgmail = revent.organizer.mail;
 			}
 			var org2mail = (config.email === rorgmail);
-			com.synckolab.tools.logMessage("allowSyncEvent: " + org2mail + ":" + lpublic + ":" + rpublic, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG );
+			synckolab.tools.logMessage("allowSyncEvent: " + org2mail + ":" + lpublic + ":" + rpublic, synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG );
 			return org2mail;
 		},
 
@@ -276,8 +275,8 @@ com.synckolab.calendarTools = {
 		checkEventBeforeSync: function (fevent, revent, lsyncCalendar) {
 			var rc = this.allowSyncEvent(fevent, revent, lsyncCalendar);
 			if (!rc) {
-				com.synckolab.tools.logMessage("Update local event with server one : " + revent.id, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG );
-				lsyncCalendar.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("localUpdate"));
+				synckolab.tools.logMessage("Update local event with server one : " + revent.id, synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG );
+				lsyncCalendar.curItemInListStatus.setAttribute("label", synckolab.global.strBundle.getString("localUpdate"));
 				lsyncCalendar.gConfig.calendar.modifyItem(revent, fevent, lsyncCalendar.gEvents);
 			}
 			return rc;
@@ -299,11 +298,11 @@ com.synckolab.calendarTools = {
 			if (!this.checkEventServerDeletion(fevent, pevent, lsyncCalendar)) {
 				return false;
 			}
-			var eventry = com.synckolab.tools.file.getSyncDbFile(lsyncCalendar.gConfig, fevent.id);
+			var eventry = synckolab.tools.file.getSyncDbFile(lsyncCalendar.gConfig, fevent.id);
 			if (eventry.exists()) {
 				eventry.remove(false);
 			}
-			lsyncCalendar.curItemInListStatus.setAttribute("label", com.synckolab.global.strBundle.getString("deleteOnServer"));
+			lsyncCalendar.curItemInListStatus.setAttribute("label", synckolab.global.strBundle.getString("deleteOnServer"));
 			return true;
 		},
 
@@ -351,8 +350,8 @@ com.synckolab.calendarTools = {
 /**
  * This functions checks if two event json objects are equals
  */
-com.synckolab.calendarTools.equalsEvent = function (a, b) {
-	return com.synckolab.tools.equalsObject(a, b);
+synckolab.calendarTools.equalsEvent = function (a, b) {
+	return synckolab.tools.equalsObject(a, b);
 };
 
 /**
@@ -361,7 +360,7 @@ com.synckolab.calendarTools.equalsEvent = function (a, b) {
  * @param syncTasks true if we sync tasks
  * @returns a parsed json object
  */
-com.synckolab.calendarTools.message2json = function (fileContent, syncTasks) {
+synckolab.calendarTools.message2json = function (fileContent, syncTasks) {
 	if (fileContent === null) {
 		return null;
 	}
@@ -373,7 +372,7 @@ com.synckolab.calendarTools.message2json = function (fileContent, syncTasks) {
 
 	// fileContent should be a string - with indexOf
 	if(!fileContent.indexOf) {
-		com.synckolab.tools.logMessage("Unknown fileContent: " + fileContent.toSource(), com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_WARNING);
+		synckolab.tools.logMessage("Unknown fileContent: " + fileContent.toSource(), synckolab.global.LOG_CAL + synckolab.global.LOG_WARNING);
 		return null;
 	}
 	
@@ -385,7 +384,7 @@ com.synckolab.calendarTools.message2json = function (fileContent, syncTasks) {
 	// for ical - use the way through the lightning decoder to json
 	var parsedEvent = null;
 	if(fileContent.indexOf("=3D") !== -1) {
-		fileContent = com.synckolab.tools.text.quoted.decode(fileContent);
+		fileContent = synckolab.tools.text.quoted.decode(fileContent);
 	}
 	// sepcial fix for Europe bug
 	if (fileContent.indexOf("TZIDID=rope")) {
@@ -399,15 +398,15 @@ com.synckolab.calendarTools.message2json = function (fileContent, syncTasks) {
 	}
 
 	// check type
-	if (syncTasks === true && com.synckolab.tools.instanceOf(parsedEvent, Components.interfaces.calIEvent))
+	if (syncTasks === true && synckolab.tools.instanceOf(parsedEvent, Components.interfaces.calIEvent))
 	{
-		com.synckolab.tools.logMessage("There is an event in the task folder! skipping.", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_WARNING);
+		synckolab.tools.logMessage("There is an event in the task folder! skipping.", synckolab.global.LOG_CAL + synckolab.global.LOG_WARNING);
 		return null;
 	}
 
-	if (syncTasks === false && !com.synckolab.tools.instanceOf(parsedEvent, Components.interfaces.calIEvent))
+	if (syncTasks === false && !synckolab.tools.instanceOf(parsedEvent, Components.interfaces.calIEvent))
 	{
-		com.synckolab.tools.logMessage("There is a task in the calendar folder! skipping.", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_WARNING);
+		synckolab.tools.logMessage("There is a task in the calendar folder! skipping.", synckolab.global.LOG_CAL + synckolab.global.LOG_WARNING);
 		return null;
 	}
 
@@ -420,14 +419,14 @@ com.synckolab.calendarTools.message2json = function (fileContent, syncTasks) {
  * @param syncTasks true if this is a task
  * @return a json object
  */
-com.synckolab.calendarTools.event2json = function (event, syncTasks) {
-	com.synckolab.tools.logMessage("Event To JSON", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+synckolab.calendarTools.event2json = function (event, syncTasks) {
+	synckolab.tools.logMessage("Event To JSON", synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 	// no event given
 	if(!event) {
 		return null;
 	}
 	var jobj = {
-			synckolab : com.synckolab.config.version, // synckolab version
+			synckolab : synckolab.config.version, // synckolab version
 			type : "calendar"
 	};
 	
@@ -439,7 +438,7 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 	//	- yearly recurrence
 
 	var isAllDay = syncTasks?false:(event.startDate?event.startDate.isDate:false);
-	var endDate = com.synckolab.calendarTools.getEndDate(event, syncTasks);
+	var endDate = synckolab.calendarTools.getEndDate(event, syncTasks);
 	var i, minutes;
 	var dayindex, daynumber;
 
@@ -466,12 +465,12 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 	if (syncTasks === true)
 	{
 		if(event.entryDate) {
-			jobj.startDate = com.synckolab.tools.text.calDateTime2String(event.entryDate, isAllDay);
+			jobj.startDate = synckolab.tools.text.calDateTime2String(event.entryDate, isAllDay);
 		}
 		if(endDate) {
-			jobj.endDate = com.synckolab.tools.text.calDateTime2String(endDate, isAllDay);
+			jobj.endDate = synckolab.tools.text.calDateTime2String(endDate, isAllDay);
 		}
-		// jobj.completedDate =  com.synckolab.tools.text.calDateTime2String(completedDate, true);
+		// jobj.completedDate =  synckolab.tools.text.calDateTime2String(completedDate, true);
 		if(event.priority && event.priority !== null && event.priority !== "") {
 			jobj.priority = event.priority;
 		}
@@ -482,20 +481,20 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 			jobj.status = "completed";
 		}
 		else {
-			jobj.status = com.synckolab.calendarTools.getTaskStatus(event.status, true);
+			jobj.status = synckolab.calendarTools.getTaskStatus(event.status, true);
 			jobj.completed = event.percentComplete;
 		}
 	} else {
-		jobj.startDate = com.synckolab.tools.text.calDateTime2String(event.startDate, isAllDay);
-		jobj.endDate = com.synckolab.tools.text.calDateTime2String(endDate, isAllDay);
+		jobj.startDate = synckolab.tools.text.calDateTime2String(event.startDate, isAllDay);
+		jobj.endDate = synckolab.tools.text.calDateTime2String(endDate, isAllDay);
 	}
 
 	jobj.uid = event.id;
 	jobj.title = event.title;
 	jobj.body = event.getProperty("DESCRIPTION");
 	jobj.sensitivity = event.getProperty("CLASS")?event.getProperty("CLASS").toLowerCase():"public";
-	// xml += " <creation-date>" + com.synckolab.tools.text.calDateTime2String(event.getProperty("CREATED"), false) + "</creation-date>\n";
-	// xml += " <last-modification-date>" + com.synckolab.tools.text.calDateTime2String(event.getProperty("LAST-MODIFIED"), false) + "</last-modification-date>\n";
+	// xml += " <creation-date>" + synckolab.tools.text.calDateTime2String(event.getProperty("CREATED"), false) + "</creation-date>\n";
+	// xml += " <last-modification-date>" + synckolab.tools.text.calDateTime2String(event.getProperty("LAST-MODIFIED"), false) + "</last-modification-date>\n";
 
 	if (event.getProperty("LOCATION")) {
 		jobj.location = event.getProperty("LOCATION");
@@ -533,7 +532,7 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 			calarms.push(tmpobj);
 			
 			// TODO lightning has some other attributes which we should take care of
-			com.synckolab.tools.copyFields(alarm, tmpobj, ["description", "summary", "action"], true);
+			synckolab.tools.copyFields(alarm, tmpobj, ["description", "summary", "action"], true);
 		}
 		
 		// only create if there are alarms
@@ -601,7 +600,7 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 			if (curDay && curDay.length > 0 ) {
 				// multiple recurrence possible
 				for(var recweekdays = 0; recweekdays < curDay.length; recweekdays ++) {
-					jobj.recurrence.days.push(com.synckolab.tools.kolab.getXmlDayName(curDay[recweekdays]));
+					jobj.recurrence.days.push(synckolab.tools.kolab.getXmlDayName(curDay[recweekdays]));
 				}
 			} 
 			break;
@@ -624,7 +623,7 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 					dayindex = days[0] % 8;
 					daynumber = (days[0] - dayindex) / 8;
 					jobj.recurrence.daynumber = daynumber;
-					jobj.recurrence.weekday = com.synckolab.tools.kolab.getXmlDayName(dayindex);
+					jobj.recurrence.weekday = synckolab.tools.kolab.getXmlDayName(dayindex);
 				}
 			}
 			break;
@@ -674,7 +673,7 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 				}
 				
 				if (endDate) {
-					jobj.recurrence.untilDate = com.synckolab.tools.text.date2String(endDate.jsDate);
+					jobj.recurrence.untilDate = synckolab.tools.text.date2String(endDate.jsDate);
 				}
 			}
 
@@ -685,7 +684,7 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
 				{
 					var item = items[i];
 					if (item.isNegative) {
-						jobj.recurrence.exclusion.push(com.synckolab.tools.text.calDateTime2String(item.date, true));
+						jobj.recurrence.exclusion.push(synckolab.tools.text.calDateTime2String(item.date, true));
 					}
 				}
 			}
@@ -764,17 +763,17 @@ com.synckolab.calendarTools.event2json = function (event, syncTasks) {
  * @param json the json object to read
  * @param calendar an optional calendar to set
  */
-com.synckolab.calendarTools.json2event = function (jobj, calendar) {
+synckolab.calendarTools.json2event = function (jobj, calendar) {
 	var syncTasks = (jobj.type === "task");
 	var event;
 
 	if (syncTasks === true)
 	{
-		com.synckolab.tools.logMessage("creating task/todo.", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+		synckolab.tools.logMessage("creating task/todo.", synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 		event = Components.classes["@mozilla.org/calendar/todo;1"].createInstance(Components.interfaces.calITodo);
 	}
 	else {
-		com.synckolab.tools.logMessage("creating event.", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+		synckolab.tools.logMessage("creating event.", synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 		event = Components.classes["@mozilla.org/calendar/event;1"].createInstance(Components.interfaces.calIEvent);
 	}
 	// set the correct calendar
@@ -790,19 +789,19 @@ com.synckolab.calendarTools.json2event = function (jobj, calendar) {
 	if(jobj.startDate) {
 		if (jobj.startDate.indexOf(":") === -1) {
 			// entry date and start date can be handled the same way
-			com.synckolab.tools.logMessage("setting all day: " + (syncTasks?"entryDate":"startDate"), com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
-			this.setKolabItemProperty(event, syncTasks?"entryDate":"startDate", com.synckolab.tools.text.string2CalDate(jobj.startDate));
+			synckolab.tools.logMessage("setting all day: " + (syncTasks?"entryDate":"startDate"), synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
+			this.setKolabItemProperty(event, syncTasks?"entryDate":"startDate", synckolab.tools.text.string2CalDate(jobj.startDate));
 		} else {
 			// entry date and start date can be handled the same way
-			com.synckolab.tools.logMessage("setting: " + (syncTasks?"entryDate":"startDate"), com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
-			this.setKolabItemProperty(event, syncTasks?"entryDate":"startDate", com.synckolab.tools.text.string2CalDateTime(jobj.startDate, true));
+			synckolab.tools.logMessage("setting: " + (syncTasks?"entryDate":"startDate"), synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
+			this.setKolabItemProperty(event, syncTasks?"entryDate":"startDate", synckolab.tools.text.string2CalDateTime(jobj.startDate, true));
 		}
 	}
 	
 	// full day
 	if(jobj.endDate) {
 		if (jobj.endDate.indexOf(":") === -1) {
-			cDate = com.synckolab.tools.text.string2CalDate(jobj.endDate);
+			cDate = synckolab.tools.text.string2CalDate(jobj.endDate);
 			// Kolab uses for 1-day-event:
 			// startdate = day_x, enddate = day_x
 			// Sunbird uses for 1-day-event:
@@ -815,18 +814,18 @@ com.synckolab.calendarTools.json2event = function (jobj, calendar) {
 			this.setKolabItemProperty(event, syncTasks?"dueDate":"endDate", cDate);
 		} else {
 			// due date and end date can be handled the same way
-			this.setKolabItemProperty(event, syncTasks?"dueDate":"endDate", com.synckolab.tools.text.string2CalDateTime(jobj.endDate, true));
+			this.setKolabItemProperty(event, syncTasks?"dueDate":"endDate", synckolab.tools.text.string2CalDateTime(jobj.endDate, true));
 		}
 	}
 	
 	// 2005-03-30T15:28:52Z
 	if(jobj.creationDate) {
-		this.setKolabItemProperty(event, "CREATED", com.synckolab.tools.text.string2CalDateTime(jobj.creationDate, true));
+		this.setKolabItemProperty(event, "CREATED", synckolab.tools.text.string2CalDateTime(jobj.creationDate, true));
 	}
 
 	// 2005-03-30T15:28:52Z
 	if(jobj.lastModified) {
-		this.setKolabItemProperty(event, "LAST-MODIFIED", com.synckolab.tools.text.string2CalDateTime(jobj.lastModified, true));
+		this.setKolabItemProperty(event, "LAST-MODIFIED", synckolab.tools.text.string2CalDateTime(jobj.lastModified, true));
 	}
 
 	// special fields for tasks
@@ -864,15 +863,15 @@ com.synckolab.calendarTools.json2event = function (jobj, calendar) {
 				var alarm = Components.classes["@mozilla.org/calendar/alarm;1"].createInstance(Components.interfaces.calIAlarm);
 				alarm.related = 1; // 1: related to startdate - 2: related to enddate
 				// fix for #24507 make sure the alarm is BEFORE the event not after
-				alarm.offset = com.synckolab.tools.text.createDuration(-1 * Number(jobj.alarms[i].offset));
+				alarm.offset = synckolab.tools.text.createDuration(-1 * Number(jobj.alarms[i].offset));
 				
 				// TODO lightning has some other attributes which we should take care of
-				com.synckolab.tools.copyFields(jobj.alarms[i], alarm, ["description", "summary", "action"], true);
+				synckolab.tools.copyFields(jobj.alarms[i], alarm, ["description", "summary", "action"], true);
 
 				event.addAlarm(alarm);
 			}
 			else {
-				event.alarmOffset = com.synckolab.tools.text.createDuration(-1 * Number(jobj.alarms[i].offset));
+				event.alarmOffset = synckolab.tools.text.createDuration(-1 * Number(jobj.alarms[i].offset));
 			}
 		}
 	}
@@ -887,7 +886,7 @@ com.synckolab.calendarTools.json2event = function (jobj, calendar) {
 	}
 
 	if(jobj.recurrence) {
-		com.synckolab.tools.logMessage("recurring event", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+		synckolab.tools.logMessage("recurring event", synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 
 		var recInfo = Components.classes["@mozilla.org/calendar/recurrence-info;1"].createInstance(Components.interfaces.calIRecurrenceInfo);
 		recInfo.item = event;
@@ -904,7 +903,7 @@ com.synckolab.calendarTools.json2event = function (jobj, calendar) {
 				//alert(recRule.icalProperty.icalString);
 				var weeklyRecurrence = [];
 				for(var recdays = 0; recdays < jobj.recurrence.days.length; recdays++) {
-					weeklyRecurrence.push(com.synckolab.tools.kolab.getDayIndex(jobj.recurrence.days[recdays]));
+					weeklyRecurrence.push(synckolab.tools.kolab.getDayIndex(jobj.recurrence.days[recdays]));
 				}
 				recRule.setComponent("BYDAY", weeklyRecurrence.length, weeklyRecurrence);
 			}
@@ -918,7 +917,7 @@ com.synckolab.calendarTools.json2event = function (jobj, calendar) {
 					recRule.setComponent("BYMONTHDAY", 1, [jobj.recurrence.daynumber]);
 				}
 			} else {
-				var dayindex = com.synckolab.tools.kolab.getDayIndex(jobj.recurrence.weekday);
+				var dayindex = synckolab.tools.kolab.getDayIndex(jobj.recurrence.weekday);
 				if(jobj.recurrence.daynumber === -1) {
 					recRule.setComponent("BYDAY", 1, [(-1)*(8+dayindex)]);
 				} else {
@@ -939,17 +938,17 @@ com.synckolab.calendarTools.json2event = function (jobj, calendar) {
 		
 		if(jobj.recurrence.untilDate) {
 			if (recRule.endDate) {
-				recRule.endDate = com.synckolab.tools.text.string2CalDate(jobj.recurrence.untilDate);
+				recRule.endDate = synckolab.tools.text.string2CalDate(jobj.recurrence.untilDate);
 			} else {
 				// new lighnting
-				recRule.untilDate = com.synckolab.tools.text.string2CalDate(jobj.recurrence.untilDate);
+				recRule.untilDate = synckolab.tools.text.string2CalDate(jobj.recurrence.untilDate);
 			}
 		}
 		recInfo.insertRecurrenceItemAt(recRule, 0);
 		
 		if(jobj.recurrence.exclusion && jobj.recurrence.exclusion.length > 0) {
 			for(i=0; i < jobj.recurrence.exclusion.length; i++) {
-				var exclusionDate = com.synckolab.tools.text.string2CalDate(jobj.recurrence.exclusion[i]);
+				var exclusionDate = synckolab.tools.text.string2CalDate(jobj.recurrence.exclusion[i]);
 				recInfo.removeOccurrenceAt(exclusionDate);
 				var exclusion = recInfo.getOccurrenceFor(exclusionDate,true);
 				recInfo.modifyException(exclusion, true);
@@ -1010,10 +1009,10 @@ com.synckolab.calendarTools.json2event = function (jobj, calendar) {
  *
  * @return true, if this event actually existed  
  */
-com.synckolab.calendarTools.xml2json = function (xml, syncTasks)
+synckolab.calendarTools.xml2json = function (xml, syncTasks)
 {
 	var jobj = {
-		synckolab : com.synckolab.config.version, // synckolab version
+		synckolab : synckolab.config.version, // synckolab version
 		type : "calendar"
 	};
 	
@@ -1024,16 +1023,16 @@ com.synckolab.calendarTools.xml2json = function (xml, syncTasks)
 
 	// check if we have to decode quoted printable
 	if (xml.indexOf(" version=3D") !== -1) { // we know from the version
-		xml = com.synckolab.tools.text.quoted.decode(xml);
+		xml = synckolab.tools.text.quoted.decode(xml);
 	}
 
-	com.synckolab.tools.logMessage("Parsing an XML event:\n" + xml, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+	synckolab.tools.logMessage("Parsing an XML event:\n" + xml, synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 	// TODO improve recurrence settings
 	//	  not working ATM:
 	//		  - yearly recurrence
 
 	// decode utf chars and make sure an & is an &amp; (otherwise this is unparseable)
-	xml = com.synckolab.tools.text.utf8.decode(xml);
+	xml = synckolab.tools.text.utf8.decode(xml);
 	// temporary fixes:
 	// - attribute: "summary= ; "action=
 	// TODO: remove for non-nightly!!!
@@ -1052,28 +1051,28 @@ com.synckolab.calendarTools.xml2json = function (xml, syncTasks)
 	if (topNode.nodeName === "parsererror")
 	{
 		// so this message has no valid XML part :-(
-		com.synckolab.tools.logMessage("Error parsing the XML content of this message.\n" + xml, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_ERROR);
+		synckolab.tools.logMessage("Error parsing the XML content of this message.\n" + xml, synckolab.global.LOG_CAL + synckolab.global.LOG_ERROR);
 		return false;
 	}
 	if ((topNode.nodeType !== Node.ELEMENT_NODE) || ((topNode.nodeName.toUpperCase() !== "EVENT") && (topNode.nodeName.toUpperCase() !== "TASK") ))
 	{
 		// this can't be an event in Kolab XML format
-		com.synckolab.tools.logMessage("This message doesn't contain an event in Kolab XML format.\n" + xml, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_ERROR);
+		synckolab.tools.logMessage("This message doesn't contain an event in Kolab XML format.\n" + xml, synckolab.global.LOG_CAL + synckolab.global.LOG_ERROR);
 		return false;
 	}
 
 	// check for task
 	if(syncTasks !== true && topNode.nodeName.toUpperCase() === "TASK") {
-		com.synckolab.tools.logMessage("Skipping task in event sync", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_ERROR);
+		synckolab.tools.logMessage("Skipping task in event sync", synckolab.global.LOG_CAL + synckolab.global.LOG_ERROR);
 		return null;
 	}
 
 	if(syncTasks === true && topNode.nodeName.toUpperCase() !== "TASK") {
-		com.synckolab.tools.logMessage("Skipping event in task sync", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_ERROR);
+		synckolab.tools.logMessage("Skipping event in task sync", synckolab.global.LOG_CAL + synckolab.global.LOG_ERROR);
 		return null;
 	}
 
-	var cur = new com.synckolab.Node(topNode.firstChild);
+	var cur = new synckolab.Node(topNode.firstChild);
 	var s, tmpobj;
 	var cDate;
 	// iterate over the DOM tree of the XML structure of the event
@@ -1385,7 +1384,7 @@ com.synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				jobj.recurrence.interval = Number(cur.getXmlResult("INTERVAL", 1));
 				jobj.recurrence.count = 0;
 				
-				var node = new com.synckolab.Node(cur.getChildNode("RANGE"));
+				var node = new synckolab.Node(cur.getChildNode("RANGE"));
 				if (node)
 				{
 					// read the "type" attribute of the range
@@ -1490,7 +1489,7 @@ com.synckolab.calendarTools.xml2json = function (xml, syncTasks)
 		cur = cur.nextSibling;
 	} // end while
 
-	com.synckolab.tools.logMessage("Parsed event in XML", com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+	synckolab.tools.logMessage("Parsed event in XML", synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 	return jobj;
 };
 
@@ -1499,7 +1498,7 @@ com.synckolab.calendarTools.xml2json = function (xml, syncTasks)
  * Kolabs "deferred" will be Lightning "CANCELLED"
  */
 /* return the task status */
-com.synckolab.calendarTools.getTaskStatus = function (tstatus, xmlvalue) {
+synckolab.calendarTools.getTaskStatus = function (tstatus, xmlvalue) {
 	var arrstatus = [];
 	arrstatus["IN-PROCESS"] = "in-progress";
 	arrstatus["IN-PROGRESS"] = "in-progress";
@@ -1543,7 +1542,7 @@ com.synckolab.calendarTools.getTaskStatus = function (tstatus, xmlvalue) {
  * @param skipVolatiles skips problematic fields for hash creation
  * @return XML string in Kolab 2 format
  */
-com.synckolab.calendarTools.json2xml = function (jobj, syncTasks, email) {
+synckolab.calendarTools.json2xml = function (jobj, syncTasks, email) {
 	// TODO  not working ATM:
 	//	- yearly recurrence
 
@@ -1556,35 +1555,35 @@ com.synckolab.calendarTools.json2xml = function (jobj, syncTasks, email) {
 		xml += '<event version='+'"'+'1.0" >\n';
 	}
 	
-	xml += " <product-id>Synckolab " + com.synckolab.config.version + ", Calendar Sync</product-id>\n";
-	xml += com.synckolab.tools.text.nodeWithContent("uid", jobj.uid, false);
+	xml += " <product-id>Synckolab " + synckolab.config.version + ", Calendar Sync</product-id>\n";
+	xml += synckolab.tools.text.nodeWithContent("uid", jobj.uid, false);
 
 	if(syncTasks === true)
 	{
 		// tasks have a status
-		xml += com.synckolab.tools.text.nodeWithContent("status", jobj.status, false);
-		xml += com.synckolab.tools.text.nodeWithContent("completed", jobj.completed, false);
-		xml += com.synckolab.tools.text.nodeWithContent("start-date", jobj.startDate, false);
-		xml += com.synckolab.tools.text.nodeWithContent("due-date", jobj.endDate, false);
-		xml += com.synckolab.tools.text.nodeWithContent("priority", jobj.priority, false);
+		xml += synckolab.tools.text.nodeWithContent("status", jobj.status, false);
+		xml += synckolab.tools.text.nodeWithContent("completed", jobj.completed, false);
+		xml += synckolab.tools.text.nodeWithContent("start-date", jobj.startDate, false);
+		xml += synckolab.tools.text.nodeWithContent("due-date", jobj.endDate, false);
+		xml += synckolab.tools.text.nodeWithContent("priority", jobj.priority, false);
 		
-		// xml += " <completed-date>" + com.synckolab.tools.text.calDateTime2String(completedDate, true) + "</completed-date>\n";
+		// xml += " <completed-date>" + synckolab.tools.text.calDateTime2String(completedDate, true) + "</completed-date>\n";
 	}
 	else
 	{
-		xml += com.synckolab.tools.text.nodeWithContent("start-date", jobj.startDate, false);
-		xml += com.synckolab.tools.text.nodeWithContent("end-date", jobj.endDate, false);
+		xml += synckolab.tools.text.nodeWithContent("start-date", jobj.startDate, false);
+		xml += synckolab.tools.text.nodeWithContent("end-date", jobj.endDate, false);
 	}
 
 
-	xml += com.synckolab.tools.text.nodeWithContent("summary", jobj.title, false);
-	xml += com.synckolab.tools.text.nodeWithContent("body", jobj.body, false);
-	xml += com.synckolab.tools.text.nodeWithContent("sensitivity", jobj.sensitivity, false);
+	xml += synckolab.tools.text.nodeWithContent("summary", jobj.title, false);
+	xml += synckolab.tools.text.nodeWithContent("body", jobj.body, false);
+	xml += synckolab.tools.text.nodeWithContent("sensitivity", jobj.sensitivity, false);
 	// xml += " <creation-date>" + jobj.createdDate + "</creation-date>\n";
 	// xml += " <last-modification-date>" + jobj.lastModificationDate + "</last-modification-date>\n";
-	xml += com.synckolab.tools.text.nodeWithContent("location", jobj.location, false);
-	xml += com.synckolab.tools.text.nodeWithContent("show-time-as", jobj.showTimeAs, false);
-	xml += com.synckolab.tools.text.nodeWithContent("color-label", jobj.colorLabel, false);
+	xml += synckolab.tools.text.nodeWithContent("location", jobj.location, false);
+	xml += synckolab.tools.text.nodeWithContent("show-time-as", jobj.showTimeAs, false);
+	xml += synckolab.tools.text.nodeWithContent("color-label", jobj.colorLabel, false);
 
 	var i;
 	if(jobj.alarms) {
@@ -1604,7 +1603,7 @@ com.synckolab.calendarTools.json2xml = function (jobj, syncTasks, email) {
 		}
 	}
 
-	xml += com.synckolab.tools.text.nodeWithContent("categories", jobj.categories, false);
+	xml += synckolab.tools.text.nodeWithContent("categories", jobj.categories, false);
 	if(jobj.recurrence) {
 		switch(jobj.recurrence.cycle) {
 		case "daily":
@@ -1613,7 +1612,7 @@ com.synckolab.calendarTools.json2xml = function (jobj, syncTasks, email) {
 		case "weekly":
 			xml += " <recurrence cycle=\"weekly\">\n";
 			for(i=0; i < jobj.recurrence.days.length; i++) {
-				xml += com.synckolab.tools.text.nodeWithContent("day", jobj.recurrence.days[i], false);
+				xml += synckolab.tools.text.nodeWithContent("day", jobj.recurrence.days[i], false);
 			}
 			break;
 		case "monthly":
@@ -1622,7 +1621,7 @@ com.synckolab.calendarTools.json2xml = function (jobj, syncTasks, email) {
 			} else if(jobj.recurrence.days) {
 				xml += " <recurrence cycle=\"monthly\" type=\"daynumber\">\n";
 				for(i=0; i < jobj.recurrence.days.length; i++) {
-					xml += com.synckolab.tools.text.nodeWithContent("daynumber", jobj.recurrence.days[i], false);
+					xml += synckolab.tools.text.nodeWithContent("daynumber", jobj.recurrence.days[i], false);
 				}
 			} else if(!jobj.recurrence.weekday) {
 				xml += " <recurrence cycle=\"monthly\" type=\"daynumber\">\n";
@@ -1655,7 +1654,7 @@ com.synckolab.calendarTools.json2xml = function (jobj, syncTasks, email) {
 			break;
 		}
 		
-		xml += com.synckolab.tools.text.nodeWithContent("interval", jobj.recurrence.interval, true);
+		xml += synckolab.tools.text.nodeWithContent("interval", jobj.recurrence.interval, true);
 		if(jobj.recurrence.count && jobj.recurrence.count > 0) {
 			xml += "  <range type=\"number\">" + jobj.recurrence.count + "</range>\n";
 		} else if(jobj.recurrence.untilDate) {
@@ -1666,7 +1665,7 @@ com.synckolab.calendarTools.json2xml = function (jobj, syncTasks, email) {
 
 		if(jobj.recurrence.exclusion) {
 			for(i=0; i < jobj.recurrence.exclusion.length; i++) {
-				xml += com.synckolab.tools.text.nodeWithContent("exclusion", jobj.recurrence.exclusion[i], true);
+				xml += synckolab.tools.text.nodeWithContent("exclusion", jobj.recurrence.exclusion[i], true);
 			}
 		}
 		
@@ -1676,11 +1675,11 @@ com.synckolab.calendarTools.json2xml = function (jobj, syncTasks, email) {
 	if(jobj.attendees) {
 		for(i=0; i < jobj.attendees.length; i++) {
 			xml += " <attendee>\n";
-			xml += com.synckolab.tools.text.nodeWithContent("display-name", jobj.attendees[i].displayName, false);
-			xml += com.synckolab.tools.text.nodeWithContent("smtp-address", jobj.attendees[i].email, false);
-			xml += com.synckolab.tools.text.nodeWithContent("status", jobj.attendees[i].status, false);
-			xml += com.synckolab.tools.text.nodeWithContent("request-response", jobj.attendees[i].rsvp ? "true" : "false", false);
-			xml += com.synckolab.tools.text.nodeWithContent("role", jobj.attendees[i].role, false);
+			xml += synckolab.tools.text.nodeWithContent("display-name", jobj.attendees[i].displayName, false);
+			xml += synckolab.tools.text.nodeWithContent("smtp-address", jobj.attendees[i].email, false);
+			xml += synckolab.tools.text.nodeWithContent("status", jobj.attendees[i].status, false);
+			xml += synckolab.tools.text.nodeWithContent("request-response", jobj.attendees[i].rsvp ? "true" : "false", false);
+			xml += synckolab.tools.text.nodeWithContent("role", jobj.attendees[i].role, false);
 			xml += " </attendee>\n";
 		}
 	}
@@ -1689,16 +1688,16 @@ com.synckolab.calendarTools.json2xml = function (jobj, syncTasks, email) {
 	if (jobj.organizer)
 	{
 		xml += " <organizer>\n";
-		xml += com.synckolab.tools.text.nodeWithContent("display-name", jobj.organizer.displayName, false);
-		xml += com.synckolab.tools.text.nodeWithContent("smtp-address", jobj.organizer.email, false);
+		xml += synckolab.tools.text.nodeWithContent("display-name", jobj.organizer.displayName, false);
+		xml += synckolab.tools.text.nodeWithContent("smtp-address", jobj.organizer.email, false);
 		xml += " </organizer>\n";
 	}
 
 	if (jobj.creator)
 	{
 		xml += " <creator>\n";
-		xml += com.synckolab.tools.text.nodeWithContent("display-name", jobj.creator.displayName, false);
-		xml += com.synckolab.tools.text.nodeWithContent("smtp-address", jobj.creator.email, false);
+		xml += synckolab.tools.text.nodeWithContent("display-name", jobj.creator.displayName, false);
+		xml += synckolab.tools.text.nodeWithContent("smtp-address", jobj.creator.email, false);
 		xml += " </creator>\n";
 	}
 
@@ -1712,14 +1711,14 @@ com.synckolab.calendarTools.json2xml = function (jobj, syncTasks, email) {
 		xml += "</event>\n";
 	}
 
-	//com.synckolab.tools.logMessage("Created XML event structure:\n=============================\n" + xml, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+	//synckolab.tools.logMessage("Created XML event structure:\n=============================\n" + xml, synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 	return xml;
 };
 
 /**
  * Write an event into human readable form
  */
-com.synckolab.calendarTools.json2Human = function (jobj)
+synckolab.calendarTools.json2Human = function (jobj)
 {
 	var txt = "";
 	if (jobj.title) {
@@ -1750,12 +1749,12 @@ com.synckolab.calendarTools.json2Human = function (jobj)
  *
  * @return a message in Kolab 2 format
  */
-com.synckolab.calendarTools.event2kolabXmlMsg = function (event, email)
+synckolab.calendarTools.event2kolabXmlMsg = function (event, email)
 {
 	var syncTasks = (event.type === "task");
 	var xml = this.json2xml(event, syncTasks);
-	return com.synckolab.tools.generateMail(event.uid, email, "", syncTasks?"application/x-vnd.kolab.task":"application/x-vnd.kolab.event", 
-			true, com.synckolab.tools.text.utf8.encode(xml), this.json2Human(event, syncTasks));
+	return synckolab.tools.generateMail(event.uid, email, "", syncTasks?"application/x-vnd.kolab.task":"application/x-vnd.kolab.event", 
+			true, synckolab.tools.text.utf8.encode(xml), this.json2Human(event, syncTasks));
 };
 
 
@@ -1763,7 +1762,7 @@ com.synckolab.calendarTools.event2kolabXmlMsg = function (event, email)
 /**
  * functions to handle the iCal event format
  */
-com.synckolab.calendarTools.ical2event = function (content, todo)
+synckolab.calendarTools.ical2event = function (content, todo)
 {
 	var event;
 	var icssrv = Components.classes["@mozilla.org/calendar/ics-service;1"]
@@ -1775,7 +1774,7 @@ com.synckolab.calendarTools.ical2event = function (content, todo)
 		rootComp = icssrv.parseICS(content, null);
 	}
 	catch (ex)	{
-		com.synckolab.tools.logMessage("unable to parse ical: " + content, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_ERROR);
+		synckolab.tools.logMessage("unable to parse ical: " + content, synckolab.global.LOG_CAL + synckolab.global.LOG_ERROR);
 		return null;
 	}
 
@@ -1803,24 +1802,24 @@ com.synckolab.calendarTools.ical2event = function (content, todo)
 			.createInstance(Components.interfaces.calITodo);
 			break;
 		} else if (subComp.componentType !== "VTIMEZONE") {
-			com.synckolab.tools.logMessage("unable to parse event 2: " + content, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_ERROR);
+			synckolab.tools.logMessage("unable to parse event 2: " + content, synckolab.global.LOG_CAL + synckolab.global.LOG_ERROR);
 			return null;
 		}
 		subComp = event.getNextSubcomponent("ANY");
 	}
 
 	if (!subComp ) {
-		com.synckolab.tools.logMessage("unable to parse event 3: " + content, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_ERROR);
+		synckolab.tools.logMessage("unable to parse event 3: " + content, synckolab.global.LOG_CAL + synckolab.global.LOG_ERROR);
 		return null;
 	}
 
 
 	try	{
 		event.icalComponent = subComp;
-		com.synckolab.tools.logMessage("parsed event: " + event + ":" + event.id, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_INFO);
+		synckolab.tools.logMessage("parsed event: " + event + ":" + event.id, synckolab.global.LOG_CAL + synckolab.global.LOG_INFO);
 	}
 	catch (exc)	{
-		com.synckolab.tools.logMessage("unable to parse event: \n" + content, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_ERROR);
+		synckolab.tools.logMessage("unable to parse event: \n" + content, synckolab.global.LOG_CAL + synckolab.global.LOG_ERROR);
 		return null;
 	}
 	return event;

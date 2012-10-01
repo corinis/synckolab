@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<note version="3.0dev1" xmlns="http://kolab.org">
+  <!-- Common fields -->
+  <uid>uid</uid>
+  <body></body>
+  <categories></categories>
+  <creation-date>2004-05-04T15:00:00Z</creation-date>
+  <last-modification-date>2004-05-04T15:00:00Z</last-modification-date>
+  <sensitivity>public</sensitivity>
+  <inline-attachment></inline-attachment>
+  <link-attachment></link-attachment>
+  <product-id></product-id>
+  <!-- Note specific fields -->
+  <summary>summarytext</summary>
+  <background-color>#000000</background-color>
+  <foreground-color>#ffff00</foreground-color>
+</note>
+

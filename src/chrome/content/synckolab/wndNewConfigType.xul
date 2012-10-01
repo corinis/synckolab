@@ -12,8 +12,8 @@
 	<script>
 		function checkConfigName(name)
 		{
-			if(name !== com.synckolab.tools.text.fixNameToMiniCharset(name)) {
-				document.getElementById("configName").value = com.synckolab.tools.text.fixNameToMiniCharset(name);
+			if(name !== synckolab.tools.text.fixNameToMiniCharset(name)) {
+				document.getElementById("configName").value = synckolab.tools.text.fixNameToMiniCharset(name);
 			}
 		}
 		
@@ -25,7 +25,7 @@
 				return false;
 			}
 			
-			if(name !== com.synckolab.tools.text.fixNameToMiniCharset(name)) {
+			if(name !== synckolab.tools.text.fixNameToMiniCharset(name)) {
 				return false;
 			}
 			var retVals = window.arguments[0];

@@ -30,11 +30,10 @@
  * ***** END LICENSE BLOCK ***** */
 "use strict";
 
-if(!com) var com={};
-if(!com.synckolab) com.synckolab={};
-if(!com.synckolab.tools) com.synckolab.tools={};
+if(!synckolab) var synckolab={};
+if(!synckolab.tools) synckolab.tools={};
 
-com.synckolab.tools.kolab={
+synckolab.tools.kolab={
 		/**
 		 * return the name of the week day like it is expected
 		 * by the Kolab 2 XML format
@@ -43,7 +42,7 @@ com.synckolab.tools.kolab={
 		 * @return a string with the name of the week day
 		 */
 		getXmlDayName: function(index) {
-			com.synckolab.tools.logMessage("converting " + index, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+			synckolab.tools.logMessage("converting " + index, synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 			var name = "sunday";
 			switch (index)
 			{
@@ -81,7 +80,7 @@ com.synckolab.tools.kolab={
 		 */
 		getDayIndex: function (name)
 		{
-			com.synckolab.tools.logMessage("converting " + name, com.synckolab.global.LOG_CAL + com.synckolab.global.LOG_DEBUG);
+			synckolab.tools.logMessage("converting " + name, synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 			var index = 1;
 			switch (name.toLowerCase())
 			{

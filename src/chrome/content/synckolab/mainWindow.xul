@@ -17,7 +17,7 @@
 	<commandset id="mailCommands">
 		<command id="cmd_synckolab_sync"
 			tooltiptext="&synckolab.sync.tip;"
-			oncommand="com.synckolab.main.sync('manual');"/>
+			oncommand="synckolab.main.sync('manual');"/>
 		<command id="cmd_synckolab_options" 
 			oncommand="window.openDialog('chrome://synckolab/content/wndConfig.xul', 'options', 'chrome=yes,resizable=yes,modal=yes');"/>
 	</commandset>
@@ -50,9 +50,9 @@
 	window.addEventListener("load", function load(event) {
 		window.removeEventListener("load", load, false); //remove listener, no longer needed
 		// init the timer
-		com.synckolab.main.syncKolabTimer();
+		synckolab.main.syncKolabTimer();
 		// init the groupware 
-		com.synckolab.main.initGroupwareActions();
+		synckolab.main.initGroupwareActions();
 	}, false);
 		
 	// calendar fix

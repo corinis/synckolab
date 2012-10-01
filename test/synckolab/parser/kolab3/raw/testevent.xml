@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- event version="1.0" xmlns="http://www.kolab.org/Kolab">
+  <uid>uid</uid>
+  <body>body</body>
+  <categories>categories</categories>
+  <creation-date>2001-12-31T12:00:00</creation-date>
+  <last-modification-date>2001-12-31T12:00:00</last-modification-date>
+  <sensitivity>public</sensitivity>
+  <product-id>product-id</product-id>
+  <summary>summary</summary>
+  <location>location</location>
+  <creator>
+    <display-name>display-name</display-name>
+    <smtp-address>smtp-address</smtp-address>
+  </creator>
+  <organizer>
+    <display-name>display-name</display-name>
+    <smtp-address>smtp-address</smtp-address>
+  </organizer>
+  <alarm>alarm</alarm>
+  <recurrence>
+    <interval>interval</interval>
+    <rangetype/>
+  </recurrence>
+  <attendees>
+    <display-name>display-name</display-name>
+    <smtp-address>smtp-address</smtp-address>
+    <status>status</status>
+    <request-response>request-response</request-response>
+    <role>role</role>
+  </attendees>
+  <show-time-as>show-time-as</show-time-as>
+  <color-label>color-label</color-label>
+  <start-date>2001-12-31T12:00:00</start-date>
+  <end-date>2001-12-31T12:00:00</end-date>
+</event-->
+<event version="3.0dev1" xmlns="http://kolab.org">
+  <!-- Common fields -->
+  <uid>uid</uid>
+  <product-id></product-id>
+  <creation-date>2004-05-04T15:00:00Z</creation-date>
+  <last-modification-date>2004-05-04T15:00:00Z</last-modification-date>
+  <sensitivity>public</sensitivity>
+  <body></body>
+  <categories></categories>
+  <inline-attachment></inline-attachment>
+  <link-attachment></link-attachment>
+  <!-- Incidence fields -->
+  <summary>(string, default empty)</summary>
+  <location>(string, default empty)</location>
+  <creator>
+    <smtp-address>(string, default empty)</smtp-address>
+    <display-name>(string, default empty)</display-name>
+  </creator>
+  <organizer>
+    <smtp-address>(string, default empty)</smtp-address>
+    <display-name>(string, default empty)</display-name>
+  </organizer>
+  <alarm>(number, no default)</alarm>
+  <dailyrecurrence cycle="daily">
+    <interval>1</interval>
+    <day>(string, no default)</day>
+    <daynumber>0</daynumber>
+    <date>2</date>
+    <month>(string, no default></month>
+    <range type="daily"></range>
+    <exclusion>(date, no default)</exclusion>
+  </dailyrecurrence>
+  <attendee>
+    <smtp-address>(string, default empty)</smtp-address>
+    <display-name>(string, default empty)</display-name>
+    <status>(string, default none)</status>
+    <request-response>(bool, default true)</request-response>
+    <role>(string, default required)</role>
+  </attendee>
+  <!-- Event specific fields -->
+  <show-time-as>(string, default busy)</show-time-as>
+  <color-label>(string, default none)</color-label>
+  <start-date>2004-05-04T15:00:00Z</start-date>
+  <end-date>2004-05-04T15:00:00Z</end-date>
+</event>

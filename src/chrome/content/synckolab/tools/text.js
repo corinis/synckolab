@@ -30,7 +30,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 /**
- * Package: com.synckolab.tools.text
+ * Package: synckolab.tools.text
  * 
  * Text handling:
  * * fixToMiniCharset()
@@ -42,17 +42,15 @@
  */
 "use strict";
 
-if (!com)
-	var com = {};
-if (!com.synckolab)
-	com.synckolab = {};
-if (!com.synckolab.tools)
-	com.synckolab.tools = {};
+if (!synckolab)
+	var synckolab = {};
+if (!synckolab.tools)
+	synckolab.tools = {};
 
 /**
  * Basic text stuff
  */
-com.synckolab.tools.text = {
+synckolab.tools.text = {
 	nodeWithContent : function (nodeName, nodeValue, createNonExist) {
 		if (!createNonExist && !this.checkExist(nodeValue)) {
 			return "";
@@ -62,7 +60,7 @@ com.synckolab.tools.text = {
 	},
 
 	checkExist : function (value) {
-		return value && value !== "";
+		return value !== null && typeof value !== 'undefined' && value !== "" && value !== " ";
 	},
 
 	trim : function (s) {
@@ -74,7 +72,7 @@ com.synckolab.tools.text = {
 	 */
 	fixNameToMiniCharset : function (name) {
 		if (typeof name === 'undefined' || !name.length) {
-			com.synckolab.global.consoleService.logStringMessage("undefined string " + new Error("s").stack);
+			synckolab.global.consoleService.logStringMessage("undefined string " + new Error("s").stack);
 		}
 		
 		var ret = "";
@@ -433,7 +431,7 @@ com.synckolab.tools.text = {
 		}
 		
 		if(!s) {
-			com.synckolab.global.consoleService.logStringMessage("undefined string " + new Error("s").stack);
+			synckolab.global.consoleService.logStringMessage("undefined string " + new Error("s").stack);
 		}
 
 		if (!s.replace) {
@@ -496,9 +494,9 @@ com.synckolab.tools.text = {
 /**
  * UTF-8 en/decoder
  * Usage:
- *	result = com.synckolab.text.utf8.decode(String); / encode(String);
+ *	result = synckolab.text.utf8.decode(String); / encode(String);
  */
-com.synckolab.tools.text.utf8 = {
+synckolab.tools.text.utf8 = {
 	decode : function (utftext) {
 		var plaintext = "";
 		var i = 0;
@@ -594,9 +592,9 @@ com.synckolab.tools.text.utf8 = {
 /**
  * UTF-16 en/decoder
  * Usage:
- *	result = com.synckolab.text.utf16.decode(String); / encode(String);
+ *	result = synckolab.text.utf16.decode(String); / encode(String);
  */
-com.synckolab.tools.text.utf16 = {
+synckolab.tools.text.utf16 = {
 	decode : function (str) {
 		var out, i, len, c;
 		var char2, char3;
@@ -660,9 +658,9 @@ com.synckolab.tools.text.utf16 = {
 /**
  * QuotedPrintable en/decoder
  * Usage:
- *	result = com.synckolab.text.quoted.decode(String); / encode(String);
+ *	result = synckolab.text.quoted.decode(String); / encode(String);
  */
-com.synckolab.tools.text.quoted = {
+synckolab.tools.text.quoted = {
 
 	encode : function (str) {
 		// +   original by: Theriault
@@ -743,9 +741,9 @@ com.synckolab.tools.text.quoted = {
 /**
  * Base 64 decoder
  * Usage:
- *	result = com.synckolab.text.base64.decode(String); / encode(String);
+ *	result = synckolab.text.base64.decode(String); / encode(String);
  */
-com.synckolab.tools.text.base64 = {
+synckolab.tools.text.base64 = {
 	base64 : ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2',
 			'3', '4', '5', '6', '7', '8', '9', '*', '/'],
 
