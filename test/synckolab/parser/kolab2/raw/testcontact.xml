@@ -39,7 +39,6 @@
   <gender>(string, default empty)</gender>
   <language>(string, default empty)</language>
   <phone>
-    <type>(string, no default)</type>
     <number>(string, default empty)</number>
   </phone>
   <email>
@@ -47,7 +46,7 @@
     <smtp-address>(string, default empty)</smtp-address>
   </email>
   <address>
-    <type>(string, default home)</type>
+    <type>home</type>
     <street>(string, default empty)</street>
     <locality>(string, default empty)</locality>
     <region>(string, default empty)</region>

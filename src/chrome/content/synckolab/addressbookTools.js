@@ -761,9 +761,11 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 				}
 				tok = cur.firstChild.data.split("-");
 				this.setCardProperty(card, "BirthYear", tok[0]);
-				this.setCardProperty(card, "BirthMonth", tok[1]);
-				// BDAY: 1987-09-27
-				this.setCardProperty(card, "BirthDay", tok[2]);
+				if(tok.length > 2) {
+					this.setCardProperty(card, "BirthMonth", tok[1]);
+					// BDAY: 1987-09-27
+					this.setCardProperty(card, "BirthDay", tok[2]);
+				}
 				found = true;
 				break;
 			// anniversary - not in vcard rfc??
@@ -774,9 +776,11 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 				tok = cur.getFirstData().split("-");
 
 				this.setCardProperty(card, "AnniversaryYear", tok[0]);
-				this.setCardProperty(card, "AnniversaryMonth", tok[1]);
-				// BDAY:1987-09-27T08:30:00-06:00
-				this.setCardProperty(card, "AnniversaryDay", tok[2]);
+				if(tok.length > 2) {
+					this.setCardProperty(card, "AnniversaryMonth", tok[1]);
+					// BDAY:1987-09-27T08:30:00-06:00
+					this.setCardProperty(card, "AnniversaryDay", tok[2]);
+				}
 				found = true;
 				break;
 			/* @deprecated
@@ -908,6 +912,25 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 					break;
 				}
 				this.setCardProperty(card, "AllowRemoteContent", 'TRUE' === cur.firstChild.data.toUpperCase());
+				break;
+				
+			// fields we "know" about but just cannot work with (used for kolab 3)
+			case "CREATION-DATE":
+			case "LATITUDE":
+			case "LONGITUDE":
+			case "ASSISTANT":
+			case "MANAGER-NAME":
+			case "PROFESSION":
+			case "SPOUSE-NAME":
+			case "CHILDREN":
+			case "GENDER":
+			case "LANGUAGE":
+			case "OFFICE-LOCATION":
+			case "FREE-BUSY-URL":
+				if (cur.firstChild === null) {
+					break;
+				}
+				this.setCardProperty(card, cur.nodeName, cur.getFirstData(), true);
 				break;
 			default:
 				if (cur.firstChild === null) {

@@ -38,6 +38,7 @@ load("test/synckolab/tools/textTest.js");
 
 load("test/synckolab/parser/kolab2/calendarTest.js");
 load("test/synckolab/parser/kolab2/contactTest.js");
+//load("test/synckolab/parser/kolab3/contactTest.js");
 
 print("========================")
 print("Tests Run: " + (testRuns.fail+testRuns.pass));
