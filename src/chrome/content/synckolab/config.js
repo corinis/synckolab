@@ -64,7 +64,7 @@ synckolab.config = {
 			// automatically sync every X minutes (0 = disable)
 			//@deprecated syncInterval: {type: synckolab.tools.CONFIG_TYPE_INT, def: 0 },
 			// format to use: xml|vcard
-			format: {type: synckolab.tools.CONFIG_TYPE_CHAR, def: "xml" },
+			format: {type: synckolab.tools.CONFIG_TYPE_CHAR, def: "xml-k3" },
 			// timeframe to sync in (don't sync entries with an older start-date)
 			timeFrame: {type: synckolab.tools.CONFIG_TYPE_INT, def: 180}, 
 			// enable the sync listener
@@ -178,6 +178,12 @@ synckolab.config.loadAccountConfig = function (pref, acct) {
 									synckolab.config.baseSetting[n].type, 
 									synckolab.config.baseSetting[n].def);
 						}
+					}
+					
+					// Some fixes for old version
+					if(cConf.format && cConf.format.toLowerCase() === "xml") {
+						synckolab.tools.logMessage("Old config - autofixing xml->kolab2", synckolab.global.LOG_INFO);
+						cConf.format = "xml-k2";
 					}
 				}
 			}

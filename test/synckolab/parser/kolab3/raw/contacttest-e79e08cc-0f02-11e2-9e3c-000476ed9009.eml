@@ -1,0 +1,100 @@
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="=_07bdbe1f73f061d409fe68b2d5edc3b7"
+From: nikotest@demo.kolab.org
+To: nikotest@demo.kolab.org
+Date: Fri, 05 Oct 2012 17:39:52 +0200
+X-Kolab-Type: application/x-vnd.kolab.contact
+X-Kolab-Mime-Version: 3.0
+Subject: e79e08cc-0f02-11e2-9e3c-000476ed9009
+User-Agent: Roundcube Webmail/0.9-0.10.git954540a3.el6.kolab_3.0
+
+--=_07bdbe1f73f061d409fe68b2d5edc3b7
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=ISO-8859-1
+
+This is a Kolab Groupware object. To view this object you will need an emai=
+l client that understands the Kolab Groupware format. For a list of such em=
+ail clients please visit http://www.kolab.org/
+
+
+--=_07bdbe1f73f061d409fe68b2d5edc3b7
+Content-Transfer-Encoding: 8bit
+Content-Type: application/vcard+xml; charset=UTF-8;
+ name=kolab.xml
+Content-Disposition: attachment;
+ filename=kolab.xml
+
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<vcards xmlns="urn:ietf:params:xml:ns:vcard-4.0">
+
+  <vcard>
+    <uid>
+      <uri>urn:uuid:e79e08cc-0f02-11e2-9e3c-000476ed9009</uri>
+    </uid>
+    <x-kolab-version>
+      <text>3.0dev1</text>
+    </x-kolab-version>
+    <prodid>
+      <text>Libkolabxml-0.8.1</text>
+    </prodid>
+    <rev>
+      <timestamp>20121005T153952Z</timestamp>
+    </rev>
+    <kind>
+      <text>individual</text>
+    </kind>
+    <fn>
+      <text>firstname lastname</text>
+    </fn>
+    <n>
+      <surname>lastname</surname>
+      <given>firstname</given>
+    </n>
+    <note>
+      <text>multi line
+notes
+
+with empty</text>
+    </note>
+    <group name="Affiliation">
+      <org>
+        <text>company</text>
+      </org>
+    </group>
+    <adr>
+      <parameters>
+        <type>
+          <text>home</text>
+        </type>
+      </parameters>
+      <pobox/>
+      <ext/>
+      <street>homestreet</street>
+      <locality>homecity</locality>
+      <region>homestate</region>
+      <code>1234</code>
+      <country>homecountry</country>
+    </adr>
+    <bday>
+      <date>20121020</date>
+    </bday>
+    <gender>
+      <sex>M</sex>
+    </gender>
+    <tel>
+      <parameters>
+        <type>
+          <text>home</text>
+        </type>
+      </parameters>
+      <text>+43 homephone</text>
+    </tel>
+    <email>
+      <text>email1@test.com</text>
+    </email>
+  </vcard>
+
+</vcards>
+
+--=_07bdbe1f73f061d409fe68b2d5edc3b7--

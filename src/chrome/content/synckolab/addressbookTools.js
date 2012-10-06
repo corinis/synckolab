@@ -592,9 +592,17 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 			synckolab.tools.logMessage("Error parsing the XML content of this message.\n" + xml, synckolab.global.LOG_ERROR + synckolab.global.LOG_AB);
 			return null;
 		}
-		if ((topNode.nodeType !== Node.ELEMENT_NODE) || (topNode.nodeName.toUpperCase() !== "CONTACT")) {
+		
+		// format detection
+		
+		if ((topNode.nodeType !== Node.ELEMENT_NODE) || 
+				((topNode.nodeName.toUpperCase() !== "CONTACT") &&	// kolab2
+				(topNode.nodeName.toUpperCase() !== "VCARDS") // kolab 3
+				)) {
 
-			if ((topNode.nodeType === Node.ELEMENT_NODE) && (topNode.nodeName.toUpperCase() === "DISTRIBUTION-LIST")) {
+			if ((topNode.nodeType === Node.ELEMENT_NODE) && 
+					(topNode.nodeName.toUpperCase() === "DISTRIBUTION-LIST")) {
+				// TODO kolab 3
 				return this.Xml2List(topNode, card);
 			}
 			// this can't be an event in Kolab XML format
@@ -602,7 +610,19 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 			return null;
 		}
 		
-		cur = new synckolab.Node(topNode.firstChild);
+		if(topNode.nodeName.toUpperCase() === "VCARDS") {
+			// kolab 3: vcard container: vcards / vcard / uid
+			synckolab.tools.logMessage("Kolab 3 XML VCARDS", synckolab.global.LOG_DEBUG + synckolab.global.LOG_AB);
+			cur = new synckolab.Node(topNode);
+			cur = cur.getChildNode("VCARD");
+			cur = new synckolab.Node(cur.firstChild);
+		}
+		else	
+		{
+			// kolab 2: start parsing directly: contact / product-id
+			synckolab.tools.logMessage("Kolab 2 XML CONTACT", synckolab.global.LOG_DEBUG + synckolab.global.LOG_AB);
+			cur = new synckolab.Node(topNode.firstChild);
+		}
 	} else {
 		synckolab.tools.logMessage("parsing dom tree into card.", synckolab.global.LOG_DEBUG + synckolab.global.LOG_AB);
 		cur = new synckolab.Node(xml.firstChild);
@@ -611,11 +631,36 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 	var found = false;
 	var tok; // for tokenizer
 	var email = 0;
+	var num;	// temp
 
 	while (cur) {
 		if (cur.nodeType === Node.ELEMENT_NODE)//1
 		{
 			switch (cur.nodeName.toUpperCase()) {
+			// KOLAB 2+3
+			case "UID":
+				if (cur.firstChild === null) {
+					break;
+				}
+				// kolab 3: uid/uri
+				var uid = cur.getXmlResult("URI", "");
+				// kolab2: directly
+				if(uid === "") {
+					uid = cur.getFirstData();
+				}
+				this.setUID(card, uid);
+				break;
+			// timestamp
+			case "REV":
+				/*
+				ignore this since thunderbird implementation just does not work
+				var s = cur.getXmlResult("TIMESTAMP", "");
+				// now we gotta check times... convert the message first
+				// save the date in microseconds
+				// 20050330T152852Z
+				
+				*/
+				break;
 			case "LAST-MODIFICATION-DATE":
 				/*
 				ignore this since thunderbird implementation just does not work
@@ -635,7 +680,8 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 				}
 				*/
 				break;
-
+				
+			// KOLAB 2
 			case "NAME":
 				this.setCardProperty(card, "FirstName", cur.getXmlResult("GIVEN-NAME", ""));
 				this.setCardProperty(card, "LastName", cur.getXmlResult("LAST-NAME", ""));
@@ -643,7 +689,16 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 				found = true;
 				break;
 
-			case "DISPLAY-NAME":
+			// KOLAB 3
+			case "N":
+				this.setCardProperty(card, "FirstName", cur.getXmlResult("SURNAME", ""));
+				this.setCardProperty(card, "LastName", cur.getXmlResult("GIVEN", ""));
+				// others: ADDITIONAL/PREFIX/SUFFIX 
+				found = true;
+				break;
+
+			case "FN":	// kolab 3
+			case "DISPLAY-NAME":	// kolab 2
 				this.setCardProperty(card, "DisplayName", cur.getFirstData());
 				break;
 
@@ -678,6 +733,7 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 				found = true;
 				break;
 
+			case "NICKNAME":
 			case "NICK-NAME":
 				if (cur.firstChild === null) {
 					break;
@@ -686,23 +742,26 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 				found = true;
 				break;
 
+			// kolab 2+3
 			case "SMTP-ADDRESS":
 			case "EMAIL":
 				//synckolab.tools.logMessage("email: " + email + " - " + cur.getXmlResult("SMTP-ADDRESS", ""), synckolab.global.LOG_DEBUG + synckolab.global.LOG_AB);
+				var emailAddress = cur.getXmlResult("SMTP-ADDRESS", "");
+				emailAddress += cur.getXmlResult("TEXT", "");
 				switch (email) {
 				case 0:
-					this.setCardProperty(card, "PrimaryEmail", cur.getXmlResult("SMTP-ADDRESS", ""));
+					this.setCardProperty(card, "PrimaryEmail", emailAddress);
 					// only applies to tbird < 3
 					if (card.defaultEmail) {
 						card.defaultEmail = this.getCardProperty(card, "PrimaryEmail");
 					}
 					break;
 				case 1:
-					this.setCardProperty(card, "SecondEmail", cur.getXmlResult("SMTP-ADDRESS", ""));
+					this.setCardProperty(card, "SecondEmail", emailAddress);
 					break;
 				default:
 					// remember other emails
-					this.setCardProperty(card, "EMAIL" + email, cur.getXmlResult("SMTP-ADDRESS", ""), true);
+					this.setCardProperty(card, "EMAIL" + email, emailAddress, true);
 					break;
 				}
 				email++;
@@ -723,10 +782,65 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 				this.setCardProperty(card, "Company", cur.getFirstData());
 				found = true;
 				break;
+				
+			
+			case "TEL": // kolab3
+				num = cur.getFirstData();
+				
+				// figure out the right type
+				var type = 0; // 0 = phone; 1 = mobile; 2 = fax;
+				var where = 0; // 0 = default; 1 = home; 2 = work
+				
+				var types = cur.getChildNode("parameters");
+				if(types) {
+					types = types.getChildNode("type");
+					if(types) {
+						types = types.getChildNode("text");
+						while (types) {
+							switch(types.getFirstData()) {
+								case "home": where = 1; break;
+								case "work": where = 2; break;
+								case "cell": type = 1; break;
+								case "fax": type = 2; break;
+								case "pager": 
+								case "page": 
+									type = 3; break;
+								default:
+									synckolab.tools.logMessage("Unknown phone type: " + types.getXmlResult(), synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
+							}
+							types = types.getNextNode("text");
+						}
+					}
+				}
+				
+				switch(type) {
+				case 0:	// phone
+					switch(where) {
+					case 0:	// def
+					case 1:	// home
+						this.setCardProperty(card, "HomePhone", num);
+						break;
+					case 2:	// work
+						this.setCardProperty(card, "WorkPhone", num);
+						break;
+					}
+					break;
+				case 1:	// cell
+					this.setCardProperty(card, "CellularNumber", num);
+					break;
+				case 2:	// fax
+					this.setCardProperty(card, "FaxNumber", num);
+					break;
+				case 3:
+					this.setCardProperty(card, "PagerNumber", num);
+					break;
+				}
+				found = true;
+				break;
 
-			// these two are the same
-			case "PHONE":
-				var num = cur.getXmlResult("NUMBER", "");
+			
+			case "PHONE": // kolab2
+				num = cur.getXmlResult("NUMBER", "");
 				switch (cur.getXmlResult("TYPE", "CELLULAR").toUpperCase()) {
 				case "MOBILE":
 				case "CELLULAR":
@@ -755,17 +869,31 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 				found = true;
 				break;
 
-			case "BIRTHDAY":
+			case "BDAY":	// kolab3
+			case "BIRTHDAY":	// kolab2
 				if (cur.firstChild === null) {
 					break;
 				}
-				tok = cur.firstChild.data.split("-");
-				this.setCardProperty(card, "BirthYear", tok[0]);
-				if(tok.length > 2) {
-					this.setCardProperty(card, "BirthMonth", tok[1]);
-					// BDAY: 1987-09-27
-					this.setCardProperty(card, "BirthDay", tok[2]);
+				
+				tok = cur.getChildNode("date-time");
+				// get the data from the date-time node
+				if(tok) {
+					tok = tok.getFirstData();
+				} else {
+					// get from date node
+					tok = cur.getChildNode("date");
+					if(tok) {
+						tok = tok.getFirstData();
+					} else {
+						tok = cur.getFirstData();
+					}
 				}
+				// convert to date
+				tok = synckolab.tools.text.string2DateTime(tok);
+
+				this.setCardProperty(card, "BirthYear", tok.getFullYear());
+				this.setCardProperty(card, "BirthMonth", tok.getMonth());
+				this.setCardProperty(card, "BirthDay", tok.getDate());
 				found = true;
 				break;
 			// anniversary - not in vcard rfc??
@@ -773,23 +901,80 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 				if (cur.firstChild === null) {
 					break;
 				}
-				tok = cur.getFirstData().split("-");
 
-				this.setCardProperty(card, "AnniversaryYear", tok[0]);
-				if(tok.length > 2) {
-					this.setCardProperty(card, "AnniversaryMonth", tok[1]);
-					// BDAY:1987-09-27T08:30:00-06:00
-					this.setCardProperty(card, "AnniversaryDay", tok[2]);
+				tok = cur.getChildNode("date-time");
+				// get the data from the date-time node
+				if(tok) {
+					tok = tok.getFirstData();
+				} else {
+					// get from date node
+					tok = cur.getChildNode("date");
+					if(tok) {
+						tok = tok.getFirstData();
+					} else {
+						tok = cur.getFirstData();
+					}
 				}
+				// convert to date
+				tok = synckolab.tools.text.string2DateTime(tok);
+
+				this.setCardProperty(card, "AnniversaryYear", tok.getFullYear());
+				this.setCardProperty(card, "AnniversaryMonth", tok.getMonth());
+				this.setCardProperty(card, "AnniversaryDay", tok.getDate());
 				found = true;
 				break;
+				
+			case "ADR":	// kolab3
+				// figure out the right type
+				var where = 0; // 0 = default; 1 = home; 2 = work
+				var types = cur.getChildNode("parameters");
+				if(types) {
+					types = types.getChildNode("type");
+					if(types) {
+						types = types.getChildNode("text");
+						while (types) {
+							switch(types.getFirstData()) {
+								case "home": where = 1; break;
+								case "work": where = 2; break;
+								default:
+									synckolab.tools.logMessage("Unknown adr type: " + types.getXmlResult(), synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
+							}
+							types = types.getNextNode("text");
+						}
+					}
+				}
+				
+				// now fill accordingly
+				switch(where) {
+				case 0:
+				case 1:
+					this.setCardProperty(card, "HomeAddress", cur.getXmlResult("STREET", ""));
+					this.setCardProperty(card, "HomeAddress2", cur.getXmlResult("STREET2", ""));
+					this.setCardProperty(card, "HomeCity", cur.getXmlResult("LOCALITY", ""));
+					this.setCardProperty(card, "HomeState", cur.getXmlResult("REGION", ""));
+					this.setCardProperty(card, "HomeZipCode", cur.getXmlResult("CODE", ""));
+					this.setCardProperty(card, "HomeCountry", cur.getXmlResult("COUNTRY", ""));
+					break;
+				case 2:
+					this.setCardProperty(card, "WorkAddress", cur.getXmlResult("STREET", ""));
+					this.setCardProperty(card, "WorkAddress2", cur.getXmlResult("STREET2", ""));
+					this.setCardProperty(card, "WorkCity", cur.getXmlResult("LOCALITY", ""));
+					this.setCardProperty(card, "WorkState", cur.getXmlResult("REGION", ""));
+					this.setCardProperty(card, "WorkZipCode", cur.getXmlResult("CODE", ""));
+					this.setCardProperty(card, "WorkCountry", cur.getXmlResult("COUNTRY", ""));
+					break;
+				}
+				found = true;
+				
+				break;
+				
 			/* @deprecated
 			case "PREFERRED-ADDRESS":
 			if (cur.firstChild)
 				this.setCardProperty(card, "DefaultAddress", cur.getFirstData());
 			break;
 			*/
-			case "ADDRESS":
+			case "ADDRESS":	//kolab2
 				switch (cur.getXmlResult("TYPE", "HOME").toUpperCase()) {
 				case "HOME":
 					this.setCardProperty(card, "HomeAddress", cur.getXmlResult("STREET", ""));
@@ -832,7 +1017,9 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 					this.setCardProperty(card, "PhotoURI", uri);
 				}
 				break;
-			case "BODY":
+			
+			case "NOTE":	// kolab3
+			case "BODY":	// kolab2
 				if (cur.firstChild === null) {
 					break;
 				}
@@ -850,11 +1037,28 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 				found = true;
 				break;
 
-			case "WEB-PAGE":
+			case "URL":	//kolab3
 				if (cur.firstChild === null) {
 					break;
 				}
-				this.setCardProperty(card, "WebPage1", cur.getFirstData());
+				var value = cur.getXmlResult("URI", "");
+				
+				if(!card.WebPage1 || card.WebPage1 === "") {
+					this.setCardProperty(card, "WebPage1", value);
+				} else if(!card.WebPage2 || card.WebPage2 === "") {
+					this.setCardProperty(card, "WebPage2", value);
+				} else if(!card.WebPage3 || card.WebPage3 === "") {
+					this.setCardProperty(card, "WebPage3", value);
+				}
+				
+				found = true;
+				break;
+			case "WEB-PAGE":	// kolab2
+				if (cur.firstChild === null) {
+					break;
+				}
+				value = cur.getFirstData();
+				this.setCardProperty(card, "WebPage1", value);
 				found = true;
 				break;
 
@@ -864,13 +1068,6 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 				}
 				this.setCardProperty(card, "WebPage2", cur.getFirstData());
 				found = true;
-				break;
-
-			case "UID":
-				if (cur.firstChild === null) {
-					break;
-				}
-				this.setUID(card, cur.getFirstData());
 				break;
 
 			case "CUSTOM1":
@@ -900,6 +1097,7 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 				this.setCardProperty(card, "Custom4", cur.getFirstData());
 				break;
 
+			case "IMPP":
 			case "IM-ADDRESS":
 				if (cur.firstChild === null) {
 					break;
@@ -913,8 +1111,26 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 				}
 				this.setCardProperty(card, "AllowRemoteContent", 'TRUE' === cur.firstChild.data.toUpperCase());
 				break;
+
+			case "X-CUSTOM": // kolab3
+				// dunno if we need to support this
+				break;
+			case "PHOTO": // kolab3
+				// handle photo VERY special... TODO
+				break;
+			case "GROUP":
+				// should wehandle this?
+				break;
+			// fields we know and can skip
+			case "PRODID":
+			case "KIND":
+			case "X-KOLAB-VERSION":
+				break;
 				
-			// fields we "know" about but just cannot work with (used for kolab 3)
+				
+			// fields we "know" about but just cannot work with
+			case "RELATED": //kolab3
+			case "TITLE":
 			case "CREATION-DATE":
 			case "LATITUDE":
 			case "LONGITUDE":
@@ -938,7 +1154,7 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 				}
 				if (cur.nodeName !== "product-id" && cur.nodeName !== "sensitivity") {
 					// remember other fields
-					synckolab.tools.logMessage("FIELD not found: " + cur.nodeName + "=" + cur.getFirstData(), synckolab.global.LOG_WARNING + synckolab.global.LOG_AB);
+					synckolab.tools.logMessage("FIELD not found: '" + cur.nodeName + "' firstData='" + cur.getFirstData()+"'", synckolab.global.LOG_WARNING + synckolab.global.LOG_AB);
 					this.setCardProperty(card, cur.nodeName, cur.getFirstData(), true);
 				}
 				break;

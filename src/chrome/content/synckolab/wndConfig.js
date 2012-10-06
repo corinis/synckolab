@@ -231,10 +231,16 @@ synckolab.settings.init = function () {
 	abchild = document.createElement("menuitem");
 	abpopup.appendChild(abchild);
 	abchild.setAttribute("label", "Xml/Kolab2");
-	abchild.setAttribute("value", "Xml");
+	abchild.setAttribute("value", "xml-k2");
+
+	abchild = document.createElement("menuitem");
+	abpopup.appendChild(abchild);
+	abchild.setAttribute("label", "Xml/Kolab3");
+	abchild.setAttribute("value", "xml-k3");
 	abchild.setAttribute("selected", "true");
-	abList.setAttribute("label", "Xml/Kolab2");
-	abList.setAttribute("value", "Xml");
+	
+	abList.setAttribute("label", "Xml/Kolab3");
+	abList.setAttribute("value", "xml-k3");
 
 	abList = document.getElementById("calendarFormat");
 	abpopup = document.createElement("menupopup");
@@ -247,10 +253,16 @@ synckolab.settings.init = function () {
 	abchild = document.createElement("menuitem");
 	abpopup.appendChild(abchild);
 	abchild.setAttribute("label", "Xml/Kolab2");
-	abchild.setAttribute("value", "Xml");
+	abchild.setAttribute("value", "xml-k2");
+
+	abchild = document.createElement("menuitem");
+	abpopup.appendChild(abchild);
+	abchild.setAttribute("label", "Xml/Kolab3");
+	abchild.setAttribute("value", "xml-k3");
 	abchild.setAttribute("selected", "true");
-	abList.setAttribute("label", "Xml/Kolab2");
-	abList.setAttribute("value", "Xml");
+	
+	abList.setAttribute("label", "Xml/Kolab3");
+	abList.setAttribute("value", "xml-k3");
 
 	abList = document.getElementById("taskFormat");
 	abpopup = document.createElement("menupopup");
@@ -263,10 +275,16 @@ synckolab.settings.init = function () {
 	abchild = document.createElement("menuitem");
 	abpopup.appendChild(abchild);
 	abchild.setAttribute("label", "Xml/Kolab2");
-	abchild.setAttribute("value", "Xml");
+	abchild.setAttribute("value", "xml-k2");
+
+	abchild = document.createElement("menuitem");
+	abpopup.appendChild(abchild);
+	abchild.setAttribute("label", "Xml/Kolab3");
+	abchild.setAttribute("value", "xml-k3");
 	abchild.setAttribute("selected", "true");
-	abList.setAttribute("label", "Xml/Kolab2");
-	abList.setAttribute("value", "Xml");
+	
+	abList.setAttribute("label", "Xml/Kolab3");
+	abList.setAttribute("value", "xml-k3");
 	
 	// the adress book list
 	// fill the contact selection

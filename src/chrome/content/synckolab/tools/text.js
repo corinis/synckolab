@@ -220,36 +220,64 @@ synckolab.tools.text = {
 	/**
 	 *  ------ functions for date / string conversions ------------------------ 
 	 */
-
-	// takes: 2005-03-30T15:28:52Z or 2005-03-30 15:28:52
-	string2DateTime : function (val) {
-		// in case its a date without time
-		if (val.indexOf(":") === -1) {
-			return this.string2Date(val);
-		}
-
+	
+	
+	// takes: 2005-03-30T15:28:52Z or 2005-03-30 15:28:52 or: 20050303T152852Z
+	string2DateTime : function (val, useUTC) {
 		var s = val.replace('T', ' ');
 		s = s.replace('Z', '');
 		var both = s.split(' ');
-		var cdate = both[0].split('-');
-		var ctime = both[1].split(':');
-		return new Date(cdate[0], cdate[1] - 1, cdate[2], ctime[0], ctime[1], ctime[2]);
-
+		var cdate = both[0];
+		// kolab2: 2005-03-30
+		if(cdate.indexOf('-') !== -1) {
+			cdate = cdate.split('-');
+		} else {
+			// kolab3: YYYYMMDD
+			cdate = [];
+			cdate[0] = both[0].substr(0,4);
+			if(both[0].length > 7) {
+				cdate[1] = both[0].substr(4,2);
+				cdate[2] = both[0].substr(6,2);
+			} else {
+				cdate[1] = 1;
+				cdate[2] = 1;
+			}
+		}
+		var ctime;
+		
+		if(both.length > 1) {
+			ctime = both[1];
+			if(ctime.indexOf(':') !== -1) {
+				ctime = ctime.split(':');
+			} else {
+				// kolab3: HHmmSS
+				ctime = [];
+				ctime[0] = both[1].substr(0,2);
+				ctime[1] = both[1].substr(2,2);
+				ctime[2] = both[1].substr(4,2);
+			}
+			if(useUTC) {
+				return new Date(Date.UTC(cdate[0], cdate[1] - 1, cdate[2], ctime[0], ctime[1], ctime[2]));
+			}
+			else {
+				return new Date(cdate[0], cdate[1] - 1, cdate[2], ctime[0], ctime[1], ctime[2]);
+			}
+		}
+		else {
+			if(useUTC) {
+				return new Date(Date.UTC(cdate[0], cdate[1] - 1, cdate[2]));
+			}
+			else {
+				return new Date(cdate[0], cdate[1] - 1, cdate[2]);
+			}
+		}
 	},
 
 	// takes: 2005-03-30T15:28:52Z or 2005-03-30 15:28:52
 	string2CalDateTime : function (val, useUTC) {
 		// in case its a date without time fall back to string2CalDate()
-		if (val.indexOf(":") === -1) {
-			return this.string2CalDate(val);
-		}
-
-		var s = val.replace('T', ' ');
-		s = s.replace('Z', '');
-		var both = s.split(' ');
-		var cdate = both[0].split('-');
-		var ctime = both[1].split(':');
-		var calDateTime = null;
+		var calDateTime;
+		
 		// lightning 0.9pre fix (uses createDateTime)
 		if (typeof createDateTime !== 'undefined') {
 			calDateTime = new createDateTime();
@@ -261,77 +289,62 @@ synckolab.tools.text = {
 
 		var jsDate = null;
 		if (useUTC) {
-			jsDate = new Date(Date.UTC(cdate[0], cdate[1] - 1, cdate[2], ctime[0], ctime[1], ctime[2]));
+			jsDate = this.string2DateTime(val, true);
 		} else {
-			jsDate = new Date(cdate[0], cdate[1] - 1, cdate[2], ctime[0], ctime[1], ctime[2]);
+			jsDate = this.string2DateTime(val);
 		}
+		
 		calDateTime.jsDate = jsDate;
 		return calDateTime;
 	},
 
 	// produces: 2005-03-30
-	date2String : function (datetime, normal) {
+	date2String : function (datetime, normal, compact) {
 		if (!datetime) {
 			return '';
 		}
 
-		if (normal) {
-			return datetime.getFullYear() + "-" + (datetime.getMonth() + 1 < 10 ? "0" : "") + (datetime.getMonth() + 1) + "-" + (datetime.getDate() < 10 ? "0" : "") + datetime.getDate();
-		} else {
-			return datetime.getUTCFullYear() + "-" + (datetime.getUTCMonth() + 1 < 10 ? "0" : "") + (datetime.getUTCMonth() + 1) + "-" + (datetime.getUTCDate() < 10 ? "0" : "") + datetime.getUTCDate();
+		if (compact) {
+			if (normal) {
+				return datetime.getFullYear() + (datetime.getMonth() + 1 < 10 ? "0" : "") + (datetime.getMonth() + 1) + (datetime.getDate() < 10 ? "0" : "") + datetime.getDate();
+			} else {
+				return datetime.getUTCFullYear() + (datetime.getUTCMonth() + 1 < 10 ? "0" : "") + (datetime.getUTCMonth() + 1) + (datetime.getUTCDate() < 10 ? "0" : "") + datetime.getUTCDate();
+			}
+		} else { 
+			if (normal) {
+				return datetime.getFullYear() + "-" + (datetime.getMonth() + 1 < 10 ? "0" : "") + (datetime.getMonth() + 1) + "-" + (datetime.getDate() < 10 ? "0" : "") + datetime.getDate();
+			} else {
+				return datetime.getUTCFullYear() + "-" + (datetime.getUTCMonth() + 1 < 10 ? "0" : "") + (datetime.getUTCMonth() + 1) + "-" + (datetime.getUTCDate() < 10 ? "0" : "") + datetime.getUTCDate();
+			}
 		}
 	},
 
 	// produces 15:28:52
-	time2String : function (datetime) {
+	time2String : function (datetime, compact) {
+		if(compact) {
+			return (datetime.getUTCHours() < 10 ? "0" : "") + datetime.getUTCHours() + (datetime.getUTCMinutes() < 10 ? "0" : "") + datetime.getUTCMinutes() + (datetime.getUTCSeconds() < 10 ? "0" : "") + datetime.getUTCSeconds();
+		}
 		return (datetime.getUTCHours() < 10 ? "0" : "") + datetime.getUTCHours() + ":" + (datetime.getUTCMinutes() < 10 ? "0" : "") + datetime.getUTCMinutes() + ":" + (datetime.getUTCSeconds() < 10 ? "0" : "") + datetime.getUTCSeconds();
 	},
 
 	// produces: 2005-03-30T15:28:52Z for allday = false,
 	// produces: 2005-03-30 for allday = true
-	calDateTime2String : function (val, allday) {
+	calDateTime2String : function (val, allday, compact) {
 		if (val === null) {
 			return "";
 		}
 
-		var datetime = (val instanceof Date) ? val : val.jsDate;
+		var datetime = val.jsDate ? val.jsDate: val;
 		//alert("EVENT TIME: " + datetime);
 
 		// make sure not to use UTC for all-day events
-		var resultstring = this.date2String(datetime, allday);
+		var resultstring = this.date2String(datetime, allday, compact);
 		if (!allday) {
 			resultstring += 'T';
-			resultstring += this.time2String(datetime);
+			resultstring += this.time2String(datetime, compact);
 			resultstring += 'Z';
 		}
 		return resultstring;
-	},
-
-	// takes: 2005-03-30
-	string2Date : function (val) {
-		var s = val.replace('T', '');
-		var cdate = s.split('-');
-		return new Date(cdate[0], cdate[1] - 1, cdate[2]);
-	},
-
-	// takes: 2005-03-30
-	string2CalDate : function (val) {
-		var s = val.replace('T', '');
-		var cdate = s.split('-');
-		var calDateTime = null;
-
-		// lightning 0.9pre fix (uses createDateTime)
-		if (typeof createDateTime !== 'undefined') {
-			calDateTime = new createDateTime();
-		} else if (CalDateTime) {
-			calDateTime = new CalDateTime();
-		} else {
-			calDateTime = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
-		}
-
-		calDateTime.jsDate = new Date(Date.UTC(cdate[0], cdate[1] - 1, cdate[2], 0, 0, 0));
-		calDateTime.isDate = true;
-		return calDateTime;
 	},
 
 	// Create a duration object for an alarm time
@@ -738,6 +751,114 @@ synckolab.tools.text.quoted = {
 	}
 };
 
+synckolab.tools.text.uu = {
+		encode: function(str) {
+			throw("UUEncode not implemented");
+		},
+		
+		decode: function(str) {
+			// http://kevin.vanzonneveld.net
+			// +   original by: Ole Vrijenhoek
+			// +   bugfixed by: Brett Zamir (http://brett-zamir.me)
+			// -    depends on: is_scalar
+			// -    depends on: rtrim
+			// *     example 1: convert_uudecode('+22!L;W9E(%!(4\"$`\n`');
+			// *     returns 1: 'I love PHP'
+
+			// Not working perfectly
+
+			// shortcut
+			var chr = function (c) {
+				return String.fromCharCode(c);
+			};
+
+			if (!str || str=="") {
+				return chr(0);
+			} else if (!this.is_scalar(str)) {
+				return false;
+			} else if (str.length < 8) {
+				return false;
+			}
+
+			var decoded = "", tmp1 = "", tmp2 = "";
+			var c = 0, i = 0, j = 0, a = 0;
+			var line = str.split("\n");
+			var bytes = [];
+
+			for (i in line) {
+				c = line[i].charCodeAt(0);
+				bytes = line[i].substr(1);
+
+				// Convert each char in bytes[] to a 6-bit
+				for (j in bytes) {
+					tmp1 = bytes[j].charCodeAt(0)-32;
+					tmp1 = tmp1.toString(2);
+					while (tmp1.length < 6) {
+						tmp1 = "0" + tmp1;
+					}
+					tmp2 += tmp1
+				}
+
+				for (i=0; i<=(tmp2.length/8)-1; i++) {
+					tmp1 = tmp2.substr(a, 8);
+					if (tmp1 == "01100000") {
+						decoded += this.chr(0);
+					} else {
+						decoded += this.chr(parseInt(tmp1, 2));
+					}
+					a += 8;
+				}
+				a = 0;
+				tmp2 = "";
+			}
+			return this.rtrim(decoded, "\0");
+		},
+		
+		rtrim: function (str, charlist) {
+			// http://kevin.vanzonneveld.net
+			// +   original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+			// +      input by: Erkekjetter
+			// +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+			// +   bugfixed by: Onno Marsman
+			// +   input by: rem
+			// +   bugfixed by: Brett Zamir (http://brett-zamir.me)
+			// *     example 1: rtrim('    Kevin van Zonneveld    ');
+			// *     returns 1: '    Kevin van Zonneveld'
+			charlist = !charlist ? ' \\s\u00A0' : (charlist + '').replace(/([\[\]\(\)\.\?\/\*\{\}\+\$\^\:])/g, '\\$1');
+			var re = new RegExp('[' + charlist + ']+$', 'g');
+			return (str + '').replace(re, '');
+		},
+		
+		is_scalar: function(mixed_var) {
+			// http://kevin.vanzonneveld.net
+			// +   original by: Paulo Freitas
+			// *     example 1: is_scalar(186.31);
+			// *     returns 1: true
+			// *     example 2: is_scalar({0: 'Kevin van Zonneveld'});
+			// *     returns 2: false
+			return (/boolean|number|string/).test(typeof mixed_var);
+		},
+		
+		chr: function (codePt) {
+			// http://kevin.vanzonneveld.net
+			// +   original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+			// +   improved by: Brett Zamir (http://brett-zamir.me)
+			// *     example 1: chr(75);
+			// *     returns 1: 'K'
+			// *     example 1: chr(65536) === '\uD800\uDC00';
+			// *     returns 1: true
+			if (codePt > 0xFFFF) { // Create a four-byte string (length 2) since this code point is high
+				//   enough for the UTF-16 encoding (JavaScript internal use), to
+				//   require representation with two surrogates (reserved non-characters
+				//   used for building other characters; the first is "high" and the next "low")
+				codePt -= 0x10000;
+				return String.fromCharCode(0xD800 + (codePt >> 10), 0xDC00 + (codePt & 0x3FF));
+			}
+			return String.fromCharCode(codePt);
+		}
+
+
+}
 /**
  * Base 64 decoder
  * Usage:
@@ -795,3 +916,5 @@ synckolab.tools.text.base64 = {
 		return result;
 	}
 };
+
+

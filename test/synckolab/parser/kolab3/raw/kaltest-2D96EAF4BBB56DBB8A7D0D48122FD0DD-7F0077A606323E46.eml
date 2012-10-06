@@ -1,0 +1,100 @@
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="=_4219b74758af03607a2a947101c07d10"
+From: nikotest@demo.kolab.org
+To: nikotest@demo.kolab.org
+Date: Fri, 05 Oct 2012 17:40:45 +0200
+X-Kolab-Type: application/x-vnd.kolab.event
+X-Kolab-Mime-Version: 3.0
+Subject: 2D96EAF4BBB56DBB8A7D0D48122FD0DD-7F0077A606323E46
+User-Agent: Roundcube Webmail/0.9-0.10.git954540a3.el6.kolab_3.0
+
+--=_4219b74758af03607a2a947101c07d10
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=ISO-8859-1
+
+This is a Kolab Groupware object. To view this object you will need an emai=
+l client that understands the Kolab Groupware format. For a list of such em=
+ail clients please visit http://www.kolab.org/
+
+
+--=_4219b74758af03607a2a947101c07d10
+Content-Transfer-Encoding: 8bit
+Content-Type: application/calendar+xml; charset=UTF-8;
+ name=kolab.xml
+Content-Disposition: attachment;
+ filename=kolab.xml
+
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<icalendar xmlns="urn:ietf:params:xml:ns:icalendar-2.0">
+
+  <vcalendar>
+    <properties>
+      <prodid>
+        <text>Libkolabxml-0.8.1</text>
+      </prodid>
+      <version>
+        <text>2.0</text>
+      </version>
+      <x-kolab-version>
+        <text>3.0dev1</text>
+      </x-kolab-version>
+    </properties>
+    <components>
+      <vevent>
+        <properties>
+          <uid>
+            <text>2D96EAF4BBB56DBB8A7D0D48122FD0DD-7F0077A606323E46</text>
+          </uid>
+          <created>
+            <date-time>2012-10-05T15:40:45Z</date-time>
+          </created>
+          <dtstamp>
+            <date-time>2012-10-05T17:40:45Z</date-time>
+          </dtstamp>
+          <sequence>
+            <integer>1</integer>
+          </sequence>
+          <class>
+            <text>PUBLIC</text>
+          </class>
+          <dtstart>
+            <parameters>
+              <tzid>
+                <text>/kolab.org/Europe/Paris</text>
+              </tzid>
+            </parameters>
+            <date-time>2012-10-04T06:30:00</date-time>
+          </dtstart>
+          <dtend>
+            <parameters>
+              <tzid>
+                <text>/kolab.org/Europe/Paris</text>
+              </tzid>
+            </parameters>
+            <date-time>2012-10-04T07:00:00</date-time>
+          </dtend>
+          <summary>
+            <text>test</text>
+          </summary>
+          <description>
+            <text>testdescr</text>
+          </description>
+          <priority>
+            <integer>5</integer>
+          </priority>
+          <location>
+            <text>testloc</text>
+          </location>
+          <organizer>
+            <parameters/>
+            <cal-address>mailto:%3Cnikotest%40demo%2Ekolab%2Eorg%3E</cal-address>
+          </organizer>
+        </properties>
+      </vevent>
+    </components>
+  </vcalendar>
+
+</icalendar>
+
+--=_4219b74758af03607a2a947101c07d10--

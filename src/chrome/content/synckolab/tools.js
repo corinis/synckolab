@@ -304,18 +304,21 @@ stripMailHeader: function (skcontent) {
 	}
 	// try to get the start of the card part
 
-	// remove the tmp image if it exists...
-	var file = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("TmpD", Components.interfaces.nsIFile);
-	file.append("syncKolab.img");
-	if (file.exists()) {
-		file.remove(true);
+	// remove the tmp image if it exists (only in xul environment)...
+	if (typeof Components !== "undefined") {
+		var file = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("TmpD", Components.interfaces.nsIFile);
+		file.append("syncKolab.img");
+		if (file.exists()) {
+			file.remove(true);
+		}
 	}
 	
 	// check if we have an image attachment
 	var imgC = skcontent;
 	var imgIdx = imgC.search(/Content-Type:[ \t\r\n]+image/i);
 	
-	if (imgIdx !== -1)
+	// only works in xul environment
+	if (imgIdx !== -1 && typeof Components !== "undefined")
 	{
 		// get rid of the last part until the boundary
 		imgC = imgC.substring(imgIdx);
@@ -1317,10 +1320,26 @@ synckolab.Node = function (node) {
 	this.nextSibling = new synckolab.Node(node.nextSibling);
 };
 
-synckolab.Node.prototype.getFirstData =  function () {
+/**
+ * return the data of the current node. this can either be 
+ * the direct firstChild - or instead a text subnode
+ */
+synckolab.Node.prototype.getFirstData = function () {
 	if (!this.node.firstChild) {
 		return null;
 	}
+	// we might have a "text" node (kolab3)
+	var text = this.getChildNode("text");
+	if(text) {
+		return synckolab.tools.text.decode4XML(text.firstChild.data);
+	}
+	// uri is also handled like direct content
+	text = this.getChildNode("uri");
+	if(text) {
+		return synckolab.tools.text.decode4XML(text.firstChild.data);
+	}
+
+	// cur.nodeType === Node.TEXT_NODE
 	return synckolab.tools.text.decode4XML(this.node.firstChild.data);
 };
 
@@ -1331,9 +1350,13 @@ synckolab.Node.prototype.getFirstData =  function () {
 synckolab.Node.prototype.getXmlResult =  function (name, def)
 {
 	var cur = this.node.firstChild;
+	if(name) {
+		name = name.toUpperCase();
+	}
+	
 	while(cur)
 	{
-		if (cur.nodeName.toUpperCase() === name.toUpperCase())
+		if (cur.nodeName.toUpperCase() === name)
 		{
 			if (cur.hasChildNodes())
 			{
@@ -1355,17 +1378,54 @@ synckolab.Node.prototype.getXmlResult =  function (name, def)
  */
 synckolab.Node.prototype.getChildNode = function (name)
 {
+	if(name) {
+		name = name.toUpperCase();
+	}
+	
 	var cur = this.node.firstChild;
 	while(cur)
 	{
-		if (cur.nodeName.toUpperCase() === name.toUpperCase())
-		{
-			return cur;
+		if(cur.nodeType === Node.ELEMENT_NODE) {
+			if (cur.nodeName.toUpperCase() === name)
+			{
+				return new synckolab.Node(cur);
+			}
 		}
 		cur = cur.nextSibling;
 	}
 	return null;
 };
+
+/**
+ * returns the next sibling element of the current node.
+ * If a name is given it has to match
+ * @param name (option) name of the node to get
+ */
+synckolab.Node.prototype.getNextNode = function (name)
+{
+	if(name) {
+		name = name.toUpperCase();
+	}
+	// start with the next node
+	var cur = this.node.nextSibling;
+	while(cur)
+	{
+		if(cur.nodeType === Node.ELEMENT_NODE) {
+			if (!name) {
+				return new synckolab.Node(cur);
+			}
+			else if (cur.nodeName.toUpperCase() === name)
+			{
+				return new synckolab.Node(cur);
+			}
+		}
+		// next sibling
+		cur = cur.nextSibling;
+	}
+	return null;
+};
+
+
 
 /**
  * return the value of the attribute with name "attrName" of the node "node"
