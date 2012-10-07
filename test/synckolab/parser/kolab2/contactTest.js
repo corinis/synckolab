@@ -10,7 +10,7 @@ load("src/chrome/content/synckolab/addressbookTools.js");
 load("test/lib/testOverride.js");
 
 
-test("synckolab.addressbookTools.parseMessageContent", function(){
+test("skolab2 ynckolab.addressbookTools.parseMessageContent", function(){
 	equal(null, synckolab.addressbookTools.parseMessageContent(null), "parsing a null message");
 	var testFiles = ["contactMinimalTest", "contactFullTest"];
 	

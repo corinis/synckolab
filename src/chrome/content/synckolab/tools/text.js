@@ -59,6 +59,14 @@ synckolab.tools.text = {
 		return "  <" + nodeName + ">" + (this.checkExist(nodeValue) ? this.encode4XML(nodeValue) : "") + "</" + nodeName + ">\n";
 	},
 
+	nodeContainerWithContent: function (nodeName, containerName, nodeValue, createNonExist) {
+		if (!createNonExist && !this.checkExist(nodeValue)) {
+			return "";
+		}
+
+		return "  <" + nodeName + "><" + containerName + ">" + (this.checkExist(nodeValue) ? this.encode4XML(nodeValue) : "") + "</" + containerName + "></" + nodeName + ">\n";
+	},
+
 	checkExist : function (value) {
 		return value !== null && typeof value !== 'undefined' && value !== "" && value !== " ";
 	},

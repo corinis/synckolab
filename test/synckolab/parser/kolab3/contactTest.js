@@ -10,7 +10,7 @@ load("src/chrome/content/synckolab/addressbookTools.js");
 load("test/lib/testOverride.js");
 
 
-test("synckolab.addressbookTools.parseMessageContent", function(){
+test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
 	equal(null, synckolab.addressbookTools.parseMessageContent(null), "parsing a null message");
 	var testFiles = ["simple.vcf.mime","complex.vcf.mime"];
 	
@@ -25,10 +25,13 @@ test("synckolab.addressbookTools.parseMessageContent", function(){
 		content = readFile("test/synckolab/parser/kolab3/json/"+src+".json");
 		jsonEntry = JSON.parse(content);
 		equal(synckolab.tools.equalsObject(entry, jsonEntry), true, src);
+		
+		// json -> kolab 3 xml
+		
 	}
 });	
 
-	var testFiles = ["complex.vcf.mime"];
+	var testFiles = ["simple.vcf.mime"];
 	
 	
 	var content, entry, jsonEntry;
@@ -42,6 +45,9 @@ test("synckolab.addressbookTools.parseMessageContent", function(){
 		print("==== STARTING PARSE")
 		entry = synckolab.addressbookTools.parseMessageContent(content);
 		print(JSON.stringify(entry, null, '  '))
+		// json -> kolab 3 xml
+		content = synckolab.addressbookTools.card2Kolab3(entry);
+		print(content);
 		/*
 		content = readFile("test/synckolab/parser/kolab3/json/"+src+".json");
 		jsonEntry = JSON.parse(content);

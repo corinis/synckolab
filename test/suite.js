@@ -29,7 +29,9 @@ QUnit.log(function(details) {
 	} else {
 		testRuns.fail++
 	}
-	print(details.result ? 'PASS' : 'FAIL', (details.module?details.module+" ":"") + details.name + ":", details.message, details.result?"":(" expected '" + details.expected + "' was '" + details.actual + "'"));
+	if(!details.result) {
+		print(details.result ? 'PASS' : 'FAIL', (details.module?details.module+" ":"") + details.name + ":", details.message, details.result?"":(" expected '" + details.expected + "' was '" + details.actual + "'"));
+	}
 });
 
 // run the tests

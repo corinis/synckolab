@@ -43,9 +43,13 @@ test("synckolab.tools.text.string2DateTime", function() {
 	equal(synckolab.tools.text.string2DateTime("20050330T152852Z", true).getTime(), 1112196532000, "datetime with T/Z (kolab3)");
 	equal(synckolab.tools.text.string2DateTime("2005-03-30T").getTime(), 1112133600000, "date with - (kolab2)");
 	equal(synckolab.tools.text.string2DateTime("20050330T").getTime(), 1112133600000, "date (kolab3)");
+	
+	
+	equal(synckolab.tools.text.string2DateTime("1980-01-22").getTime(), 317343600000, "date with - (kolab2)");
+	equal(synckolab.tools.text.string2DateTime("1980-01-22").getMonth()+1, 1, "month with - (kolab2)");
 	equal(synckolab.tools.text.string2DateTime("2005-03-30").getTime(), 1112133600000, "date with - (kolab2)");
 	equal(synckolab.tools.text.string2DateTime("20050330").getTime(), 1112133600000, "date (kolab3)");
-	equal(synckolab.tools.text.string2DateTime("2005").getTime(), 1112133600000, "only year");
+	equal(synckolab.tools.text.string2DateTime("2005").getTime(), 1104534000000, "only year");
 });
 
 test("synckolab.tools.text.calDateTime2String", function() {

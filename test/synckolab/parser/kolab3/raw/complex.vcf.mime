@@ -257,6 +257,7 @@ AhhBBCCPEe8D+b5dDLeP4TXAAAAABJRU5ErkJggg=3D=3D</uri>
       <identifier>X-Profession</identifier>
       <value>Profession</value>
     </x-custom>
+    <x-custom><identifier>X-AllowRemoteContent</identifier><value>true</value></x-custom>
   </vcard>
 
 </vcards>
