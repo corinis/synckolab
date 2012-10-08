@@ -465,10 +465,12 @@ synckolab.calendarTools.event2json = function (event, syncTasks) {
 	if (syncTasks === true)
 	{
 		if(event.entryDate) {
-			jobj.startDate = synckolab.tools.text.calDateTime2String(event.entryDate, isAllDay);
+			// TODO add timezone
+			jobj.startDate.dateTime = synckolab.tools.text.calDateTime2String(event.entryDate, isAllDay);
 		}
 		if(endDate) {
-			jobj.endDate = synckolab.tools.text.calDateTime2String(endDate, isAllDay);
+			// TODO add timezone
+			jobj.endDate.dateTime = synckolab.tools.text.calDateTime2String(endDate, isAllDay);
 		}
 		// jobj.completedDate =  synckolab.tools.text.calDateTime2String(completedDate, true);
 		if(event.priority && event.priority !== null && event.priority !== "") {
@@ -485,8 +487,9 @@ synckolab.calendarTools.event2json = function (event, syncTasks) {
 			jobj.completed = event.percentComplete;
 		}
 	} else {
-		jobj.startDate = synckolab.tools.text.calDateTime2String(event.startDate, isAllDay);
-		jobj.endDate = synckolab.tools.text.calDateTime2String(endDate, isAllDay);
+		// TODO add timezone
+		jobj.startDate.dateTime = synckolab.tools.text.calDateTime2String(event.startDate, isAllDay);
+		jobj.endDate.dateTime = synckolab.tools.text.calDateTime2String(endDate, isAllDay);
 	}
 
 	jobj.uid = event.id;
@@ -1041,35 +1044,60 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 
 
 	// convert the string to xml
-	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser); 
-	var doc = parser.parseFromString(xml, "text/xml");
-
+	var doc = synckolab.tools.parseXml(xml);
+	
 	// we start with doc.firstChild and check for ELEMENT_NODE
 	// and nodeName === event. As we know the structure of Kolab XML for
 	// events, this is a good place to sort out invalid XML structures.
 	var topNode = doc.firstChild;
+	
+	// workaround for parsers that create a node for whitespace
+	if(topNode.nodeType === Node.TEXT_NODE) {
+		topNode = topNode.nextSibling;
+	}
+
 	if (topNode.nodeName === "parsererror")
 	{
 		// so this message has no valid XML part :-(
 		synckolab.tools.logMessage("Error parsing the XML content of this message.\n" + xml, synckolab.global.LOG_CAL + synckolab.global.LOG_ERROR);
 		return false;
 	}
-	if ((topNode.nodeType !== Node.ELEMENT_NODE) || ((topNode.nodeName.toUpperCase() !== "EVENT") && (topNode.nodeName.toUpperCase() !== "TASK") ))
+	if ((topNode.nodeType !== Node.ELEMENT_NODE) || 
+			(topNode.nodeName.toUpperCase() !== "EVENT" && 
+			topNode.nodeName.toUpperCase() !== "TASK" &&
+			topNode.nodeName.toUpperCase() !== "ICALENDAR") )
 	{
 		// this can't be an event in Kolab XML format
 		synckolab.tools.logMessage("This message doesn't contain an event in Kolab XML format.\n" + xml, synckolab.global.LOG_CAL + synckolab.global.LOG_ERROR);
 		return false;
 	}
 
-	// check for task
-	if(syncTasks !== true && topNode.nodeName.toUpperCase() === "TASK") {
-		synckolab.tools.logMessage("Skipping task in event sync", synckolab.global.LOG_CAL + synckolab.global.LOG_ERROR);
-		return null;
+	// for kolab3: go to the component
+	if(topNode.nodeName.toUpperCase() === "ICALENDAR") {
+		topNode = new synckolab.Node(topNode);
+		if(syncTasks) {
+			// TODO
+			topNode = topNode.getChildNode(["vcalendar","components","vtodo","properties"]);
+		} else {
+			topNode = topNode.getChildNode(["vcalendar","components","vevent","properties"]);
+		}
+		
+		if(!topNode) {
+			synckolab.tools.logMessage("Skipping event in sync (kolab3)", synckolab.global.LOG_CAL + synckolab.global.LOG_ERROR);
+			return null;
+		}
 	}
-
-	if(syncTasks === true && topNode.nodeName.toUpperCase() !== "TASK") {
-		synckolab.tools.logMessage("Skipping event in task sync", synckolab.global.LOG_CAL + synckolab.global.LOG_ERROR);
-		return null;
+	else {
+		// check for task
+		if(syncTasks !== true && topNode.nodeName.toUpperCase() === "TASK") {
+			synckolab.tools.logMessage("Skipping task in event sync", synckolab.global.LOG_CAL + synckolab.global.LOG_ERROR);
+			return null;
+		}
+	
+		if(syncTasks === true && topNode.nodeName.toUpperCase() !== "TASK") {
+			synckolab.tools.logMessage("Skipping event in task sync", synckolab.global.LOG_CAL + synckolab.global.LOG_ERROR);
+			return null;
+		}
 	}
 
 	var cur = new synckolab.Node(topNode.firstChild);
@@ -1086,40 +1114,76 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				jobj.uid = cur.getFirstData();
 				break;
 
-			case "CREATION-DATE":
-				if (!cur.firstChild) {
-					break;
-				}
-
-				s = cur.getFirstData();
-				// 2005-03-30T15:28:52Z
-				//skip: jobj.createdDate = cur.getFirstData();
-				break;
-
-			case "LAST-MODIFICATION-DATE":
+			case "CREATED":	// kolab3
+			case "CREATION-DATE":	// kolab2
 				if (!cur.firstChild) {
 					break;
 				}
 
 				// 2005-03-30T15:28:52Z
-				//skip: jobj.modified = cur.getFirstData();
+				s = cur.cur.getXmlResult("date-time", "");
+				if(s === "") {
+					s = cur.getFirstData();
+				}
+				jobj.createdDate = cur.getFirstData();
 				break;
 
-				// entry date and start date can be handled the same way 
-			case "ENTRY-DATE":
-			case "START-DATE":
+			case "DTSTAMP":	// kolab3
+			case "LAST-MODIFICATION-DATE":	// kolab2
 				if (!cur.firstChild) {
 					break;
 				}
-				jobj.startDate = cur.getFirstData();
-				break;
 
-			case "DUE-DATE":
-			case "END-DATE":
+				// 2005-03-30T15:28:52Z
+				s = cur.getXmlResult("date-time", "");
+				if(s === "") {
+					s = cur.getFirstData();
+				}
+				jobj.modified = cur.getFirstData();
+				break;
+				
+			case "DTSTART": // kolab3
 				if (!cur.firstChild) {
 					break;
 				}
-				jobj.endDate = cur.getFirstData();
+
+				jobj.startDate = {
+						tz: cur.getXmlResult(["parameters","tz-id"], null),
+						dateTime: cur.getXmlResult("date-time", "")
+				};
+				
+				break;
+
+			// entry date and start date can be handled the same way 
+			case "ENTRY-DATE":	// kolab2
+			case "START-DATE":	// kolab2
+				if (!cur.firstChild) {
+					break;
+				}
+				// TODO: add timezone
+				jobj.startDate = {
+						tz: null,
+						dateTime: cur.getFirstData()
+				};
+				break;
+
+			case "DTEND": // kolab3
+				if (!cur.firstChild) {
+					break;
+				}
+				break;
+
+			case "DUE-DATE":	// kolab2
+			case "END-DATE":	// kolab2
+				if (!cur.firstChild) {
+					break;
+				}
+				
+				// TODO: add timezone
+				jobj.endDate = {
+						tz: null,
+						dateTime: cur.getFirstData()
+				};
 				break;
 
 			case "PRIORITY":
@@ -1165,7 +1229,7 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				jobj.completed = iComplete;
 				break;
 
-			case "SUMMARY":
+			case "SUMMARY":	// kolab2+kolab3
 				if (cur.firstChild)
 				{
 					var data = cur.getFirstData();
@@ -1175,7 +1239,7 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				}
 				break;
 
-			case "BODY":
+			case "BODY":	// kolab2
 				// sometimes we have <body></body> in the XML
 				if (cur.firstChild)
 				{
@@ -1186,14 +1250,15 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				}
 				break;
 
-			case "SENSITIVITY":
+			case "CLASS":	// kolab3
+			case "SENSITIVITY":	// kolab2
 				jobj.sensitivity = "public";
 				if (cur.firstChild) {
 					jobj.sensitivity = cur.getFirstData();
 				}
 				break;
 
-			case "LOCATION":
+			case "LOCATION":	// kolab+kolab3
 				// sometimes we have <location></location> in the XML
 				if (cur.firstChild) {
 					jobj.location = cur.getFirstData();
@@ -1563,16 +1628,16 @@ synckolab.calendarTools.json2xml = function (jobj, syncTasks, email) {
 		// tasks have a status
 		xml += synckolab.tools.text.nodeWithContent("status", jobj.status, false);
 		xml += synckolab.tools.text.nodeWithContent("completed", jobj.completed, false);
-		xml += synckolab.tools.text.nodeWithContent("start-date", jobj.startDate, false);
-		xml += synckolab.tools.text.nodeWithContent("due-date", jobj.endDate, false);
+		xml += synckolab.tools.text.nodeWithContent("start-date", jobj.startDate.dateTime, false);
+		xml += synckolab.tools.text.nodeWithContent("due-date", jobj.endDate.dateTime, false);
 		xml += synckolab.tools.text.nodeWithContent("priority", jobj.priority, false);
 		
 		// xml += " <completed-date>" + synckolab.tools.text.calDateTime2String(completedDate, true) + "</completed-date>\n";
 	}
 	else
 	{
-		xml += synckolab.tools.text.nodeWithContent("start-date", jobj.startDate, false);
-		xml += synckolab.tools.text.nodeWithContent("end-date", jobj.endDate, false);
+		xml += synckolab.tools.text.nodeWithContent("start-date", jobj.startDate.dateTime, false);
+		xml += synckolab.tools.text.nodeWithContent("end-date", jobj.endDate.dateTime, false);
 	}
 
 
@@ -1729,9 +1794,9 @@ synckolab.calendarTools.json2Human = function (jobj)
 	{
 		if (jobj.startDate)
 		{
-			txt += "Start date: " + jobj.startDate + "\n";
+			txt += "Start date: " + jobj.startDate.dateTime + "\n";
 			if (jobj.endDate) {
-				txt += "End date: " + jobj.endDate + "\n\n";
+				txt += "End date: " + jobj.endDate.dateTime + "\n\n";
 			}
 		}
 	}
@@ -1750,6 +1815,19 @@ synckolab.calendarTools.json2Human = function (jobj)
  * @return a message in Kolab 2 format
  */
 synckolab.calendarTools.event2kolabXmlMsg = function (event, email)
+{
+	var syncTasks = (event.type === "task");
+	var xml = this.json2xml(event, syncTasks);
+	return synckolab.tools.generateMail(event.uid, email, "", syncTasks?"application/x-vnd.kolab.task":"application/x-vnd.kolab.event", 
+			true, synckolab.tools.text.utf8.encode(xml), this.json2Human(event, syncTasks));
+};
+
+/**
+ * convert an ICAL event into a Kolab 2 XML format message
+ *
+ * @return a message in Kolab 2 format
+ */
+synckolab.calendarTools.event2kolab3XmlMsg = function (event, email)
 {
 	var syncTasks = (event.type === "task");
 	var xml = this.json2xml(event, syncTasks);

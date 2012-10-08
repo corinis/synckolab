@@ -174,8 +174,10 @@ synckolab.Calendar = {
 					var clonedEvent = cur;
 					clonedEvent = synckolab.calendarTools.event2json(cur, cConfig.type === "task");
 
-					if (cConfig.format === "Xml") {
+					if (cConfig.format === "xml-k2") {
 						msg = synckolab.calendarTools.event2kolabXmlMsg(clonedEvent, cConfig.email, cConfig.type === "task");
+					} else if (cConfig.format === "xml-k3") {
+						msg = synckolab.calendarTools.event2kolab3XmlMsg(clonedEvent, cConfig.email, cConfig.type === "task");
 					} else {
 						var calComp = Components.classes["@mozilla.org/calendar/ics-service;1"].getService(Components.interfaces.calIICSService).createIcalComponent("VCALENDAR");
 						calComp.version = "2.0";
@@ -241,8 +243,10 @@ synckolab.Calendar = {
 					var clonedEvent = cur;
 					clonedEvent = synckolab.calendarTools.event2json(cur, cConfig.type === "task");
 
-					if (cConfig.format === "Xml") {
+					if (cConfig.format === "xml-k2") {
 						msg = synckolab.calendarTools.event2kolabXmlMsg(clonedEvent, cConfig.email, cConfig.type === "task");
+					} else if (cConfig.format === "xml-k3") {
+						msg = synckolab.calendarTools.event2kolab3XmlMsg(clonedEvent, cConfig.email, cConfig.type === "task");
 					} else {
 						var calComp = Components.classes["@mozilla.org/calendar/ics-service;1"].getService(Components.interfaces.calIICSService).createIcalComponent("VCALENDAR");
 						calComp.version = "2.0";

@@ -649,12 +649,12 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 				// kolab2: directly
 				if(uid === "") {
 					uid = cur.getFirstData();
-				} else {
-					// remove the urn:uuid prefix
+				} /*else {
+					// remove the urn:uuid prefix TODO check if this is required
 					if(uid.indexOf("urn:uuid:") !== -1) {
 						uid = uid.substring(9);
 					}
-				}
+				}*/
 				this.setUID(card, uid);
 				break;
 			// timestamp

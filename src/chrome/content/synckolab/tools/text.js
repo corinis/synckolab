@@ -232,7 +232,34 @@ synckolab.tools.text = {
 	
 	// takes: 2005-03-30T15:28:52Z or 2005-03-30 15:28:52 or: 20050303T152852Z
 	string2DateTime : function (val, useUTC) {
-		var s = val.replace('T', ' ');
+		var s, tz;
+		// TODO handle timezone
+		if(val.dateTime) {
+			s = val.dateTime;
+			tz = val.tz;
+		} else {
+			s = val;
+		}
+		
+		if(s.indexOf('Z') !== -1) {
+			tz = s.substring(s.indexOf('Z')+1);
+			s = s.substring(0, s.indexOf('Z'));
+		}
+
+		if(s.indexOf('+') !== -1) {
+			tz = s.substring(s.indexOf('+')+1);
+			s = s.substring(0, s.indexOf('+'));
+		}
+
+		if(tz && tz !== "") {
+			switch(tz) {
+			case "/kolab.org/Europe/Berlin": tz = 1; break;
+			case "/kolab.org/Europe/Vienna": tz = 1; break;
+			
+			}
+		}
+		
+		s = s.replace('T', ' ');
 		s = s.replace('Z', '');
 		var both = s.split(' ');
 		var cdate = both[0];

@@ -1349,36 +1349,41 @@ synckolab.Node.prototype.getFirstData = function () {
  */
 synckolab.Node.prototype.getXmlResult =  function (name, def)
 {
-	var cur = this.node.firstChild;
-	if(name) {
-		name = name.toUpperCase();
+	var cur = this.getChildNode(name);
+	if(!cur) {
+		return def;
 	}
 	
-	while(cur)
+	if (cur.firstChild)
 	{
-		if (cur.nodeName.toUpperCase() === name)
-		{
-			if (cur.hasChildNodes())
-			{
-				var value = cur.firstChild.nodeValue;
-				// decode the value
-				if (value) {
-					return synckolab.tools.text.decode4XML(value);
-				}
-			}
+		var value = cur.firstChild.nodeValue;
+		// decode the value
+		if (value) {
+			return synckolab.tools.text.decode4XML(value);
 		}
-		cur = cur.nextSibling;
 	}
+	
 	return def;
 };
 
 
 /**
+ * @param name a name of path (by passing an array) to a child
  * return a direct child node with the name "name" of the node "node"
  */
 synckolab.Node.prototype.getChildNode = function (name)
 {
-	if(name) {
+	// passed an array - go deep
+	if( Object.prototype.toString.call( name ) === '[object Array]') {
+		var curNode = this;
+		for(var i = 0; i < name.length || curNode === null; i++){
+			curNode = curNode.getChildNode(name[i]);
+		}
+		return curNode;
+	}
+	
+	// make name upper case
+	if(name.toUpperCase) {
 		name = name.toUpperCase();
 	}
 	
