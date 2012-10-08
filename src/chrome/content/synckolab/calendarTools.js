@@ -1968,6 +1968,8 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 		xml += '<vevent>\n';
 	}
 	
+	xml += '<properties>\n';
+	
 	xml += synckolab.tools.text.nodeContainerWithContent("uid", "text", jobj.uid, false);
 
 	if(syncTasks === true)
@@ -1998,50 +2000,45 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 	xml += synckolab.tools.text.nodeContainerWithContent("color-label", "text", jobj.colorLabel, false);
 
 	var i;
-	if(jobj.alarms) {
-		for(i=0; i < jobj.alarms.length; i++) {
-			var att = "";
-			if (jobj.alarms[i].description && jobj.alarms[i].description !== "") {
-				att += 'description="' + jobj.alarms[i].description + '" ';
-			}
-			if (jobj.alarms[i].summary && jobj.alarms[i].summary !== "") {
-				att += 'summary="' + jobj.alarms[i].summary + '" ';
-			}
-			if (jobj.alarms[i].action && jobj.alarms[i].action !== "") {
-				att += 'action="' + jobj.alarms[i].action + '"';
-			}
 
-			xml += " <alarm "+att+">" + jobj.alarms[i].offset + "</alarm>\n";
+	if(jobj.categories) {
+		xml += "<categories>\n";
+		var catList = jobj.categories.split(" ");
+		for(i = 0; i < catList.length; i++) {
+			if(catList[i].length > 0) {
+				xml += synckolab.tools.text.nodeWithContent("text", catList[i], false);
+			}
 		}
+		xml += "</categories>\n";
 	}
-
-	xml += synckolab.tools.text.nodeWithContent("categories", jobj.categories, false);
+	
 	if(jobj.recurrence) {
+		xml += " <recur>\n";
 		switch(jobj.recurrence.cycle) {
 		case "daily":
-			xml += " <recurrence cycle=\"daily\">\n";
+			xml += "  <freq>DAILY</freq>\n";
 			break;
 		case "weekly":
-			xml += " <recurrence cycle=\"weekly\">\n";
+			xml += "  <freq>WEEKLY</freq>\n";
 			for(i=0; i < jobj.recurrence.days.length; i++) {
-				xml += synckolab.tools.text.nodeWithContent("day", jobj.recurrence.days[i], false);
+				xml += synckolab.tools.text.nodeWithContent("byday", jobj.recurrence.days[i], false);
 			}
 			break;
 		case "monthly":
 			if(!jobj.recurrence.daynumber && !jobj.recurrence.days) {
-				xml += " <recurrence cycle=\"monthly\">\n";
+				xml += "  <freq>monthly</freq>\n";
 			} else if(jobj.recurrence.days) {
-				xml += " <recurrence cycle=\"monthly\" type=\"daynumber\">\n";
+				xml += "  <freq>monthly</freq>\n  <type>DAYNUMBER</type>\n";
 				for(i=0; i < jobj.recurrence.days.length; i++) {
 					xml += synckolab.tools.text.nodeWithContent("daynumber", jobj.recurrence.days[i], false);
 				}
 			} else if(!jobj.recurrence.weekday) {
-				xml += " <recurrence cycle=\"monthly\" type=\"daynumber\">\n";
+				xml += "  <freq>monthly</freq>\n  <type>DAYNUMBER</type>\n";
 				xml += "  <daynumber>" + jobj.recurrence.daynumber + "</daynumber>\n";
 			} else {
-				xml += " <recurrence cycle=\"monthly\" type=\"weekday\">\n";
+				xml += "  <freq>monthly</freq>\n  <type>WEEKDAY</type>\n";
 				xml += "  <daynumber>" + jobj.recurrence.daynumber + "</daynumber>\n";
-				xml += "  <day>" + jobj.recurrence.weekday + "</day>\n";
+				xml += "  <byday>" + jobj.recurrence.weekday + "</byday>\n";
 			} 
 			break;
 		case "yearly":
@@ -2060,7 +2057,7 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 			//xml += "  <month>july</month>\n";
 
 			// yearday has <daynumber>
-			xml += " <recurrence cycle=\"yearly\" type=\"yearday\">\n";
+			xml += "  <freq>monthly</freq>\n  <type>YEARLY</type>\n";
 			// FIXME we have no matching field in Lighning yet
 			xml += "  <daynumber>1</daynumber>\n";
 			break;
@@ -2068,30 +2065,28 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 		
 		xml += synckolab.tools.text.nodeWithContent("interval", jobj.recurrence.interval, true);
 		if(jobj.recurrence.count && jobj.recurrence.count > 0) {
-			xml += "  <range type=\"number\">" + jobj.recurrence.count + "</range>\n";
-		} else if(jobj.recurrence.untilDate) {
-			xml += "  <range type=\"date\">" + jobj.recurrence.untilDate + "</range>\n";
-		} else {
-			xml += "  <range type=\"none\"/>\n";
-		}
-
+			xml += "  <count>" + jobj.recurrence.count + "</count>\n";
+		} 
+		xml += " </recur>\n";
 		if(jobj.recurrence.exclusion) {
+			xml+= " <exdate>\n";
 			for(i=0; i < jobj.recurrence.exclusion.length; i++) {
-				xml += synckolab.tools.text.nodeWithContent("exclusion", jobj.recurrence.exclusion[i], true);
+				xml += synckolab.tools.text.nodeWithContent("date", jobj.recurrence.exclusion[i], true);
 			}
+			xml+= " </exdate>\n";
 		}
-		
-		xml += " </recurrence>\n";
 	}
 	
 	if(jobj.attendees) {
 		for(i=0; i < jobj.attendees.length; i++) {
 			xml += " <attendee>\n";
-			xml += synckolab.tools.text.nodeWithContent("display-name", jobj.attendees[i].displayName, false);
-			xml += synckolab.tools.text.nodeWithContent("smtp-address", jobj.attendees[i].email, false);
-			xml += synckolab.tools.text.nodeWithContent("status", jobj.attendees[i].status, false);
-			xml += synckolab.tools.text.nodeWithContent("request-response", jobj.attendees[i].rsvp ? "true" : "false", false);
-			xml += synckolab.tools.text.nodeWithContent("role", jobj.attendees[i].role, false);
+			xml += "  <parameter>\n";
+			xml += synckolab.tools.text.nodeContainerWithContent("cn", "text", jobj.attendees[i].displayName, false);
+			xml += synckolab.tools.text.nodeContainerWithContent("partstat", "text", jobj.attendees[i].status.toUpperCase(), false);
+			xml += synckolab.tools.text.nodeContainerWithContent("rsvp", "boolean", jobj.attendees[i].rsvp ? "true" : "false", false);
+			xml += synckolab.tools.text.nodeContainerWithContent("role", "text", jobj.attendees[i].role.toUpperCase(), false);
+			xml += "  </parameter>\n";
+			xml += synckolab.tools.text.nodeWithContent("cal-address", jobj.attendees[i].email, false);
 			xml += " </attendee>\n";
 		}
 	}
@@ -2099,22 +2094,49 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 
 	if (jobj.organizer)
 	{
-		xml += " <organizer>\n";
-		xml += synckolab.tools.text.nodeWithContent("display-name", jobj.organizer.displayName, false);
-		xml += synckolab.tools.text.nodeWithContent("smtp-address", jobj.organizer.email, false);
+		xml += " <organizer>\n" +
+		 "  <parameter>\n";
+		xml += synckolab.tools.text.nodeContainerWithContent("cn", "text", jobj.organizer.displayName, false);
+		xml += "  </parameter>\n";
+		xml += synckolab.tools.text.nodeWithContent("cal-address", jobj.organizer.email, false);
 		xml += " </organizer>\n";
 	}
 
 	if (jobj.creator)
 	{
-		xml += " <creator>\n";
-		xml += synckolab.tools.text.nodeWithContent("display-name", jobj.creator.displayName, false);
-		xml += synckolab.tools.text.nodeWithContent("smtp-address", jobj.creator.email, false);
+		xml += " <creator>\n" +
+		 "  <parameter>\n";
+		xml += synckolab.tools.text.nodeContainerWithContent("cn", "text", jobj.creator.displayName, false);
+		xml += "  </parameter>\n";
+		xml += synckolab.tools.text.nodeWithContent("cal-address", jobj.creator.email, false);
 		xml += " </creator>\n";
 	}
 
 
-	xml += " <revision>0</revision>\n";	
+	xml += " </properties>\n";
+	
+	if(jobj.alarms) {
+		xml += "<components>\n";
+		for(i=0; i < jobj.alarms.length; i++) {
+			xml += "<valarm>\n";
+			var att = "";
+			if (jobj.alarms[i].description && jobj.alarms[i].description !== "") {
+				xml += synckolab.tools.text.nodeContainerWithContent("description", "text", jobj.alarms[i].description, false);
+			}
+			if (jobj.alarms[i].summary && jobj.alarms[i].summary !== "") {
+				xml += synckolab.tools.text.nodeContainerWithContent("summary", "text", jobj.alarms[i].summary, false);
+			}
+			if (jobj.alarms[i].action && jobj.alarms[i].action !== "") {
+				xml += synckolab.tools.text.nodeContainerWithContent("action", "text", jobj.alarms[i].action, false);
+			}
+
+			//xml += jobj.alarms[i].offset";
+			xml += "</valarm>\n";
+		}
+		xml += "</components>\n";
+	}
+
+	
 	if (jobj.type === "task")
 	{
 		xml += "</vtask>\n";
@@ -2164,7 +2186,7 @@ synckolab.calendarTools.json2Human = function (jobj)
 synckolab.calendarTools.event2kolabXmlMsg = function (event, email)
 {
 	var syncTasks = (event.type === "task");
-	var xml = this.json2xml(event, syncTasks);
+	var xml = this.json2xml(event, syncTasks, email);
 	return synckolab.tools.generateMail(event.uid, email, "", syncTasks?"application/x-vnd.kolab.task":"application/x-vnd.kolab.event", 
 			true, synckolab.tools.text.utf8.encode(xml), this.json2Human(event, syncTasks));
 };
@@ -2177,7 +2199,7 @@ synckolab.calendarTools.event2kolabXmlMsg = function (event, email)
 synckolab.calendarTools.event2kolab3XmlMsg = function (event, email)
 {
 	var syncTasks = (event.type === "task");
-	var xml = this.json2xml(event, syncTasks);
+	var xml = this.json2kolab3(event, syncTasks, email);
 	return synckolab.tools.generateMail(event.uid, email, "", syncTasks?"application/x-vnd.kolab.task":"application/x-vnd.kolab.event", 
 			true, synckolab.tools.text.utf8.encode(xml), this.json2Human(event, syncTasks));
 };
