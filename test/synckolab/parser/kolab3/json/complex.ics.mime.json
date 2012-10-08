@@ -1,0 +1,61 @@
+{
+  "synckolab": "3.0.0",
+  "type": "calendar",
+  "uid": "KOrganizer-1687167952.818",
+  "createdDate": "2009-09-01T12:52:58Z",
+  "modified": "2012-05-05T05:05:05Z",
+  "sensitivity": "PRIVATE",
+  "categories": "Appointment Business ",
+  "startDate": {
+    "tz": "/kolab.org/Europe/Berlin",
+    "dateTime": "2009-09-02T10:00:00"
+  },
+  "endDate": {
+    "tz": "/kolab.org/Europe/Berlin",
+    "dateTime": "2009-09-02T11:00:00"
+  },
+  "recurrence": {
+    "cycle": "weekly",
+    "days": [
+      "WE",
+      "FR"
+    ],
+    "interval": 1,
+    "count": 10,
+    "exclusion": [
+      "2009-09-04"
+    ]
+  },
+  "title": "Complex Event",
+  "body": "Some notes on this event.",
+  "location": "Here",
+  "attendees": [
+    {
+      "mail": "mailto:<a1@example.com>",
+      "displayName": "Attendee1",
+      "status": "needs-action",
+      "rsvp": true,
+      "role": "required"
+    },
+    {
+      "mail": "mailto:<a2@example.com>",
+      "displayName": "Attendee2",
+      "status": "accepted",
+      "rsvp": true,
+      "role": "resource"
+    },
+    {
+      "mail": "mailto:<a3@example.com>",
+      "displayName": "Attendee3",
+      "status": "declined",
+      "rsvp": false,
+      "role": "required"
+    }
+  ],
+  "alarms": [
+    {
+      "action": "DISPLAY",
+      "description": null
+    }
+  ]
+}

@@ -466,11 +466,17 @@ synckolab.calendarTools.event2json = function (event, syncTasks) {
 	{
 		if(event.entryDate) {
 			// TODO add timezone
-			jobj.startDate.dateTime = synckolab.tools.text.calDateTime2String(event.entryDate, isAllDay);
+			jobj.startDate = {
+					dateTime: synckolab.tools.text.calDateTime2String(event.entryDate, isAllDay),
+					tz: null
+			};
 		}
 		if(endDate) {
 			// TODO add timezone
-			jobj.endDate.dateTime = synckolab.tools.text.calDateTime2String(endDate, isAllDay);
+			jobj.endDate = {
+					dateTime: synckolab.tools.text.calDateTime2String(endDate, isAllDay),
+					tz: null
+			};
 		}
 		// jobj.completedDate =  synckolab.tools.text.calDateTime2String(completedDate, true);
 		if(event.priority && event.priority !== null && event.priority !== "") {
@@ -488,8 +494,14 @@ synckolab.calendarTools.event2json = function (event, syncTasks) {
 		}
 	} else {
 		// TODO add timezone
-		jobj.startDate.dateTime = synckolab.tools.text.calDateTime2String(event.startDate, isAllDay);
-		jobj.endDate.dateTime = synckolab.tools.text.calDateTime2String(endDate, isAllDay);
+		jobj.startDate = {
+				dateTime: synckolab.tools.text.calDateTime2String(event.startDate, isAllDay),
+				tz: null
+		};
+		jobj.endDate = {
+			dateTime:synckolab.tools.text.calDateTime2String(endDate, isAllDay),
+			tz: null
+		};
 	}
 
 	jobj.uid = event.id;
@@ -790,7 +802,12 @@ synckolab.calendarTools.json2event = function (jobj, calendar) {
 	}
 
 	if(jobj.startDate) {
-		if (jobj.startDate.indexOf(":") === -1) {
+		// fix old style
+		if(!jobj.startDate.dateTime) {
+			jobj.startDate.dateTime = jobj.startDate;
+		}
+		
+		if (jobj.startDate.dateTime.indexOf(":") === -1) {
 			// entry date and start date can be handled the same way
 			synckolab.tools.logMessage("setting all day: " + (syncTasks?"entryDate":"startDate"), synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 			this.setKolabItemProperty(event, syncTasks?"entryDate":"startDate", synckolab.tools.text.string2CalDate(jobj.startDate));
@@ -803,7 +820,12 @@ synckolab.calendarTools.json2event = function (jobj, calendar) {
 	
 	// full day
 	if(jobj.endDate) {
-		if (jobj.endDate.indexOf(":") === -1) {
+		// fix old style
+		if(!jobj.endDate.dateTime) {
+			jobj.endDate.dateTime = jobj.endDate;
+		}
+		
+		if (jobj.endDate.dateTime.indexOf(":") === -1) {
 			cDate = synckolab.tools.text.string2CalDate(jobj.endDate);
 			// Kolab uses for 1-day-event:
 			// startdate = day_x, enddate = day_x
@@ -1014,6 +1036,9 @@ synckolab.calendarTools.json2event = function (jobj, calendar) {
  */
 synckolab.calendarTools.xml2json = function (xml, syncTasks)
 {
+	// check which kolab version we are using
+	var kolab3 = false;
+
 	var jobj = {
 		synckolab : synckolab.config.version, // synckolab version
 		type : "calendar"
@@ -1074,12 +1099,13 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 
 	// for kolab3: go to the component
 	if(topNode.nodeName.toUpperCase() === "ICALENDAR") {
+		kolab3 = true;
 		topNode = new synckolab.Node(topNode);
 		if(syncTasks) {
 			// TODO
-			topNode = topNode.getChildNode(["vcalendar","components","vtodo","properties"]);
+			topNode = topNode.getChildNode(["vcalendar","components","vtodo"]);
 		} else {
-			topNode = topNode.getChildNode(["vcalendar","components","vevent","properties"]);
+			topNode = topNode.getChildNode(["vcalendar","components","vevent"]);
 		}
 		
 		if(!topNode) {
@@ -1100,10 +1126,19 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 		}
 	}
 
-	var cur = new synckolab.Node(topNode.firstChild);
+	var cur;
+	if(kolab3) {
+		cur = topNode.getChildNode("properties");
+	} else {
+		cur = topNode;
+	}
+	
+	cur = new synckolab.Node(cur.firstChild);
+	
 	var s, tmpobj;
-	var cDate;
-	// iterate over the DOM tree of the XML structure of the event
+	var cDate, node;
+
+	// iterate over the DOM tree of the XML structure of the event (kolab3: just the properties)
 	while(cur)
 	{
 		if (cur.nodeType === Node.ELEMENT_NODE)
@@ -1121,11 +1156,11 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				}
 
 				// 2005-03-30T15:28:52Z
-				s = cur.cur.getXmlResult("date-time", "");
+				s = cur.getXmlResult("date-time", "");
 				if(s === "") {
 					s = cur.getFirstData();
 				}
-				jobj.createdDate = cur.getFirstData();
+				jobj.createdDate = s;
 				break;
 
 			case "DTSTAMP":	// kolab3
@@ -1139,7 +1174,7 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				if(s === "") {
 					s = cur.getFirstData();
 				}
-				jobj.modified = cur.getFirstData();
+				jobj.modified = s;
 				break;
 				
 			case "DTSTART": // kolab3
@@ -1148,8 +1183,8 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				}
 
 				jobj.startDate = {
-						tz: cur.getXmlResult(["parameters","tz-id"], null),
-						dateTime: cur.getXmlResult("date-time", "")
+					tz: cur.getXmlResult(["parameters","tzid","text"], null),
+					dateTime: cur.getXmlResult("date-time", "")
 				};
 				
 				break;
@@ -1162,8 +1197,8 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				}
 				// TODO: add timezone
 				jobj.startDate = {
-						tz: null,
-						dateTime: cur.getFirstData()
+					tz: null,
+					dateTime: cur.getFirstData()
 				};
 				break;
 
@@ -1171,6 +1206,11 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				if (!cur.firstChild) {
 					break;
 				}
+				
+				jobj.endDate = {
+						tz: cur.getXmlResult(["parameters","tzid","text"], null),
+						dateTime: cur.getXmlResult("date-time", "")
+					};
 				break;
 
 			case "DUE-DATE":	// kolab2
@@ -1239,6 +1279,7 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				}
 				break;
 
+			case "DESCRIPTION":	// kolab3
 			case "BODY":	// kolab2
 				// sometimes we have <body></body> in the XML
 				if (cur.firstChild)
@@ -1302,14 +1343,26 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				}
 				break;
 
-			case "CATEGORIES":
+			case "CATEGORIES": // kolab2+3
 				if (cur.firstChild)
 				{
-					jobj.categories = cur.getFirstData();
+					if(cur.getChildNode("text")) {
+						s = "";
+						tmpobj = cur.getChildNode("text");
+						// space seperated categories
+						while(tmpobj) {
+							s += tmpobj.getFirstData() + " ";
+							tmpobj = tmpobj.getNextNode("text");
+						}
+					} else {
+						s = cur.getFirstData();
+					}
+					jobj.categories = s;
 				}
 				break;
-
-			case "RECURRENCE":
+				
+			case "RRULE":	// kolab3
+			case "RECURRENCE":	// kolab2
 				jobj.recurrence = {};
 				
 				var detail;
@@ -1317,29 +1370,42 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				var daynumber;
 				var dayindex;
 				var month;
-
-				// read the "cycle" attribute for the units and
-				// map the Kolab XML values to the Sunbird values
-				jobj.recurrence.cycle = cur.getAttribute("cycle");
-				if (jobj.recurrence.cycle === null) {
-					jobj.recurrence.cycle = "weekly";
-				}
 				
 				var recur;
+				
+				if(kolab3) {
+					node = cur.getChildNode("recur");
+					// kolab 3: mapp freq content - and map
+					jobj.recurrence.cycle = node.getXmlResult("freq", "weekly");
+				}else {
+					// read the "cycle" attribute for the units and
+					// map the Kolab XML values to the Sunbird values
+					jobj.recurrence.cycle = cur.getAttribute("cycle");
+				}
+				
+				if (jobj.recurrence.cycle === null) {
+					jobj.recurrence.cycle = "weekly";
+				} else {
+					// make sure its lower case for parsing
+					jobj.recurrence.cycle = jobj.recurrence.cycle.toLowerCase();
+				}
+				
 				switch (jobj.recurrence.cycle)
 				{
 				case "weekly":
 					// need to process the <day> value here
 					jobj.recurrence.days = []; 
+					
 					// iterate over the DOM subtre
-					recur = cur.firstChild;
+					if(kolab3) {
+						recur = node.getChildNode("byday");
+					} else {
+						recur = cur.getChildNode("day");
+					}
 					while(recur)
 					{
-						if ((recur.nodeType === Node.ELEMENT_NODE) && (recur.nodeName.toUpperCase() === "DAY"))
-						{
-							jobj.recurrence.days.push(recur.firstChild.data);
-						}
-						recur = recur.nextSibling;
+						jobj.recurrence.days.push(recur.getFirstData());
+						recur = recur.getNextNode(kolab3?"byday":"day");
 					}
 					break;
 				case "monthly":
@@ -1353,14 +1419,11 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 							jobj.recurrence.days = []; 
 
 							// iterate over the DOM subtre
-							recur = cur.firstChild;
+							recur = cur.getChildNode("DAYNUMBER");
 							while(recur)
 							{
-								if ((recur.nodeType === Node.ELEMENT_NODE) && (recur.nodeName.toUpperCase() === "DAYNUMBER"))
-								{
-									jobj.recurrence.days.push(recur.firstChild.data);
-								}
-								recur = recur.nextSibling;
+								jobj.recurrence.days.push(recur.getFirstData());
+								recur = recur.getNextNode("DAYNUMBER");
 							}
 							break;
 						case "WEEKDAY":
@@ -1448,73 +1511,114 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 
 				jobj.recurrence.interval = Number(cur.getXmlResult("INTERVAL", 1));
 				jobj.recurrence.count = 0;
-				
-				var node = new synckolab.Node(cur.getChildNode("RANGE"));
-				if (node)
-				{
-					// read the "type" attribute of the range
-					var rangeType = node.getAttribute("type");
-					if (rangeType)
+				if(kolab3) {
+					jobj.recurrence.interval = Number(node.getXmlResult("interval", 1));
+					jobj.recurrence.count = Number(node.getXmlResult("count", 0));	// kolab3: count
+				}
+				else {
+					node = cur.getChildNode("RANGE");
+					if (node)
 					{
-						var rangeSpec = cur.getXmlResult("RANGE", "dummy");
-						switch (rangeType.toUpperCase())
+						// read the "type" attribute of the range
+						var rangeType = node.getAttribute("type");
+						if (rangeType)
 						{
-						case "DATE":
-							if (rangeSpec !== "dummy")
+							var rangeSpec = cur.getXmlResult("RANGE", "dummy");
+							switch (rangeType.toUpperCase())
 							{
-								jobj.recurrence.untilDate = rangeSpec;
+							case "DATE":
+								if (rangeSpec !== "dummy")
+								{
+									jobj.recurrence.untilDate = rangeSpec;
+								}
+								else {
+									jobj.recurrence.count = 0;
+								}
+								break;
+							case "NUMBER":
+								if (rangeSpec !== "dummy") {
+									jobj.recurrence.count = Number(rangeSpec);
+								} else {
+									jobj.recurrence.count = 1;
+								}
+								break;
+							case "NONE":
+								jobj.recurrence.count =  0;
+								break;
 							}
-							else {
-								jobj.recurrence.count = 0;
-							}
-							break;
-						case "NUMBER":
-							if (rangeSpec !== "dummy") {
-								jobj.recurrence.count = Number(rangeSpec);
-							} else {
-								jobj.recurrence.count = 1;
-							}
-							break;
-						case "NONE":
-							jobj.recurrence.count =  0;
-							break;
 						}
 					}
-				}
-				else
-				{
-					// no range set
-					jobj.recurrence.count = -1;
+					else
+					{
+						// no range set
+						jobj.recurrence.count = -1;
+					}
 				}
 
-				// read 0..n exclusions
+				// read 0..n exclusions (kolab2)
 				jobj.recurrence.exclusion = [];
-				node = cur.firstChild;
+				node = cur.getChildNode("exclusion");
 				while(node)
 				{
-					if(node.nodeType === Node.ELEMENT_NODE && (node.nodeName.toUpperCase() === "EXCLUSION"))
-					{
-						jobj.recurrence.exclusion.push(node.firstChild.data);
-					}
-					node = node.nextSibling;
+					jobj.recurrence.exclusion.push(node.getFirstData());
+					node = node.getNextNode("exclusion");
 				}
+				break;
+				
+			// kolab3
+			case "EXDATE":
+				// build structure if not existant
+				if(!jobj.recurrence) {
+					jobj.recurrence = {};
+				} 
+				if(!jobj.recurrence.exclusion) {
+					jobj.recurrence.exclusion = [];
+				}
+				
+				// add exclusion
+				jobj.recurrence.exclusion.push(cur.getXmlResult("date", null));
 				break;
 
 			case "ATTENDEE":
 				if(!jobj.attendees) {
 					jobj.attendees = [];
 				}
-				
 				var attendee = {};
-				var cmail = cur.getXmlResult("SMTP-ADDRESS");
+				var cmail = cur.getXmlResult(kolab3?"cal-address":"SMTP-ADDRESS");
 				if (cmail && cmail !== "unknown") {
 					attendee.mail = cmail;
+					// incase its url encoded
+					if(attendee.mail.indexOf("%40") !== -1) {
+						attendee.mail = decodeURIComponent(attendee.mail);
+					}
 				}
-				attendee.displayName = cur.getXmlResult("DISPLAY-NAME", "");
-				attendee.status = cur.getXmlResult("STATUS", "none");
-				// The request response status is true or false
-				attendee.rsvp = cur.getXmlResult("REQUEST-RESPONSE", "false") === "true";
-				attendee.role = cur.getXmlResult("ROLE", "optional");
+
+				if(kolab3) {
+					attendee.displayName = cur.getXmlResult(["parameters", "cn", "text"], null);
+					attendee.status = cur.getXmlResult(["parameters", "partstat", "text"], "none");
+					attendee.rsvp = cur.getXmlResult(["parameters", "rsvp", "boolean"], "false") === "true";
+					attendee.role = cur.getXmlResult(["parameters", "role", "text"], "none");
+					// fixup json
+					switch(attendee.role) {
+					case "REQ-PARTICIPANT":
+						attendee.role = "required";
+						break;
+					case "OPT-PARTICIPANT":
+						attendee.role = "optional";
+						break;
+					case "NON-PARTICIPANT":
+						attendee.role = "resource";
+						break;
+					}
+					// just need it lower case
+					attendee.status = attendee.status.toLowerCase();
+				} else {
+					attendee.displayName = cur.getXmlResult("DISPLAY-NAME", "");
+					attendee.status = cur.getXmlResult("STATUS", "none");
+					// The request response status is true or false
+					attendee.rsvp = cur.getXmlResult("REQUEST-RESPONSE", "false") === "true";
+					attendee.role = cur.getXmlResult("ROLE", "optional");
+				}
 				jobj.attendees.push(attendee);
 				// "invitation-sent" is missing, it can be "true" or false"
 				break;
@@ -1546,13 +1650,66 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 					}
 				}
 				break;
-
+				
+			// some nodes we cannot work with 
+			case "SEQUENCE": // kolab3: integer
+			case "TRANSP": // text: TRANSPARENT
+				break;
+				
 			default:
+				synckolab.tools.logMessage("FIELD not found: '" + cur.nodeName + "' firstData='" + cur.getFirstData()+"'", synckolab.global.LOG_WARNING + synckolab.global.LOG_CAL);
 
 			} // end switch
 		} // end if
 		cur = cur.nextSibling;
 	} // end while
+
+	if(kolab3) {
+		var alarmNode = topNode.getChildNode(["components", "valarm"]);
+		if(alarmNode) {
+			if(!jobj.alarms) {
+				jobj.alarms = [];
+			}
+			
+			while(alarmNode) {
+				
+				cur = new synckolab.Node(alarmNode.getChildNode("properties").firstChild);
+				// a new alarm
+				tmpobj = {};
+				
+				// iterate over the DOM tree of the XML structure of the event (kolab3: just the properties)
+				while(cur)
+				{
+					if (cur.nodeType === Node.ELEMENT_NODE)
+					{
+						switch (cur.nodeName.toUpperCase())
+						{
+							case "ACTION":
+								tmpobj.action = cur.getFirstData();
+								break;
+							case "DESCRIPTION":
+								tmpobj.description = cur.getFirstData();
+								break;
+							case "SUMMARY":
+								tmpobj.summary = cur.getFirstData();
+								break;
+							// some things we dont know about in tbird
+							case "TRIGGER":
+							case "DURATION":
+							case "REPEAT":
+								break;
+							
+							default:
+						}
+					}
+					cur = cur.nextSibling;
+				}	// end while loop thorugh properties
+				
+				jobj.alarms.push(tmpobj);
+				alarmNode = alarmNode.getNextNode("valarm");
+			}
+		}
+	}	// end kolab3: alarms
 
 	synckolab.tools.logMessage("Parsed event in XML", synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 	return jobj;
@@ -1593,10 +1750,12 @@ synckolab.calendarTools.getTaskStatus = function (tstatus, xmlvalue) {
 			}
 		}
 	}
-	if(!val)
+	if(!val) {
 		return (xmlvalue ? "not-started" : "NONE");
-	else
+	}
+	else {
 		return val;
+	}
 };
 
 /**
@@ -1778,6 +1937,194 @@ synckolab.calendarTools.json2xml = function (jobj, syncTasks, email) {
 
 	//synckolab.tools.logMessage("Created XML event structure:\n=============================\n" + xml, synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 	return xml;
+};
+
+/**
+ * convert an ICAL event into a Kolab3 XML string representation,
+ * allow to caller to skip fields which change frequently such as
+ * "last-modification-date" because this can confuse the hash IDs.
+ *
+ * @param skipVolatiles skips problematic fields for hash creation
+ * @return XML string in Kolab 2 format
+ */
+synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
+	// TODO  not working ATM:
+	//	- yearly recurrence
+
+	var xml = '<?xml version='+'"'+'1.0" encoding='+'"UTF-8" standalone="no" ?>\n' +
+		'<icalendar xmlns="urn:ietf:params:xml:ns:icalendar-2.0">\n'+
+		'<vcalendar>\n' +
+		'<properties>\n' +
+		" <prodid><text>Synckolab " + synckolab.config.version + ", Calendar Sync</text></prodid>\n" +
+		' <version><text>2.0</text></version>\n' +
+		'</properties>\n' + 
+		'<components>';
+		
+	if (jobj.type === "task")
+	{
+		xml += '<vtask>\n';
+	}
+	else {
+		xml += '<vevent>\n';
+	}
+	
+	xml += synckolab.tools.text.nodeContainerWithContent("uid", "text", jobj.uid, false);
+
+	if(syncTasks === true)
+	{
+		// tasks have a status
+		xml += synckolab.tools.text.nodeContainerWithContent("status", "text", jobj.status, false);
+		xml += synckolab.tools.text.nodeContainerWithContent("completed", "text", jobj.completed, false);
+		xml += synckolab.tools.text.nodeContainerWithContent("dtstart", "date-time", jobj.startDate.dateTime, false);
+		xml += synckolab.tools.text.nodeContainerWithContent("dtdue", "date-time", jobj.endDate.dateTime, false);
+		xml += synckolab.tools.text.nodeContainerWithContent("priority", "text", jobj.priority, false);
+		
+		// xml += " <completed-date>" + synckolab.tools.text.calDateTime2String(completedDate, true) + "</completed-date>\n";
+	}
+	else
+	{
+		xml += synckolab.tools.text.nodeContainerWithContent("dtstart", "date-time", jobj.startDate.dateTime, false);
+		xml += synckolab.tools.text.nodeContainerWithContent("dtend", "date-time", jobj.endDate.dateTime, false);
+	}
+
+
+	xml += synckolab.tools.text.nodeContainerWithContent("summary", "text", jobj.title, false);
+	xml += synckolab.tools.text.nodeContainerWithContent("description", "text", jobj.body, false);
+	xml += synckolab.tools.text.nodeContainerWithContent("sensitivity", "text", jobj.sensitivity, false);
+	// xml += " <creation-date>" + jobj.createdDate + "</creation-date>\n";
+	// xml += " <last-modification-date>" + jobj.lastModificationDate + "</last-modification-date>\n";
+	xml += synckolab.tools.text.nodeContainerWithContent("location", "text", jobj.location, false);
+	xml += synckolab.tools.text.nodeContainerWithContent("show-time-as", "text",  jobj.showTimeAs, false);
+	xml += synckolab.tools.text.nodeContainerWithContent("color-label", "text", jobj.colorLabel, false);
+
+	var i;
+	if(jobj.alarms) {
+		for(i=0; i < jobj.alarms.length; i++) {
+			var att = "";
+			if (jobj.alarms[i].description && jobj.alarms[i].description !== "") {
+				att += 'description="' + jobj.alarms[i].description + '" ';
+			}
+			if (jobj.alarms[i].summary && jobj.alarms[i].summary !== "") {
+				att += 'summary="' + jobj.alarms[i].summary + '" ';
+			}
+			if (jobj.alarms[i].action && jobj.alarms[i].action !== "") {
+				att += 'action="' + jobj.alarms[i].action + '"';
+			}
+
+			xml += " <alarm "+att+">" + jobj.alarms[i].offset + "</alarm>\n";
+		}
+	}
+
+	xml += synckolab.tools.text.nodeWithContent("categories", jobj.categories, false);
+	if(jobj.recurrence) {
+		switch(jobj.recurrence.cycle) {
+		case "daily":
+			xml += " <recurrence cycle=\"daily\">\n";
+			break;
+		case "weekly":
+			xml += " <recurrence cycle=\"weekly\">\n";
+			for(i=0; i < jobj.recurrence.days.length; i++) {
+				xml += synckolab.tools.text.nodeWithContent("day", jobj.recurrence.days[i], false);
+			}
+			break;
+		case "monthly":
+			if(!jobj.recurrence.daynumber && !jobj.recurrence.days) {
+				xml += " <recurrence cycle=\"monthly\">\n";
+			} else if(jobj.recurrence.days) {
+				xml += " <recurrence cycle=\"monthly\" type=\"daynumber\">\n";
+				for(i=0; i < jobj.recurrence.days.length; i++) {
+					xml += synckolab.tools.text.nodeWithContent("daynumber", jobj.recurrence.days[i], false);
+				}
+			} else if(!jobj.recurrence.weekday) {
+				xml += " <recurrence cycle=\"monthly\" type=\"daynumber\">\n";
+				xml += "  <daynumber>" + jobj.recurrence.daynumber + "</daynumber>\n";
+			} else {
+				xml += " <recurrence cycle=\"monthly\" type=\"weekday\">\n";
+				xml += "  <daynumber>" + jobj.recurrence.daynumber + "</daynumber>\n";
+				xml += "  <day>" + jobj.recurrence.weekday + "</day>\n";
+			} 
+			break;
+		case "yearly":
+			// "weekday", monthday" or "yearday"
+			// weekday has <day>, <daynumber> and <month>
+			// FIXME weekday is not yet supported by Lightning
+			//xml += " <recurrence cycle=\"yearly\" type=\"weekday\">\n";
+			//xml += "  <day>tuesday</day>\n";
+			//xml += "  <daynumber>2</daynumber>\n";
+			//xml += "  <month>july</month>\n";
+
+			// monthday has <daynumber> and <month>
+			// FIXME monthday is not yet supported by Lightning
+			//xml += " <recurrence cycle=\"yearly\" type=\"monthday\">\n";
+			//xml += "  <daynumber>2</daynumber>\n";
+			//xml += "  <month>july</month>\n";
+
+			// yearday has <daynumber>
+			xml += " <recurrence cycle=\"yearly\" type=\"yearday\">\n";
+			// FIXME we have no matching field in Lighning yet
+			xml += "  <daynumber>1</daynumber>\n";
+			break;
+		}
+		
+		xml += synckolab.tools.text.nodeWithContent("interval", jobj.recurrence.interval, true);
+		if(jobj.recurrence.count && jobj.recurrence.count > 0) {
+			xml += "  <range type=\"number\">" + jobj.recurrence.count + "</range>\n";
+		} else if(jobj.recurrence.untilDate) {
+			xml += "  <range type=\"date\">" + jobj.recurrence.untilDate + "</range>\n";
+		} else {
+			xml += "  <range type=\"none\"/>\n";
+		}
+
+		if(jobj.recurrence.exclusion) {
+			for(i=0; i < jobj.recurrence.exclusion.length; i++) {
+				xml += synckolab.tools.text.nodeWithContent("exclusion", jobj.recurrence.exclusion[i], true);
+			}
+		}
+		
+		xml += " </recurrence>\n";
+	}
+	
+	if(jobj.attendees) {
+		for(i=0; i < jobj.attendees.length; i++) {
+			xml += " <attendee>\n";
+			xml += synckolab.tools.text.nodeWithContent("display-name", jobj.attendees[i].displayName, false);
+			xml += synckolab.tools.text.nodeWithContent("smtp-address", jobj.attendees[i].email, false);
+			xml += synckolab.tools.text.nodeWithContent("status", jobj.attendees[i].status, false);
+			xml += synckolab.tools.text.nodeWithContent("request-response", jobj.attendees[i].rsvp ? "true" : "false", false);
+			xml += synckolab.tools.text.nodeWithContent("role", jobj.attendees[i].role, false);
+			xml += " </attendee>\n";
+		}
+	}
+
+
+	if (jobj.organizer)
+	{
+		xml += " <organizer>\n";
+		xml += synckolab.tools.text.nodeWithContent("display-name", jobj.organizer.displayName, false);
+		xml += synckolab.tools.text.nodeWithContent("smtp-address", jobj.organizer.email, false);
+		xml += " </organizer>\n";
+	}
+
+	if (jobj.creator)
+	{
+		xml += " <creator>\n";
+		xml += synckolab.tools.text.nodeWithContent("display-name", jobj.creator.displayName, false);
+		xml += synckolab.tools.text.nodeWithContent("smtp-address", jobj.creator.email, false);
+		xml += " </creator>\n";
+	}
+
+
+	xml += " <revision>0</revision>\n";	
+	if (jobj.type === "task")
+	{
+		xml += "</vtask>\n";
+	}
+	else {
+		xml += "</vevent>\n";
+	}
+	
+	//synckolab.tools.logMessage("Created XML event structure:\n=============================\n" + xml, synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
+	return xml + "</components></vcalendar></icalendar>";
 };
 
 /**

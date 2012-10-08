@@ -1,0 +1,18 @@
+{
+  "synckolab": "3.0.0",
+  "type": "calendar",
+  "uid": "KOrganizer-1353608432.168",
+  "createdDate": "2009-09-01T11:36:44Z",
+  "modified": "2012-05-05T05:05:05Z",
+  "sensitivity": "PUBLIC",
+  "startDate": {
+    "tz": "/kolab.org/Europe/Berlin",
+    "dateTime": "2009-09-02T08:00:00"
+  },
+  "endDate": {
+    "tz": "/kolab.org/Europe/Berlin",
+    "dateTime": "2009-09-02T09:00:00"
+  },
+  "title": "Simple Event",
+  "location": "Here"
+}

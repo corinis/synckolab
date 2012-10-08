@@ -295,7 +295,15 @@ synckolab.tools.text = {
 				return new Date(Date.UTC(cdate[0], cdate[1] - 1, cdate[2], ctime[0], ctime[1], ctime[2]));
 			}
 			else {
-				return new Date(cdate[0], cdate[1] - 1, cdate[2], ctime[0], ctime[1], ctime[2]);
+				 
+				if(!tz || isNaN(tz)) {
+					return new Date(cdate[0], cdate[1] - 1, cdate[2], ctime[0], ctime[1], ctime[2]);
+				} else {
+					var dateObj = new Date(Date.UTC(cdate[0], cdate[1] - 1, cdate[2], ctime[0], ctime[1], ctime[2]));
+					// add tc hours
+					dateObj.setTime(dateObj.getTime() +  tz * 3600000);
+					return dateObj;
+				}
 			}
 		}
 		else {

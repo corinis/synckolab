@@ -1259,7 +1259,7 @@ synckolab.addressbookTools.list2Pojo = function (card) {
 synckolab.addressbookTools.list2Kolab3 = function (card, fields) {
 	var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 	xml += "<vlist version=\"1.0\" >\n";
-	xml += " <product-id>SyncKolab, Kolab resource</product-id>\n";
+	xml += " <product-id>SyncKolab " + synckolab.config.version + ", Kolab resource</product-id>\n";
 	xml += " <uid>" + this.getUID(card) + "</uid>\n";
 	xml += " <creation-date>" + synckolab.tools.text.date2String(new Date(this.getCardProperty(card, "LastModifiedDate") * 1000)) + "T" + synckolab.tools.text.time2String(new Date(this.getCardProperty(card, "LastModifiedDate") * 1000)) + "Z</creation-date>\n";
 	xml += " <last-modification-date>" + synckolab.tools.text.date2String(new Date(this.getCardProperty(card, "LastModifiedDate") * 1000)) + "T" + synckolab.tools.text.time2String(new Date(this.getCardProperty(card, "LastModifiedDate") * 1000)) + "Z</last-modification-date>\n";

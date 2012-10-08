@@ -12,7 +12,7 @@ load("test/lib/testOverride.js");
 /*
 test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
 	equal(null, synckolab.addressbookTools.parseMessageContent(null), "parsing a null message");
-	var testFiles = ["simple.vcf.mime","complex.vcf.mime"];
+	var testFiles = ["simple.ics.mime","complex.ics.mime"];
 	
 	var content, entry, jsonEntry;
 	
@@ -21,7 +21,7 @@ test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
 		
 		content = readFile("test/synckolab/parser/kolab3/raw/"+src);
 		content = synckolab.tools.stripMailHeader(content);
-		entry = synckolab.addressbookTools.parseMessageContent(content);
+		entry = synckolab.calendarTools.message2json(content, false);
 		content = readFile("test/synckolab/parser/kolab3/json/"+src+".json");
 		jsonEntry = JSON.parse(content);
 		equal(synckolab.tools.equalsObject(entry, jsonEntry), true, src);
@@ -31,7 +31,7 @@ test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
 	}
 });	
 */
-	var testFiles = ["simple.ics.mime"];
+	var testFiles = ["complex.ics.mime"];
 	
 	
 	var content, entry, jsonEntry;
@@ -46,8 +46,8 @@ test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
 		entry = synckolab.calendarTools.message2json(content, false);
 		print(JSON.stringify(entry, null, '  '))
 		// json -> kolab 3 xml
-		//content = synckolab.addressbookTools.card2Kolab3(entry);
-		//print(content);
+		content = synckolab.calendarTools.json2kolab3(entry);
+		print(content);
 		/*
 		content = readFile("test/synckolab/parser/kolab3/json/"+src+".json");
 		jsonEntry = JSON.parse(content);
