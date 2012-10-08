@@ -85,7 +85,7 @@
 					<radiogroup id="PreferMailFormat" orient="horizontal"/>
 				</row>
 				<row id="aimScreenNameBox" hidden="true">
-					<label value="&ScreenName.label;"/>
+					<label value="&synckolab.contactConflict.ScreenName.label;"/>
 					<radiogroup id="AimScreenName" orient="horizontal"/>
 				</row>
 			</rows>

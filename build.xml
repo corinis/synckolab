@@ -7,7 +7,7 @@
 	<description>
 		Sync your contacts with imap
 	</description>
-	<property name="version" value="2.0.3" />
+	<property name="version" value="2.9.0" />
 
 	<!-- ================================= target: default ================================= -->
 	<target name="default" depends="depends" description="Sync your contacts with imap">

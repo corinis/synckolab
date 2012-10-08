@@ -810,7 +810,7 @@ synckolab.calendarTools.json2event = function (jobj, calendar) {
 		if (jobj.startDate.dateTime.indexOf(":") === -1) {
 			// entry date and start date can be handled the same way
 			synckolab.tools.logMessage("setting all day: " + (syncTasks?"entryDate":"startDate"), synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
-			this.setKolabItemProperty(event, syncTasks?"entryDate":"startDate", synckolab.tools.text.string2CalDate(jobj.startDate));
+			this.setKolabItemProperty(event, syncTasks?"entryDate":"startDate", synckolab.tools.text.string2CalDateTime(jobj.startDate));
 		} else {
 			// entry date and start date can be handled the same way
 			synckolab.tools.logMessage("setting: " + (syncTasks?"entryDate":"startDate"), synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
@@ -826,7 +826,7 @@ synckolab.calendarTools.json2event = function (jobj, calendar) {
 		}
 		
 		if (jobj.endDate.dateTime.indexOf(":") === -1) {
-			cDate = synckolab.tools.text.string2CalDate(jobj.endDate);
+			cDate = synckolab.tools.text.string2CalDateTime(jobj.endDate);
 			// Kolab uses for 1-day-event:
 			// startdate = day_x, enddate = day_x
 			// Sunbird uses for 1-day-event:
@@ -963,17 +963,17 @@ synckolab.calendarTools.json2event = function (jobj, calendar) {
 		
 		if(jobj.recurrence.untilDate) {
 			if (recRule.endDate) {
-				recRule.endDate = synckolab.tools.text.string2CalDate(jobj.recurrence.untilDate);
+				recRule.endDate = synckolab.tools.text.string2CalDateTime(jobj.recurrence.untilDate);
 			} else {
 				// new lighnting
-				recRule.untilDate = synckolab.tools.text.string2CalDate(jobj.recurrence.untilDate);
+				recRule.untilDate = synckolab.tools.text.string2CalDateTime(jobj.recurrence.untilDate);
 			}
 		}
 		recInfo.insertRecurrenceItemAt(recRule, 0);
 		
 		if(jobj.recurrence.exclusion && jobj.recurrence.exclusion.length > 0) {
 			for(i=0; i < jobj.recurrence.exclusion.length; i++) {
-				var exclusionDate = synckolab.tools.text.string2CalDate(jobj.recurrence.exclusion[i]);
+				var exclusionDate = synckolab.tools.text.string2CalDateTime(jobj.recurrence.exclusion[i]);
 				recInfo.removeOccurrenceAt(exclusionDate);
 				var exclusion = recInfo.getOccurrenceFor(exclusionDate,true);
 				recInfo.modifyException(exclusion, true);

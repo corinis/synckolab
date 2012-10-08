@@ -14,6 +14,7 @@
 <!ENTITY synckolab.contactConflict.Other.box			"Other">
 <!ENTITY synckolab.contactConflict.Name.box				"Name">
 <!ENTITY synckolab.contactConflict.Work.box				"Work">
+<!ENTITY synckolab.contactConflict.ScreenName.label		"Scren Name">
 
 <!ENTITY synckolab.settings.Account		"Konto">
 <!ENTITY synckolab.settings.abook		"Książka adresowa">
