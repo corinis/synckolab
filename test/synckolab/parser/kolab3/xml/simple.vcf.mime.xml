@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+ <vcards xmlns="urn:ietf:params:xml:ns:vcard-4.0">
+ <vcard>
+  <uid><uri>urn:uuid:4xuyC0cyjV</uri></uid>
+  <prodid><text>SyncKolab 3.0.0, Kolab resource</text></prodid>
+  <rev><timestamp>19700101T000000ZZ</timestamp></rev>
+  <n>
+    <given>Krause</given>
+    <surname>Volker</surname>
+  </n>
+   <fn><text>Volker Krause</text></fn>
+  <email>
+   <parameters><pref><integer>1</integer></pref></parameters>
+   <text>vkrause@kde.org</text>
+  </email>
+  <x-custom><identifier>X-AllowRemoteContent</identifier><value>false</value></x-custom>
+ </vcard>
+ </vcards>

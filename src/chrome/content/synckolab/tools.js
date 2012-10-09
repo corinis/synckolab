@@ -1461,49 +1461,6 @@ synckolab.Node.prototype.getAttribute = function (attrName)
 
 
 /**
- * compare this to another node.
- */
-synckolab.Node.prototype.isEqualNode = function(other) {
-	var that = this;
-	var props = ['nodeType', 'nodeName', 'nodeValue'];
-	var i;
-	for (i = props.length; i-- > 0;) {
-		if (that[props[i]] !== other[props[i]]) {
-			return false;
-		}
-	}
-
-	// Check element attributes match
-	//
-	if (that.nodeType === 1) {
-		if (that.attributes.length !== other.attributes.length) {
-			return false;
-		}
-		for (i = 0; i < that.attributes.length; i++) {
-			if (that.attributes[i] !== other.getAttribute(that.attributes[i].name)) {
-				return false;
-			}
-		}
-	}
-
-	// Check children match, recursively
-	if (that.childNodes.length !== other.childNodes.length) {
-		return false;
-	}
-	
-	for (i = that.childNodes.length; i-- > 0;){
-		
-		if (!new synckolab.Node(that.childNodes[i]).isEqualNode(other.childNodes[i])) {
-			return false;
-		}
-	}
-	
-	return true;
-};
-
-
-
-/**
  * (At least on branch 1.8), the js instanceof operator does not work to test
  * interfaces on direct implementation objects, i.e. non-wrapped objects.
  * This function falla back to using QueryInterface to check whether the interface

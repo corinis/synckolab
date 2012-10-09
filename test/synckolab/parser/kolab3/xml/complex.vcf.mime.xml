@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<vcards xmlns="urn:ietf:params:xml:ns:vcard-4.0">
+<vcard>
+ <uid><uri>urn:uuid:Huu5X7hfYy</uri></uid>
+ <prodid><text>SyncKolab 3.0.0, Kolab resource</text></prodid>
+ <rev><timestamp>19700101T000000ZZ</timestamp></rev>
+ <note>
+    <text>Notes</text>
+ </note>
+ <n>
+   <given>Lastname</given>
+   <surname>Firstname</surname>
+ </n>
+  <fn><text>Displayname</text></fn>
+ <url>
+    <uri>www.homepage.org</uri>
+ </url>
+ <url>
+    <uri>www.blog.test</uri>
+ </url>
+ <impp>
+    <uri>messaging</uri>
+ </impp>
+ <title>
+    <text>Title</text>
+ </title>
+ <nickname>
+    <text>Nickname</text>
+ </nickname>
+ <bday>  <date-time>2043</date-time>
+</bday>
+ <anniversary>  <date-time>2009-7-28</date-time>
+</anniversary>
+ <tel>
+  <parameters><type><text>home</text></type></parameters>
+  <text>+4930-homephone</text>
+ </tel>
+ <tel>
+  <parameters><type><text>work</text></type></parameters>
+  <text>+4930-workphone</text>
+ </tel>
+ <tel>
+  <parameters><type><text>fax</text><text>work</text></type></parameters>
+  <text>+4930-fax</text>
+ </tel>
+ <tel>
+  <parameters><type><text>cell</text></type></parameters>
+  <text>+4930-mobile</text>
+ </tel>
+ <email>
+  <parameters><pref><integer>1</integer></pref></parameters>
+  <text>first@email.org</text>
+ </email>
+ <email>
+  <text>second@email.org</text>
+ </email>
+ <adr>
+  <parameters><type><text>home</text></type></parameters>
+   <street>Home Street</street>
+   <locality>Home Locality</locality>
+   <region>Home Region</region>
+   <code>Home Postal Code</code>
+   <country>Gabon</country>
+ </adr>
+ <adr>
+  <parameters><type><text>work</text></type></parameters>
+   <street>Work Street</street>
+   <locality>Work Locality</locality>
+   <region>Work Region</region>
+   <code>Work Postal Code</code>
+   <country>Azerbaijan</country>
+ </adr>
+ <x-custom><identifier>X-AllowRemoteContent</identifier><value>true</value></x-custom>
+</vcard>
+</vcards>

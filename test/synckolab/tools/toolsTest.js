@@ -9,7 +9,7 @@ load("test/lib/testOverride.js");
 /**
  * Test on Node
  */
-test("synckolab.tools.text.checkExist", function(){
+test("synckolab.Node", function(){
 	// prepare and read an xml
 	var content = readFile("test/synckolab/tools/data/domtest.xml");
 	var doc = synckolab.tools.parseXml(content);
@@ -23,4 +23,7 @@ test("synckolab.tools.text.checkExist", function(){
 	child = child.getNextNode();
 	equal(child.nodeName, "child", "dom name (child)");
 	equal(child.getFirstData(), "2", "child 2");
+	
 });
+
+

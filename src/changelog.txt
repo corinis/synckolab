@@ -1,3 +1,8 @@
+SyncKolab 2.9.0
+===============
+* Add support for kolab3
+* Add unit test framework 
+
 SyncKolab 2.0.2
 ===============
 * #24933 hide folders does not work

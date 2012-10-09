@@ -1261,8 +1261,8 @@ synckolab.addressbookTools.list2Kolab3 = function (card, fields) {
 	xml += "<vlist version=\"1.0\" >\n";
 	xml += " <product-id>SyncKolab " + synckolab.config.version + ", Kolab resource</product-id>\n";
 	xml += " <uid>" + this.getUID(card) + "</uid>\n";
-	xml += " <creation-date>" + synckolab.tools.text.date2String(new Date(this.getCardProperty(card, "LastModifiedDate") * 1000)) + "T" + synckolab.tools.text.time2String(new Date(this.getCardProperty(card, "LastModifiedDate") * 1000)) + "Z</creation-date>\n";
-	xml += " <last-modification-date>" + synckolab.tools.text.date2String(new Date(this.getCardProperty(card, "LastModifiedDate") * 1000)) + "T" + synckolab.tools.text.time2String(new Date(this.getCardProperty(card, "LastModifiedDate") * 1000)) + "Z</last-modification-date>\n";
+	xml += " <creation-date>" + synckolab.tools.text.calDateTime2String(new Date(), false, true) + "</creation-date>\n";
+	xml += " <last-modification-date>"  + synckolab.tools.text.calDateTime2String(new Date(), false, true) + "</last-modification-date>\n";
 
 	// default: public - tbird doesnt know of other types of list like private
 	xml += " <sensitivity>public</sensitivity>\n";
@@ -1333,8 +1333,8 @@ synckolab.addressbookTools.list2Xml = function (card, fields) {
 	xml += "<distribution-list version=\"1.0\" >\n";
 	xml += " <product-id>SyncKolab, Kolab resource</product-id>\n";
 	xml += " <uid>" + this.getUID(card) + "</uid>\n";
-	xml += " <creation-date>" + synckolab.tools.text.date2String(new Date(this.getCardProperty(card, "LastModifiedDate") * 1000)) + "T" + synckolab.tools.text.time2String(new Date(this.getCardProperty(card, "LastModifiedDate") * 1000)) + "Z</creation-date>\n";
-	xml += " <last-modification-date>" + synckolab.tools.text.date2String(new Date(this.getCardProperty(card, "LastModifiedDate") * 1000)) + "T" + synckolab.tools.text.time2String(new Date(this.getCardProperty(card, "LastModifiedDate") * 1000)) + "Z</last-modification-date>\n";
+	xml += " <creation-date>" + synckolab.tools.text.calDateTime2String(new Date(), false, true) + "</creation-date>\n";
+	xml += " <last-modification-date>"  + synckolab.tools.text.calDateTime2String(new Date(), false, true) + "</last-modification-date>\n";
 
 	// default: public - tbird doesnt know of other types of list like private
 	xml += " <sensitivity>public</sensitivity>\n";
@@ -1499,11 +1499,11 @@ synckolab.addressbookTools.getXmlProperty = function(card, field, nodeName, node
 	
 	var xml = "";
 	if(nodeName2) {
-		xml += "<" + nodeName + ">\n";
+		xml += " <" + nodeName + ">\n";
 		xml += "  " + synckolab.tools.text.nodeWithContent(nodeName2, this.getCardProperty(card, field));
-		xml += "</" + nodeName + ">\n";
+		xml += " </" + nodeName + ">\n";
 	} else {
-		xml += " " + synckolab.tools.text.nodeWithContent(nodeName, this.getCardProperty(card, field)) + "\n";
+		xml += " " + synckolab.tools.text.nodeWithContent(nodeName, this.getCardProperty(card, field));
 	}
 	return xml;
 };
@@ -1530,9 +1530,9 @@ synckolab.addressbookTools.card2Kolab3 = function (card, skipHeader, fields) {
 	}
 	
 	xml += "<vcard>\n";
-	xml += " <uid><uri>urn:uuid:" + synckolab.tools.text.encode4XML(this.getUID(card)) + "</uri></uid>\n";
-	xml += " <prodid><text>SyncKolab , Kolab resource</text></prodid>\n";	// TODO add version
-	xml += " <rev><timestamp>" + synckolab.tools.text.calDateTime2String(new Date(this.getCardProperty(card, "LastModifiedDate")), false, true) + "Z</timestamp></rev>\n";
+	xml += " <uid><uri>" + synckolab.tools.text.encode4XML(this.getUID(card)) + "</uri></uid>\n";
+	xml += " <prodid><text>SyncKolab " + synckolab.config.version + ", Kolab resource</text></prodid>\n";	// TODO add version
+	xml += " <rev><timestamp>" + synckolab.tools.text.calDateTime2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000), false, true) + "Z</timestamp></rev>\n";
 	
 	// ??
 	//xml += synckolab.tools.text.nodeWithContent("categories", this.getCardProperty(card, "Category"), false);
@@ -1554,7 +1554,6 @@ synckolab.addressbookTools.card2Kolab3 = function (card, skipHeader, fields) {
 		}
 
 	}
-	xml += this.getXmlProperty(card, "FirstName", "given");
 	xml += synckolab.tools.text.nodeWithContent("organization", this.getCardProperty(card, "Company"), false);
 
 	xml += this.getXmlProperty(card, "WebPage1", "url", "uri");
