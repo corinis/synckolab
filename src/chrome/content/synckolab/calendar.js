@@ -626,7 +626,7 @@ synckolab.Calendar = {
 		var calComp;
 
 		if (this.gConfig.type !== "task" && newEvent.startDate) {
-			info += " (" + newEvent.startDate + ")";
+			info += " (" + newEvent.startDate.dateTime + ")";
 		}
 		this.curItemInListContent.setAttribute("label", info);
 
@@ -645,7 +645,7 @@ synckolab.Calendar = {
 		// get event from calendar based on the uid - and convert to json
 		foundEvent = synckolab.calendarTools.event2json(this.calTools.findEvent(this.gCalDB, newEvent.uid), this.gConfig.type === "task");
 		
-		synckolab.tools.logMessage("findevent returned :" + foundEvent + "(" + (foundEvent === null ? 'null' : foundEvent.uid) + ") for " + newEvent.uid + " caching " + this.gCalDB.length() + " events", synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
+		synckolab.tools.logMessage("findevent returned :" + newEvent.uid + "(" + (foundEvent === null ? 'null' : foundEvent.uid) + ") for " + newEvent.uid + " caching " + this.gCalDB.length() + " events", synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 
 		// get the dbfile from the local disk
 		var idxEntry = synckolab.tools.file.getSyncDbFile(this.gConfig, newEvent.uid);
@@ -678,7 +678,7 @@ synckolab.Calendar = {
 
 				// add the new event
 				try {
-					synckolab.tools.logMessage("adding obj with startdate:" + tmpEventObj.startDate, synckolab.global.LOG_CAL + synckolab.global.LOG_INFO);
+					synckolab.tools.logMessage("adding obj with startdate:" + tmpEventObj.startDate.dateTime, synckolab.global.LOG_CAL + synckolab.global.LOG_INFO);
 					
 					this.gConfig.calendar.addItem(tmpEventObj, this.gEvents);
 					// also add to the hash-database

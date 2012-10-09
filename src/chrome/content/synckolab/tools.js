@@ -124,6 +124,8 @@ scrollToBottom : function (itemList)
 
 parseXml: function(content) {
 	var parser = Components.classes["@mozilla.org/xmlextras/domparser;1"].getService(Components.interfaces.nsIDOMParser);
+	// decode utf-8
+	content = synckolab.tools.text.utf8.decode(content);
 	return parser.parseFromString(content, "text/xml");
 },
 
