@@ -31,7 +31,7 @@ test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
 	}
 });	
 */
-	var testFiles = ["complex.ics.mime"];
+	var testFiles = ["event.complex.mime"];
 	
 	
 	var content, entry, jsonEntry;

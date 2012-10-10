@@ -1,0 +1,13 @@
+{
+  "synckolab": "3.0.0",
+  "type": "contact",
+  "isMailList": false,
+  "ts": 1349900714929,
+  "UUID": "urn: uuid:ebf6fdc2-1149-11e2-841b-000476ed9009",
+  "DisplayName": "Hans Wurst",
+  "FirstName": "Wurst",
+  "LastName": "Hans",
+  "HomePhone": "+49123456789",
+  "PrimaryEmail": "hans@wurst.de",
+  "sha1": "c4ea78596ac0cf988a5d6dac68f1510b9ef66b13"
+}

@@ -1,0 +1,50 @@
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+From: grote2@demo.kolab.org
+To: grote2@demo.kolab.org
+Date: Tue, 09 Oct 2012 10:51:30 +0200
+X-Kolab-Type: application/x-vnd.kolab.event
+X-Kolab-Mime-Version: 3.0
+Subject: D117136572E7197A0D316A699A95BEBA-C1F477E69A6BE269
+User-Agent: Roundcube Webmail/0.9-0.11.git078c5dc7.el6.kolab_3.0
+
+--=_4cf438e90598a0b766b080e9542a1afb
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="ISO-8859-1"
+
+This is a Kolab Groupware object. To view this object you will need an emai=
+l client that understands the Kolab Groupware format. For a list of such em=
+ail clients please visit http: //www.kolab.org/
+
+
+--=_4cf438e90598a0b766b080e9542a1afb
+Content-Transfer-Encoding: 8bit
+Content-Type: application/calendar+xml; charset="UTF-8"; name="kolab.xml"
+Content-Disposition: attachment; filename="kolab.xml"
+
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<icalendar xmlns="urn: ietf:params:xml:ns:icalendar-2.0">
+
+  <vcalendar>
+    <properties>
+      <prodid>
+        <text>Libkolabxml-0.8.1</text>
+      </prodid>
+      <version>
+        <text>2.0</text>
+      </version>
+      <x-kolab-version>
+        <text>3.0dev1</text>
+      </x-kolab-version>
+    </properties>
+    <components>
+      <vevent>
+        <properties>
+          <uid>
+            <text>D117136572E7197A0D316A699A95BEBA-C1F477E69A6BE269</text>
+          </uid>
+          <created>
+            <date-time>2012-10-09T08: 51:25Z</date-time> </created> <dtstamp> <date-time>2012-10-09T10:51:30Z</date-time> </dtstamp> <sequence> <integer>3</integer> </sequence> <class> <text>PUBLIC</text> </class> <dtstart> <parameters> <tzid> <text>/kolab.org/Europe/Paris</text> </tzid> </parameters> <date-time>2012-10-09T11:00:00</date-time> </dtstart> <dtend> <parameters> <tzid> <text>/kolab.org/Europe/Paris</text> </tzid> </parameters> <date-time>2012-10-09T12:30:00</date-time> </dtend> <summary> <text>icedove test</text> </summary> <organizer> <parameters/> <cal-address>mailto:%3Cgrote2%40demo%2Ekolab%2Eorg%3E</cal-address> </organizer> </properties> </vevent> </components> </vcalendar>
+
+
+--=_4cf438e90598a0b766b080e9542a1afb--

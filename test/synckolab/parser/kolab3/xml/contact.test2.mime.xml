@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<vcards xmlns="urn:ietf:params:xml:ns:vcard-4.0">
+<vcard>
+ <uid><uri>urn: uuid:ebf6fdc2-1149-11e2-841b-000476ed9009</uri></uid>
+ <prodid><text>SyncKolab 3.0.0, Kolab resource</text></prodid>
+ <rev><timestamp>19700101T000000ZZ</timestamp></rev>
+ <n>
+   <given>Wurst</given>
+   <surname>Hans</surname>
+ </n>
+  <fn><text>Hans Wurst</text></fn>
+ <tel>
+  <parameters><type><text>home</text></type></parameters>
+  <text>+49123456789</text>
+ </tel>
+ <email>
+  <parameters><pref><integer>1</integer></pref></parameters>
+  <text>hans@wurst.de</text>
+ </email>
+ <x-custom><identifier>X-AllowRemoteContent</identifier><value>false</value></x-custom>
+</vcard>
+</vcards>

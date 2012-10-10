@@ -12,7 +12,7 @@ load("test/lib/testOverride.js");
 
 test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
 	equal(null, synckolab.addressbookTools.parseMessageContent(null), "parsing a null message");
-	var testFiles = ["simple.vcf.mime","complex.vcf.mime"];
+	var testFiles = ["contact.simple.mime","contact.complex.mime","contact.test.mime","contact.test2.mime"];
 	
 	var content, entry, jsonEntry;
 	
@@ -36,7 +36,7 @@ test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
 	}
 });	
 /*
-	var testFiles = ["simple.vcf.mime"];
+	var testFiles = ["contact.test.mime"];
 	
 	
 	var content, entry, jsonEntry;
@@ -52,13 +52,15 @@ test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
 		print(JSON.stringify(entry, null, '  '))
 		// json -> kolab 3 xml
 		content = synckolab.addressbookTools.card2Kolab3(entry);
+		print("=== parsed XML");
+		print(content);
 		xmlcontent = readFile("test/synckolab/parser/kolab3/xml/"+src + ".xml");
 		if (xmlcontent.replace(/[\n\r\t ]/g, "").length != content.replace(/[\n\r\t ]/g, "").length) {
 			var diff = diffString(xmlcontent, content)
 			print("DIFF FOUND:"+ xmlcontent.replace(/[\n\r\t ]/g, "").length + " vs. "+ content.replace(/[\n\r\t ]/g, "").length +"\n" + diff);
 		}
 	}
-	*/
 
 
 
+*/

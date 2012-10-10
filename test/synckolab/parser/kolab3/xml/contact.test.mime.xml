@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<vcards xmlns="urn:ietf:params:xml:ns:vcard-4.0">
+<vcard>
+ <uid><uri>urn:uuid:e79e08cc-0f02-11e2-9e3c-000476ed9009</uri></uid>
+ <prodid><text>SyncKolab 3.0.0, Kolab resource</text></prodid>
+ <rev><timestamp>19700101T000000ZZ</timestamp></rev>
+ <note>
+    <text>multi line
+notes
+with empty</text>
+ </note>
+ <n>
+   <given>lastname</given>
+   <surname>firstname</surname>
+ </n>
+  <fn><text>firstname lastname</text></fn>
+ <bday>  <date-time>2042</date-time>
+</bday>
+ <tel>
+  <parameters><type><text>home</text></type></parameters>
+  <text>+43 homephone</text>
+ </tel>
+ <email>
+  <parameters><pref><integer>1</integer></pref></parameters>
+  <text>email1@test.com</text>
+ </email>
+ <adr>
+  <parameters><type><text>home</text></type></parameters>
+   <street>homestreet</street>
+   <locality>homecity</locality>
+   <region>homestate</region>
+   <code>1234</code>
+   <country>homecountry</country>
+ </adr>
+ <x-custom><identifier>X-AllowRemoteContent</identifier><value>false</value></x-custom>
+</vcard>
+</vcards>
