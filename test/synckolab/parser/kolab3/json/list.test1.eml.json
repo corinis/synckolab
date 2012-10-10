@@ -1,0 +1,33 @@
+{
+ "synckolab": "3.0.0",
+ "type": "maillist",
+ "isMailList": true,
+ "ts": 1349908157804,
+ "UUID": "list_name",
+ "DisplayName": "list-name",
+ "Notes": "list-description",
+ "NickName": "list-nickname",
+ "contacts": [
+  {
+   "synckolab": "3.0.0",
+   "listMember": true,
+   "type": "contact",
+   "isMailList": false,
+   "ts": 1349908157831,
+   "DisplayName": "testöä lastname",
+   "PrimaryEmail": "email@mail.com",
+   "UUID": "urn:uuid:pas-id-1D84CEA337CD1878"
+  },
+  {
+   "synckolab": "3.0.0",
+   "listMember": true,
+   "type": "contact",
+   "isMailList": false,
+   "ts": 1349908157832,
+   "DisplayName": "cont2#öüä&$",
+   "PrimaryEmail": "weird@email.com",
+   "UUID": "urn:uuid:pas-id-A4E937D838A897AD"
+  }
+ ],
+ "sha1": "8d2e5e0088530d5fbe9f6acc40a5e3eb2c094ec7"
+} 

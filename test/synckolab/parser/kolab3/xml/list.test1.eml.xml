@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcard>
+ <product-id>SyncKolab 3.0.0, Kolab resource</product-id>
+ <uid>list_name</uid>
+ <creation-date>20121010T233013Z</creation-date>
+ <last-modification-date>20121010T233013Z</last-modification-date>
+ <sensitivity>public</sensitivity>
+ <name>list-name</name>
+ <notes><text>list-description</text></notes>
+ <nickname>list-nickname</nickname>
+ <member>
+     <dn><text>testöä lastname</text></dn>
+     <email><text>email@mail.com</text></email>
+     <uid><urn>urn:uuid:pas-id-1D84CEA337CD1878</urn></uid>
+ </member>
+ <member>
+     <dn><text>cont2#öüä&amp;$</text></dn>
+     <email><text>weird@email.com</text></email>
+     <uid><urn>urn:uuid:pas-id-A4E937D838A897AD</urn></uid>
+ </member>
+</vcard>
+</vcards>

@@ -31,6 +31,7 @@ test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
 	}
 });	
 */
+
 	var testFiles = ["event.complex.mime"];
 	
 	

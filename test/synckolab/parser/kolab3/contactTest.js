@@ -12,7 +12,7 @@ load("test/lib/testOverride.js");
 
 test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
 	equal(null, synckolab.addressbookTools.parseMessageContent(null), "parsing a null message");
-	var testFiles = ["contact.simple.mime","contact.complex.mime","contact.test.mime","contact.test2.mime"];
+	var testFiles = ["contact.simple.mime","contact.complex.mime","contact.test.mime","contact.test2.mime", "list.test1.eml"];
 	
 	var content, entry, jsonEntry;
 	
@@ -27,7 +27,11 @@ test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
 		equal(synckolab.tools.equalsObject(entry, jsonEntry), true, src);
 		
 		// json -> kolab 3 xml
-		content = synckolab.addressbookTools.card2Kolab3(entry);
+		if(entry.type === "maillist") {
+			content = synckolab.addressbookTools.list2Kolab3(entry);
+		} else {
+			content = synckolab.addressbookTools.card2Kolab3(entry);
+		}
 		xmlcontent = readFile("test/synckolab/parser/kolab3/xml/"+src + ".xml");
 		if (xmlcontent.replace(/[\n\r\t ]/g, "").length != content.replace(/[\n\r\t ]/g, "").length) {
 			var diff = diffString(xmlcontent, content)
@@ -36,7 +40,7 @@ test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
 	}
 });	
 /*
-	var testFiles = ["contact.test.mime"];
+	var testFiles = ["list.test1.eml"];
 	
 	
 	var content, entry, jsonEntry;
@@ -51,7 +55,11 @@ test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
 		entry = synckolab.addressbookTools.parseMessageContent(content);
 		print(JSON.stringify(entry, null, '  '))
 		// json -> kolab 3 xml
-		content = synckolab.addressbookTools.card2Kolab3(entry);
+		if(entry.type === "maillist") {
+			content = synckolab.addressbookTools.list2Kolab3(entry);
+		} else {
+			content = synckolab.addressbookTools.card2Kolab3(entry);
+		}
 		print("=== parsed XML");
 		print(content);
 		xmlcontent = readFile("test/synckolab/parser/kolab3/xml/"+src + ".xml");
@@ -60,7 +68,6 @@ test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
 			print("DIFF FOUND:"+ xmlcontent.replace(/[\n\r\t ]/g, "").length + " vs. "+ content.replace(/[\n\r\t ]/g, "").length +"\n" + diff);
 		}
 	}
-
 
 
 */

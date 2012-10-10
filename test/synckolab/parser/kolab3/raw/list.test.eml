@@ -1,0 +1,44 @@
+From: test@test.com
+Reply-To: 
+Bcc: 
+To: synckolab@no.tld
+Subject: list_name
+Date: Thu, 11 Oct 2012 00:18:01 +0200
+Content-Type: Multipart/Mixed;boundary="Boundary-00=88BC9C1E6E40C1D6"
+User-Agent: SyncKolab 2.9.0
+X-Kolab-Type: application/x-vcard.list+xml
+
+--Boundary-00=88BC9C1E6E40C1D6
+Content-Type: Text/Plain;
+ charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+
+This is a Kolab Groupware object.
+To view this object you will need an email client that can understand the Kolab Groupware format.
+For a list of such email clients please visit
+http://www.kolab.org/kolab2-clients.html
+---
+Name: list-name
+Notes: list-description
+Members: 
+
+---
+
+Notice:
+The information above is only valid, if no other client than synckolab updated this message. (ie. a client that updates the attachment but not the message)
+
+--Boundary-00=88BC9C1E6E40C1D6
+Content-Type: application/x-vcard.list+xml;
+ name="kolab.xml"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="kolab.xml"
+
+PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHZsaXN0IHZlcnNpb249IjEuMCIg
+PgogPHByb2R1Y3QtaWQ+U3luY0tvbGFiIDIuOS4wLCBLb2xhYiByZXNvdXJjZTwvcHJvZHVjdC1pZD4K
+IDx1aWQ+bGlzdF9uYW1lPC91aWQ+CiA8Y3JlYXRpb24tZGF0ZT4yMDEyMTAxMFQyMjE4MDFaPC9jcmVh
+dGlvbi1kYXRlPgogPGxhc3QtbW9kaWZpY2F0aW9uLWRhdGU+MjAxMjEwMTBUMjIxODAxWjwvbGFzdC1t
+b2RpZmljYXRpb24tZGF0ZT4KIDxzZW5zaXRpdml0eT5wdWJsaWM8L3NlbnNpdGl2aXR5PgogPG5hbWU+
+bGlzdC1uYW1lPC9uYW1lPgogPG5vdGVzPjx0ZXh0Pmxpc3QtZGVzY3JpcHRpb248L3RleHQ+PC9ub3Rl
+cz4KIDxuaWNrbmFtZT5saXN0LW5pY2tuYW1lPC9uaWNrbmFtZT4KPC92bGlzdD4K
+--Boundary-00=88BC9C1E6E40C1D6--
