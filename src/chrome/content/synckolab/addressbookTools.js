@@ -603,7 +603,7 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 
 			if ((topNode.nodeType === Node.ELEMENT_NODE) && 
 					(topNode.nodeName.toUpperCase() === "DISTRIBUTION-LIST")) {
-				// TODO kolab 3
+				// kolab 3 is done like a normal vcard
 				return this.Xml2List(topNode, card);
 			}
 			// this can't be an event in Kolab XML format
@@ -1121,6 +1121,32 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 				}
 				break;
 			
+			case "MEMBER":	// kolab3: distribution list
+				
+				// set type to maillist
+				card.type = "maillist";
+				card.isMailList = true;
+				// make sure we have a collection for the contacts
+				if(!card.contacts) {
+					card.contacts = [];
+				}
+				
+				// now read the contact:
+				value = {
+						synckolab : synckolab.config.version, // synckolab version
+						listMember: true,
+						type: "contact",
+						isMailList: false,
+						DisplayName: cur.getXmlResult(["dn","text"], null),
+						PrimaryEmail: cur.getXmlResult(["email","text"], null),
+						UUID: cur.getXmlResult(["uid","uri"], null)
+				};
+				
+				if(value.UUID) {
+					card.contacts.push(value);
+				}
+				break;
+				
 			case "X-CUSTOM": // kolab3
 				tok = cur.getXmlResult("identifier", "");
 				value = cur.getXmlResult("value", "");
@@ -1168,7 +1194,8 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 				break;
 				
 				
-			// fields we "know" about but just cannot work with
+			// fields we "know" about but just cannot work with (TODO find a way to save them and restore them!)
+			case "GENDER": // kolab3
 			case "RELATED": //kolab3
 			case "CREATION-DATE":
 			case "LATITUDE":
@@ -1182,10 +1209,7 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 			case "LANGUAGE":
 			case "OFFICE-LOCATION":
 			case "FREE-BUSY-URL":
-				if (cur.firstChild === null) {
-					break;
-				}
-				this.setCardProperty(card, cur.nodeName, cur.getFirstData(), true);
+				//this.setCardProperty(card, cur.nodeName, cur.getFirstData(), true);
 				break;
 			default:
 				if (cur.firstChild === null) {
@@ -1193,7 +1217,7 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 				}
 				if (cur.nodeName !== "product-id" && cur.nodeName !== "sensitivity") {
 					// remember other fields
-					synckolab.tools.logMessage("FIELD not found: '" + cur.nodeName + "' firstData='" + cur.getFirstData()+"'", synckolab.global.LOG_WARNING + synckolab.global.LOG_AB);
+					synckolab.tools.logMessage("-- field not found: '" + cur.nodeName + "' firstData='" + cur.getFirstData()+"'", synckolab.global.LOG_WARNING + synckolab.global.LOG_AB);
 					this.setCardProperty(card, cur.nodeName, cur.getFirstData(), true);
 				}
 				break;
@@ -1211,6 +1235,9 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 	return null;
 };
 
+/**
+ * Convert a given mailing list (card) into a pojo
+ */
 synckolab.addressbookTools.list2Pojo = function (card) {
 	var pojo = {
 		synckolab : synckolab.config.version, // synckolab version
@@ -1236,7 +1263,12 @@ synckolab.addressbookTools.list2Pojo = function (card) {
 		while (lCards.hasMoreElements() && (curCard = lCards.getNext())) {
 			// get the right interface
 			var cur = curCard.QueryInterface(Components.interfaces.nsIAbCard);
-			var cardObj = {};
+			var cardObj = {
+					synckolab: synckolab.config.version,
+					listMember: true,
+					type: "contact",
+					isMailList: false
+			};
 			// only uuid is important, the rest is "nice to have"
 			cardObj.UUID = this.getUID(cur);
 			cardObj.DisplayName = this.getCardProperty(cur, "DisplayName");
@@ -1253,12 +1285,12 @@ synckolab.addressbookTools.list2Pojo = function (card) {
 /**
  * Creates xml (kolab2) out of a given card. 
  * The return is the xml as string.
- * @param card nsIAbCard: the adress book list card
- * @param fields Array: all the fields not being held in the default card
+ * @param card nsIAbCard: the adress book list as json
+ * @param cards hashmap: a hashmap containing all cards (also json)
  */
 synckolab.addressbookTools.list2Kolab3 = function (card, fields) {
 	var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-	xml += "<vlist version=\"1.0\" >\n";
+	xml += "<vcard>\n";
 	xml += " <product-id>SyncKolab " + synckolab.config.version + ", Kolab resource</product-id>\n";
 	xml += " <uid>" + this.getUID(card) + "</uid>\n";
 	xml += " <creation-date>" + synckolab.tools.text.calDateTime2String(new Date(), false, true) + "</creation-date>\n";
@@ -1277,46 +1309,26 @@ synckolab.addressbookTools.list2Kolab3 = function (card, fields) {
 	}
 
 	synckolab.tools.logMessage("going through child cards", synckolab.global.LOG_DEBUG + synckolab.global.LOG_AB);
-	var cList = this.abListObject(card);
-	var lCards = cList.childCards;
-	if (lCards) {
-		if (lCards.hasMoreElements) {
-			var curCard = null;
-			while (lCards.hasMoreElements() && (curCard = lCards.getNext())) {
-				// get the right interface
-				var cur = curCard.QueryInterface(Components.interfaces.nsIAbCard);
-				// get the uid or generate it
-				var uid = this.getUID(cur);
-				if (!uid) {
-					uid = "sk-vc-" + synckolab.tools.text.randomVcardId();
-					synckolab.addressbookTools.setUID(cur, uid);
-				}
-
-				xml += "  <member>\n";
-				if (this.haveCardProperty(cur, "DisplayName")) {
-					xml += "    " + synckolab.tools.text.nodeWithContent("display-name", this.getCardProperty(cur, "DisplayName"), false);
-				}
-				if (this.haveCardProperty(cur, "PrimaryEmail")) {
-					xml += "    " + synckolab.tools.text.nodeWithContent("smtp-address", this.getCardProperty(cur, "PrimaryEmail"), false);
-				} else if (this.haveCardProperty(cur, "SecondEmail")) {
-					xml += "    " + synckolab.tools.text.nodeWithContent("smtp-address", this.getCardProperty(cur, "SecondEmail"), false);
-				} else {
-					synckolab.tools.logMessage("List entry without an email!" + this.getUID(cur), synckolab.global.LOG_WARNING + synckolab.global.LOG_AB);
-				}
-
-				xml += "    " + synckolab.tools.text.nodeWithContent("uid", uid, false);
-				xml += "  </member>\n";
+	if(card.contacts) {
+		for(var i = 0;i < card.contacts.length; i++) {
+			var cur = card.contacts[i];
+			xml += " <member>\n";
+			if (this.haveCardProperty(cur, "DisplayName")) {
+				xml += "   " + synckolab.tools.text.nodeContainerWithContent("dn", "text", this.getCardProperty(cur, "DisplayName"), false);
 			}
-		} else {
-			synckolab.tools.logMessage("lists not supported " + xml, synckolab.global.LOG_WARNING + synckolab.global.LOG_AB);
-			return null;
+			if (this.haveCardProperty(cur, "PrimaryEmail")) {
+				xml += "   " + synckolab.tools.text.nodeContainerWithContent("email", "text", this.getCardProperty(cur, "PrimaryEmail"), false);
+			} else if (this.haveCardProperty(cur, "SecondEmail")) {
+				xml += "   " + synckolab.tools.text.nodeContainerWithContent("email", "text", this.getCardProperty(cur, "SecondEmail"), false);
+			} else {
+				synckolab.tools.logMessage("List entry without an email!" + this.getUID(cur), synckolab.global.LOG_WARNING + synckolab.global.LOG_AB);
+			}
+			xml += "   " + synckolab.tools.text.nodeContainerWithContent("uid", "urn", this.getUID(cur), false);
+			xml += " </member>\n";
 		}
-	} else {
-		synckolab.tools.logMessage("lists not supported " + xml, synckolab.global.LOG_WARNING + synckolab.global.LOG_AB);
-		return null;
 	}
 
-	xml += "</vlist>\n";
+	xml += "</vcard>\n</vcards>\n";
 	synckolab.tools.logMessage("list: " + xml, synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 
 	return xml;
@@ -2356,6 +2368,7 @@ synckolab.addressbookTools.parseMessageContent = function (message) {
 /**
  * Transform a json object into the real deal.
  * @param base the base json object
+ * @param cards a hashmap with address book objects (key = UID for reference in the list)
  * @return a thunderbird object (either nsIABCard or nsIAbDirectory)
  */
 synckolab.addressbookTools.createTBirdObject = function (base, cards) {
@@ -2378,6 +2391,12 @@ synckolab.addressbookTools.createTBirdObject = function (base, cards) {
 		if (this.haveCardProperty(base, "Notes")) {
 			card.description = this.getCardProperty(base, "Notes");
 		}
+
+		// make sure contacts exist
+		if(!base.contacts) {
+			base.contacts = [];
+		} 
+		
 		// fill the list
 		for ( var i = 0; i < base.contacts.length; i++) {
 			var listCard = cards.get(this.getUID(base.contacts[i]));
