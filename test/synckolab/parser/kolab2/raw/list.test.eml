@@ -1,0 +1,52 @@
+From: niko.berger@corinis.com
+Reply-To: 
+Bcc: 
+To: synckolab@no.tld
+Subject: list_name
+Date: Thu, 11 Oct 2012 00:20:52 +0200
+Content-Type: Multipart/Mixed;boundary="Boundary-00=173882C61DEE82C7"
+User-Agent: SyncKolab 2.9.0
+X-Kolab-Type: application/x-vnd.kolab.contact.distlist
+
+--Boundary-00=173882C61DEE82C7
+Content-Type: Text/Plain;
+ charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+
+This is a Kolab Groupware object.
+To view this object you will need an email client that can understand the Kolab Groupware format.
+For a list of such email clients please visit
+http://www.kolab.org/kolab2-clients.html
+---
+Name: list-name
+Notes: list-description
+Members: 
+
+testöä lastname <email@mail.com>
+cont2#öüä&$ <weird@email.com>
+---
+
+Notice:
+The information above is only valid, if no other client than synckolab updated this message. (ie. a client that updates the attachment but not the message)
+
+--Boundary-00=173882C61DEE82C7
+Content-Type: application/x-vnd.kolab.contact.distlist;
+ name="kolab.xml"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="kolab.xml"
+
+PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPGRpc3RyaWJ1dGlvbi1saXN0IHZl
+cnNpb249IjEuMCIgPgogPHByb2R1Y3QtaWQ+U3luY0tvbGFiLCBLb2xhYiByZXNvdXJjZTwvcHJvZHVj
+dC1pZD4KIDx1aWQ+bGlzdF9uYW1lPC91aWQ+CiA8Y3JlYXRpb24tZGF0ZT4yMDEyMTAxMFQyMjIwNTJa
+PC9jcmVhdGlvbi1kYXRlPgogPGxhc3QtbW9kaWZpY2F0aW9uLWRhdGU+MjAxMjEwMTBUMjIyMDUyWjwv
+bGFzdC1tb2RpZmljYXRpb24tZGF0ZT4KIDxzZW5zaXRpdml0eT5wdWJsaWM8L3NlbnNpdGl2aXR5Pgog
+PG5hbWU+bGlzdC1uYW1lPC9uYW1lPgogPGJvZHk+bGlzdC1kZXNjcmlwdGlvbjwvYm9keT4KIDxuaWNr
+bmFtZT5saXN0LW5pY2tuYW1lPC9uaWNrbmFtZT4KICA8bWVtYmVyPgogICAgICA8ZGlzcGxheS1uYW1l
+PnRlc3TDtsOkIGxhc3RuYW1lPC9kaXNwbGF5LW5hbWU+CiAgICAgIDxzbXRwLWFkZHJlc3M+ZW1haWxA
+bWFpbC5jb208L3NtdHAtYWRkcmVzcz4KICAgICAgPHVpZD51cm46dXVpZDpwYXMtaWQtMUQ4NENFQTMz
+N0NEMTg3ODwvdWlkPgogIDwvbWVtYmVyPgogIDxtZW1iZXI+CiAgICAgIDxkaXNwbGF5LW5hbWU+Y29u
+dDIjw7bDvMOkJmFtcDskPC9kaXNwbGF5LW5hbWU+CiAgICAgIDxzbXRwLWFkZHJlc3M+d2VpcmRAZW1h
+aWwuY29tPC9zbXRwLWFkZHJlc3M+CiAgICAgIDx1aWQ+dXJuOnV1aWQ6cGFzLWlkLUE0RTkzN0Q4MzhB
+ODk3QUQ8L3VpZD4KICA8L21lbWJlcj4KPC9kaXN0cmlidXRpb24tbGlzdD4K
+--Boundary-00=173882C61DEE82C7--
