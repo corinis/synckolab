@@ -4,6 +4,9 @@
   <uid><uri>urn:uuid:4xuyC0cyjV</uri></uid>
   <prodid><text>SyncKolab 3.0.0, Kolab resource</text></prodid>
   <rev><timestamp>19700101T000000ZZ</timestamp></rev>
+ <kind>
+   <text>individual</text>
+ </kind>
   <n>
     <given>Krause</given>
     <surname>Volker</surname>

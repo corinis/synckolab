@@ -49,6 +49,7 @@ test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
 		// json -> kolab 3 xml
 		content = synckolab.calendarTools.json2kolab3(entry);
 		print(content);
+		
 		/*
 		content = readFile("test/synckolab/parser/kolab3/json/"+src+".json");
 		jsonEntry = JSON.parse(content);

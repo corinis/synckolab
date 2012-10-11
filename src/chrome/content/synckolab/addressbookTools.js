@@ -1120,10 +1120,22 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 					this.setCardProperty(card, "PreferMailFormat", synckolab.addressbookTools.MAIL_FORMAT_HTML);
 				}
 				break;
+				
+			case "KIND": // kolab 3: individual for cards/group for mailing lists
+				if(cur.getFirstData() === "group") {
+					// set type to maillist
+					card.type = "maillist";
+					card.isMailList = true;
+					// make sure we have a collection for the contacts
+					if(!card.contacts) {
+						card.contacts = [];
+					}
+				}
+				break;
 			
 			case "MEMBER":	// kolab3: distribution list
 				
-				// set type to maillist
+				// set type to maillist (just to be sure)
 				card.type = "maillist";
 				card.isMailList = true;
 				// make sure we have a collection for the contacts
@@ -1295,6 +1307,7 @@ synckolab.addressbookTools.list2Kolab3 = function (card, fields) {
 	xml += " <uid>" + this.getUID(card) + "</uid>\n";
 	xml += " <creation-date>" + synckolab.tools.text.calDateTime2String(new Date(), false, true) + "</creation-date>\n";
 	xml += " <last-modification-date>"  + synckolab.tools.text.calDateTime2String(new Date(), false, true) + "</last-modification-date>\n";
+	xml += " <kind><text>group</text></kind>\n";
 
 	// default: public - tbird doesnt know of other types of list like private
 	xml += " <sensitivity>public</sensitivity>\n";
@@ -1543,8 +1556,9 @@ synckolab.addressbookTools.card2Kolab3 = function (card, skipHeader, fields) {
 	
 	xml += "<vcard>\n";
 	xml += " <uid><uri>" + synckolab.tools.text.encode4XML(this.getUID(card)) + "</uri></uid>\n";
-	xml += " <prodid><text>SyncKolab " + synckolab.config.version + ", Kolab resource</text></prodid>\n";	// TODO add version
+	xml += " <prodid><text>SyncKolab " + synckolab.config.version + ", Kolab resource</text></prodid>\n";
 	xml += " <rev><timestamp>" + synckolab.tools.text.calDateTime2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000), false, true) + "Z</timestamp></rev>\n";
+	xml += " <kind><text>individual</text></kind>\n";
 	
 	// ??
 	//xml += synckolab.tools.text.nodeWithContent("categories", this.getCardProperty(card, "Category"), false);

@@ -4,6 +4,9 @@
  <uid><uri>urn: uuid:ebf6fdc2-1149-11e2-841b-000476ed9009</uri></uid>
  <prodid><text>SyncKolab 3.0.0, Kolab resource</text></prodid>
  <rev><timestamp>19700101T000000ZZ</timestamp></rev>
+ <kind>
+   <text>individual</text>
+ </kind>
  <n>
    <given>Wurst</given>
    <surname>Hans</surname>

@@ -5,6 +5,9 @@
  <creation-date>20121010T233013Z</creation-date>
  <last-modification-date>20121010T233013Z</last-modification-date>
  <sensitivity>public</sensitivity>
+ <kind>
+   <text>group</text>
+ </kind>
  <name>list-name</name>
  <notes><text>list-description</text></notes>
  <nickname>list-nickname</nickname>
