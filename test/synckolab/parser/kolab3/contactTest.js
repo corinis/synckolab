@@ -33,8 +33,9 @@ test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
 			content = synckolab.addressbookTools.card2Kolab3(entry);
 		}
 		xmlcontent = readFile("test/synckolab/parser/kolab3/xml/"+src + ".xml");
-		if (xmlcontent.replace(/[\n\r\t ]/g, "").length != content.replace(/[\n\r\t ]/g, "").length) {
-			var diff = diffString(xmlcontent, content)
+		if (xmlcontent.replace(/[\n\r\t ]/g, "").length !== content.replace(/[\n\r\t ]/g, "").length) {
+			equal(xmlcontent.replace(/[\n\r\t ]/g, ""), content.replace(/[\n\r\t ]/g, ""), src);
+			var diff = diffString(xmlcontent, content);
 			print("DIFF FOUND:"+ xmlcontent.replace(/[\n\r\t ]/g, "").length + " vs. "+ content.replace(/[\n\r\t ]/g, "").length +"\n" + diff);
 		}
 	}

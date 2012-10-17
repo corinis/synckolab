@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<contact version="1.0" >
+ <product-id>SyncKolab, Kolab resource</product-id>
+ <uid>pas-id-1D84CEA337CD1878</uid>
+ <last-modification-date>1970-01-01T00:00:00Z</last-modification-date>
+ <sensitivity>public</sensitivity>
+ <body>multiline
+note with öäü!</body>
+ <name>
+  <given-name>testöä</given-name>
+  <last-name>lastnameöäü</last-name>
+  <full-name>testöä lastname</full-name>
+ </name>
+  <organization>w-org</organization>
+  <web-page>w-web</web-page>
+  <business-web-page>p-web</business-web-page>
+  <department>w-department</department>
+  <job-title>w-title</job-title>
+  <nick-name>nick</nick-name>
+  <birthday>1980-1-22</birthday>
+ <phone>
+  <type>home1</type>
+  <number>01-home</number>
+ </phone>
+ <phone>
+  <type>business1</type>
+  <number>01-work</number>
+ </phone>
+ <phone>
+  <type>fax</type>
+  <number>01-fax</number>
+ </phone>
+ <phone>
+  <type>mobile</type>
+  <number>01-mobile</number>
+ </phone>
+ <phone>
+  <type>page</type>
+  <number>01-page</number>
+ </phone>
+ <email type="primary">
+  <display-name>testöä lastname</display-name>
+  <smtp-address>email@mail.com</smtp-address>
+ </email>
+ <email>
+  <display-name>testöä lastname</display-name>
+  <smtp-address>additional@mail.com</smtp-address>
+ </email>
+ <address>
+  <type>home</type>
+  <street>priv-addr1</street>
+  <street2>priv-addr2</street2>
+  <locality>priv-city</locality>
+  <region>priv-state</region>
+  <postal-code>p123</postal-code>
+  <country>p-country</country>
+ </address>
+ <address>
+  <type>business</type>
+  <street>w-addr1</street>
+  <street2>w-addr2</street2>
+  <locality>w-city</locality>
+  <region>w-state</region>
+  <postal-code>w123</postal-code>
+  <country>w-country</country>
+ </address>
+  <custom1>cust1</custom1>
+  <custom2>cust2</custom2>
+  <custom3>cust3</custom3>
+  <allow-remote-content>true</allow-remote-content>
+</contact>

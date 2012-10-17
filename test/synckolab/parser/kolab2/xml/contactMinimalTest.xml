@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<contact version="1.0" >
+ <product-id>SyncKolab, Kolab resource</product-id>
+ <uid>sk-vc-C18A6B3AE0CD9EDC</uid>
+ <last-modification-date>1970-01-01T00:00:00Z</last-modification-date>
+ <sensitivity>public</sensitivity>
+ <name>
+  <given-name>Test</given-name>
+  <last-name>LastName</last-name>
+  <full-name>Test Lastname</full-name>
+ </name>
+ <email type="primary">
+  <display-name>Test Lastname</display-name>
+  <smtp-address>email@test.com</smtp-address>
+ </email>
+  <allow-remote-content>true</allow-remote-content>
+</contact>

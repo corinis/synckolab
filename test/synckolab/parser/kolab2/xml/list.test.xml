@@ -2,9 +2,9 @@
 <distribution-list version="1.0" >
  <product-id>SyncKolab, Kolab resource</product-id>
  <uid>list_name</uid>
- <creation-date>20121017T214612Z</creation-date>
- <last-modification-date>1970-01-01T00:00:00Z</last-modification-date>
-  <sensitivity>public</sensitivity>
+ <creation-date>20121017T231244Z</creation-date>
+  <last-modification-date>1970-01-01T00:00:00Z</last-modification-date>
+ <sensitivity>public</sensitivity>
  <name>list-name</name>
  <body>list-description</body>
  <nickname>list-nickname</nickname>

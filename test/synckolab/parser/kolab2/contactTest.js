@@ -26,6 +26,21 @@ test("skolab2 ynckolab.addressbookTools.parseMessageContent", function(){
 		jsonEntry = JSON.parse(content);
 		equal(synckolab.tools.equalsObject(entry, jsonEntry), true, src + "\n" + JSON.stringify(entry, null, " "));
 		
+		// json -> kolab 2 xml
+		/*
+		if(entry.type === "maillist") {
+			content = synckolab.addressbookTools.list2Xml(entry);
+		} else {
+			content = synckolab.addressbookTools.card2Xml(entry);
+		}
+		xmlcontent = readFile("test/synckolab/parser/kolab2/xml/"+src + ".xml");
+		if (xmlcontent.replace(/[\n\r\t ]/g, "").length !== content.replace(/[\n\r\t ]/g, "").length) {
+			equal(xmlcontent.replace(/[\n\r\t ]/g, ""), content.replace(/[\n\r\t ]/g, ""), src);
+			var diff = diffString(xmlcontent, content);
+			print("DIFF FOUND:"+ xmlcontent.replace(/[\n\r\t ]/g, "").length + " vs. "+ content.replace(/[\n\r\t ]/g, "").length +"\n" + diff);
+		}
+		*/
+
 	}
 	
 

@@ -1,13 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
- <vcards xmlns="urn:ietf:params:xml:ns:vcard-4.0">
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<vcards xmlns="urn:ietf:params:xml:ns:vcard-4.0">
 <vcard>
  <uid><text>list_name</text></uid>
  <x-kolab-version><text>3.0dev1</text></x-kolab-version>
  <prodid><text>SyncKolab 3.0.0, Kolab resource</text></prodid>
- <rev><timestamp>19700101T000000ZZ</timestamp></rev>
- <kind>
-   <text>group</text>
- </kind>
+ <rev><timestamp>20121017T224839ZZ</timestamp></rev>
+ <kind><text>group</text></kind>
  <fn><text>list-name</text></fn>
  <nickname><text>list-nickname</text></nickname>
  <member>
@@ -23,3 +21,4 @@
  <note><text>list-description</text></note>
 </vcard>
 </vcards>
+
