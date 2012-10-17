@@ -1313,9 +1313,9 @@ synckolab.addressbookTools.list2Kolab3 = function (card, fields) {
 	xml += " <kind><text>group</text></kind>\n";
 
 	// default: public - tbird doesnt know of other types of list like private
-	xml += " <sensitivity>public</sensitivity>\n";
+	//xml += " <sensitivity>public</sensitivity>\n";
 
-	xml += " <fn><text>" + synckolab.tools.text.encode4XML(this.getCardProperty(card, "DisplayName")) + "</fn></name>\n";
+	xml += " <fn><text>" + synckolab.tools.text.encode4XML(this.getCardProperty(card, "DisplayName")) + "</text></fn>\n";
 
 	if (this.haveCardProperty(card, "NickName")) {
 		xml += " <nickname><text>" + synckolab.tools.text.encode4XML(this.getCardProperty(card, "NickName")) + "</text></nickname>\n";
@@ -1376,45 +1376,25 @@ synckolab.addressbookTools.list2Xml = function (card, fields) {
 	if (this.haveCardProperty(card, "NickName")) {
 		xml += " <nickname>" + synckolab.tools.text.encode4XML(this.getCardProperty(card, "NickName")) + "</nickname>\n";
 	}
-
+	
 	synckolab.tools.logMessage("going through child cards", synckolab.global.LOG_DEBUG + synckolab.global.LOG_AB);
-	var cList = this.abListObject(card);
-	var lCards = cList.childCards;
-	if (lCards) {
-		if (lCards.hasMoreElements) {
-			var curCard = null;
-			while (lCards.hasMoreElements() && (curCard = lCards.getNext())) {
-				// get the right interface
-				var cur = curCard.QueryInterface(Components.interfaces.nsIAbCard);
-				// get the uid or generate it
-				var uid = this.getUID(cur);
-				if (!uid) {
-					uid = "sk-vc-" + synckolab.tools.text.randomVcardId();
-					synckolab.addressbookTools.setUID(cur, uid);
-				}
-
-				xml += "  <member>\n";
-				if (this.haveCardProperty(cur, "DisplayName")) {
-					xml += "    " + synckolab.tools.text.nodeWithContent("display-name", this.getCardProperty(cur, "DisplayName"), false);
-				}
-				if (this.haveCardProperty(cur, "PrimaryEmail")) {
-					xml += "    " + synckolab.tools.text.nodeWithContent("smtp-address", this.getCardProperty(cur, "PrimaryEmail"), false);
-				} else if (this.haveCardProperty(cur, "SecondEmail")) {
-					xml += "    " + synckolab.tools.text.nodeWithContent("smtp-address", this.getCardProperty(cur, "SecondEmail"), false);
-				} else {
-					synckolab.tools.logMessage("List entry without an email!" + this.getUID(cur), synckolab.global.LOG_WARNING + synckolab.global.LOG_AB);
-				}
-
-				xml += "    " + synckolab.tools.text.nodeWithContent("uid", uid, false);
-				xml += "  </member>\n";
+	if(card.contacts) {
+		for(var i = 0;i < card.contacts.length; i++) {
+			var cur = card.contacts[i];
+			xml += " <member>\n";
+			if (this.haveCardProperty(cur, "DisplayName")) {
+				xml += "   " + synckolab.tools.text.nodeWithContent("display-name", this.getCardProperty(cur, "DisplayName"), false);
 			}
-		} else {
-			synckolab.tools.logMessage("lists not supported " + xml, synckolab.global.LOG_WARNING + synckolab.global.LOG_AB);
-			return null;
+			if (this.haveCardProperty(cur, "PrimaryEmail")) {
+				xml += "   " + synckolab.tools.text.nodeWithContent("smtp-address", this.getCardProperty(cur, "PrimaryEmail"), false);
+			} else if (this.haveCardProperty(cur, "SecondEmail")) {
+				xml += "   " + synckolab.tools.text.nodeWithContent("smtp-address", this.getCardProperty(cur, "SecondEmail"), false);
+			} else {
+				synckolab.tools.logMessage("List entry without an email!" + this.getUID(cur), synckolab.global.LOG_WARNING + synckolab.global.LOG_AB);
+			}
+			xml += "   " + synckolab.tools.text.nodeWithContent("uid", this.getUID(cur), false);
+			xml += " </member>\n";
 		}
-	} else {
-		synckolab.tools.logMessage("lists not supported " + xml, synckolab.global.LOG_WARNING + synckolab.global.LOG_AB);
-		return null;
 	}
 
 	xml += "</distribution-list>\n";
@@ -1454,28 +1434,14 @@ synckolab.addressbookTools.list2Vcard = function (card, fields) {
 
 	var uidList = "";
 
-	var cList = card;
-	if (cList.addressLists) {
-		var total = cList.addressLists.length;
-		synckolab.tools.logMessage("List has " + total + " contacts", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
-		if (!total || total === 0) {
-			return null; // do not add a list without members
+	synckolab.tools.logMessage("going through child cards", synckolab.global.LOG_DEBUG + synckolab.global.LOG_AB);
+	if(card.contacts) {
+		for(var i = 0;i < card.contacts.length; i++) {
+			var cur = card.contacts[i];
+			uidList += synckolab.tools.text.nodeWithContent("uid", this.getUID(cur), false) +";";
 		}
-
-		if (total) {
-			for ( var i = 0; i < total; i++) {
-				var cur = cList.addressLists.queryElementAt(i, Components.interfaces.nsIAbCard);
-
-				// custom4 is not really necessary since there will be a smart-check
-				if (this.getUID(cur)) {
-					uidList += this.getUID(cur) + ";";
-				}
-			}
-		}
-
-	} else {
-		return null; // do not add a list without members
 	}
+
 	msg += "X-LIST:" + uidList + "\n";
 	msg += "VERSION:3.0\n";
 	msg += "END:VCARD\n\n";
