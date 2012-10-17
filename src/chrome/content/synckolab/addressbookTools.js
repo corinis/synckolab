@@ -1556,6 +1556,7 @@ synckolab.addressbookTools.card2Kolab3 = function (card, skipHeader, fields) {
 	
 	xml += "<vcard>\n";
 	xml += " <uid><uri>" + synckolab.tools.text.encode4XML(this.getUID(card)) + "</uri></uid>\n";
+	xml += " <x-kolab-version><text>3.0dev1</text></x-kolab-version>\n";
 	xml += " <prodid><text>SyncKolab " + synckolab.config.version + ", Kolab resource</text></prodid>\n";
 	xml += " <rev><timestamp>" + synckolab.tools.text.calDateTime2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000), false, true) + "Z</timestamp></rev>\n";
 	xml += " <kind><text>individual</text></kind>\n";
@@ -1564,34 +1565,68 @@ synckolab.addressbookTools.card2Kolab3 = function (card, skipHeader, fields) {
 	//xml += synckolab.tools.text.nodeWithContent("categories", this.getCardProperty(card, "Category"), false);
 	//xml += " <sensitivity>public</sensitivity>\n";
 	
-	xml += this.getXmlProperty(card, "Notes", "note", "text");
-
 	if (this.haveCardProperty(card, "FirstName") || this.haveCardProperty(card, "LastName") || this.haveCardProperty(card, "DisplayName") || this.haveCardProperty(card, "NickName")) {
-		xml += " <n>\n";
-		xml += this.getXmlProperty(card, "FirstName", "given");
-		xml += this.getXmlProperty(card, "LastName", "surname");
-		xml += " </n>\n";
-		
+		// first fn
 		if (this.haveCardProperty(card, "DisplayName")) {
 			xml += synckolab.tools.text.nodeContainerWithContent("fn", "text", this.getCardProperty(card, "DisplayName"));
 		} else if (this.haveCardProperty(card, "FirstName") || this.haveCardProperty(card, "LastName")) {
 			displayName = this.getCardProperty(card, "FirstName") + " " + this.getCardProperty(card, "LastName");
 			xml += synckolab.tools.text.nodeContainerWithContent("fn", "text", displayName);
 		}
-
+		
+		// then name
+		xml += " <n>\n";
+		xml += this.getXmlProperty(card, "LastName", "surname");
+		xml += this.getXmlProperty(card, "FirstName", "given");
+		/* also available in kolab3:
+		 <additional/>
+		 <prefix/>
+		 <suffix/>
+		*/
+		xml += " </n>\n";
+		
 	}
-	xml += synckolab.tools.text.nodeWithContent("organization", this.getCardProperty(card, "Company"), false);
+	
+	xml += this.getXmlProperty(card, "Notes", "note", "text");
+	xml += this.getXmlProperty(card, "JobTitle", "title", "text");
 
 	xml += this.getXmlProperty(card, "WebPage1", "url", "uri");
 	xml += this.getXmlProperty(card, "WebPage2", "url", "uri");
-	xml += this.getXmlProperty(card, "AimScreenName", "impp", "uri");
+
 
 	//xml += synckolab.tools.text.nodeWithContent("department", this.getCardProperty(card, "Department"), false);
 	//" <office-location>zuhaus</office-location>\n";
 	//" <profession>programmierer</profession>\n";
-	xml += this.getXmlProperty(card, "JobTitle", "title", "text");
-	xml += this.getXmlProperty(card, "NickName", "nickname", "text");
 	
+	xml += synckolab.tools.text.nodeWithContent("organization", this.getCardProperty(card, "Company"), false);
+
+
+	if (this.haveCardProperty(card, "HomeAddress") || this.haveCardProperty(card, "HomeAddress2") || this.haveCardProperty(card, "HomeCity") || this.haveCardProperty(card, "HomeState") || this.haveCardProperty(card, "HomeZipCode") || this.haveCardProperty(card, "HomeCountry")) {
+		xml += " <adr>\n";
+		xml += "  <parameters><type><text>home</text></type></parameters>\n";
+		xml += this.getXmlProperty(card, "HomeAddress", "street");
+		xml += this.getXmlProperty(card, "HomeAddress2", "street2");
+		xml += this.getXmlProperty(card, "HomeCity", "locality");
+		xml += this.getXmlProperty(card, "HomeState", "region");
+		xml += this.getXmlProperty(card, "HomeZipCode", "code");
+		xml += this.getXmlProperty(card, "HomeCountry", "country");
+		xml += " </adr>\n";
+	}
+
+	if (this.haveCardProperty(card, "WorkAddress") || this.haveCardProperty(card, "WorkAddress2") || this.haveCardProperty(card, "WorkCity") || this.haveCardProperty(card, "WorkState") || this.haveCardProperty(card, "WorkZipCode") || this.haveCardProperty(card, "WorkCountry")) {
+		xml += " <adr>\n";
+		xml += "  <parameters><type><text>work</text></type></parameters>\n";
+		xml += this.getXmlProperty(card, "WorkAddress", "street");
+		xml += this.getXmlProperty(card, "WorkAddress2", "street2");
+		xml += this.getXmlProperty(card, "WorkCity", "locality");
+		xml += this.getXmlProperty(card, "WorkState", "region");
+		xml += this.getXmlProperty(card, "WorkZipCode", "code");
+		xml += this.getXmlProperty(card, "WorkCountry", "country");
+		xml += " </adr>\n";
+	}
+
+	xml += this.getXmlProperty(card, "NickName", "nickname", "text");
+
 	var adate;
 	if (this.haveCardProperty(card, "BirthYear") && this.haveCardProperty(card, "BirthMonth") && this.haveCardProperty(card, "BirthDay")) {
 		adate = this.getCardProperty(card, "BirthYear") + this.getCardProperty(card, "BirthMonth") + this.getCardProperty(card, "BirthDay");
@@ -1602,7 +1637,27 @@ synckolab.addressbookTools.card2Kolab3 = function (card, skipHeader, fields) {
 		adate = this.getCardProperty(card, "AnniversaryYear") + "-" + this.getCardProperty(card, "AnniversaryMonth") + "-" + this.getCardProperty(card, "AnniversaryDay");
 		xml += " <anniversary>" + synckolab.tools.text.nodeWithContent("date-time", adate, false) + "</anniversary>\n";
 	}
+
+	// TODO photo name = photo - base64-Encoded
+	/*
+	xml += synckolab.tools.text.nodeWithContent("picture", this.getCardProperty(card, "PhotoName"), false);
+
+	// we can probably ignore that
+	var ptype = this.getCardProperty(card, "PhotoType");
+	if (ptype === "web" || ptype === "file") {
+		* kolab:
+		 * 1. read the file: FILENAME = this.getCardProperty(card, "PhotoName")
+		 *		found in  ~profil/Photos/FILENAME
+		 * 2. create an attachment name FILENAME with the content (base64 encoded)
+		 *
+		xml += synckolab.tools.text.nodeWithContent("picture-uri", this.getCardProperty(card, "PhotoURI"), false); // we can distinguish between file: and http: anyways
+	}
+	*/
 	
+	xml += this.getXmlProperty(card, "AimScreenName", "impp", "uri");
+
+	//xml += synckolab.tools.text.nodeWithContent("preferred-address", this.getCardProperty(card, "DefaultAddress"), false); @deprecated
+	// phone
 	if (this.haveCardProperty(card, "HomePhone")) {
 		xml += " <tel>\n";
 		xml += "  <parameters><type><text>home</text></type></parameters>\n";
@@ -1633,7 +1688,7 @@ synckolab.addressbookTools.card2Kolab3 = function (card, skipHeader, fields) {
 		xml += "  <text>" + this.getCardProperty(card, "PagerNumber") + "</text>\n";
 		xml += " </tel>\n";
 	}
-
+	// email
 	if (this.haveCardProperty(card, "PrimaryEmail")) {
 		xml += " <email>\n";
 		xml += "  <parameters><pref><integer>1</integer></pref></parameters>\n";
@@ -1648,7 +1703,8 @@ synckolab.addressbookTools.card2Kolab3 = function (card, skipHeader, fields) {
 		xml += "  <text>" + synckolab.tools.text.encode4XML(this.getCardProperty(card, "SecondEmail")) + "</text>\n";
 		xml += " </email>\n";
 	}
-
+	// custom fields are last
+	
 	// if the mail format is set... 
 	if (this.getCardProperty(card, "PreferMailFormat") && this.getCardProperty(card, "PreferMailFormat") !== synckolab.addressbookTools.MAIL_FORMAT_UNKNOWN) {
 		if (Number(this.getCardProperty(card, "PreferMailFormat")) === this.MAIL_FORMAT_PLAINTEXT) {
@@ -1657,48 +1713,6 @@ synckolab.addressbookTools.card2Kolab3 = function (card, skipHeader, fields) {
 			xml += "<x-custom><identifier>X-PreferMailFormat</identifier><value>html</value></x-custom>\n";
 		}
 	}
-
-	if (this.haveCardProperty(card, "HomeAddress") || this.haveCardProperty(card, "HomeAddress2") || this.haveCardProperty(card, "HomeCity") || this.haveCardProperty(card, "HomeState") || this.haveCardProperty(card, "HomeZipCode") || this.haveCardProperty(card, "HomeCountry")) {
-		xml += " <adr>\n";
-		xml += "  <parameters><type><text>home</text></type></parameters>\n";
-		xml += this.getXmlProperty(card, "HomeAddress", "street");
-		xml += this.getXmlProperty(card, "HomeAddress2", "street2");
-		xml += this.getXmlProperty(card, "HomeCity", "locality");
-		xml += this.getXmlProperty(card, "HomeState", "region");
-		xml += this.getXmlProperty(card, "HomeZipCode", "code");
-		xml += this.getXmlProperty(card, "HomeCountry", "country");
-		xml += " </adr>\n";
-	}
-
-	if (this.haveCardProperty(card, "WorkAddress") || this.haveCardProperty(card, "WorkAddress2") || this.haveCardProperty(card, "WorkCity") || this.haveCardProperty(card, "WorkState") || this.haveCardProperty(card, "WorkZipCode") || this.haveCardProperty(card, "WorkCountry")) {
-		xml += " <adr>\n";
-		xml += "  <parameters><type><text>work</text></type></parameters>\n";
-		xml += this.getXmlProperty(card, "WorkAddress", "street");
-		xml += this.getXmlProperty(card, "WorkAddress2", "street2");
-		xml += this.getXmlProperty(card, "WorkCity", "locality");
-		xml += this.getXmlProperty(card, "WorkState", "region");
-		xml += this.getXmlProperty(card, "WorkZipCode", "code");
-		xml += this.getXmlProperty(card, "WorkCountry", "country");
-		xml += " </adr>\n";
-	}
-
-	// TODO photo name = photo - base64-Encoded
-	/*
-	xml += synckolab.tools.text.nodeWithContent("picture", this.getCardProperty(card, "PhotoName"), false);
-
-	// we can probably ignore that
-	var ptype = this.getCardProperty(card, "PhotoType");
-	if (ptype === "web" || ptype === "file") {
-		* kolab:
-		 * 1. read the file: FILENAME = this.getCardProperty(card, "PhotoName")
-		 *		found in  ~profil/Photos/FILENAME
-		 * 2. create an attachment name FILENAME with the content (base64 encoded)
-		 *
-		xml += synckolab.tools.text.nodeWithContent("picture-uri", this.getCardProperty(card, "PhotoURI"), false); // we can distinguish between file: and http: anyways
-	}
-	*/
-
-	//xml += synckolab.tools.text.nodeWithContent("preferred-address", this.getCardProperty(card, "DefaultAddress"), false); @deprecated
 	
 	if (this.getCardProperty(card, "Custom1")) {
 		xml += " <x-custom><identifier>X-Custom1</identifier><value>"+this.getCardProperty(card, "Custom1")+"</value></x-custom>\n";
