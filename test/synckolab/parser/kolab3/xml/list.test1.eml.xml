@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcard>
- <product-id>SyncKolab 3.0.0, Kolab resource</product-id>
- <uid>list_name</uid>
- <creation-date>20121010T233013Z</creation-date>
- <last-modification-date>20121010T233013Z</last-modification-date>
- <sensitivity>public</sensitivity>
+ <uid><text>list_name</text></uid>
+ <x-kolab-version><text>3.0dev1</text></x-kolab-version>
+ <prodid><text>SyncKolab 3.0.0, Kolab resource</text></prodid>
+ <rev><timestamp>19700101T000000ZZ</timestamp></rev>
  <kind>
    <text>group</text>
  </kind>
- <name>list-name</name>
- <notes><text>list-description</text></notes>
- <nickname>list-nickname</nickname>
+ <note><text>list-description</text></note>
+ <fn><text>list-name</text></fn>
+ <nickname><text>list-nickname</text></nickname>
  <member>
      <dn><text>testöä lastname</text></dn>
      <email><text>email@mail.com</text></email>
