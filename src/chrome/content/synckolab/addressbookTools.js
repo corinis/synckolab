@@ -1301,24 +1301,22 @@ synckolab.addressbookTools.list2Pojo = function (card) {
  * @param cards hashmap: a hashmap containing all cards (also json)
  */
 synckolab.addressbookTools.list2Kolab3 = function (card, fields) {
-	var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+	var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n";
+	xml += "<vcards xmlns=\"urn:ietf:params:xml:ns:vcard-4.0\">\n";
 	xml += "<vcard>\n";
-	xml += " <product-id>SyncKolab " + synckolab.config.version + ", Kolab resource</product-id>\n";
-	xml += " <uid>" + this.getUID(card) + "</uid>\n";
-	xml += " <creation-date>" + synckolab.tools.text.calDateTime2String(new Date(), false, true) + "</creation-date>\n";
-	xml += " <last-modification-date>"  + synckolab.tools.text.calDateTime2String(new Date(), false, true) + "</last-modification-date>\n";
+	xml += " <uid><text>" + this.getUID(card) + "</text></uid>\n";
+	xml += " <x-kolab-version><text>3.0dev1</text></x-kolab-version>\n";
+	xml += " <prodid><text>SyncKolab " + synckolab.config.version + ", Kolab resource</text></prodid>\n";
+	xml += " <rev><timestamp>" + synckolab.tools.text.calDateTime2String(new Date(), false, true) + "Z</timestamp></rev>\n";
 	xml += " <kind><text>group</text></kind>\n";
 
 	// default: public - tbird doesnt know of other types of list like private
 	xml += " <sensitivity>public</sensitivity>\n";
 
-	xml += " <name>" + synckolab.tools.text.encode4XML(this.getCardProperty(card, "DisplayName")) + "</name>\n";
+	xml += " <fn><text>" + synckolab.tools.text.encode4XML(this.getCardProperty(card, "DisplayName")) + "</fn></name>\n";
 
-	if (this.haveCardProperty(card, "Notes")) {
-		xml += " <notes><text>" + synckolab.tools.text.encode4XML(this.getCardProperty(card, "Notes")) + "</text></notes>\n";
-	}
 	if (this.haveCardProperty(card, "NickName")) {
-		xml += " <nickname>" + synckolab.tools.text.encode4XML(this.getCardProperty(card, "NickName")) + "</nickname>\n";
+		xml += " <nickname><text>" + synckolab.tools.text.encode4XML(this.getCardProperty(card, "NickName")) + "</text></nickname>\n";
 	}
 
 	synckolab.tools.logMessage("going through child cards", synckolab.global.LOG_DEBUG + synckolab.global.LOG_AB);
@@ -1339,6 +1337,10 @@ synckolab.addressbookTools.list2Kolab3 = function (card, fields) {
 			xml += "   " + synckolab.tools.text.nodeContainerWithContent("uid", "urn", this.getUID(cur), false);
 			xml += " </member>\n";
 		}
+	}
+	
+	if (this.haveCardProperty(card, "Notes")) {
+		xml += " <note><text>" + synckolab.tools.text.encode4XML(this.getCardProperty(card, "Notes")) + "</text></note>\n";
 	}
 
 	xml += "</vcard>\n</vcards>\n";

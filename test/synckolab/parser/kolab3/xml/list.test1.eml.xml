@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+ <vcards xmlns="urn:ietf:params:xml:ns:vcard-4.0">
 <vcard>
  <uid><text>list_name</text></uid>
  <x-kolab-version><text>3.0dev1</text></x-kolab-version>
@@ -7,7 +8,6 @@
  <kind>
    <text>group</text>
  </kind>
- <note><text>list-description</text></note>
  <fn><text>list-name</text></fn>
  <nickname><text>list-nickname</text></nickname>
  <member>
@@ -20,5 +20,6 @@
      <email><text>weird@email.com</text></email>
      <uid><urn>urn:uuid:pas-id-A4E937D838A897AD</urn></uid>
  </member>
+ <note><text>list-description</text></note>
 </vcard>
 </vcards>
