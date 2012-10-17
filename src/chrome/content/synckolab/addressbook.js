@@ -64,6 +64,8 @@ synckolab.AddressBook = {
 
 	forceServerCopy: false,
 	forceLocalCopy: false,
+	
+	processedIds: [],	// remember all processed ids to remove duplicates
 
 	/**
 	 * add the address book specific configuration to the config object
@@ -277,7 +279,6 @@ synckolab.AddressBook = {
 					synckolab.tools.fillMessageLookup(cConfig.msgList, config, synckolab.addressbookTools.parseMessageContent);
 				}
 
-
 				synckolab.global.triggerRunning = true;
 
 				// get the dbfile from the local disk
@@ -361,6 +362,8 @@ synckolab.AddressBook = {
 		// get the sync config
 		this.gConfig = config;
 		
+		// clear the already processed ids
+		this.processedIds = [];
 		
 		// clean out cardDb to avoid conflicts with autosync
 		this.gConfig.cardDb = null;
@@ -476,7 +479,9 @@ synckolab.AddressBook = {
 					message.config.cardDb.put(cUID, card);
 				}
 			}
-			message.config.addressBook.addMailList(synckolab.addressbookTools.createTBirdObject(newCard, message.config.cardDb));
+			// add the mailing list: this will also check each entry and link it - if not create it
+			synckolab.addressbookTools.addMailingList(message.config.addressBook, newCard, message.config.cardDb);
+			
 			// also add to the hash-database
 			//this.gCardDB.put(this.tools.getUID(newCard), newCard);
 		}
@@ -633,6 +638,7 @@ synckolab.AddressBook = {
 		// parse the new item
 		newCard = this.tools.parseMessageContent(fileContent);
 		
+		
 		if (newCard && newCard.isMailList)
 		{
 			synckolab.tools.logMessage("got mailing list " + this.tools.getUID(newCard), synckolab.global.LOG_WARNING + synckolab.global.LOG_AB);
@@ -641,7 +647,7 @@ synckolab.AddressBook = {
 		if (newCard && newCard.isMailList)
 		{
 			// skip mailing lists
-			this.curItemInListContent.setAttribute("label", synckolab.global.strBundle.getString("mailingList") + " " + this.tools.getUID(newCard));
+			this.curItemInListContent.setAttribute("label", synckolab.global.strBundle.getString("mailingList") + " <" + newCard.DisplayName + ">");
 			this.curItemInListId.setAttribute("label", synckolab.global.strBundle.getString("noChange"));
 			synckolab.tools.logMessage("skipping mailing lists!", synckolab.global.LOG_WARNING + synckolab.global.LOG_AB);
 			return null;
@@ -662,7 +668,7 @@ synckolab.AddressBook = {
 			
 			// since we disabled mailing list - wont come here
 			if (newCard.type === "maillist") {
-				this.curItemInListContent.setAttribute("label", synckolab.global.strBundle.getString("mailingList") + " " + this.tools.getCardProperty(newCard, "Name"));
+				this.curItemInListContent.setAttribute("label", synckolab.global.strBundle.getString("mailingList") + " <" + newCard.DisplayName + ">");
 			} else if (this.tools.getCardProperty(newCard, "DisplayName") !== "") {
 				this.curItemInListContent.setAttribute("label", this.tools.getCardProperty(newCard, "DisplayName") + 
 						" <" + this.tools.getCardProperty(newCard, "PrimaryEmail","---") + ">");
@@ -672,6 +678,18 @@ synckolab.AddressBook = {
 						" <" + this.tools.getCardProperty(newCard, "PrimaryEmail","---") + ">");
 			}
 
+			// check if we have this id already
+			var pi;
+			for(pi = 0; pi < this.processedIds.length; pi++) {
+				if(this.processedIds[pi] === this.tools.getUID(newCard)) {
+					synckolab.tools.logMessage("removing duplicate " + this.tools.getUID(newCard), synckolab.global.LOG_DEBUG + synckolab.global.LOG_AB);
+					this.curItemInListStatus.setAttribute("label", synckolab.global.strBundle.getString("deleteOnServer"));
+					return "DELETEME";
+				}
+			}
+			// add the id to the list of processed ids
+			this.processedIds.push(this.tools.getUID(newCard));
+			
 			// ok lets see if we have this one already
 			var foundCard = this.gCardDB.get(this.gCurUID);
 
@@ -694,8 +712,10 @@ synckolab.AddressBook = {
 					if (newCard.type === "maillist")
 					{
 						synckolab.tools.logMessage("list is new, add to address book: " + this.tools.getUID(newCard), synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
-						// add mailing lists- pass the gCardDB with its nsIAbCard
-						this.gConfig.addressBook.addMailList(synckolab.addressbookTools.createTBirdObject(newCard, this.gCardDB));
+
+						// add the mailing list: this will also check each entry and link it - if not create it
+						synckolab.addressbookTools.addMailingList(this.gConfig.addressBook, newCard, this.gCardDB);
+						
 						// also add to the hash-database
 						this.gCardDB.put(this.tools.getUID(newCard), newCard);
 					}
@@ -857,28 +877,47 @@ synckolab.AddressBook = {
 						ulDelList = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
 						ulDelList.appendElement(foundCard, false);
 
-						try
+						// server changed - update local
+						if (foundCard.isMailList)
 						{
-							this.gConfig.addressBook.deleteCards(ulDelList);
-
-							// also copy the image
-							pName = this.tools.getCardProperty(newCard, "PhotoName");
-							if (pName && pName !== "" && pName !== "null")
-							{
-								// in case the copy failed - clear the photoname
-								if (this.tools.copyImage(pName) === false) {
-									this.tools.setCardProperty(newCard, "PhotoName", "");
-								}
-							}
 							
-							// add the new one
-							this.gConfig.addressBook.addCard(synckolab.addressbookTools.createTBirdObject(newCard));
+							try
+							{
+								this.gConfig.addressBook.deleteDirectory(foundCard);
+								// add the mailing list: this will also check each entry and link it - if not create it
+								synckolab.addressbookTools.addMailingList(this.gConfig.addressBook, newCard, this.gCardDB);
+								
+								// also add to the hash-database
+								this.gCardDB.put(this.tools.getUID(newCard), newCard);
+							} catch (delMailList)
+							{
+								synckolab.tools.logMessage("problem with local update for - skipping" + this.tools.getUID(foundCard), synckolab.global.LOG_WARNING + synckolab.global.LOG_AB);
+							}
 						}
-						catch (de)
+						else
 						{
-							synckolab.tools.logMessage("problem with local update for - skipping" + this.tools.getUID(foundCard), synckolab.global.LOG_WARNING + synckolab.global.LOG_AB);
-						}
-						
+							try
+							{
+								this.gConfig.addressBook.deleteCards(ulDelList);
+	
+								// also copy the image
+								pName = this.tools.getCardProperty(newCard, "PhotoName");
+								if (pName && pName !== "" && pName !== "null")
+								{
+									// in case the copy failed - clear the photoname
+									if (this.tools.copyImage(pName) === false) {
+										this.tools.setCardProperty(newCard, "PhotoName", "");
+									}
+								}
+								
+								// add the new one
+								this.gConfig.addressBook.addCard(synckolab.addressbookTools.createTBirdObject(newCard));
+							}
+							catch (de)
+							{
+								synckolab.tools.logMessage("problem with local update for - skipping" + this.tools.getUID(foundCard), synckolab.global.LOG_WARNING + synckolab.global.LOG_AB);
+							}
+						}	
 						// write the current content in the sync-db file
 						synckolab.tools.writeSyncDBFile(idxEntry, newCard);
 					}
@@ -913,12 +952,13 @@ synckolab.AddressBook = {
 						
 						try
 						{
-							//var delMailListlist = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
-							//delMailListlist.appendElement(foundCard, false);
-							//this.gConfig.addressBook.deleteCards(delMailListlist);
 							this.gConfig.addressBook.deleteDirectory(foundCard);
-							this.gConfig.addressBook.addMailList(synckolab.addressbookTools.createTBirdObject(newCard, this.gCardDB));
-						} catch (delMailList)
+							// add the mailing list: this will also check each entry and link it - if not create it
+							synckolab.addressbookTools.addMailingList(this.gConfig.addressBook, newCard, this.gCardDB);
+							
+							// also add to the hash-database
+							this.gCardDB.put(this.tools.getUID(newCard), newCard);
+						} catch (delMailList2)
 						{
 							synckolab.tools.logMessage("problem with local update for - skipping" + this.tools.getUID(foundCard), synckolab.global.LOG_WARNING + synckolab.global.LOG_AB);
 						}
@@ -1078,7 +1118,7 @@ synckolab.AddressBook = {
 			this.curItemInListId.setAttribute("label", this.tools.getUID(curItem));
 			this.curItemInListStatus.setAttribute("label", synckolab.global.strBundle.getString("addToServer"));
 			if (curItem.isMailList) {
-				this.curItemInListContent.setAttribute("label", synckolab.global.strBundle.getString("mailingList") + " " + this.tools.getCardProperty(curItem, "Name"));
+				this.curItemInListContent.setAttribute("label", synckolab.global.strBundle.getString("mailingList") + " <" + curItem.DisplayName + ">");
 			} else {
 				this.curItemInListContent.setAttribute("label", cur.firstName + " " + curItem.lastName + " <" + curItem.primaryEmail + ">");
 			}
@@ -1155,7 +1195,7 @@ synckolab.AddressBook = {
 					this.curItemInListId.setAttribute("label", this.tools.getUID(curItem));
 					this.curItemInListStatus.setAttribute("label", synckolab.global.strBundle.getString("localDelete"));
 					if (curItem.isMailList) {
-						this.curItemInListContent.setAttribute("label", synckolab.global.strBundle.getString("mailingList") + " " + this.tools.getUID(curItem));
+						this.curItemInListContent.setAttribute("label", synckolab.global.strBundle.getString("mailingList") + " <" + curItem.DisplayName + ">");
 					} else {
 						this.curItemInListContent.setAttribute("label", curItem.firstName + " " + curItem.lastName + " <" + curItem.primaryEmail + ">");
 					}
@@ -1188,7 +1228,7 @@ synckolab.AddressBook = {
 					this.curItemInListId.setAttribute("label", this.tools.getUID(curItem));
 					this.curItemInListStatus.setAttribute("label", synckolab.global.strBundle.getString("addToServer"));
 					if (curItem.isMailList) {
-						this.curItemInListContent.setAttribute("label", synckolab.global.strBundle.getString("mailingList") + " " + this.tools.getUID(curItem));
+						this.curItemInListContent.setAttribute("label", synckolab.global.strBundle.getString("mailingList") + " <" + curItem.DisplayName + ">");
 					} else {
 						this.curItemInListContent.setAttribute("label", curItem.firstName + " " + curItem.lastName + " <" + curItem.primaryEmail + ">");
 					}

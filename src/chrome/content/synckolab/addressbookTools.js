@@ -730,9 +730,11 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 			// kolab 2+3
 			case "SMTP-ADDRESS":
 			case "EMAIL":
-				//synckolab.tools.logMessage("email: " + email + " - " + cur.getXmlResult("SMTP-ADDRESS", ""), synckolab.global.LOG_DEBUG + synckolab.global.LOG_AB);
-				var emailAddress = cur.getXmlResult("SMTP-ADDRESS", "");
-				emailAddress += cur.getXmlResult("TEXT", "");
+				var emailAddress = cur.getXmlResult("SMTP-ADDRESS", null);
+				if(emailAddress === null) {
+					emailAddress = cur.getFirstData();
+				}
+				synckolab.tools.logMessage("email: " + email + " - " + emailAddress, synckolab.global.LOG_DEBUG + synckolab.global.LOG_AB);
 				switch (email) {
 				case 0:
 					this.setCardProperty(card, "PrimaryEmail", emailAddress);
@@ -2396,6 +2398,33 @@ synckolab.addressbookTools.parseMessageContent = function (message) {
 };
 
 /**
+ * Add a json style mailing list to the address book.
+ * This will check each entry of the mailing list if it exists in thunderbird.
+ * If not, it will create it. 
+ * Note: this will NOT update the thunderbird entry of the cards (if they exist!)
+ * @param addressBook the tbird addressbook to add the list to
+ * @param entry the actual list entry to add
+ * @param cardDB the existing card DB with all already added cards
+ */
+synckolab.addressbookTools.addMailingList = function (addressBook, entry, cardDB) {
+	// check each child
+	for ( var i = 0; i < entry.contacts.length; i++) {
+		var listCard = cardDB.get(this.getUID(entry.contacts[i]));
+		if(!listCard) {
+			// add this card - also to the cardDB
+			var abCard = synckolab.addressbookTools.createTBirdObject(entry.contacts[i]);
+			addressBook.addCard(abCard);
+			// also add to the hash-database
+			cardDB.put(this.getUID(entry.contacts[i]), abCard);
+		}
+	}
+	
+	// add mailing lists- pass the gCardDB with its nsIAbCard
+	addressBook.addMailList(synckolab.addressbookTools.createTBirdObject(entry, cardDB));
+};
+
+
+/**
  * Transform a json object into the real deal.
  * @param base the base json object
  * @param cards a hashmap with address book objects (key = UID for reference in the list)
@@ -2430,7 +2459,9 @@ synckolab.addressbookTools.createTBirdObject = function (base, cards) {
 		// fill the list
 		for ( var i = 0; i < base.contacts.length; i++) {
 			var listCard = cards.get(this.getUID(base.contacts[i]));
-			card.addressLists.appendElement(listCard, false);
+			if(listCard) {
+				card.addressLists.appendElement(listCard, false);
+			}
 		}
 	} else {
 		// go through all elements of base
@@ -2863,6 +2894,8 @@ synckolab.addressbookTools.abListObject = function (card) {
 
 	return Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager).getDirectory(card.mailListURI);
 };
+
+
 
 synckolab.addressbookTools.card2Human = function (card) {
 	var msg = "";

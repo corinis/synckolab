@@ -40,9 +40,9 @@ QUnit.log(function(details) {
 load("test/synckolab/tools/textTest.js");
 load("test/synckolab/tools/toolsTest.js");
 
-load("test/synckolab/parser/kolab2/calendarTest.js");
+//load("test/synckolab/parser/kolab2/calendarTest.js");
 load("test/synckolab/parser/kolab2/contactTest.js");
-load("test/synckolab/parser/kolab3/contactTest.js");
+//load("test/synckolab/parser/kolab3/contactTest.js");
 //load("test/synckolab/parser/kolab3/calendarTest.js");
 
 print("========================")

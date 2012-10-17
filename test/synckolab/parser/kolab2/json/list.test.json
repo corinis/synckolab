@@ -14,7 +14,7 @@
    "isMailList": false,
    "ts": 1349908157831,
    "DisplayName": "testöä lastname",
-   "PrimaryEmail": "",
+   "PrimaryEmail": "weird@email.com",
    "UUID": "urn:uuid:pas-id-1D84CEA337CD1878"
   },
   {
@@ -24,7 +24,7 @@
    "isMailList": false,
    "ts": 1349908157832,
    "DisplayName": "cont2#öüä&$",
-   "PrimaryEmail": "",
+   "PrimaryEmail": "weird@email.com",
    "UUID": "urn:uuid:pas-id-A4E937D838A897AD"
   }
  ],
