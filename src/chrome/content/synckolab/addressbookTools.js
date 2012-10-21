@@ -1143,7 +1143,6 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 				break;
 			
 			case "MEMBER":	// kolab3: distribution list
-				
 				// set type to maillist (just to be sure)
 				card.type = "maillist";
 				card.isMailList = true;
@@ -1160,7 +1159,7 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 						isMailList: false,
 						DisplayName: cur.getXmlResult(["dn","text"], null),
 						PrimaryEmail: cur.getXmlResult(["email","text"], null),
-						UUID: cur.getXmlResult(["uid","urn"], null)
+						UUID: cur.getXmlResult(["uid","uri"], null)
 				};
 				
 				// might be text, not urn
@@ -1325,7 +1324,12 @@ synckolab.addressbookTools.list2Kolab3 = function (card, fields) {
 	var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n";
 	xml += "<vcards xmlns=\"urn:ietf:params:xml:ns:vcard-4.0\">\n";
 	xml += "<vcard>\n";
-	xml += " <uid><text>" + this.getUID(card) + "</text></uid>\n";
+	var uid = this.getUID(card);
+	if(uid.indexOf("urn:") !== -1) {
+		xml += " <uid><uri>" + uid + "</uri></uid>\n";
+	} else {
+		xml += " <uid><text>" + uid + "</text></uid>\n";
+	}
 	xml += " <x-kolab-version><text>3.0dev1</text></x-kolab-version>\n";
 	xml += " <prodid><text>SyncKolab " + synckolab.config.version + ", Kolab resource</text></prodid>\n";
 	xml += " <rev><timestamp>" + synckolab.tools.text.calDateTime2String(new Date(), false, true) + "Z</timestamp></rev>\n";
@@ -1355,7 +1359,7 @@ synckolab.addressbookTools.list2Kolab3 = function (card, fields) {
 			} else {
 				synckolab.tools.logMessage("List entry without an email!" + this.getUID(cur), synckolab.global.LOG_WARNING + synckolab.global.LOG_AB);
 			}
-			xml += "   " + synckolab.tools.text.nodeContainerWithContent("uid", "urn", this.getUID(cur), false);
+			xml += "   " + synckolab.tools.text.nodeContainerWithContent("uid", "uri", this.getUID(cur), false);
 			xml += " </member>\n";
 		}
 	}
@@ -1544,7 +1548,12 @@ synckolab.addressbookTools.card2Kolab3 = function (card, skipHeader, fields) {
 	}
 	
 	xml += "<vcard>\n";
-	xml += " <uid><uri>" + synckolab.tools.text.encode4XML(this.getUID(card)) + "</uri></uid>\n";
+	var uid = synckolab.tools.text.encode4XML(this.getUID(card));
+	if(uid.indexOf("urn:") !== -1) {
+		xml += " <uid><uri>" + uid + "</uri></uid>\n";
+	} else {
+		xml += " <uid><text>" + uid + "</text></uid>\n";
+	}
 	xml += " <x-kolab-version><text>3.0dev1</text></x-kolab-version>\n";
 	xml += " <prodid><text>SyncKolab " + synckolab.config.version + ", Kolab resource</text></prodid>\n";
 	xml += " <rev><timestamp>" + synckolab.tools.text.calDateTime2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000), false, true) + "Z</timestamp></rev>\n";
@@ -2345,7 +2354,7 @@ synckolab.addressbookTools.Xml2List = function (topNode, card) {
 				break;
 			case "MEMBER":
 				// sub-vcard... parse...
-				if (!card.contacts && !card.contacts.length) {
+				if (typeof card.contacts === "undefined" || !card.contacts.length) {
 					card.contacts = [];
 				}
 				var member = {
@@ -2441,7 +2450,7 @@ synckolab.addressbookTools.isMailList = function (message) {
  */
 synckolab.addressbookTools.parseMessageContent = function (message) {
 	// fix for bug #16766: message has no properties
-	if (message === null) {
+	if (!message) {
 		return null;
 	}
 
