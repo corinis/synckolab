@@ -22,6 +22,9 @@ test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
 		content = readFile("test/synckolab/parser/kolab3/raw/"+src);
 		content = synckolab.tools.stripMailHeader(content);
 		entry = synckolab.addressbookTools.parseMessageContent(content);
+		if(entry.isMailList) {
+			print(entry.toSource());
+		}
 		content = readFile("test/synckolab/parser/kolab3/json/"+src+".json");
 		jsonEntry = JSON.parse(content);
 		equal(synckolab.tools.equalsObject(entry, jsonEntry), true, src);
