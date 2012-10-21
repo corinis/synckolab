@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <vcards xmlns="urn:ietf:params:xml:ns:vcard-4.0">
 <vcard>
- <uid><uri>urn:uuid:Huu5X7hfYy</uri></uid>
+ <uid><urn>urn:uuid:Huu5X7hfYy</urn></uid>
  <x-kolab-version><text>3.0dev1</text></x-kolab-version>
  <prodid><text>SyncKolab 3.0.0, Kolab resource</text></prodid>
  <rev><timestamp>19700101T000000ZZ</timestamp></rev>

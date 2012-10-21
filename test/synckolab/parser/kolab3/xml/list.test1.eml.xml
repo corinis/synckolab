@@ -11,12 +11,12 @@
  <member>
      <dn><text>testöä lastname</text></dn>
      <email><text>email@mail.com</text></email>
-     <uid><urn>urn:uuid:pas-id-1D84CEA337CD1878</urn></uid>
+     <uid><uri>urn:uuid:pas-id-1D84CEA337CD1878</uri></uid>
  </member>
  <member>
      <dn><text>cont2#öüä&amp;$</text></dn>
      <email><text>weird@email.com</text></email>
-     <uid><urn>urn:uuid:pas-id-A4E937D838A897AD</urn></uid>
+     <uid><uri>urn:uuid:pas-id-A4E937D838A897AD</uri></uid>
  </member>
  <note><text>list-description</text></note>
 </vcard>
