@@ -1,0 +1,52 @@
+{
+ "synckolab": "3.0.0",
+ "type": "maillist",
+ "isMailList": true,
+ "ts": 1350823376091,
+ "UUID": "dc90f284789cb642256068504d42dc7e",
+ "DisplayName": "list dc90f284789cb642256068504d42dc7e",
+ "Notes": "list-description",
+ "contacts": [
+  {
+   "synckolab": "3.0.0",
+   "listMember": true,
+   "type": "contact",
+   "isMailList": false,
+   "ts": 1350823376138,
+   "DisplayName": "user.name (Retail)",
+   "PrimaryEmail": "user.name@domain.com",
+   "UUID": "993e519e411b0c5ff6b90e2293c99bd1"
+  },
+  {
+   "synckolab": "3.0.0",
+   "listMember": true,
+   "type": "contact",
+   "isMailList": false,
+   "ts": 1350823376139,
+   "DisplayName": "user.name (Retail2)",
+   "PrimaryEmail": "a12346@domain.com",
+   "UUID": "993e519e411b0c5ff6b90e2293c99bd1"
+  },
+  {
+   "synckolab": "3.0.0",
+   "listMember": true,
+   "type": "contact",
+   "isMailList": false,
+   "ts": 1350823376140,
+   "DisplayName": "user.name (HomeServices)",
+   "PrimaryEmail": "user.name@domain.com",
+   "UUID": "e1778e4a015e7bbb068bf9375182d6ab"
+  },
+  {
+   "synckolab": "3.0.0",
+   "listMember": true,
+   "type": "contact",
+   "isMailList": false,
+   "ts": 1350823376142,
+   "DisplayName": "user.name(Retail3)",
+   "PrimaryEmail": "user.name@domain.com",
+   "UUID": "6e0366e6f12afa2e2dd8883bec36f37d"
+  }
+ ],
+ "sha1": "4717f9c787b1baa2c408ea8953a121d6181a5f04"
+}

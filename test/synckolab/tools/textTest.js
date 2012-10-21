@@ -23,6 +23,7 @@ test("synckolab.tools.text.fixNameToMiniCharset", function() {
 	equal(synckolab.tools.text.fixNameToMiniCharset("halloWelt"), "halloWelt", "test normal chars")
 	equal(synckolab.tools.text.fixNameToMiniCharset("hallo Welt "), "hallo_Welt_", "test normal chars with space")
 	equal(synckolab.tools.text.fixNameToMiniCharset("hallo     Welt "), "hallo_Welt_", "test normal chars with multi space")
+	equal(synckolab.tools.text.fixNameToMiniCharset("hallo: Welt "), "hallo_Welt_", "test normal chars with colon")
 	equal(synckolab.tools.text.fixNameToMiniCharset("häöüß!"), "haous_", "test german umlaut (lowercase)")
 	equal(synckolab.tools.text.fixNameToMiniCharset("hÄÖÜ?"), "hAOU_", "test german umlaut (uppercase)")
 	equal(synckolab.tools.text.fixNameToMiniCharset("hÁÀâ'   '"), "hAAa_", "test french accent on a")

@@ -162,9 +162,12 @@ copyFields: function (src, target, fields, noempty) {
 
 /**
  * compares two objects. note: empty string or null is the same as not existant
+ * @param a the object to compare
+ * @param b the object to compare with
+ * @param skipFields fields to skip when comparing (must exist - just the content does not matter) i.e.: { UUID: true }
  * @return true if they contain the same content, false otherwise
  */
-equalsObject: function(a, b)
+equalsObject: function(a, b, skipFields)
 {
 	// empty arrays 
 	if(!a && b && b.length && b.length === 0) {
@@ -192,6 +195,7 @@ equalsObject: function(a, b)
 	}
 
 	for(p in a) {
+		// some fields we can skip
 		if (p !== "ts" && p !== "sha1" && p !== "synckolab") {
 			if (a[p]) {
 				switch(typeof(a[p])) {
@@ -204,6 +208,9 @@ equalsObject: function(a, b)
 				case 'function': // skip functions
 					break;
 				default:
+					if(skipFields && skipFields[p]) { 
+						break;
+					}
 					if (a[p] !== b[p] && Number(a[p]) !== Number(b[p])) { 
 						synckolab.tools.logMessage("not equals: : " + p + " a: " + a[p] + " b: " + b[p], synckolab.global.LOG_DEBUG);
 						return false; 
@@ -220,6 +227,9 @@ equalsObject: function(a, b)
 
 	for(p in b) {
 		if(p !== "ts" && p !== "sha1" && p !== "synckolab" && p !== "type" && (!a || typeof(a[p]) === 'undefined') && b[p] !== null && b[p] !== "") {
+			if(skipFields && skipFields[p]) { 
+				continue;
+			}
 			synckolab.tools.logMessage("not equals: " + p + " a: " + (a?a[p]:'is null') + " b: " + b[p], synckolab.global.LOG_DEBUG);
 			return false;
 		}
@@ -862,10 +872,10 @@ synckolab.tools.file = {
 			synckolab.tools.logMessage("Error: entry has no id (" +config.name + ": " + config.type + ")", synckolab.global.LOG_ERROR);
 			return null;
 		}
-
+		id = synckolab.tools.text.fixNameToMiniCharset(id);
+		
 		synckolab.tools.logMessage("syncDbFile:  (" +synckolab.tools.text.fixNameToMiniCharset(config.serverKey) + "/" + config.type + "_" + config.name + "/" + id + ")", synckolab.global.LOG_ERROR);
 		
-		id = id.replace(/[ :.;$\\\/]\#\@/g, "_");
 		var file = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsIFile);
 		try {
 			file.append("synckolab");

@@ -1,0 +1,64 @@
+From: someone@domain.com
+To: someone@domain.com
+Date: Thu, 18 Oct 2012 10:11:18 -0400
+X-Kolab-Type: application/x-vnd.kolab.distribution-list
+Subject: dc90f284789cb642256068504d42dc7e
+User-Agent: Horde::Kolab::Storage v0.2
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="=_96e43p7nnc0"
+Content-Transfer-Encoding: 7bit
+
+This message is in MIME format.
+
+--=_96e43p7nnc0
+Content-Type: text/plain;
+ charset=UTF-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+This is a Kolab Groupware object. To view this object you will need an emai=
+l
+client that understands the Kolab Groupware format. For a list of such emai=
+l
+clients please visit http://www.kolab.org/kolab2-clients.html
+
+--=_96e43p7nnc0
+Content-Type: application/x-vnd.kolab.distribution-list;
+ name="kolab.xml"
+Content-Disposition: attachment;
+ filename="kolab.xml"
+Content-Transfer-Encoding: quoted-printable
+
+<?xml version=3D"1.0"?>
+<distribution-list version=3D"1.0">
+  <uid>dc90f284789cb642256068504d42dc7e</uid>
+  <body>list-description</body>
+  <categories></categories>
+  <creation-date>2012-10-18T14:11:07Z</creation-date>
+  <last-modification-date>2012-10-18T14:11:18Z</last-modification-date>
+  <sensitivity>public</sensitivity>
+  <product-id>Horde::Kolab</product-id>
+  <member>
+    <display-name>user.name (Retail)</display-name>
+    <smtp-address>user.name@domain.com</smtp-address>
+    <uid>993e519e411b0c5ff6b90e2293c99bd1</uid>
+  </member>
+  <member>
+    <display-name>user.name (Retail2)</display-name>
+    <smtp-address>a12346@domain.com</smtp-address>
+    <uid>993e519e411b0c5ff6b90e2293c99bd1</uid>
+  </member>
+  <member>
+    <display-name>user.name (HomeServices)</display-name>
+    <smtp-address>user.name@domain.com</smtp-address>
+    <uid>e1778e4a015e7bbb068bf9375182d6ab</uid>
+  </member>
+  <member>
+    <display-name>user.name(Retail3)</display-name>
+    <smtp-address>user.name@domain.com</smtp-address>
+    <uid>6e0366e6f12afa2e2dd8883bec36f37d</uid>
+  </member>
+ 
+</distribution-list>
+--=_96e43p7nnc0--

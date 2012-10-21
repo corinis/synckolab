@@ -76,9 +76,13 @@ synckolab.addressbookTools = {
 		if (card.isMailList && !card.getProperty) {
 			switch (prop) {
 			// really old: cannot use uid field
+			case "uuid":
 			case "uid":
 			case "UID":
+			case "UUID":
 			case "Uid":
+				prop = "UUID";
+				break;
 			case "Name":
 				if (card.dirName) {
 					prop = "dirName";
@@ -288,13 +292,14 @@ synckolab.addressbookTools = {
 		if (!card) {
 			return;
 		}
-
+		/*
 		// mailing lists dont have uuid
 		if (card.isMailList) {
 			return;
 		}
 
 		// listNickName is the UID
+		*/
 		this.setCardProperty(card, "UUID", uid);
 	}
 };
@@ -1016,7 +1021,6 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 
 				var cnotes = cur.getFirstData();
 				this.setCardProperty(card, "Notes", cnotes.replace(/\\n/g, "\n"));
-				synckolab.tools.logMessage("cur.firstchild.data.length=" + cur.firstChild.data.length + " - cnotes=" + cnotes.length + " - card.notes=" + this.getCardProperty(card, "Notes").length, synckolab.global.LOG_DEBUG + synckolab.global.LOG_AB);
 				found = true;
 				break;
 			case "DEPARTMENT":
@@ -1156,8 +1160,13 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 						isMailList: false,
 						DisplayName: cur.getXmlResult(["dn","text"], null),
 						PrimaryEmail: cur.getXmlResult(["email","text"], null),
-						UUID: cur.getXmlResult(["uid","uri"], null)
+						UUID: cur.getXmlResult(["uid","urn"], null)
 				};
+				
+				// might be text, not urn
+				if(!value.UUID) {
+					value.UUID = cur.getXmlResult(["uid","text"], null);
+				}
 				
 				if(value.UUID) {
 					card.contacts.push(value);
@@ -1253,9 +1262,9 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 };
 
 /**
- * Convert a given mailing list (card) into a pojo
+ * Convert a given mailing list (card) into a pojo (using the given uid)
  */
-synckolab.addressbookTools.list2Pojo = function (card) {
+synckolab.addressbookTools.list2Pojo = function (card, uid) {
 	var pojo = {
 		synckolab : synckolab.config.version, // synckolab version
 		type : "maillist", // a contact
@@ -1265,12 +1274,16 @@ synckolab.addressbookTools.list2Pojo = function (card) {
 	// the contacts
 	};
 
-	pojo.displayName = this.getUID(card);
+	pojo.UUID = uid;
+	
 	if (this.haveCardProperty(card, "Notes")) {
 		pojo.Notes = this.getCardProperty(card, "Notes");
 	}
 	if (this.haveCardProperty(card, "NickName")) {
 		pojo.NickName = this.getCardProperty(card, "NickName");
+	}
+	if (this.haveCardProperty(card, "DisplayName")) {
+		pojo.DisplayName = this.getCardProperty(card, "DisplayName");
 	}
 
 	var cList = this.abListObject(card);
@@ -1290,6 +1303,9 @@ synckolab.addressbookTools.list2Pojo = function (card) {
 			cardObj.UUID = this.getUID(cur);
 			cardObj.DisplayName = this.getCardProperty(cur, "DisplayName");
 			cardObj.PrimaryEmail = this.getCardProperty(cur, "PrimaryEmail");
+
+			synckolab.tools.logMessage("card of list " + pojo.DisplayName + ": " + cardObj.UUID, synckolab.global.LOG_DEBUG + synckolab.global.LOG_AB);
+			
 			pojo.contacts.push(cardObj);
 		}
 	} else {
@@ -1721,6 +1737,78 @@ synckolab.addressbookTools.card2Kolab3 = function (card, skipHeader, fields) {
 };
 
 /**
+ * creates a pojo out of a given card
+ * @param card nsIAbCard: the adress book card
+ * @param uid the uid of the card
+ * @param fields Array: all the fields not being held in the default card
+ */
+synckolab.addressbookTools.card2Pojo = function (card, uid, fields) {
+	if(card.isMailList) {
+		return this.list2Pojo(card, uid);
+	}
+	
+	var pojo = {
+			synckolab : synckolab.config.version, // synckolab version
+			type : "contact", // a contact
+			isMailList : false,
+			ts : new Date().getTime() // the current time
+		};
+
+	// go through all fields
+	/*
+	ignore this since thunderbird implementation just does not work
+	var s = cur.getXmlResult("TIMESTAMP", "");
+	*/
+	// this.setCardProperty(card, "LastModifiedDate", string2DateTime(s).getTime() / 1000);
+	var copyFields = ["FirstName", "LastName", "DisplayName", "JobTitle", "NickName",
+	                  "PrimaryEmail", "SecondEmail", "Category", "Company",
+	                  "HomePhone", "WorkPhone", "CellularNumber", "FaxNumber", "PagerNumber",
+	                  "CellularNumber", "HomePhone", "FaxNumber", "WorkPhone",
+	                  "PagerNumber", "BirthYear", "BirthMonth", "BirthDay",
+	                  "AnniversaryYear", "AnniversaryMonth", "AnniversaryDay", "HomeAddress",
+	                  "HomeAddress2", "HomeCity", "HomeState", "HomeZipCode", "HomeCountry", "WorkAddress",
+	                  "WorkAddress2", "WorkCity", "WorkState", "WorkZipCode", "WorkCountry",
+	                  "PhotoName", "PhotoType", "PhotoURI", "Notes", "Department",
+	                  "WebPage1", "WebPage2", "WebPage3",
+	                  "AimScreenName", "Custom1", "Custom2", "Custom3", "Custom4", "AllowRemoteContent", "PreferMailFormat"];
+	var i;
+	for(i = 0; i < copyFields.length; i++) {
+		this.setCardProperty(pojo, copyFields[i], this.getCardProperty(card, copyFields[i]));
+	}
+	
+	this.setUID(pojo, uid);
+	/*
+case "PHOTO": // kolab3
+	// handle photo VERY special... TODO
+	break;
+	
+case "GROUP":
+	// how is this handled?
+	break;
+	*/
+	
+// fields we "know" about but just cannot work with (TODO find a way to save them and restore them!)
+	/*
+case "GENDER": // kolab3
+case "RELATED": //kolab3
+case "CREATION-DATE":
+case "LATITUDE":
+case "LONGITUDE":
+case "ASSISTANT":
+case "MANAGER-NAME":
+case "PROFESSION":
+case "SPOUSE-NAME":
+case "CHILDREN":
+case "GENDER":
+case "LANGUAGE":
+case "OFFICE-LOCATION":
+case "FREE-BUSY-URL":
+	//this.setCardProperty(card, cur.nodeName, cur.getFirstData(), true);
+	*/
+	return pojo;
+};
+
+/**
  * Creates xml (kolab2) out of a given card. 
  * The return is the xml as string.
  * @param card nsIAbCard: the adress book card
@@ -2126,7 +2214,7 @@ synckolab.addressbookTools.vList2Card = function (uids, lines, card, cards) {
 		case "UID":
 			// we cannot set the custom4 for a mailing list... but since tbird defined
 			// the name to be unique... lets keep it that way
-			//this.setCardProperty(card, "Custom4", tok[1]);
+			this.setUID(card, tok[1]);
 			break;
 		case "BEGIN":
 			if (!beginVCard) {
@@ -2164,6 +2252,24 @@ synckolab.addressbookTools.vList2Card = function (uids, lines, card, cards) {
 			break;
 		} // end switch
 	}
+	
+	// make sure we got a UID
+	if(!this.getUID(card)) {
+		this.setUID(card, "sk-dl-" + synckolab.tools.text.randomVcardId());
+	}
+
+	// fix list displayname - this is the key for thunderbird
+	if(!this.getCardProperty(card, "DisplayName", null)) {
+		// check if we have a nickname
+		var newName = this.getCardProperty(card, "DisplayName", null);
+		if(newName !== null && newName.length > 0) {
+			this.setCardProperty(card, "DisplayName", newName);
+		} else {
+			// use the uid
+			this.setCardProperty(card, "DisplayName", "list " + this.getUID(card));
+		}
+	}
+
 	return true;
 };
 
@@ -2174,6 +2280,8 @@ synckolab.addressbookTools.vList2Card = function (uids, lines, card, cards) {
  * @param card the card object
  */
 synckolab.addressbookTools.Xml2List = function (topNode, card) {
+	synckolab.tools.logMessage("parsing xml to list", synckolab.global.LOG_DEBUG + synckolab.global.LOG_AB);
+
 	card.type = "maillist";
 	card.isMailList = true;
 
@@ -2220,13 +2328,24 @@ synckolab.addressbookTools.Xml2List = function (topNode, card) {
 				this.setCardProperty(card, "Notes", cur.getFirstData());
 				found = true;
 				break;
+			
 			case "UID":
-				// the md5 of the name is the uid... 
-				// because for thunderbird the name is unique
+				// kolab 3: uid/uri
+				var uid = cur.getXmlResult("URI", "");
+				// kolab2: directly
+				if(uid === "") {
+					uid = cur.getFirstData();
+				} /*else {
+					// remove the urn:uuid prefix TODO check if this is required
+					if(uid.indexOf("urn:uuid:") !== -1) {
+						uid = uid.substring(9);
+					}
+				}*/
+				this.setUID(card, uid);
 				break;
 			case "MEMBER":
 				// sub-vcard... parse...
-				if (!card.contacts) {
+				if (!card.contacts && !card.contacts.length) {
 					card.contacts = [];
 				}
 				var member = {
@@ -2263,7 +2382,26 @@ synckolab.addressbookTools.Xml2List = function (topNode, card) {
 	if (!found) {
 		return null;
 	}
-	synckolab.tools.logMessage("finished parsing list: " + this.getUID(card) + "\n" + card.toSource(), synckolab.global.LOG_DEBUG + synckolab.global.LOG_AB);
+	
+	// make sure we got a UID
+	if(!this.getUID(card)) {
+		this.setUID(card, "sk-dl-" + synckolab.tools.text.randomVcardId());
+	}
+
+	// fix list displayname - this is the key for thunderbird
+	if(!this.getCardProperty(card, "DisplayName", null)) {
+		// check if we have a nickname
+		var newName = this.getCardProperty(card, "DisplayName", null);
+		if(newName !== null && newName.length > 0) {
+			this.setCardProperty(card, "DisplayName", newName);
+		} else {
+			// use the uid
+			this.setCardProperty(card, "DisplayName", "list " + this.getUID(card));
+		}
+	}
+
+	synckolab.tools.logMessage("finished parsing list: " + this.getUID(card), synckolab.global.LOG_DEBUG + synckolab.global.LOG_AB);
+	
 
 	return card;
 };
@@ -2392,6 +2530,59 @@ synckolab.addressbookTools.addMailingList = function (addressBook, entry, cardDB
 	addressBook.addMailList(synckolab.addressbookTools.createTBirdObject(entry, cardDB));
 };
 
+
+/**
+ * Get the UID from a tbird object.
+ * This will ALWAYS return a uid (the card must be non-null).
+ * If the card is a mailing list it will setup the uid in the config uid map,
+ * otherwise it will use the tbird internas to store the uid
+ * @param config the config (where the uid map is stored)
+ * @param card the card to get the uuid for
+ * @returns the uuid (existing or generated)
+ */
+synckolab.addressbookTools.getTbirdUUID = function(card, config) {
+	var cUID;
+	if (card.isMailList) {
+		var name = this.getCardProperty(card, "Name", null);
+		synckolab.tools.logMessage("get uid for maillist " + name, synckolab.global.LOG_DEBUG + synckolab.global.LOG_AB);
+		
+		if(!name) {
+			throw "Fatal Error: Tbird List without a name!";
+		}
+		
+		// lookup the "temporary" cached uid for this card
+		cUID = config.listLookup.getUUID(name);
+		if (!cUID || cUID === "")
+		{
+			// generate a unique id (will random be enough for the future?)
+			cUID = "sk-dl-" + synckolab.tools.text.randomVcardId();
+			// add the new uid-name relation (will also perist it)
+			config.listLookup.add(name, cUID);
+		}
+	} else {
+		// vcard
+		cUID = synckolab.addressbookTools.getUID(card);
+		synckolab.tools.logMessage("get uid for vard " + cUID, synckolab.global.LOG_DEBUG + synckolab.global.LOG_AB);
+		
+		if (!cUID || cUID === "")
+		{
+			// generate a unique id (will random be enough for the future?)
+			cUID = "sk-vc-" + synckolab.tools.text.randomVcardId();
+			// set it
+			synckolab.addressbookTools.setUID(card, cUID);
+			
+			if(!config.addressBook) {
+				throw "AddressBook is undefined\n" + new Error("s").stack;
+			}
+			// write back
+			config.addressBook.modifyCard(card);
+		}
+		
+	}
+	
+	// return
+	return cUID;
+};
 
 /**
  * Transform a json object into the real deal.
