@@ -569,23 +569,37 @@ synckolab.main.prepareContent = function() {
 	
 	// update folder information from imap and make sure we got everything
 	synckolab.main.gConfig.folder.updateFolder(msgWindow);
-	// my UrlListener calls getContent
-	synckolab.main.gConfig.folder.compact({
-		OnStartRunningUrl: function ( url )
-		{	
-		},
-
+	
+	// two step refrsh: downloadAllForOflline -> then Compact
+	synckolab.main.gConfig.folder.downloadAllForOffline({
+		OnStartRunningUrl: function ( url ){},
 		OnStopRunningUrl: function ( url, exitCode )
 		{	
-			synckolab.tools.logMessage("Finished folder frefresh; ONSTOP="+exitCode+" : " + url, synckolab.global.LOG_DEBUG );
-			synckolab.main.getContent();
+			synckolab.tools.logMessage("Finished folder download; ONSTOP="+exitCode+" : " + url, synckolab.global.LOG_DEBUG );
+			
+			// compact: my UrlListener calls getContent
+			synckolab.main.gConfig.folder.compact({
+				OnStartRunningUrl: function (compactUrl){},
+				OnStopRunningUrl: function ( compactUrl, compactExitCode )
+				{	
+					synckolab.tools.logMessage("Finished folder frefresh; ONSTOP="+compactExitCode+" : " + url, synckolab.global.LOG_DEBUG );
+					// clear new 
+					synckolab.main.gConfig.folder.clearNewMessages();
+					// force update summary
+					synckolab.main.gConfig.folder.updateSummaryTotals(true);
+					// continue;
+					synckolab.main.getContent();
+				}
+			}, msgWindow); // this should take care of refreshes
+			
 		}
-	}, msgWindow); // this should take care of refreshes
+	}, msgWindow);
 };
 
 synckolab.main.syncKolabCompact = function() {
 	// update folder and compact - this prevents event triggereing
 	synckolab.main.gConfig.folder.updateFolder(msgWindow);
+	
 	// compact folder
 	try { 
 		synckolab.main.gConfig.folder.compact(null, null);  

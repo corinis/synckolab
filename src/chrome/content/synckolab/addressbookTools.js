@@ -75,6 +75,7 @@ synckolab.addressbookTools = {
 		// fix from syncgb
 		if (card.isMailList && !card.getProperty) {
 			switch (prop) {
+			// really old: cannot use uid field
 			case "uid":
 			case "UID":
 			case "Uid":
@@ -259,6 +260,7 @@ synckolab.addressbookTools = {
 		}
 
 		// for mailing lists
+		/*
 		if (card.isMailList) {
 			try {
 				// sk always uses dirName
@@ -272,6 +274,7 @@ synckolab.addressbookTools = {
 				throw err;
 			}
 		}
+		*/
 
 		// we can use custom fields!!!
 		var uid = this.getCardProperty(card, "UUID");
