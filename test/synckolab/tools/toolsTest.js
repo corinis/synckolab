@@ -27,3 +27,31 @@ test("synckolab.Node", function(){
 });
 
 
+/**
+ * Test uuencoded message
+ */
+test("synckolab.tools.uudecode", function(){
+	var content = readFile("test/synckolab/tools/data/uutest1.eml");
+	content = synckolab.tools.stripMailHeader(content);
+	equal(content.replace(/[\r\n]+/g, " "), ("BEGIN:VCARD " +
+"VERSION:3.0 " +
+"PRODID:-//kerio.com/Contacts//NONSGML v1.0//EN " +
+"ADR;TYPE=HOME:;;Street 1\\nStreet 2;City;;zipcode;France " +
+"EMAIL;TYPE=PREF:mail@mail.com " +
+"TEL;TYPE=VOICE,HOME:+33 (0) 3 12 34 56 78 " +
+"TEL;TYPE=CELL:+33 (0) 6 12 34 56 78 " +
+"ORG:Company; " +
+"NOTE:Notes with accent éèêà " +
+"X-FILE-AS:Last Name, First Name\n" +
+"N:Last Name;First Name;;;\n" +
+"FN:First Name Last Name\n" +
+"URL;TYPE=WORK:website.com\n" +
+"BDAY;VALUE=DATE:20121010\n" +
+"UID:bfcaf3d0-4c85-4c5c-94e2-ca5f9ea1d264\n" +
+"END:VCARD").replace(/\n/g, " "), "uuencoded vcard");
+	
+});
+/*
+var content = readFile("test/synckolab/tools/data/uutest1.eml");
+print(synckolab.tools.stripMailHeader(content));
+*/

@@ -248,7 +248,8 @@ stripMailHeader: function (skcontent) {
 	}
 
 	var isMultiPart = skcontent.search(/boundary=/i) !== -1;
-	var isQP;
+	var isQP = false;
+	var isUU = false;
 	var startPos;
 	
 	// seems we go us a vcard/ical when no xml is found
@@ -260,6 +261,20 @@ stripMailHeader: function (skcontent) {
 		}
 
 		if (startPos === -1 || startPos > skcontent.length - 10) {
+			startPos = 0;
+		}
+
+		// check for uuencoded
+		isUU = skcontent.search(/begin [0-9][0-9][0-9] /);
+		if(isUU > 0) {
+			this.logMessage("Decoding UUEncoded Message", synckolab.global.LOG_DEBUG);
+			skcontent = skcontent.substring(isUU, skcontent.length);
+			skcontent = skcontent.substring(skcontent.indexOf("\n"), skcontent.lastIndexOf("\nend"));
+			//print("UU only: " + skcontent);
+			skcontent = synckolab.tools.text.uu.decode(skcontent);
+			
+			// also utf 8 decode:
+			skcontent = synckolab.tools.text.utf8.decode(skcontent);
 			startPos = 0;
 		}
 

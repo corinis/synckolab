@@ -822,18 +822,24 @@ synckolab.tools.text.uu = {
 			} else if (str.length < 8) {
 				return false;
 			}
-
+			
 			var decoded = "", tmp1 = "", tmp2 = "";
-			var c = 0, i = 0, j = 0, a = 0;
+			var c = 0, i = 0, j = 0, k = 0, a = 0;
 			var line = str.split("\n");
 			var bytes = [];
 
-			for (i in line) {
+
+			for (i = 0; i < line.length; i++) {
+				// skip empty lines
+				if(line[i].length == 0) {
+					continue;
+				}
+				
 				c = line[i].charCodeAt(0);
 				bytes = line[i].substr(1);
 
 				// Convert each char in bytes[] to a 6-bit
-				for (j in bytes) {
+				for (j = 0; j < bytes.length; j++) {
 					tmp1 = bytes[j].charCodeAt(0)-32;
 					tmp1 = tmp1.toString(2);
 					while (tmp1.length < 6) {
@@ -842,7 +848,7 @@ synckolab.tools.text.uu = {
 					tmp2 += tmp1
 				}
 
-				for (i=0; i<=(tmp2.length/8)-1; i++) {
+				for (k=0; k<=(tmp2.length/8)-1; k++) {
 					tmp1 = tmp2.substr(a, 8);
 					if (tmp1 == "01100000") {
 						decoded += this.chr(0);
