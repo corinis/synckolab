@@ -2523,15 +2523,18 @@ synckolab.addressbookTools.parseMessageContent = function (message) {
  * @param cardDB the existing card DB with all already added cards
  */
 synckolab.addressbookTools.addMailingList = function (addressBook, entry, cardDB) {
+	
 	// check each child
-	for ( var i = 0; i < entry.contacts.length; i++) {
-		var listCard = cardDB.get(this.getUID(entry.contacts[i]));
-		if(!listCard) {
-			// add this card - also to the cardDB
-			var abCard = synckolab.addressbookTools.createTBirdObject(entry.contacts[i]);
-			addressBook.addCard(abCard);
-			// also add to the hash-database
-			cardDB.put(this.getUID(entry.contacts[i]), abCard);
+	if(entry.contacts) {
+		for ( var i = 0; i < entry.contacts.length; i++) {
+			var listCard = cardDB.get(this.getUID(entry.contacts[i]));
+			if(!listCard) {
+				// add this card - also to the cardDB
+				var abCard = synckolab.addressbookTools.createTBirdObject(entry.contacts[i]);
+				addressBook.addCard(abCard);
+				// also add to the hash-database
+				cardDB.put(this.getUID(entry.contacts[i]), abCard);
+			}
 		}
 	}
 	
