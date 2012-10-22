@@ -588,7 +588,7 @@ generateMail: function (cid, mail, adsubject, mime, part, skcontent, hr, image){
 		msg += 'This is a Kolab Groupware object.\n';
 		msg += 'To view this object you will need an email client that can understand the Kolab Groupware format.\n';
 		msg += 'For a list of such email clients please visit\n';
-		msg += 'http://www.kolab.org/kolab2-clients.html\n';
+		msg += 'http://kolab.org/content/kolab-clients\n';
 
 		/* Changed: human readable content beacuse other clients dont understand it
 				and dont update it (ie. a contact/event is different in its attachment 
