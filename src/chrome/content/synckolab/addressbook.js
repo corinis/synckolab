@@ -691,7 +691,7 @@ synckolab.AddressBook = {
 		// mailing lists should be kept for "after" the normal messages have been parsed
 		if (checkForLater)
 		{
-			if (this.tools.isMailList(fileContent))
+			if (this.tools.isMailList(fileContent.content))
 			{
 				return "LATER";
 			}

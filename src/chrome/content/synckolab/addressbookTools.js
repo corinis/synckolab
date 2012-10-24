@@ -564,8 +564,9 @@ synckolab.addressbookTools.findCard = function (cards, vId, directory) {
  * 
  * @param xml a dom node of a card or a string with the xml
  * @param card the card object to update
+ * @param attachment optional attachment image (photo)
  */
-synckolab.addressbookTools.xml2Card = function (xml, card) {
+synckolab.addressbookTools.xml2Card = function (xml, card, attachment) {
 	var cur;
 
 	// if xml has a nodeType attribute - its already a node
@@ -990,14 +991,47 @@ synckolab.addressbookTools.xml2Card = function (xml, card) {
 				}
 				found = true;
 				break;
+				
+			case "PHOTO": // kolab3
+				tok = cur.getChildNode("uri");
+				if(tok) {
+					value = tok.getFirstData();
+					types = value.substring(0, 30);	// get the first few bytes
+					if(types.indexOf("data:") !== -1) {	// got an inline data uri
+						// get the correct type:
+						// data:image/png;base64,BASE64DATA
+						types = types.substring(5);	// cut away data:
+						tok = types.indexOf(";");	// search for the mime
+						where = synckolab.tools.file.analyzeMimeType(type.substring(0, tok).toLowerCase());
+						// set the type
+						this.setCardProperty(card, "PhotoType", "inline");
+						this.setCardProperty(card, "PhotoName", "photo." + where);	// generate filename
+						
+						where = type.substring(tok);
+						if(where.indexOf("base64") !== -1) {
+							tok = value.indexOf(",");
+							// get rid of newlines and =
+							this.setCardProperty(card, "PhotoData", value.substring(tok+1).replace("=3D", "").replace(/[\r\n \t=]+/g, ""));
+						} else {
+							synckolab.tools.logMessage("Unknown photo encoding: " + value.substring(0, 30), synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
+						}
+					}
+				}
+				
+				break;
+				
+			// kolab 2: name of the picutre
 			case "PICTURE":
 				if (cur.firstChild === null) {
 					break;
 				}
 
-				// we should have a picture named /tmp/synckolab.img - this will be moved if we keep this contact
 				this.setCardProperty(card, "PhotoName", cur.getFirstData());
+				// the attachment already happened in parseMessageContent
+
 				break;
+				
+			// kolab 2: the uri of the picture
 			case "PICTURE-URI":
 				if (cur.firstChild === null) {
 					break;
@@ -2467,6 +2501,18 @@ synckolab.addressbookTools.parseMessageContent = function (message) {
 		ts : new Date().getTime()
 	// the current time
 	};
+	
+	// its possible we have an image - attach it (still base64 encoded)
+	if(message.image) {
+		this.setCardProperty(card, "PhotoName", message.imageName);	// generate filename
+		this.setCardProperty(card, "PhotoType", "inline");
+		this.setCardProperty(card, "PhotoData", message.image.replace("=3D", "").replace(/[\r\n \t=]+/g, ""));
+	}
+	
+	// form now one: message is just a string (the content)
+	if(message.content) {
+		message = message.content;
+	}
 
 	// check for xml style
 	if (message.indexOf("<?xml") !== -1 || message.indexOf("<?XML") !== -1) {
@@ -2925,7 +2971,7 @@ synckolab.addressbookTools.message2Card = function (lines, card, startI, endI) {
 			found = true;
 			break;
 		case "PICTURE":
-			// skip
+			// TODO picture
 			break;
 		case "PICTURE-URI":
 			var uri = tok[1];
@@ -3376,6 +3422,7 @@ synckolab.addressbookTools.card2Message = function (card, email, format, fields)
 		if (card.isMailList) {
 			return synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vnd.kolab.contact.distlist", true, synckolab.tools.text.utf8.encode(this.list2Xml(card, fields)), this.list2Human(card));
 		} else {
+			// generat email with optional image attachment
 			return synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vnd.kolab.contact", true, synckolab.tools.text.utf8.encode(this.card2Xml(card, fields)), this.card2Human(card), this.getCardProperty(card, "PhotoName"));
 		}
 	} else if(format === "xml-k3") {

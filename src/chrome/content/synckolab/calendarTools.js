@@ -369,6 +369,11 @@ synckolab.calendarTools.message2json = function (fileContent, syncTasks) {
 	if(fileContent.synckolab) {
 		return fileContent;
 	}
+	
+	// ignore any img attachment - just work with the content
+	if(fileContent.content) {
+		fileContent = fileContent.content;
+	}
 
 	// fileContent should be a string - with indexOf
 	if(!fileContent.indexOf) {

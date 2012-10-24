@@ -992,7 +992,7 @@ synckolab.main.parseMessageRunner = function()
 		// fix the message for line truncs (last char in line is =)
 		// content might be a preparsed json
 		if(!synckolab.main.currentMessage.fileContent.synckolab) {
-			synckolab.main.currentMessage.fileContent = synckolab.main.currentMessage.fileContent.replace(/\=\n(\S)/g, "$1");
+			synckolab.main.currentMessage.fileContent = synckolab.main.currentMessage.fileContent.content.replace(/\=\n(\S)/g, "$1");
 		}
 		skcontent = synckolab.main.gSync.parseMessage(synckolab.main.currentMessage.fileContent, synckolab.main.updateMessagesContent, (synckolab.main.gLaterMessages.pointer === 0));
 	}

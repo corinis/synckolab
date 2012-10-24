@@ -241,6 +241,8 @@ equalsObject: function(a, b, skipFields)
 /**
  * Removes a possible mail header and extracts only the "real" content.
  * This also trims the message and removes some common problems (like -- at the end)
+ * @param skcontent the mail content
+ * @returns Object with content and image ({ content: STRING, image: STRING });
  */
 stripMailHeader: function (skcontent) {
 	if (skcontent === null) {
@@ -289,7 +291,9 @@ stripMailHeader: function (skcontent) {
 			skcontent = skcontent.substring(startPos, skcontent.length);
 		}
 
-		return synckolab.tools.text.trim(skcontent);
+		return {
+			content: synckolab.tools.text.trim(skcontent)
+		};
 	}
 
 	this.logMessage("Stripping header from multipart message", synckolab.global.LOG_DEBUG);
@@ -343,9 +347,12 @@ stripMailHeader: function (skcontent) {
 	// check if we have an image attachment
 	var imgC = skcontent;
 	var imgIdx = imgC.search(/Content-Type:[ \t\r\n]+image/i);
+	var imgName = "photo.png";
+	
+	// TODO figure out the picture name
 	
 	// only works in xul environment
-	if (imgIdx !== -1 && typeof Components !== "undefined")
+	if (imgIdx !== -1)
 	{
 		// get rid of the last part until the boundary
 		imgC = imgC.substring(imgIdx);
@@ -358,24 +365,9 @@ stripMailHeader: function (skcontent) {
 		idx = imgC.indexOf('\n\n');
 		imgC = imgC.substring(idx);
 		imgC = imgC.replace(/[\r\n \t\-]+/g, "");
-		// now we got one line of data - write it in a tmpfile (unencoded - obviously)
-		file.create(file.NORMAL_FILE_TYPE, parseInt("0666", 8));
-		var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
-		stream.init(file, 2, 0x200, false); // open as "write only"
-		var fileIO = Components.classes["@mozilla.org/binaryoutputstream;1"].createInstance(Components.interfaces.nsIBinaryOutputStream); 
-		fileIO.setOutputStream(stream);
-		
-		try {
-			var fcontent = atob(imgC);
-			fileIO.writeBytes(fcontent, fcontent.length);
-		}
-		catch (ex) {
-			// still continue
-			this.logMessage("Error while handling image: " + ex + "\nStream:\n" + imgC, synckolab.global.LOG_INFO);
-		}
-		
-		fileIO.close();
-		stream.close();
+	} else {
+		// no image attached
+		imgC = null;
 	}
 	
 	// check kolab XML first
@@ -523,19 +515,23 @@ stripMailHeader: function (skcontent) {
 		skcontent = synckolab.tools.text.quoted.decode(skcontent);
 	}
 
-	return synckolab.tools.text.trim(skcontent);
+	return {
+		content: synckolab.tools.text.trim(skcontent),
+		imageName: imgName,
+		image: imgC
+	};
 },
 
 /**
  * Create a message to be stored on the Kolab server
  *
- * cid: the id of the card/event
- * adsubject: optional additional subject (iCal or vCard)
- * mime: the mime type (application/x-vnd.kolab.contact, application/x-vnd.kolab.event, application/x-vnd.kolab.task, application/x-vnd.kolab.journal, text/x-vcard, text/calendar)
- * part: true if this is a multipart message
- * content: the content for the message
- * hr: human Readable Part (optional)
- * profileimage: optional image attachment (the name of the image - it always resides in profile/Photos/XXX.jpg!)
+ * @param cid the id of the card/event
+ * @param adsubject optional additional subject (iCal or vCard)
+ * @param mime the mime type (application/x-vnd.kolab.contact, application/x-vnd.kolab.event, application/x-vnd.kolab.task, application/x-vnd.kolab.journal, text/x-vcard, text/calendar)
+ * @param part true if this is a multipart message
+ * @param content the content for the message
+ * @param hr human Readable Part (optional)
+ * @param profileimage optional image attachment (the name of the image - it always resides in profile/Photos/XXX.jpg!)
  */
 generateMail: function (cid, mail, adsubject, mime, part, skcontent, hr, image){
 	// sometime we just do not want a new message :)
@@ -616,7 +612,7 @@ generateMail: function (cid, mail, adsubject, mime, part, skcontent, hr, image){
 			} else {
 				msg += acontent.slice(n);
 			}
-			msg += "\n";
+			msg += "=\n";
 			n+=80;
 		}
 	}
@@ -640,24 +636,9 @@ generateMail: function (cid, mail, adsubject, mime, part, skcontent, hr, image){
 	
 			file.append(imageName);
 			// file actually exists - we can try to read it and attach it
-			if (file.exists() && file.isReadable())
-			{
-				// setup the input stream on the file
-				var istream = Components.classes["@mozilla.org/network/file-input-stream;1"].createInstance(Components.interfaces.nsIFileInputStream);
-				istream.init(file, 0x01, 4, null);
-				var fileIO = Components.classes["@mozilla.org/binaryinputstream;1"].createInstance(Components.interfaces.nsIBinaryInputStream); 
-				fileIO.setInputStream(istream);
-				// get the image
-				var fileContent = "";
-				var csize = 0; 
-				while ((csize = fileIO.available()) !== 0)
-				{
-					var data = fileIO.readBytes(csize);
-					fileContent += btoa(data);
-				}
-				fileIO.close();
-				istream.close();
-
+			var fileContent = this.readFileIntoBase64(file);
+			
+			if (fileContent !== null) {
 				this.logMessage("got " + fileContent.length + " bytes", synckolab.global.LOG_WARNING);
 				
 				// now we got the image into fileContent - lets attach
@@ -684,6 +665,46 @@ generateMail: function (cid, mail, adsubject, mime, part, skcontent, hr, image){
 	}
 
 	return msg;
+},
+
+/**
+ * reads given file into a base64 string.
+ * 
+ */
+readFileIntoBase64: function (file) {
+	var fileContent = "";
+	if (file.exists() && file.isReadable())
+	{
+		// setup the input stream on the file
+		var istream = Components.classes["@mozilla.org/network/file-input-stream;1"].createInstance(Components.interfaces.nsIFileInputStream);
+		istream.init(file, 0x01, 4, null);
+		var fileIO = Components.classes["@mozilla.org/binaryinputstream;1"].createInstance(Components.interfaces.nsIBinaryInputStream); 
+		fileIO.setInputStream(istream);
+		// get the image
+		var csize = 0; 
+		while ((csize = fileIO.available()) !== 0)
+		{
+			var data = fileIO.readBytes(csize);
+			
+			// keep lines at 80 chars
+			var acontent = btoa(data);
+			var n = 0;
+			for (n= 0; n < acontent.length; )
+			{
+				if (n + 80 < acontent.length) {
+					fileContent += acontent.slice(n, n+80);
+				} else {
+					fileContent += acontent.slice(n);
+				}
+				fileContent += "=\n";
+				n+=80;
+			}
+		}
+		fileIO.close();
+		istream.close();
+		return fileContent;
+	}
+	return null;
 },
 
 /**
@@ -857,6 +878,47 @@ getMsgFolder: function (accountKey, path)
 
 
 synckolab.tools.file = {
+		
+	analyzeMimeType: function(mime) {
+		if(!mime) {
+			return "data";
+		}
+		
+		switch(mime.toLowerCase()) {
+		case "png":
+		case "image/png": 
+			return "png";
+		case "jpeg":
+		case "jpg":
+		case "image/jpg": 
+			return "png";
+		case "gif":
+		case "image/gif": 
+			return "gif";
+		case "bmp":
+		case "image/bmp": 
+		case "image/bitmap": 
+			return "bmp";
+		case "tiff":
+		case "tif":
+		case "image/tif": 
+		case "image/tiff": 
+			return "tif";
+		}
+		return "data";
+	},
+
+	getMimeType: function(ext) {
+		switch(ext.toLowerCase()) {
+		case "png": return "image/png";
+		case "gif": return "image/gif";
+		case "bmp": return "image/bmp";
+		case "tif": case "tiff": return "image/tif";
+		case "jpeg": case "jpg": return "image/jpg";
+		}
+		return "data/unknown";
+	},
+
 	/**
 	 * Copies a local file into any mail folder.
 	 * In order to be displayed correct, make sure to create a complete message file!!!

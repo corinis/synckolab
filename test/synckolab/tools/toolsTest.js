@@ -31,9 +31,9 @@ test("synckolab.Node", function(){
  * Test uuencoded message
  */
 test("synckolab.tools.uudecode", function(){
-	var content = readFile("test/synckolab/tools/data/uutest1.eml");
-	content = synckolab.tools.stripMailHeader(content);
-	equal(content.replace(/[\r\n]+/g, " "), ("BEGIN:VCARD " +
+	var message = readFile("test/synckolab/tools/data/uutest1.eml");
+	message = synckolab.tools.stripMailHeader(message);
+	equal(message.content.replace(/[\r\n]+/g, " "), ("BEGIN:VCARD " +
 "VERSION:3.0 " +
 "PRODID:-//kerio.com/Contacts//NONSGML v1.0//EN " +
 "ADR;TYPE=HOME:;;Street 1\\nStreet 2;City;;zipcode;France " +
