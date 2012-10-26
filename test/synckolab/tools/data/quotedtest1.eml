@@ -1,0 +1,24 @@
+From: test@no.com
+Reply-To: 
+Bcc: 
+To: synckolab@no.tld
+Subject: iCal bcf938ec-c5ce-49a9-bb89-5c5442c87415
+Date: Thu, 3 May 2007 12:22:32 +0200
+Content-Type: text/calendar;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: SyncKolab 0.4.33
+
+BEGIN:VCALENDAR
+PRODID:-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN
+VERSION:2.0
+BEGIN:VEVENT
+CREATED:20121026T122145Z
+LAST-MODIFIED:20121026T122205Z
+DTSTAMP:20121026T122205Z
+UID:19a700e7-c207-4e7c-a212-6831dbfbb0fc
+SUMMARY:test
+DTSTART;TZID=3DEurope/Rome:20121027T140000
+DTEND;TZID=3DEurope/Rome:20121027T150000
+END:VEVENT
+END:VCALENDAR

@@ -255,6 +255,7 @@ synckolab.tools.text = {
 			switch(tz) {
 			case "/kolab.org/Europe/Berlin": tz = 1; break;
 			case "/kolab.org/Europe/Vienna": tz = 1; break;
+			case "/kolab.org/Europe/Rome": tz = 1; break;
 			
 			}
 		}

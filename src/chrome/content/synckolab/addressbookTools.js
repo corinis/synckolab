@@ -1686,16 +1686,16 @@ synckolab.addressbookTools.card2Kolab3 = function (card, skipHeader, fields) {
 
 	var adate;
 	if (this.haveCardProperty(card, "BirthYear") && this.haveCardProperty(card, "BirthMonth") && this.haveCardProperty(card, "BirthDay")) {
-		adate = synckolab.tools.text.splitDate2String (card, "Birth", true);
+		adate = synckolab.tools.text.splitDate2String(card, "Birth", true);
 		xml += " <bday>" + synckolab.tools.text.nodeWithContent("date-time", adate + "T000000", false) + "</bday>\n";
 	}
 	
 	if (this.haveCardProperty(card, "AnniversaryYear") && this.haveCardProperty(card, "AnniversaryMonth") && this.haveCardProperty(card, "AnniversaryDay")) {
-		adate = synckolab.tools.text.splitDate2String (card, "Anniversary", true);
+		adate = synckolab.tools.text.splitDate2String(card, "Anniversary", true);
 		xml += " <anniversary>" + synckolab.tools.text.nodeWithContent("date", adate, false) + "</anniversary>\n";
 	}
 
-	// TODO photo name = photo - base64-Encoded
+	// photo name = photo - base64-Encoded
 	var ptype = this.getCardProperty(card, "PhotoType");
 	if(ptype === "inline") {
 		var fileName = this.getCardProperty(card, "PhotoName");
@@ -1704,19 +1704,6 @@ synckolab.addressbookTools.card2Kolab3 = function (card, skipHeader, fields) {
 		xml += " <photo>\n  <uri>data:" + ptype + ";base64," + synckolab.tools.text.splitInto(this.getCardProperty(card, "PhotoData"), 72) +
 			"</uri>\n </photo>";
 	}
-	/*
-	xml += synckolab.tools.text.nodeWithContent("picture", this.getCardProperty(card, "PhotoName"), false);
-
-	// we can probably ignore that
-	if (ptype === "web" || ptype === "file") {
-		* kolab:
-		 * 1. read the file: FILENAME = this.getCardProperty(card, "PhotoName")
-		 *		found in  ~profil/Photos/FILENAME
-		 * 2. create an attachment name FILENAME with the content (base64 encoded)
-		 *
-		xml += synckolab.tools.text.nodeWithContent("picture-uri", this.getCardProperty(card, "PhotoURI"), false); // we can distinguish between file: and http: anyways
-	}
-	*/
 	
 	xml += this.getXmlProperty(card, "AimScreenName", "impp", "uri");
 
@@ -3505,7 +3492,16 @@ synckolab.addressbookTools.card2Message = function (card, email, format, fields)
 			return synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vnd.kolab.contact.distlist", true, synckolab.tools.text.utf8.encode(this.list2Xml(card, fields)), this.list2Human(card));
 		} else {
 			// generat email with optional image attachment
-			return synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vnd.kolab.contact", true, synckolab.tools.text.utf8.encode(this.card2Xml(card, fields)), this.card2Human(card), this.getCardProperty(card, "PhotoName"));
+			var img = null;
+			var ptype = this.getCardProperty(card, "PhotoType");
+			if(ptype === "inline") {
+				img = {
+					name: this.getCardProperty(card, "PhotoName"),
+					data: this.getCardProperty(card, "PhotoData")
+				};
+			}
+					
+			return synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vnd.kolab.contact", true, synckolab.tools.text.utf8.encode(this.card2Xml(card, fields)), this.card2Human(card), img);
 		}
 	} else if(format === "xml-k3") {
 		// mailing list
@@ -3525,9 +3521,8 @@ synckolab.addressbookTools.card2Message = function (card, email, format, fields)
 	/*
 	return synckolab.tools.generateMail(this.getUID(card), email, "vCard", "text/vcard", 
 			false, decodeURIComponent(card.translateTo("vcard")), null);
-			- this works kinda... some fields ar emissing and others are wrong named in order to be compatible with kolab
+			- this works kinda... some fields are missing and others are wrong named in order to be compatible with kolab
 	*/
-
 };
 
 /*

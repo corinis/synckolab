@@ -555,7 +555,7 @@ getProfileFolder: function () {
  * @param part true if this is a multipart message
  * @param content the content for the message
  * @param hr human Readable Part (optional)
- * @param image optional image attachment (the name of the image - it always resides in profile/Photos/XXX.jpg!)
+ * @param image optional image attachment (must be {"name": nameOfImage, "data": base64data} )
  */
 generateMail: function (cid, mail, adsubject, mime, part, skcontent, hr, image){
 	// sometime we just do not want a new message :)
@@ -646,32 +646,17 @@ generateMail: function (cid, mail, adsubject, mime, part, skcontent, hr, image){
 	}
 	
 	// if we have an image try to read it and create a new part (ONLY for xml)
-	if (part && image) {
-		var file = this.getProfileFolder();
+	if (part && image && image.data) {
 		try {
-			file.append("Photos");
-			if (!file.exists()) {
-				file.create(1, parseInt("0775", 8));
-			}
-			
-			// fix newName: we can have C:\ - file:// and more - remove all that and put it in the photos folder
-			var imageName = image.replace(/[^A-Za-z0-9._ \-]/g, "");
-			imageName = imageName.replace(/ /g, "_");
-	
-			file.append(imageName);
-			// file actually exists - we can try to read it and attach it
-			var fileContent = this.readFileIntoBase64(file);
-			
-			if (fileContent !== null) {
-				this.logMessage("got " + fileContent.length + " bytes", synckolab.global.LOG_INFO);
-				
+			if (image.data !== null) {
 				// now we got the image into fileContent - lets attach
-				
 				msg += '\n--Boundary-00='+bound+'\n';
-				msg += 'Content-Type: image/jpeg;\n name="'+image+'"\n';
+				// based on the name - get the MIME
+				var ptype = synckolab.tools.file.getMimeType(image.name.substring(image.name.lastIndexOf(".")+1));
+				msg += 'Content-Type: '+ptype+';\n name="'+image.name+'"\n';
 				msg += 'Content-Transfer-Encoding: base64\n';
-				msg += 'Content-Disposition: attachment;\n filename="'+image+'"\n\n';
-				msg += fileContent;
+				msg += 'Content-Disposition: attachment;\n filename="'+image.name+'"\n\n';
+				msg += synckolab.tools.text.splitInto(image.data, 72);
 			}
 		}
 		catch (ex)
