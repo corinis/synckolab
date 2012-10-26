@@ -371,6 +371,8 @@ stripMailHeader: function (skcontent) {
 		if (idx !== -1) {
 			imgC = imgC.substring(0, idx);
 		}
+		// get rid of windows encoding
+		imgC = imgC.replace(/\r/g, "");
 		
 		// get the image data (make sure to remove \n and whitespace
 		idx = imgC.indexOf('\n\n');

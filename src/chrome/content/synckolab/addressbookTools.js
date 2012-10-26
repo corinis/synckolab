@@ -1044,6 +1044,11 @@ synckolab.addressbookTools.xml2Card = function (xml, card, attachment) {
 				if (cur.firstChild === null) {
 					break;
 				}
+				// we might already have an attached image.. then we can ignore this
+				if(this.getCardProperty(card, "PhotoType") === "inline") {
+					break;
+				}
+				
 				var uri = cur.getFirstData();
 				// check for local
 				if (uri.indexOf("file") === 0) {

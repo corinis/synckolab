@@ -13,7 +13,7 @@ load("test/lib/testOverride.js");
 test("skolab2 ynckolab.addressbookTools.parseMessageContent", function(){
 	equal(null, synckolab.addressbookTools.parseMessageContent(null), "parsing a null message");
 	
-	var testFiles = ["testcontact", "contactMinimalTest", "contactFullTest", "list.test", "list.test2"];
+	var testFiles = ["test-image", "testcontact", "contactMinimalTest", "contactFullTest", "list.test", "list.test2"];
 	var content, entry, jsonEntry;
 	
 	for(var i = 0; i < testFiles.length; i++) {
