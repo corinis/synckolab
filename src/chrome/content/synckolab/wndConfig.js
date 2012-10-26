@@ -1269,13 +1269,13 @@ synckolab.settings.resetConfiguration = function (account, type, config)
 {
 	synckolab.tools.logMessage("Resetting " + account + "!", synckolab.global.LOG_INFO);
 
-	var file = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsIFile);
+	var file = synckolab.tools.getProfileFolder();
 	file.append("synckolab." + synckolab.tools.text.fixNameToMiniCharset(account) + "." + type + "." + config + ".hdb");
 	if (file.exists()) {
 		file.remove(true);
 	}
 
-	file = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsIFile);
+	file = synckolab.tools.getProfileFolder();
 	file.append("synckolab");
 
 	if (!file.exists()) {

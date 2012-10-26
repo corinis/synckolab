@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <vcards xmlns="urn:ietf:params:xml:ns:vcard-4.0">
 <vcard>
- <uid><urn>urn:uuid:Huu5X7hfYy</urn></uid>
+ <uid><uri>urn:uuid:Huu5X7hfYy</uri></uid>
  <x-kolab-version><text>3.0dev1</text></x-kolab-version>
  <prodid><text>SyncKolab 3.0.0, Kolab resource</text></prodid>
  <rev><timestamp>19700101T000000ZZ</timestamp></rev>
- <kind>
-   <text>individual</text>
- </kind>
+ <kind><text>individual</text></kind>
  <fn><text>Displayname</text></fn>
  <n>
    <surname>Firstname</surname>
@@ -45,11 +43,35 @@
     <text>Nickname</text>
  </nickname>
  <bday>
-   <date-time>2043</date-time>
+   <date-time>20090727T000000</date-time>
  </bday>
  <anniversary>
-   <date-time>2009-7-28</date-time>
+   <date>20090728</date>
  </anniversary>
+ <photo>
+   <uri>data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAA
+Bw4pVUAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAOTQAADpwB3vacVwAABAVJREFUeJztn
+cFrFGcYxt/szLrJmk2yWTeojQktQluiqNFeKglSQmsOHhRyUApKPbeHQC8taKl4E0Hw4sGT
+oAcvgojVQCg0B+2ph0DprTlYs7SQsNlkdzKzmf4DzxvYsCRP9Pkdn5n53iG/fPDy7TczZkI
+IIYQQov107PQNtI0vrR/mOfveveap/eAcSXeqRsYdSOwIEkKGhJAhIWRICBkSQsbua3u/sl
+EUj346OoPyUrGEW1Uzm5mfycMDNRtB8ciHIy9RXswXi16NuYU5XOOx1VGsGUKGhJAhIWRIC
+BkSQka40zfgcs6uoHjis4l7KB8fG8+ifPa3Wb9GZJdRPHZq7A7KTx45CWu8/uO1X6NFNEPI
+kBAyJIQMCSFDQsjYni4rxWtmnVOdsGMyM5s8PfkNyocPDwcor1QrcJwoiNzbOvvF2bsoL5f
+KsMZidRGOU7OaW6NVNEPIkBAyJIQMCSFDQshob5flbCTr/br3BcrPjJ854Q2V78/DTudt9S
+08P7YY5uXhslfC4jjGNdZwjaSewHwtXHNrtIpmCBkSQoaEkCEhZEgIGRJCxtba3vN4s1q5N
+ADb2+MfHYMbyRqZBmw7zcxqq3jBLg5xe5tkcEu6buteCUsSfE0cOzUifH4jbLg1WkUzhAwJ
+IUNCyJAQMiSEDL/LumQXvENDhaFHKB/sG4QbyZaiJfgTblLDXYuZWZzHnc56irum9SzOkw6
+/RtOaOE9xnjTxWJmwff/XmiFkSAgZEkKGhJAhIWT4XVYQuOtMS7Vl+J6ON3+/gedv7NvAA5
+X8G0uL+HUj5j1eCfu7TfLNjjmlzdlz19XEz3VuBc0QMiSEDAkhQ0LIkBAy/C7rQfOxd2jl6
+toCygufFJ6jPGlEPSiv5+p+/b1OXnByr/varAHyuinv6QLn/CByG9KW0QwhQ0LIkBAyJIQM
+CSFDQsjY2ka5+8nvKF6ZXv4Y5YWBnl9R3pfthOebmS1nl/C9dToXOO1wrj/nlbAocVYLvXZ
+4FcdBs32P2WiGkCEhZEgIGRJChoSQ0d6ncG/bfyheSatHUd71c/dDb6gDuQ+mUL6Y/gNX8t
+IUt0Z9/7qv7bVKXME74jIbeLXQ+SU6zKjLemeREDIkhAwJIUNCyNieN8p14NWhutUuepdEP
+zVeofxQbugWyivVRa/78r8A8Zf9CPOBzA0U70lC+PcK0qBtX5nQDCFDQsiQEDIkhAwJIWP3
+fYPqevg5ig8ePPALynu7e72tdfbnk3m8je54eArF+8v7n6G8mOnza7xwaugbVLsDCSFDQsi
+QEDIkhAwJIWP3tb0eNw2+MTnoyl7zLmlOx985h/DvwV6Nnk1qfNtaDc0QMiSEDAkhQ0LIkB
+AhhBBCCPEe8D+b5dDLeP4TXAAAAABJRU5ErkJggg</uri>
+   </photo>
  <tel>
   <parameters><type><text>home</text></type></parameters>
   <text>+4930-homephone</text>

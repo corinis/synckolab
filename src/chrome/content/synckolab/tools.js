@@ -540,6 +540,13 @@ stripMailHeader: function (skcontent) {
 },
 
 /**
+ * get the profile folder object
+ */
+getProfileFolder: function () {
+	return Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsIFile);
+},
+
+/**
  * Create a message to be stored on the Kolab server
  *
  * @param cid the id of the card/event
@@ -548,7 +555,7 @@ stripMailHeader: function (skcontent) {
  * @param part true if this is a multipart message
  * @param content the content for the message
  * @param hr human Readable Part (optional)
- * @param profileimage optional image attachment (the name of the image - it always resides in profile/Photos/XXX.jpg!)
+ * @param image optional image attachment (the name of the image - it always resides in profile/Photos/XXX.jpg!)
  */
 generateMail: function (cid, mail, adsubject, mime, part, skcontent, hr, image){
 	// sometime we just do not want a new message :)
@@ -640,7 +647,7 @@ generateMail: function (cid, mail, adsubject, mime, part, skcontent, hr, image){
 	
 	// if we have an image try to read it and create a new part (ONLY for xml)
 	if (part && image) {
-		var file = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsIFile);
+		var file = this.getProfileFolder();
 		try {
 			file.append("Photos");
 			if (!file.exists()) {
@@ -656,7 +663,7 @@ generateMail: function (cid, mail, adsubject, mime, part, skcontent, hr, image){
 			var fileContent = this.readFileIntoBase64(file);
 			
 			if (fileContent !== null) {
-				this.logMessage("got " + fileContent.length + " bytes", synckolab.global.LOG_WARNING);
+				this.logMessage("got " + fileContent.length + " bytes", synckolab.global.LOG_INFO);
 				
 				// now we got the image into fileContent - lets attach
 				
@@ -676,7 +683,7 @@ generateMail: function (cid, mail, adsubject, mime, part, skcontent, hr, image){
 	}
 
 	if (part) {
-		msg += '--Boundary-00='+bound+'--\n';
+		msg += '\n--Boundary-00='+bound+'--\n';
 	} else {
 		msg += '\n';
 	}
@@ -970,7 +977,7 @@ synckolab.tools.file = {
 		
 		synckolab.tools.logMessage("syncDbFile:  (" +synckolab.tools.text.fixNameToMiniCharset(config.serverKey) + "/" + config.type + "_" + config.name + "/" + id + ")", synckolab.global.LOG_ERROR);
 		
-		var file = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsIFile);
+		var file = synckolab.tools.getProfileFolder();
 		try {
 			file.append("synckolab");
 			if (!file.exists()) {
@@ -1097,7 +1104,7 @@ synckolab.tools.readSyncDBFile = function (file, direct)
  */
 synckolab.tools.file.getHashDataBaseFile = function (config)
 {
-	var file = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsIFile);
+	var file = synckolab.tools.getProfileFolder();
 	file.append("synckolab." + synckolab.tools.text.fixNameToMiniCharset(config.serverKey) + "." + config.name + "." + config.type+".hdb");
 	return file;
 };

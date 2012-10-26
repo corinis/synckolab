@@ -640,7 +640,7 @@ synckolab.AddressBook = {
 		if (pNameA && pNameA !== "" && pNameA !== "null")
 		{
 			// delete actual image
-			var fileTo = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsIFile);
+			var fileTo = synckolab.tools.getProfileFolder();
 			fileTo.append("Photos");
 			if (!fileTo.exists()) {
 				fileTo.create(1, parseInt("0775", 8));

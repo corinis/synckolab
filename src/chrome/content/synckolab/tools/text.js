@@ -340,6 +340,17 @@ synckolab.tools.text = {
 		calDateTime.jsDate = jsDate;
 		return calDateTime;
 	},
+	
+	
+	splitDate2String: function(obj, prefix, compact) {
+		if(!obj || !obj[prefix+ "Year"]) {
+			return null;
+		}
+		return (Number(obj[prefix+ "Year"]) < 1800 ? "20" : "") + (Number(obj[prefix+ "Year"]) < 10 ? "0" : "") + obj[prefix+ "Year"] + (compact?'':'-') + 
+			(Number(obj[prefix+ "Month"]) < 10 ? "0" : "") + obj[prefix+ "Month"] + (compact?'':'-') +
+			(Number(obj[prefix+ "Day"]) < 10 ? "0" : "") + obj[prefix+ "Day"];
+		
+	},
 
 	// produces: 2005-03-30
 	date2String : function (datetime, normal, compact) {
@@ -516,6 +527,25 @@ synckolab.tools.text = {
 
 		// final
 		return t.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+	},
+	/**
+	 * @param text text to split
+	 * @param width the line width to split into
+	 */
+	splitInto: function(text, width) {
+		var out = "";
+		var n = 0;
+		for (n= 0; n < text.length; )
+		{
+			if (n + width < text.length) {
+				out += text.slice(n, n+width);
+			} else {
+				out += text.slice(n);
+			}
+			out += "\n";
+			n+=width;
+		}
+		return out;
 	},
 
 	URLDecode : function (encoded) {

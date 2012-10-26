@@ -1547,7 +1547,7 @@ synckolab.addressbookTools.copyImage = function (newName) {
 		return false;
 	}
 
-	var fileTo = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsIFile);
+	var fileTo = synckolab.tools.getProfileFolder();
 	fileTo.append("Photos");
 	if (!fileTo.exists()) {
 		fileTo.create(1, parseInt("0775", 8));
@@ -1686,21 +1686,28 @@ synckolab.addressbookTools.card2Kolab3 = function (card, skipHeader, fields) {
 
 	var adate;
 	if (this.haveCardProperty(card, "BirthYear") && this.haveCardProperty(card, "BirthMonth") && this.haveCardProperty(card, "BirthDay")) {
-		adate = this.getCardProperty(card, "BirthYear") + this.getCardProperty(card, "BirthMonth") + this.getCardProperty(card, "BirthDay");
-		xml += " <bday>" + synckolab.tools.text.nodeWithContent("date-time", adate, false) + "</bday>\n";
+		adate = synckolab.tools.text.splitDate2String (card, "Birth", true);
+		xml += " <bday>" + synckolab.tools.text.nodeWithContent("date-time", adate + "T000000", false) + "</bday>\n";
 	}
 	
 	if (this.haveCardProperty(card, "AnniversaryYear") && this.haveCardProperty(card, "AnniversaryMonth") && this.haveCardProperty(card, "AnniversaryDay")) {
-		adate = this.getCardProperty(card, "AnniversaryYear") + "-" + this.getCardProperty(card, "AnniversaryMonth") + "-" + this.getCardProperty(card, "AnniversaryDay");
-		xml += " <anniversary>" + synckolab.tools.text.nodeWithContent("date-time", adate, false) + "</anniversary>\n";
+		adate = synckolab.tools.text.splitDate2String (card, "Anniversary", true);
+		xml += " <anniversary>" + synckolab.tools.text.nodeWithContent("date", adate, false) + "</anniversary>\n";
 	}
 
 	// TODO photo name = photo - base64-Encoded
+	var ptype = this.getCardProperty(card, "PhotoType");
+	if(ptype === "inline") {
+		var fileName = this.getCardProperty(card, "PhotoName");
+		// based on the name - get the MIME
+		ptype = synckolab.tools.file.getMimeType(fileName.substring(fileName.lastIndexOf(".")+1));
+		xml += " <photo>\n  <uri>data:" + ptype + ";base64," + synckolab.tools.text.splitInto(this.getCardProperty(card, "PhotoData"), 72) +
+			"</uri>\n </photo>";
+	}
 	/*
 	xml += synckolab.tools.text.nodeWithContent("picture", this.getCardProperty(card, "PhotoName"), false);
 
 	// we can probably ignore that
-	var ptype = this.getCardProperty(card, "PhotoType");
 	if (ptype === "web" || ptype === "file") {
 		* kolab:
 		 * 1. read the file: FILENAME = this.getCardProperty(card, "PhotoName")
@@ -1840,8 +1847,7 @@ synckolab.addressbookTools.card2Pojo = function (card, uid, fields) {
 	                  "AnniversaryYear", "AnniversaryMonth", "AnniversaryDay", "HomeAddress",
 	                  "HomeAddress2", "HomeCity", "HomeState", "HomeZipCode", "HomeCountry", "WorkAddress",
 	                  "WorkAddress2", "WorkCity", "WorkState", "WorkZipCode", "WorkCountry",
-	                  "PhotoName", "PhotoType", "PhotoURI", "Notes", "Department",
-	                  "WebPage1", "WebPage2", "WebPage3",
+	                  "Notes", "Department", "WebPage1", "WebPage2", "WebPage3",
 	                  "AimScreenName", "Custom1", "Custom2", "Custom3", "Custom4", "AllowRemoteContent", "PreferMailFormat",
 	                  "Profesion"];
 	var i;
@@ -1850,6 +1856,56 @@ synckolab.addressbookTools.card2Pojo = function (card, uid, fields) {
 	}
 	
 	this.setUID(pojo, uid);
+	
+	// handle photo
+	var uri = this.getCardProperty(card, "PhotoURI");
+	if(uri) {
+		// we got a local file
+		if(uri.indexOf("file:") === 0) {
+			/* 
+			 * 1. read the file: FILENAME = this.getCardProperty(card, "PhotoName")
+			 *		found in  ~profil/Photos/FILENAME
+			 * 2. create an attachment name FILENAME with the content (base64 encoded)
+			 */
+			
+			// image is the last part of the uri
+			var image = uri.substring(uri.lastIndexOf("/"));
+			
+			var file = synckolab.tools.getProfileFolder();
+			try {
+				file.append("Photos");
+				if (!file.exists()) {
+					file.create(1, parseInt("0775", 8));
+				}
+				
+				// fix newName: we can have C:\ - file:// and more - remove all that and put it in the photos folder
+				var imageName = image.replace(/[^A-Za-z0-9._ \-]/g, "");
+				imageName = imageName.replace(/ /g, "_");
+		
+				file.append(imageName);
+				// file actually exists - we can try to read it and attach it
+				var fileContent = this.readFileIntoBase64(file);
+
+				// if we have a file - put it in
+				if (fileContent !== null) {
+					this.setCardProperty("PhotoType", "inline");
+					this.setCardProperty("PhotoData", fileContent);
+					// last part of the path is the name
+					this.setCardProperty("PhotoName", uri.substring(uri.lastIndexOf("/")));
+				}
+			}
+			catch (ex)
+			{
+				this.logMessage("Unable to read image: "+image+"\n" + ex, synckolab.global.LOG_WARNING);
+				return null;
+			}
+		} else {
+			this.setCardProperty("PhotoType", "web");
+			this.setCardProperty("PhotoData", uri);
+		}
+	}
+	
+
 	/*
 case "PHOTO": // kolab3
 	// handle photo VERY special... TODO
@@ -2030,12 +2086,7 @@ synckolab.addressbookTools.card2Xml = function (card, fields) {
 
 	// we can probably ignore that
 	var ptype = this.getCardProperty(card, "PhotoType");
-	if (ptype === "web" || ptype === "file") {
-		/* kolab:
-		 * 1. read the file: FILENAME = this.getCardProperty(card, "PhotoName")
-		 *		found in  ~profil/Photos/FILENAME
-		 * 2. create an attachment name FILENAME with the content (base64 encoded)
-		 */
+	if (ptype === "web") {
 		xml += synckolab.tools.text.nodeWithContent("picture-uri", this.getCardProperty(card, "PhotoURI"), false); // we can distinguish between file: and http: anyways
 	}
 
