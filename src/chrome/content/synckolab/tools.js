@@ -46,6 +46,18 @@ synckolab.tools = {
 	logStart: -1,
 	lastmsg: -1,
 
+/**
+ * @return a stack trace or an empty string
+ */
+trace: function() {
+	try {
+		throw new Error("myError");
+	}
+	catch(e) {
+		return e.stack;
+	}	
+	return "";
+},
 	/**
 	 * Prints out debug messages to the cosole if the global variable DEBUG_SYNCKOLAB is set to true
 	 * Also prints out performance related stuff
@@ -90,11 +102,10 @@ logMessage: function (msg, level) {
 		}
 		// report errors as error
 		if (clvl === synckolab.global.LOG_ERROR && Components.utils.reportError) {
-			var err = new Error("" + msg);
-			Components.utils.reportError("" + msg + err.stack);
+			Components.utils.reportError("" + msg + "\nStack Trace: " + this.trace());
 		} else 
 		if (clvl === synckolab.global.LOG_ERROR) {
-			synckolab.global.consoleService.logStringMessage("" + msg + new Error("" + msg).stack);
+			synckolab.global.consoleService.logStringMessage("" + msg + "\nStack Trace: " + this.trace());
 		} else {
 			synckolab.global.consoleService.logStringMessage(msg);
 		}
@@ -189,7 +200,7 @@ equalsObject: function(a, b, skipFields)
 			{
 				continue;
 			}
-			synckolab.tools.logMessage("not equals: " + p + " a: " + a[p] + " b: " + b[p], synckolab.global.LOG_DEBUG);
+			synckolab.tools.logMessage("not equals: " + p + " a: " + a[p] + " b: " + b[p], synckolab.global.LOG_INFO);
 			return false;
 		}
 	}
@@ -201,7 +212,7 @@ equalsObject: function(a, b, skipFields)
 				switch(typeof(a[p])) {
 				case 'object':
 					if (!this.equalsObject(a[p], b[p])) { 
-						synckolab.tools.logMessage("not equals: " + p + " a: " + a[p] + " b: " + b[p], synckolab.global.LOG_DEBUG);
+						synckolab.tools.logMessage("not equals: " + p + " a: " + a[p] + " b: " + b[p], synckolab.global.LOG_INFO);
 						return false; 
 					} 
 					break;
@@ -212,13 +223,13 @@ equalsObject: function(a, b, skipFields)
 						break;
 					}
 					if (a[p] !== b[p] && Number(a[p]) !== Number(b[p])) { 
-						synckolab.tools.logMessage("not equals: : " + p + " a: " + a[p] + " b: " + b[p], synckolab.global.LOG_DEBUG);
+						synckolab.tools.logMessage("not equals: : " + p + " a: " + a[p] + " b: " + b[p], synckolab.global.LOG_INFO);
 						return false; 
 					}
 				}
 			} else {
 				if (b[p]) {
-					synckolab.tools.logMessage("not equals: " + p + " a: not found b: " + b[p], synckolab.global.LOG_DEBUG);
+					synckolab.tools.logMessage("not equals: " + p + " a: not found b: " + b[p], synckolab.global.LOG_INFO);
 					return false;
 				}
 			}
@@ -230,7 +241,7 @@ equalsObject: function(a, b, skipFields)
 			if(skipFields && skipFields[p]) { 
 				continue;
 			}
-			synckolab.tools.logMessage("not equals: " + p + " a: " + (a?a[p]:'is null') + " b: " + b[p], synckolab.global.LOG_DEBUG);
+			synckolab.tools.logMessage("not equals: " + p + " a: " + (a?a[p]:'is null') + " b: " + b[p], synckolab.global.LOG_INFO);
 			return false;
 		}
 	}
@@ -425,11 +436,11 @@ stripMailHeader: function (skcontent) {
 		isQP = skcontent.search(/Content-Transfer-Encoding:[ \t\r\n]+quoted-printable/i);
 		var isBase64 = skcontent.search(/Content-Transfer-Encoding:[ \t\r\n]+base64/i);
 
-		this.logMessage("contentIdx === -1: looks like its encoded: QP=" + isQP + " B64=" + isBase64);
+		this.logMessage("contentIdx === -1: looks like its encoded: QP=" + isQP + " B64=" + isBase64, synckolab.global.LOG_DEBUG);
 		
 		if (isBase64 !== -1)
 		{
-			this.logMessage("Base64 Decoding message. (Boundary: "+boundary+")", synckolab.global.LOG_INFO);
+			this.logMessage("Base64 Decoding message. (Boundary: "+boundary+")", synckolab.global.LOG_DEBUG);
 			// get rid of the header
 			skcontent = skcontent.substring(isBase64, skcontent.length);
 			startPos = skcontent.indexOf("\r\n\r\n");
@@ -458,7 +469,7 @@ stripMailHeader: function (skcontent) {
 				// out of memory error... this can be handled :)
 				if (e.result === Components.results.NS_ERROR_OUT_OF_MEMORY)
 				{
-					skcontent = synckolab.text.base64.decode(skcontent);
+					skcontent = synckolab.tools.text.base64.decode(skcontent);
 					this.logMessage("decoded base64: " + skcontent, synckolab.global.LOG_DEBUG);
 
 				}
@@ -467,6 +478,10 @@ stripMailHeader: function (skcontent) {
 					this.logMessage("Error decoding base64 (" + e + "): " + skcontent, synckolab.global.LOG_ERROR);
 					return null;
 				}
+			}
+			// decode utf8
+			if(skcontent) {
+				skcontent = synckolab.tools.text.utf8.decode(skcontent);
 			}
 		}
 		
@@ -511,7 +526,7 @@ stripMailHeader: function (skcontent) {
 	// check if we have to decode quoted printable
 	if (skcontent.indexOf(" version=3D") !== -1 || skcontent.indexOf("TZID=3D")) // we know from the version (or in case of citadel from the tzid)
 	{
-		this.logMessage("Message is quoted", synckolab.global.LOG_INFO);
+		this.logMessage("Message is quoted", synckolab.global.LOG_DEBUG);
 		skcontent = synckolab.tools.text.quoted.decode(skcontent);
 	}
 

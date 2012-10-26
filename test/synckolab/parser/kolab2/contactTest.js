@@ -13,13 +13,15 @@ load("test/lib/testOverride.js");
 test("skolab2 ynckolab.addressbookTools.parseMessageContent", function(){
 	equal(null, synckolab.addressbookTools.parseMessageContent(null), "parsing a null message");
 	
-	var testFiles = ["contactMinimalTest", "contactFullTest", "list.test", "list.test2"];
+	var testFiles = ["testcontact", "contactMinimalTest", "contactFullTest", "list.test", "list.test2"];
 	var content, entry, jsonEntry;
 	
 	for(var i = 0; i < testFiles.length; i++) {
 		var src = testFiles[i];
+		print("INFO: KOLAB 2 TESTING CONTACT: " + src +"\n");
 		
-		content = readFile("test/synckolab/parser/kolab2/raw/"+src+".xml");
+		content = readFile("test/synckolab/parser/kolab2/raw/"+src+".eml");
+		content = synckolab.tools.stripMailHeader(content);
 		entry = synckolab.addressbookTools.parseMessageContent(content);
 		content = readFile("test/synckolab/parser/kolab2/json/"+src+".json");
 		jsonEntry = JSON.parse(content);

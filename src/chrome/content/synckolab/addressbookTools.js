@@ -886,6 +886,10 @@ synckolab.addressbookTools.xml2Card = function (xml, card, attachment) {
 				}
 				// convert to date
 				tok = synckolab.tools.text.string2DateTime(tok);
+				if (!tok || tok+"" === "Invalid Date") {
+					synckolab.tools.logMessage("Unable to parse birthday: " + cur.getFirstData(), synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
+					break;
+				}
 
 				this.setCardProperty(card, "BirthYear", tok.getFullYear());
 				this.setCardProperty(card, "BirthMonth", tok.getMonth()+1);	// getMoth starts with jan=0
@@ -913,6 +917,10 @@ synckolab.addressbookTools.xml2Card = function (xml, card, attachment) {
 				}
 				// convert to date
 				tok = synckolab.tools.text.string2DateTime(tok);
+				if (!tok || tok+"" === "Invalid Date") {
+					synckolab.tools.logMessage("Unable to parse anniversary: " + cur.getFirstData(), synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
+					break;
+				}
 
 				this.setCardProperty(card, "AnniversaryYear", tok.getFullYear());
 				this.setCardProperty(card, "AnniversaryMonth", tok.getMonth()+1);	// getMoth starts with jan=0
@@ -1002,12 +1010,12 @@ synckolab.addressbookTools.xml2Card = function (xml, card, attachment) {
 						// data:image/png;base64,BASE64DATA
 						types = types.substring(5);	// cut away data:
 						tok = types.indexOf(";");	// search for the mime
-						where = synckolab.tools.file.analyzeMimeType(type.substring(0, tok).toLowerCase());
+						where = synckolab.tools.file.analyzeMimeType(types.substring(0, tok).toLowerCase());
 						// set the type
 						this.setCardProperty(card, "PhotoType", "inline");
 						this.setCardProperty(card, "PhotoName", "photo." + where);	// generate filename
 						
-						where = type.substring(tok);
+						where = types.substring(tok);
 						if(where.indexOf("base64") !== -1) {
 							tok = value.indexOf(",");
 							// get rid of newlines and =
@@ -1057,6 +1065,14 @@ synckolab.addressbookTools.xml2Card = function (xml, card, attachment) {
 				this.setCardProperty(card, "Notes", cnotes.replace(/\\n/g, "\n"));
 				found = true;
 				break;
+			case "PROFESSION":
+				if (cur.firstChild === null) {
+					break;
+				}
+				this.setCardProperty(card, "Profession", cur.getFirstData());
+				found = true;
+				break;
+				
 			case "DEPARTMENT":
 				if (cur.firstChild === null) {
 					break;
@@ -1209,8 +1225,13 @@ synckolab.addressbookTools.xml2Card = function (xml, card, attachment) {
 			case "X-CUSTOM": // kolab3
 				tok = cur.getXmlResult("identifier", "");
 				value = cur.getXmlResult("value", "");
+				// skip empty value
+				if(value === "") {
+					break;
+				}
 				switch(tok) {
 				case "X-AllowRemoteContent": this.setCardProperty(card, "AllowRemoteContent", 'TRUE' === value.toUpperCase()); break;
+				case "X-Profession": this.setCardProperty(card, "Profession", value); break;
 				case "X-Custom1": this.setCardProperty(card, "Custom1", value); break;
 				case "X-Custom2": this.setCardProperty(card, "Custom2", value); break;
 				case "X-Custom3": this.setCardProperty(card, "Custom3", value); break;
@@ -1261,7 +1282,7 @@ synckolab.addressbookTools.xml2Card = function (xml, card, attachment) {
 			case "LONGITUDE":
 			case "ASSISTANT":
 			case "MANAGER-NAME":
-			case "PROFESSION":
+			case "PREFERRED-ADDRESS":
 			case "SPOUSE-NAME":
 			case "CHILDREN":
 			case "GENDER":
@@ -1403,7 +1424,6 @@ synckolab.addressbookTools.list2Kolab3 = function (card, fields) {
 	}
 
 	xml += "</vcard>\n</vcards>\n";
-	synckolab.tools.logMessage("list: " + xml, synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 
 	return xml;
 };
@@ -1759,6 +1779,10 @@ synckolab.addressbookTools.card2Kolab3 = function (card, skipHeader, fields) {
 		xml += " <x-custom><identifier>X-Custom4</identifier><value>"+this.getCardProperty(card, "Custom4")+"</value></x-custom>\n";
 	}
 
+	if (this.getCardProperty(card, "Profession")) {
+		xml += " <x-custom><identifier>Profession</identifier><value>"+this.getCardProperty(card, "Profession")+"</value></x-custom>\n";
+	}
+
 	if (this.getCardProperty(card, "AllowRemoteContent")) {
 		xml += " <x-custom><identifier>X-AllowRemoteContent</identifier><value>true</value></x-custom>\n";
 	} else {
@@ -1813,7 +1837,8 @@ synckolab.addressbookTools.card2Pojo = function (card, uid, fields) {
 	                  "WorkAddress2", "WorkCity", "WorkState", "WorkZipCode", "WorkCountry",
 	                  "PhotoName", "PhotoType", "PhotoURI", "Notes", "Department",
 	                  "WebPage1", "WebPage2", "WebPage3",
-	                  "AimScreenName", "Custom1", "Custom2", "Custom3", "Custom4", "AllowRemoteContent", "PreferMailFormat"];
+	                  "AimScreenName", "Custom1", "Custom2", "Custom3", "Custom4", "AllowRemoteContent", "PreferMailFormat",
+	                  "Profesion"];
 	var i;
 	for(i = 0; i < copyFields.length; i++) {
 		this.setCardProperty(pojo, copyFields[i], this.getCardProperty(card, copyFields[i]));
@@ -2014,6 +2039,7 @@ synckolab.addressbookTools.card2Xml = function (card, fields) {
 	xml += synckolab.tools.text.nodeWithContent("custom2", this.getCardProperty(card, "Custom2"), false);
 	xml += synckolab.tools.text.nodeWithContent("custom3", this.getCardProperty(card, "Custom3"), false);
 	xml += synckolab.tools.text.nodeWithContent("custom4", this.getCardProperty(card, "Custom4"), false);
+	xml += synckolab.tools.text.nodeWithContent("profession", this.getCardProperty(card, "Profession"), false);
 	if (this.getCardProperty(card, "AllowRemoteContent")) {
 		xml += synckolab.tools.text.nodeWithContent("allow-remote-content", "true", false);
 	} else {

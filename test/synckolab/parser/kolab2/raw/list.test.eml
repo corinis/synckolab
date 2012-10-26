@@ -1,4 +1,4 @@
-From: niko.berger@corinis.com
+From: owner@no.tld
 Reply-To: 
 Bcc: 
 To: synckolab@no.tld
@@ -22,8 +22,8 @@ Name: list-name
 Notes: list-description
 Members: 
 
-testöä lastname <email@mail.com>
-cont2#öüä&$ <weird@email.com>
+testï¿½ï¿½ lastname <email@mail.com>
+cont2#ï¿½ï¿½ï¿½&$ <weird@email.com>
 ---
 
 Notice:

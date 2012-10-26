@@ -1,5 +1,31 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<contact version="1.0" >
+Date: Fri, 27 Apr 2012 02:25:38 +0200
+X-Kolab-Type: application/x-vnd.kolab.contact
+X-Kolab-Mime-Version: 3.0
+User-Agent: Libkolab-0.2.0
+Content-Type: multipart/mixed; boundary="nextPart38186565.1WqI9LYOEs"
+Subject: Huu5X7hfYy
+From: Displayname <first@email.org>
+MIME-Version: 1.0
+
+
+--nextPart38186565.1WqI9LYOEs
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+
+This is a Kolab Groupware object.
+To view this object you will need an email client that can understand the Kolab Groupware format.
+For a list of such email clients please visit
+http://www.kolab.org/kolab2-clients.html
+
+--Boundary-00=6988F02CCC809628
+Content-Type: application/x-vnd.kolab.contact;
+ name="kolab.xml"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment;
+ filename="kolab.xml"
+
+<?xml version=3D"1.0" encoding=3D"UTF-8"?>
+<contact version=3D"1.0" >
  <product-id>SyncKolab, Kolab resource</product-id>
  <uid>pas-id-1D84CEA337CD1878</uid>
  <last-modification-date>2012-07-04T10:45:33Z</last-modification-date>
@@ -38,7 +64,7 @@ note with öäü!</body>
   <type>page</type>
   <number>01-page</number>
  </phone>
- <email type="primary">
+ <email type=3D"primary">
   <display-name>testöä lastname</display-name>
   <smtp-address>email@mail.com</smtp-address>
  </email>
@@ -69,3 +95,4 @@ note with öäü!</body>
   <custom3>cust3</custom3>
   <allow-remote-content>true</allow-remote-content>
 </contact>
+--Boundary-00=6988F02CCC809628--

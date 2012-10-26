@@ -1,5 +1,32 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<contact version="3.0dev1" xmlns="http://kolab.org">
+From: owner@no.tld
+Reply-To: 
+Bcc: 
+To: synckolab@no.tld
+Subject: list_name
+Date: Thu, 11 Oct 2012 00:20:52 +0200
+Content-Type: Multipart/Mixed;boundary="Boundary-00=173882C61DEE82C7"
+User-Agent: SyncKolab 2.9.0
+X-Kolab-Type: application/x-vnd.kolab.contact.distlist
+
+--Boundary-00=173882C61DEE82C7
+Content-Type: Text/Plain;
+ charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+
+This is a Kolab Groupware object.
+To view this object you will need an email client that can understand the Kolab Groupware format.
+For a list of such email clients please visit
+http://www.kolab.org/kolab2-clients.html
+
+--Boundary-00=173882C61DEE82C7
+Content-Type: application/x-vnd.kolab.contact;
+ name="kolab.xml"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="kolab.xml"
+
+<?xml version=3D"1.0" encoding=3D"UTF-8"?>
+<contact version=3D"3.0dev1" xmlns=3D"http://kolab.org">
   <!-- Common fields -->
   <uid>uid</uid>
   <body></body>
@@ -58,3 +85,4 @@
   <longitude>5.222</longitude>
 </contact>
 
+--Boundary-00=173882C61DEE82C7--

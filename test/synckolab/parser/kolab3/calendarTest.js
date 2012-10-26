@@ -18,6 +18,7 @@ test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
 	
 	for(var i = 0; i < testFiles.length; i++) {
 		var src = testFiles[i];
+		print("INFO: KOLAB 3 TESTING - EVENT: " + src +"\n")
 		
 		content = readFile("test/synckolab/parser/kolab3/raw/"+src);
 		content = synckolab.tools.stripMailHeader(content);

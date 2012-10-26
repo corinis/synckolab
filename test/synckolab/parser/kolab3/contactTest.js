@@ -18,16 +18,13 @@ test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
 	
 	for(var i = 0; i < testFiles.length; i++) {
 		var src = testFiles[i];
-		
+		print("INFO: KOLAB 3 TESTING - CONTACT: " + src +"\n")
 		content = readFile("test/synckolab/parser/kolab3/raw/"+src);
 		content = synckolab.tools.stripMailHeader(content);
 		entry = synckolab.addressbookTools.parseMessageContent(content);
-		if(entry.isMailList) {
-			print(entry.toSource());
-		}
 		content = readFile("test/synckolab/parser/kolab3/json/"+src+".json");
 		jsonEntry = JSON.parse(content);
-		equal(synckolab.tools.equalsObject(entry, jsonEntry), true, src);
+		equal(synckolab.tools.equalsObject(entry, jsonEntry), true, "Json object compare: " + src);
 		
 		// json -> kolab 3 xml
 		if(entry.type === "maillist") {
@@ -39,10 +36,39 @@ test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
 		if (xmlcontent.replace(/[\n\r\t ]/g, "").length !== content.replace(/[\n\r\t ]/g, "").length) {
 			equal(xmlcontent.replace(/[\n\r\t ]/g, ""), content.replace(/[\n\r\t ]/g, ""), src);
 			var diff = diffString(xmlcontent, content);
-			print("DIFF FOUND:"+ xmlcontent.replace(/[\n\r\t ]/g, "").length + " vs. "+ content.replace(/[\n\r\t ]/g, "").length +"\n" + diff);
+			print("ERROR: DIFF FOUND:"+ xmlcontent.replace(/[\n\r\t ]/g, "").length + " vs. "+ content.replace(/[\n\r\t ]/g, "").length +"\n" + diff);
 		}
 	}
 });	
+
+/*
+var testFiles = ["contact.complex.mime"];
+for(var i = 0; i < testFiles.length; i++) {
+	var src = testFiles[i];
+	print("KOLAB 3 TESTING: " + src +"\n============")
+	content = readFile("test/synckolab/parser/kolab3/raw/"+src);
+	content = synckolab.tools.stripMailHeader(content);
+	entry = synckolab.addressbookTools.parseMessageContent(content);
+	if(entry.isMailList) {
+		print(entry.toSource());
+	}
+	content = readFile("test/synckolab/parser/kolab3/json/"+src+".json");
+	jsonEntry = JSON.parse(content);
+	
+	// json -> kolab 3 xml
+	if(entry.type === "maillist") {
+		content = synckolab.addressbookTools.list2Kolab3(entry);
+	} else {
+		content = synckolab.addressbookTools.card2Kolab3(entry);
+	}
+	xmlcontent = readFile("test/synckolab/parser/kolab3/xml/"+src + ".xml");
+	if (xmlcontent.replace(/[\n\r\t ]/g, "").length !== content.replace(/[\n\r\t ]/g, "").length) {
+		equal(xmlcontent.replace(/[\n\r\t ]/g, ""), content.replace(/[\n\r\t ]/g, ""), src);
+		var diff = diffString(xmlcontent, content);
+		print("DIFF FOUND:"+ xmlcontent.replace(/[\n\r\t ]/g, "").length + " vs. "+ content.replace(/[\n\r\t ]/g, "").length +"\n" + diff);
+	}
+}
+*/
 /*
 	var testFiles = ["list.test1.eml"];
 	

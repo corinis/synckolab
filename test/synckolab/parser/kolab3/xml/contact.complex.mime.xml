@@ -76,6 +76,7 @@
  <email>
   <text>second@email.org</text>
  </email>
+ <x-custom><identifier>Profession</identifier><value>Profession</value></x-custom>
  <x-custom><identifier>X-AllowRemoteContent</identifier><value>true</value></x-custom>
 </vcard>
 </vcards>
