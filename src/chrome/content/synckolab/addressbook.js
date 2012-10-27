@@ -168,7 +168,7 @@ synckolab.AddressBook = {
 				// get the dbfile from the local disk
 				var idxEntry = synckolab.tools.file.getSyncDbFile(cConfig, cUID);
 				// write the current content in the sync-db file (parse to json object first)
-				synckolab.tools.writeSyncDBFile(idxEntry, synckolab.addressbookTools.parseMessageContent(synckolab.tools.stripMailHeader(abcontent)));
+				synckolab.tools.writeSyncDBFile(idxEntry, synckolab.addressbookTools.parseMessageContent(synckolab.tools.parseMail(abcontent)));
 
 				synckolab.tools.logMessage("Writing card to imap" , synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 
@@ -320,7 +320,7 @@ synckolab.AddressBook = {
 				cConfig.recentProcessed.push(cUID);
 
 				// write the current content in the sync-db file (parse to json object first)
-				synckolab.tools.writeSyncDBFile(idxEntry, synckolab.addressbookTools.parseMessageContent(synckolab.tools.stripMailHeader(abcontent)));
+				synckolab.tools.writeSyncDBFile(idxEntry, synckolab.addressbookTools.parseMessageContent(synckolab.tools.parseMail(abcontent)));
 
 				var listener = this;
 				synckolab.main.writeImapMessage(abcontent, cConfig, 
@@ -725,6 +725,7 @@ synckolab.AddressBook = {
 		// parse the new item
 		newCard = this.tools.parseMessageContent(fileContent);
 		
+		
 		if (newCard && newCard.isMailList)
 		{
 			synckolab.tools.logMessage("got mailing list " + this.tools.getUID(newCard) +"\n " + newCard.toSource(), synckolab.global.LOG_WARNING + synckolab.global.LOG_AB);
@@ -1020,7 +1021,7 @@ synckolab.AddressBook = {
 						abcontent = this.tools.card2Message(foundCard, this.gConfig.email, this.gConfig.format);
 
 						// write the current content in the sync-db file
-						synckolab.tools.writeSyncDBFile(idxEntry, this.tools.parseMessageContent(synckolab.tools.stripMailHeader(abcontent)));
+						synckolab.tools.writeSyncDBFile(idxEntry, this.tools.parseMessageContent(synckolab.tools.parseMail(abcontent)));
 						return abcontent;
 					}
 					return null; // Return null, we either updated nothing or updated only local
@@ -1111,7 +1112,7 @@ synckolab.AddressBook = {
 					// remember this message for update - generate mail message (incl. extra fields)
 					abcontent = this.tools.card2Message(foundCard, this.gConfig.email, this.gConfig.format);
 					// write the current content in the sync-db file
-					synckolab.tools.writeSyncDBFile(idxEntry, this.tools.parseMessageContent(synckolab.tools.stripMailHeader(abcontent)));
+					synckolab.tools.writeSyncDBFile(idxEntry, this.tools.parseMessageContent(synckolab.tools.parseMail(abcontent)));
 					return abcontent;
 				}
 				

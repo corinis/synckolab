@@ -913,12 +913,12 @@ synckolab.main.getMessageIntoContent = function(content) {
 					onStopRequest: function (aRequest, aContext, aStatusCode) {
 						synckolab.tools.logMessage("got Message [" + content.message + "]:\n" + content.fileContent, synckolab.global.LOG_DEBUG);
 
-						// remove the header of the content
-						content.fileContent = synckolab.tools.stripMailHeader(content.fileContent);
+						// parse the mail
+						synckolab.main.currentMessage.fileContent = synckolab.tools.parseMail(content.fileContent);
 						
 						// make sure we dont come into an endless loop here
 						synckolab.global.triggerRunning = true;
-						content.nextFunc(content);
+						content.nextFunc(synckolab.main.currentMessage.fileContent);
 						synckolab.global.triggerRunning = false;
 					}
 			}, false, null, msgWindow, aurl
@@ -968,7 +968,7 @@ synckolab.main.copyToFolder = function(fileName, folderUri, listener)
 /**
  * we now got the message content. this needs to parsed and checked 
  */
-synckolab.main.parseMessageRunner = function()
+synckolab.main.parseMessageRunner = function(mail)
 {
 	// pause sync...
 	if (synckolab.global.wnd && synckolab.global.wnd.gPauseSync)
@@ -992,8 +992,9 @@ synckolab.main.parseMessageRunner = function()
 		// fix the message for line truncs (last char in line is =)
 		// content might be a preparsed json
 		if(!synckolab.main.currentMessage.fileContent.synckolab) {
-			synckolab.main.currentMessage.fileContent = synckolab.main.currentMessage.fileContent.content.replace(/\=\n(\S)/g, "$1");
+			synckolab.main.currentMessage.fileContent.content = synckolab.main.currentMessage.fileContent.content.replace(/\=\n(\S)/g, "$1");
 		}
+		
 		skcontent = synckolab.main.gSync.parseMessage(synckolab.main.currentMessage.fileContent, synckolab.main.updateMessagesContent, (synckolab.main.gLaterMessages.pointer === 0));
 	}
 

@@ -21,7 +21,7 @@ http://www.kolab.org/kolab2-clients.html
 --Boundary-00=173882C61DEE82C7
 Content-Type: application/x-vnd.kolab.contact;
  name="kolab.xml"
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: quoted-printable
 Content-Disposition: attachment;
  filename="kolab.xml"
 

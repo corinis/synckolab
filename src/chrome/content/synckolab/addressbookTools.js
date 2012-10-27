@@ -564,7 +564,7 @@ synckolab.addressbookTools.findCard = function (cards, vId, directory) {
  * 
  * @param xml a dom node of a card or a string with the xml
  * @param card the card object to update
- * @param attachment optional attachment image (photo)
+ * @param attachment optional attachments (photo)
  */
 synckolab.addressbookTools.xml2Card = function (xml, card, attachment) {
 	var cur;
@@ -707,14 +707,15 @@ synckolab.addressbookTools.xml2Card = function (xml, card, attachment) {
 
 			// KOLAB 3
 			case "N":
-				this.setCardProperty(card, "FirstName", cur.getXmlResult("SURNAME", ""));
-				this.setCardProperty(card, "LastName", cur.getXmlResult("GIVEN", ""));
+				this.setCardProperty(card, "FirstName", cur.getXmlResult("GIVEN", ""));
+				this.setCardProperty(card, "LastName", cur.getXmlResult("SURNAME", ""));
 				// others: ADDITIONAL/PREFIX/SUFFIX 
 				found = true;
 				break;
 
 			case "FN":	// kolab 3
 			case "DISPLAY-NAME":	// kolab 2
+				//synckolab.tools.logMessage("DISPLAY NAME while parsing - " + cur.getFirstData() , synckolab.global.LOG_DEBUG + synckolab.global.LOG_AB);
 				this.setCardProperty(card, "DisplayName", cur.getFirstData());
 				break;
 
@@ -1004,25 +1005,56 @@ synckolab.addressbookTools.xml2Card = function (xml, card, attachment) {
 				tok = cur.getChildNode("uri");
 				if(tok) {
 					value = tok.getFirstData();
-					types = value.substring(0, 30);	// get the first few bytes
+					
+					types = value.substring(0, 100);	// get the first few bytes
+					synckolab.tools.logMessage("checking photo: " + types + " last 10 bytes " + value.substring(value.length - 15), synckolab.global.LOG_DEBUG + synckolab.global.LOG_AB);
+
 					if(types.indexOf("data:") !== -1) {	// got an inline data uri
 						// get the correct type:
 						// data:image/png;base64,BASE64DATA
 						types = types.substring(5);	// cut away data:
 						tok = types.indexOf(";");	// search for the mime
-						where = synckolab.tools.file.analyzeMimeType(types.substring(0, tok).toLowerCase());
+						where = synckolab.tools.file.analyzeMimeType(types.substring(0, tok));
 						// set the type
 						this.setCardProperty(card, "PhotoType", "inline");
 						this.setCardProperty(card, "PhotoName", "photo." + where);	// generate filename
-						
+
+						synckolab.tools.logMessage("photo is inline: " + value.length + " last 10 bytes " + value.substring(value.length - 10), synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
+
 						where = types.substring(tok);
 						if(where.indexOf("base64") !== -1) {
 							tok = value.indexOf(",");
 							// get rid of newlines and =
-							this.setCardProperty(card, "PhotoData", value.substring(tok+1).replace("=3D", "").replace(/[\r\n \t=]+/g, ""));
+							this.setCardProperty(card, "PhotoData", value.substring(tok+1).replace("=3D", "=").replace(/[\r\n \t]+/g, ""));
 						} else {
 							synckolab.tools.logMessage("Unknown photo encoding: " + value.substring(0, 30), synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 						}
+					} else if(types.indexOf("cid:") !== -1) {
+						// photo is attached (content id)
+						
+						types = types.substring(4); // strip the cid:
+						synckolab.tools.logMessage("Looking for content id: " + types, synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
+						if(!attachment) {
+							synckolab.tools.logMessage("no attachments available!", synckolab.global.LOG_ERROR + synckolab.global.LOG_AB);
+						}
+						value = -1;
+						
+						for(where = 0; where < attachment.length; where++) {
+							if(attachment[where].id === types) {
+								value = where;
+								break;
+							}
+						}
+					
+						if(value !== -1) {
+							this.setCardProperty(card, "PhotoType", "inline");
+							this.setCardProperty(card, "PhotoName", attachment[value].name);
+							this.setCardProperty(card, "PhotoData", attachment[value].content.replace(/[\r\n ]/g, ""));	// get rid of whitespace
+						}
+						else {
+							synckolab.tools.logMessage("attachment "+ types +" NOT found!", synckolab.global.LOG_ERROR + synckolab.global.LOG_AB);
+						}
+
 					}
 				}
 				
@@ -1033,9 +1065,34 @@ synckolab.addressbookTools.xml2Card = function (xml, card, attachment) {
 				if (cur.firstChild === null) {
 					break;
 				}
-
+				where = cur.getFirstData();
 				this.setCardProperty(card, "PhotoName", cur.getFirstData());
-				// the attachment already happened in parseMessageContent
+				// check if we have a picture with that mail attached
+				value = -1;
+				for(types = 0; types < attachment.length; types++) {
+					if(attachment[types].id === where) {
+						value = types;
+						break;
+					}
+				}
+				
+				// if we have only one and its an image.. use it
+				if(value === -1) {
+					for(types = 0; types < attachment.length; types++) {
+						if(attachment[types].contentType.indexOf("image") !== -1) {
+							value = types;
+							break;
+						}
+					}
+				}
+				
+				if(value !== -1) {
+					this.setCardProperty(card, "PhotoType", "inline");
+					this.setCardProperty(card, "PhotoName", attachment[value].name);
+					this.setCardProperty(card, "PhotoData", attachment[value].content);
+				} else {
+					this.setCardProperty(card, "PhotoURI", null);
+				}
 
 				break;
 				
@@ -1159,7 +1216,7 @@ synckolab.addressbookTools.xml2Card = function (xml, card, attachment) {
 				if (cur.firstChild === null) {
 					break;
 				}
-				this.setCardProperty(card, "AllowRemoteContent", 'TRUE' === cur.getFirstData().toUpperCase());
+				this.setCardProperty(card, "AllowRemoteContent", ('TRUE' === cur.getFirstData().toUpperCase()));
 				break;
 
 				// set the prefer mail format (this is not covered by kolab itself)
@@ -1601,6 +1658,9 @@ synckolab.addressbookTools.card2Kolab3 = function (card, skipHeader, fields) {
 
 	var displayName = "";
 	var xml = "";
+	// attach array
+	var attach = [];
+	
 	if(!skipHeader) {
 		xml += "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n";
 		xml += "<vcards xmlns=\"urn:ietf:params:xml:ns:vcard-4.0\">\n";
@@ -1631,16 +1691,18 @@ synckolab.addressbookTools.card2Kolab3 = function (card, skipHeader, fields) {
 			xml += synckolab.tools.text.nodeContainerWithContent("fn", "text", displayName);
 		}
 		
-		// then name
-		xml += " <n>\n";
-		xml += this.getXmlProperty(card, "LastName", "surname");
-		xml += this.getXmlProperty(card, "FirstName", "given");
-		/* also available in kolab3:
-		 <additional/>
-		 <prefix/>
-		 <suffix/>
-		*/
-		xml += " </n>\n";
+		if (this.haveCardProperty(card, "FirstName") || this.haveCardProperty(card, "LastName")) {
+			// then name
+			xml += " <n>\n";
+			xml += this.getXmlProperty(card, "LastName", "surname");
+			xml += this.getXmlProperty(card, "FirstName", "given");
+			/* also available in kolab3:
+			 <additional/>
+			 <prefix/>
+			 <suffix/>
+			*/
+			xml += " </n>\n";
+		}
 		
 	}
 	
@@ -1701,8 +1763,26 @@ synckolab.addressbookTools.card2Kolab3 = function (card, skipHeader, fields) {
 		var fileName = this.getCardProperty(card, "PhotoName");
 		// based on the name - get the MIME
 		ptype = synckolab.tools.file.getMimeType(fileName.substring(fileName.lastIndexOf(".")+1));
-		xml += " <photo>\n  <uri>data:" + ptype + ";base64," + synckolab.tools.text.splitInto(this.getCardProperty(card, "PhotoData"), 72) +
-			"</uri>\n </photo>";
+
+		// basedon the length attach it or write it in the data (-buffer)
+		if(this.getCardProperty(card, "PhotoData").length < (4096-20)) {
+			xml += " <photo>\n  <uri>data:" + ptype + ";base64," + synckolab.tools.text.splitInto(this.getCardProperty(card, "PhotoData"), 72) +
+				"</uri>\n </photo>";
+		} else {
+			synckolab.tools.logMessage("attaching resource because of length " + this.getCardProperty(card, "PhotoData").length, synckolab.global.LOG_INFO + synckolab.global.LOG_AB);			
+			// too big add - need to attach
+			var cid = synckolab.tools.text.randomVcardId() + "@kolab.resource.synckolab";
+			
+			xml += " <photo>\n  <uri>cid:"+ cid + "</uri>\n </photo>";
+
+			var newAttach = {
+					id: cid,
+					type: ptype,
+					name: fileName,
+					data: this.getCardProperty(card, "PhotoData")
+			};
+			attach.push(newAttach);
+		}
 	}
 	
 	xml += this.getXmlProperty(card, "AimScreenName", "impp", "uri");
@@ -1757,12 +1837,12 @@ synckolab.addressbookTools.card2Kolab3 = function (card, skipHeader, fields) {
 	// custom fields are last
 	
 	// if the mail format is set... 
-	if (this.getCardProperty(card, "PreferMailFormat") && this.getCardProperty(card, "PreferMailFormat") !== synckolab.addressbookTools.MAIL_FORMAT_UNKNOWN) {
-		if (Number(this.getCardProperty(card, "PreferMailFormat")) === this.MAIL_FORMAT_PLAINTEXT) {
-			xml += "<x-custom><identifier>X-PreferMailFormat</identifier><value>text</value></x-custom>\n";
-		} else if (Number(this.getCardProperty(card, "PreferMailFormat")) === this.MAIL_FORMAT_HTML) {
-			xml += "<x-custom><identifier>X-PreferMailFormat</identifier><value>html</value></x-custom>\n";
-		}
+	if (Number(this.getCardProperty(card, "PreferMailFormat")) === this.MAIL_FORMAT_PLAINTEXT) {
+		xml += "<x-custom><identifier>X-PreferMailFormat</identifier><value>text</value></x-custom>\n";
+	} else if (Number(this.getCardProperty(card, "PreferMailFormat")) === this.MAIL_FORMAT_HTML) {
+		xml += "<x-custom><identifier>X-PreferMailFormat</identifier><value>html</value></x-custom>\n";
+	} else {
+		xml += "<x-custom><identifier>X-PreferMailFormat</identifier><value>unknown</value></x-custom>\n";
 	}
 	
 	if (this.getCardProperty(card, "Custom1")) {
@@ -1799,7 +1879,15 @@ synckolab.addressbookTools.card2Kolab3 = function (card, skipHeader, fields) {
 		xml += "</vcards>\n";
 	}
 
-	return xml;
+	if(attach.length == 0) {
+		return xml;
+	}
+	
+	// we got attachments
+	return {
+		content: xml,
+		attach: attach
+	};
 };
 
 /**
@@ -1814,7 +1902,7 @@ synckolab.addressbookTools.card2Pojo = function (card, uid, fields) {
 	}
 	
 	var pojo = {
-			synckolab : synckolab.config.version, // synckolab version
+			synckolab: synckolab.config.version, // synckolab version
 			type : "contact", // a contact
 			isMailList : false,
 			ts : new Date().getTime() // the current time
@@ -1829,19 +1917,33 @@ synckolab.addressbookTools.card2Pojo = function (card, uid, fields) {
 	var copyFields = ["FirstName", "LastName", "DisplayName", "JobTitle", "NickName",
 	                  "PrimaryEmail", "SecondEmail", "Category", "Company",
 	                  "HomePhone", "WorkPhone", "CellularNumber", "FaxNumber", "PagerNumber",
-	                  "CellularNumber", "HomePhone", "FaxNumber", "WorkPhone",
-	                  "PagerNumber", "BirthYear", "BirthMonth", "BirthDay",
-	                  "AnniversaryYear", "AnniversaryMonth", "AnniversaryDay", "HomeAddress",
-	                  "HomeAddress2", "HomeCity", "HomeState", "HomeZipCode", "HomeCountry", "WorkAddress",
-	                  "WorkAddress2", "WorkCity", "WorkState", "WorkZipCode", "WorkCountry",
-	                  "Notes", "Department", "WebPage1", "WebPage2", "WebPage3",
-	                  "AimScreenName", "Custom1", "Custom2", "Custom3", "Custom4", "AllowRemoteContent", "PreferMailFormat",
-	                  "Profesion"];
+	                  "CellularNumber", "HomePhone", "FaxNumber", "WorkPhone", "PagerNumber",
+	                  "HomeAddress", "HomeAddress2", "HomeCity", "HomeState", "HomeZipCode", "HomeCountry",
+	                  "WorkAddress", "WorkAddress2", "WorkCity", "WorkState", "WorkZipCode", "WorkCountry",
+	                  "Notes", "Department", "Profession", "WebPage1", "WebPage2", "WebPage3",
+	                  "AimScreenName", "Custom1", "Custom2", "Custom3", "Custom4"];
 	var i;
 	for(i = 0; i < copyFields.length; i++) {
-		this.setCardProperty(pojo, copyFields[i], this.getCardProperty(card, copyFields[i]));
+		if(this.haveCardProperty(card, copyFields[i])) {
+			var prop = this.getCardProperty(card, copyFields[i]);
+			this.setCardProperty(pojo, copyFields[i], prop);
+			//synckolab.tools.logMessage("read field: "+ copyFields[i] +": " + prop + " VS. " this.getCardProperty(pojo, copyFields[i]), synckolab.global.LOG_WARNING);
+		}
 	}
-	
+
+	// some we want as number
+	copyFields = [ "AnniversaryYear", "AnniversaryMonth", "AnniversaryDay",
+	               "BirthYear", "BirthMonth", "BirthDay",
+	               "AllowRemoteContent", "PreferMailFormat"];
+	for(i = 0; i < copyFields.length; i++) {
+		if(this.haveCardProperty(card, copyFields[i])) {
+			var num = this.getCardProperty(card, copyFields[i]);
+			if(!isNaN(num)) {
+				this.setCardProperty(pojo, copyFields[i], Number(num));
+			}
+		}
+	}
+
 	this.setUID(pojo, uid);
 	
 	// handle photo
@@ -1854,41 +1956,40 @@ synckolab.addressbookTools.card2Pojo = function (card, uid, fields) {
 			 *		found in  ~profil/Photos/FILENAME
 			 * 2. create an attachment name FILENAME with the content (base64 encoded)
 			 */
+			synckolab.tools.logMessage("Trying to read image: "+uri, synckolab.global.LOG_DEBUG);
 			
 			// image is the last part of the uri
-			var image = uri.substring(uri.lastIndexOf("/"));
+			var image = uri.substring(uri.lastIndexOf("/") + 1);
 			
-			var file = synckolab.tools.getProfileFolder();
+			var file = synckolab.tools.getFile(uri);
 			try {
-				file.append("Photos");
 				if (!file.exists()) {
-					file.create(1, parseInt("0775", 8));
-				}
-				
-				// fix newName: we can have C:\ - file:// and more - remove all that and put it in the photos folder
-				var imageName = image.replace(/[^A-Za-z0-9._ \-]/g, "");
-				imageName = imageName.replace(/ /g, "_");
-		
-				file.append(imageName);
-				// file actually exists - we can try to read it and attach it
-				var fileContent = this.readFileIntoBase64(file);
-
-				// if we have a file - put it in
-				if (fileContent !== null) {
-					this.setCardProperty("PhotoType", "inline");
-					this.setCardProperty("PhotoData", fileContent);
-					// last part of the path is the name
-					this.setCardProperty("PhotoName", uri.substring(uri.lastIndexOf("/")));
+					synckolab.tools.logMessage("Photo does not exist: "+uri, synckolab.global.LOG_WARNING);
+					
+				} else {
+					// fix newName: we can have C:\ - file:// and more - remove all that and put it in the photos folder
+					//var imageName = image.replace(/[^A-Za-z0-9._ \-]/g, "");
+					//imageName = imageName.replace(/ /g, "_");
+			
+					// file actually exists - we can try to read it and attach it
+					var fileContent = synckolab.tools.readFileIntoBase64(file);
+	
+					// if we have a file - put it in
+					if (fileContent !== null) {
+						this.setCardProperty(pojo, "PhotoType", "inline");
+						this.setCardProperty(pojo, "PhotoData", fileContent);
+						// last part of the path is the name
+						this.setCardProperty(pojo, "PhotoName", image);
+					}
 				}
 			}
 			catch (ex)
 			{
-				this.logMessage("Unable to read image: "+image+"\n" + ex, synckolab.global.LOG_WARNING);
-				return null;
+				synckolab.tools.logMessage("Unable to read image: "+image+"\n" + ex, synckolab.global.LOG_WARNING);
 			}
 		} else {
-			this.setCardProperty("PhotoType", "web");
-			this.setCardProperty("PhotoData", uri);
+			this.setCardProperty(pojo, "PhotoType", "web");
+			this.setCardProperty(pojo, "PhotoData", uri);
 		}
 	}
 	
@@ -2149,7 +2250,7 @@ synckolab.addressbookTools.equalsContact = function (a, b) {
 		"PreferMailFormat", "BirthYear", "BirthMonth", "BirthDay", "AnniversaryYear", "AnniversaryMonth", "AnniversaryDay",
 		// now for strings
 		"FirstName", "LastName", "DisplayName", "NickName", "PrimaryEmail", "SecondEmail", "AimScreenName", "WorkPhone", "HomePhone", "FaxNumber", "PagerNumber", "CellularNumber", "HomeAddress", "HomeAddress2", "HomeCity", "HomeState", "HomeZipCode", "HomeCountry", "WebPage2", "JobTitle",
-				"Department", "Company", "WorkAddress", "WorkAddress2", "WorkCity", "WorkState", "WorkZipCode", "WorkCountry", "WebPage1", "Custom1", "Custom2", "Custom3", "Custom4", "Notes", "PhotoURI" ]; // PhotoType, PhotoName
+				"Department", "Company", "WorkAddress", "WorkAddress2", "WorkCity", "WorkState", "WorkZipCode", "WorkCountry", "WebPage1", "Custom1", "Custom2", "Custom3", "Custom4", "Notes", "PhotoURI", "PhotoData", "PhotoType"]; // ignore photo name 
 		numericFieldCount = 7;
 	}
 
@@ -2184,6 +2285,17 @@ synckolab.addressbookTools.equalsContact = function (a, b) {
 				synckolab.tools.logMessage("not equals " + fieldsArray[i] + " '" + sa + "' vs. '" + sb + "'", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 				return false;
 			}
+		}
+		
+		if(sa.length !== sb.length) {
+			if(sa.length > 100) {
+				sa = sa.length;
+			}
+			if(sb.length > 100) {
+				sb = sb.length;
+			}
+			synckolab.tools.logMessage("not equals " + fieldsArray[i] + " '" + sa + "' vs. '" + sb + "'", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
+			return false;
 		}
 
 		// check if not equals 
@@ -2522,6 +2634,10 @@ synckolab.addressbookTools.Xml2List = function (topNode, card) {
  * @return true if the message contains a list instead of a card
  */
 synckolab.addressbookTools.isMailList = function (message) {
+	if(!message) {
+		return false;
+	}
+	
 	if(message.synckolab) {
 		return message.type === "maillist";
 	}
@@ -2571,21 +2687,18 @@ synckolab.addressbookTools.parseMessageContent = function (message) {
 	// the current time
 	};
 	
-	// its possible we have an image - attach it (still base64 encoded)
-	if(message.image) {
-		this.setCardProperty(card, "PhotoName", message.imageName);	// generate filename
-		this.setCardProperty(card, "PhotoType", "inline");
-		this.setCardProperty(card, "PhotoData", message.image.replace("=3D", "").replace(/[\r\n \t=]+/g, ""));
+	if(!message.content) {
+		synckolab.tools.logMessage("single part message", synckolab.global.LOG_DEBUG + synckolab.global.LOG_AB);
+		message = {
+				content: message
+		};
+	} else {
+		synckolab.tools.logMessage("multi part message with " + message.parts.length + " parts", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 	}
 	
-	// form now one: message is just a string (the content)
-	if(message.content) {
-		message = message.content;
-	}
-
 	// check for xml style
-	if (message.indexOf("<?xml") !== -1 || message.indexOf("<?XML") !== -1) {
-		if (this.xml2Card(message, card)) {
+	if (message.content.indexOf("<?xml") !== -1 || message.content.indexOf("<?XML") !== -1) {
+		if (this.xml2Card(message.content, card, message.parts)) {
 			card.sha1 = synckolab.addressbookTools.genConSha1(card);
 			return card;
 		}
@@ -2593,8 +2706,25 @@ synckolab.addressbookTools.parseMessageContent = function (message) {
 		synckolab.tools.logMessage("VCARD/VLIST!", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 	}
 
+	var i;
+	// its possible we have an image - attach it (still base64 encoded)
+	if(message.parts) {
+		for(i = 0; i < message.parts; i++) {
+			if(message.parts[i].contentType.indexOf("image") !== -1) {
+				this.setCardProperty(card, "PhotoName", message.parts[i].name);	// generate filename
+				this.setCardProperty(card, "PhotoType", "inline");
+				this.setCardProperty(card, "PhotoData", message.parts[i].data.replace("=3D", "").replace(/[\r\n \t=]+/g, ""));
+			}
+			
+		}
+	}
+	
+	// unwrap
+	if(message.content) {
+		message = message.content;
+	}
+	
 	// decode utf8
-	message = synckolab.tools.text.utf8.decode(message);
 
 	// check for errors in the decoded message
 	if (message.indexOf("TYPE=3D") !== -1) {
@@ -2609,7 +2739,7 @@ synckolab.addressbookTools.parseMessageContent = function (message) {
 	var lines = message.split("\n");
 
 	// check if we got a list
-	for ( var i = 0; i < lines.length; i++) {
+	for (i = 0; i < lines.length; i++) {
 		if (lines[i].toUpperCase().indexOf("X-LIST") !== -1) {
 			synckolab.tools.logMessage("parsing a list: " + message, synckolab.global.LOG_DEBUG + synckolab.global.LOG_AB);
 			if (!this.vList2Card(lines[i], lines, card)) {
@@ -3485,6 +3615,7 @@ synckolab.addressbookTools.card2Message = function (card, email, format, fields)
 
 	synckolab.tools.logMessage("creating message out of card... ", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 
+	var data,content;
 	// for the kolab xml format
 	if (format === "xml-k2") {
 		// mailing list
@@ -3495,10 +3626,12 @@ synckolab.addressbookTools.card2Message = function (card, email, format, fields)
 			var img = null;
 			var ptype = this.getCardProperty(card, "PhotoType");
 			if(ptype === "inline") {
-				img = {
+				img = [];
+				img.push({
+					id: null,
 					name: this.getCardProperty(card, "PhotoName"),
 					data: this.getCardProperty(card, "PhotoData")
-				};
+				});
 			}
 					
 			return synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vnd.kolab.contact", true, synckolab.tools.text.utf8.encode(this.card2Xml(card, fields)), this.card2Human(card), img);
@@ -3508,7 +3641,16 @@ synckolab.addressbookTools.card2Message = function (card, email, format, fields)
 		if (card.isMailList) {
 			return synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vcard.list+xml", true, synckolab.tools.text.utf8.encode(this.list2Kolab3(card, fields)), this.list2Human(card));
 		} else {
-			return synckolab.tools.generateMail(this.getUID(card), email, "", "application/vcard+xml", true, synckolab.tools.text.utf8.encode(this.card2Kolab3(card, fields)), this.card2Human(card));
+			data = this.card2Kolab3(card, fields);
+			if(data.content) {
+				content = data.content;
+				data = data.attach;
+			} else {
+				content = data;
+				data = null;
+			}
+			
+			return synckolab.tools.generateMail(this.getUID(card), email, "", "application/vcard+xml", true, synckolab.tools.text.utf8.encode(content), this.card2Human(card), data);
 		}
 	}
 

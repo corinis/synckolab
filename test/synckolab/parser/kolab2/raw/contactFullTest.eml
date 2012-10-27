@@ -17,7 +17,7 @@ To view this object you will need an email client that can understand the Kolab 
 For a list of such email clients please visit
 http://www.kolab.org/kolab2-clients.html
 
---Boundary-00=6988F02CCC809628
+--nextPart38186565.1WqI9LYOEs
 Content-Type: application/x-vnd.kolab.contact;
  name="kolab.xml"
 Content-Transfer-Encoding: quoted-printable
@@ -95,4 +95,5 @@ note with öäü!</body>
   <custom3>cust3</custom3>
   <allow-remote-content>true</allow-remote-content>
 </contact>
---Boundary-00=6988F02CCC809628--
+
+--nextPart38186565.1WqI9LYOEs--

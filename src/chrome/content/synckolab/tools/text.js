@@ -540,10 +540,10 @@ synckolab.tools.text = {
 		{
 			if (n + width < text.length) {
 				out += text.slice(n, n+width);
+				out += "\n";
 			} else {
 				out += text.slice(n);
 			}
-			out += "\n";
 			n+=width;
 		}
 		return out;

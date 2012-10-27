@@ -1,0 +1,50 @@
+From: niko.berger@corinis.com
+Reply-To: 
+Bcc: 
+To: synckolab@no.tld
+Subject: urn:uuid:pas-id-A4E937D838A897AD
+Date: Fri, 26 Oct 2012 17:25:49 +0200
+Content-Type: Multipart/Mixed;boundary="Boundary-00=D2A398834E826D6C"
+User-Agent: SyncKolab 2.9.0
+X-Kolab-Type: application/vcard+xml
+
+--Boundary-00=D2A398834E826D6C
+Content-Type: Text/Plain;
+ charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+
+This is a Kolab Groupware object.
+To view this object you will need an email client that can understand the Kolab Groupware format.
+For a list of such email clients please visit
+http://kolab.org/content/kolab-clients
+---
+Name: cont2#φόδ&$
+E-Mail:weird@email.com
+---
+
+Notice:
+The information above is only valid, if no other client than synckolab updated this message. (ie. a client that updates the attachment but not the message)
+
+--Boundary-00=D2A398834E826D6C
+Content-Type: application/vcard+xml;
+ name="kolab.xml"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="kolab.xml"
+
+PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIiA/
+Pgo8dmNhcmRzIHhtbG5zPSJ1cm46aWV0ZjpwYXJhbXM6eG1sOm5zOnZjYXJkLTQuMCI+Cjx2
+Y2FyZD4KIDx1aWQ+PHVyaT51cm46dXVpZDpwYXMtaWQtQTRFOTM3RDgzOEE4OTdBRDwvdXJp
+PjwvdWlkPgogPHgta29sYWItdmVyc2lvbj48dGV4dD4zLjBkZXYxPC90ZXh0PjwveC1rb2xh
+Yi12ZXJzaW9uPgogPHByb2RpZD48dGV4dD5TeW5jS29sYWIgMi45LjAsIEtvbGFiIHJlc291
+cmNlPC90ZXh0PjwvcHJvZGlkPgogPHJldj48dGltZXN0YW1wPjE5NzAwMTAxVDAwMDAwMFpa
+PC90aW1lc3RhbXA+PC9yZXY+CiA8a2luZD48dGV4dD5pbmRpdmlkdWFsPC90ZXh0Pjwva2lu
+ZD4KICA8Zm4+PHRleHQ+Y29udDIjw7bDvMOkJmFtcDskPC90ZXh0PjwvZm4+CiA8ZW1haWw+
+CiAgPHBhcmFtZXRlcnM+PHByZWY+PGludGVnZXI+MTwvaW50ZWdlcj48L3ByZWY+PC9wYXJh
+bWV0ZXJzPgogIDx0ZXh0PndlaXJkQGVtYWlsLmNvbTwvdGV4dD4KIDwvZW1haWw+Cjx4LWN1
+c3RvbT48aWRlbnRpZmllcj5YLVByZWZlck1haWxGb3JtYXQ8L2lkZW50aWZpZXI+PHZhbHVl
+PnVua25vd248L3ZhbHVlPjwveC1jdXN0b20+CiA8eC1jdXN0b20+PGlkZW50aWZpZXI+WC1B
+bGxvd1JlbW90ZUNvbnRlbnQ8L2lkZW50aWZpZXI+PHZhbHVlPnRydWU8L3ZhbHVlPjwveC1j
+dXN0b20+CjwvdmNhcmQ+CjwvdmNhcmRzPgo=
+
+--Boundary-00=D2A398834E826D6C--

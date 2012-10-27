@@ -578,6 +578,10 @@ synckolab.Calendar = {
 	 * The content is already parsed and stripped of any headers
 	 */
 	parseMessage : function (fileContent) {
+		// no attachments - thus: unwrap
+		if(fileContent.content) {
+			fileContent = fileContent.content;
+		}
 
 		// create a new item in the itemList for display
 		this.curItemInList = this.doc.createElement("treerow");

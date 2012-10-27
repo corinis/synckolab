@@ -222,8 +222,30 @@ equalsObject: function(a, b, skipFields)
 					if(skipFields && skipFields[p]) { 
 						break;
 					}
+				
+					// both are "false"
+					if(!a[p] && !b[p]) { 
+						break;
+					}
+					
+					if((a === true || a === false) && a !== b) {
+						synckolab.tools.logMessage("not equals (bool): " + p + " a: " + a[p] + " b: " + b[p], synckolab.global.LOG_INFO);
+						return false; 
+					}
+					
+					if(("" + a[p]).length !== ("" +b[p]).length) {
+						synckolab.tools.logMessage("not equals (strlen): " + p + " a: " + a[p] + (""+a[p]).length + " b: " + b[p] + (""+b[p]).length, synckolab.global.LOG_INFO);
+						return false; 
+					}
+					if(!isNaN(a[p]) && !isNaN(b[p])) {
+						if(Number(a[p]) !== Number(b[p])) {
+							synckolab.tools.logMessage("not equals (number): " + p + " a: " + a[p] + " b: " + b[p], synckolab.global.LOG_INFO);
+							return false; 
+						}
+					}
+					
 					if (a[p] !== b[p] && Number(a[p]) !== Number(b[p])) { 
-						synckolab.tools.logMessage("not equals: : " + p + " a: " + a[p] + " b: " + b[p], synckolab.global.LOG_INFO);
+						synckolab.tools.logMessage("not equals: " + p + " a: " + a[p] + " b: " + b[p], synckolab.global.LOG_INFO);
 						return false; 
 					}
 				}
@@ -250,12 +272,12 @@ equalsObject: function(a, b, skipFields)
 },
 
 /**
- * Removes a possible mail header and extracts only the "real" content.
+ * parses the mail and extracts the content.
  * This also trims the message and removes some common problems (like -- at the end)
  * @param skcontent the mail content
- * @returns Object with content and image ({ content: STRING, image: STRING });
+ * @returns Object with content and image ({ content: STRING, parts: [{id, contentTypem name, data }]);
  */
-stripMailHeader: function (skcontent) {
+parseMail: function (skcontent) {
 	if (skcontent === null) {
 		return null;
 	}
@@ -310,233 +332,198 @@ stripMailHeader: function (skcontent) {
 	this.logMessage("Stripping header from multipart message", synckolab.global.LOG_DEBUG);
 
 	// we got a multipart message - strip it apart
+	var messageContent = {
+		content: null,
+		parts: []
+	};
 
 	// XXXboundary="XXX" or XXXboundary=XXX\n
 	var boundary = null;
 	boundary = skcontent.substring(skcontent.search(/boundary=/)+9);
-
-	// lets trim boundary (in case we have whitespace after the =
-	boundary = synckolab.tools.text.trim(boundary);
-
-	// if the boundary string starts with "... we look for an end
-	if (boundary.charAt(0) === '"')
-	{
-		// get rid of the first "
-		boundary = boundary.substring(1);
-		// find the second "
-		boundary = boundary.substring(0, boundary.indexOf('"'));
-	}
-	else
-	{
-		// cut away at \n or \r or space.. whichever comes first
-		var cutWS = boundary.indexOf(' ');		
-		var ws = boundary.indexOf('\n');
-		if (ws !== -1 && ws < cutWS) {
-			cutWS = ws;
-		}
-		ws = boundary.indexOf('\t');
-		if (ws !== -1 && ws < cutWS) {
-			cutWS = ws;
-		}
-		ws = boundary.indexOf('\r');
-		if (ws !== -1 && ws < cutWS) {
-			cutWS = ws;
-		}
-		boundary = boundary.substring(0, cutWS);
-	}
-	// try to get the start of the card part
-
-	// remove the tmp image if it exists (only in xul environment)...
-	if (typeof Components !== "undefined") {
-		var file = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("TmpD", Components.interfaces.nsIFile);
-		file.append("syncKolab.img");
-		if (file.exists()) {
-			file.remove(true);
-		}
-	}
+	// strip away the " or any whitespace
+	boundary = boundary.substring(boundary, boundary.indexOf('\n')).replace(/['" \n\r\t]/g, "");
+	// split the message into boundaries
+	var msgParts = skcontent.split("\n--" + boundary);
 	
-	// check if we have an image attachment
-	var imgC = skcontent;
-	var imgIdx = imgC.search(/Content-Type:[ \t\r\n]+image/i);
-	var imgName = "photo.png";
 	
-	// TODO figure out the picture name
+	this.logMessage("Multipart message with " + msgParts.length + " parts", synckolab.global.LOG_DEBUG);
 	
-	// only works in xul environment
-	if (imgIdx !== -1)
-	{
-		// get rid of the last part until the boundary
-		imgC = imgC.substring(imgIdx);
-		var idx = imgC.indexOf(boundary);
-		if (idx !== -1) {
-			imgC = imgC.substring(0, idx);
-		}
-		// get rid of windows encoding
-		imgC = imgC.replace(/\r/g, "");
+	var msgI = 0;
+	// skip the first part: its just the header
+	for(msgI = 1; msgI < msgParts.length; msgI++){
+		// split the msg into lines for easier parsing
+		var msgContent = msgParts[msgI].split("\n");
+		var gotHeader = false;
+		var part = {};
 		
-		// get the image data (make sure to remove \n and whitespace
-		idx = imgC.indexOf('\n\n');
-		imgC = imgC.substring(idx);
-		imgC = imgC.replace(/[\r\n \t\-]+/g, "");
-	} else {
-		// no image attached
-		imgC = null;
-	}
-	
-	// check kolab XML first
-	var contentIdx = -1;
-	var endcontentIdx;
-	var contTypeIdx = skcontent.search(/Content-Type:[ \t\r\n]+application\/x-vnd.kolab./i);
-	if (contTypeIdx !== -1)
-	{
-		skcontent = skcontent.substring(contTypeIdx); // cut everything before this part
-		// there might be a second boundary... remove that as well
-		endcontentIdx = skcontent.indexOf(boundary);
-		if (endcontentIdx !== -1) {
-			skcontent = skcontent.substring(0, endcontentIdx);
-		}
-		if ((new RegExp("--$")).test(skcontent)) {
-			skcontent = skcontent.substring(0, skcontent.length - 2);
-		}
-		
-		contentIdx = skcontent.indexOf("<?xml");
-	}
-	else
-	{
-		// check for vcard | ical
-		contTypeIdx = skcontent.search(/Content-Type:[ \t\r\n]+text\/x-vcard/i);
-		if (contTypeIdx === -1) {
-			contTypeIdx = skcontent.search(/Content-Type:[ \t\r\n]+text\/x-ical/i);
-		}
-		if (contTypeIdx === -1) {
-			contTypeIdx = skcontent.search(/Content-Type:[ \t\r\n]+text\/calendar/i);
-		}
+		for(var li = 0; li < msgContent.length; li++){
+			var line = msgContent[li];
+			// skip text without id...
+			if(gotHeader && part.contentType === "text" && !part.id) {
+				part = null;
+				break;
+			}
 
-		if (contTypeIdx !== -1)
-		{
-			skcontent = skcontent.substring(contTypeIdx); // cut everything before this part
 			
-			// handle multi-line 
-			skcontent = skcontent.replace(/[\n\r]+ /, "");
-			// there might be a second boundary... remove that as well
-			endcontentIdx = skcontent.indexOf(boundary);
-			if (endcontentIdx !== -1) {
-				skcontent = skcontent.substring(0, endcontentIdx);
-			}
-			if ((new RegExp("--$")).test(skcontent)) {
-				skcontent = skcontent.substring(0, skcontent.length - 2);
-			}
-
-			contentIdx = skcontent.indexOf("BEGIN:");
-		}
-	}
-
-
-	// if we did not find a decoded card, it might be base64
-	if (contentIdx === -1)
-	{
-		isQP = skcontent.search(/Content-Transfer-Encoding:[ \t\r\n]+quoted-printable/i);
-		var isBase64 = skcontent.search(/Content-Transfer-Encoding:[ \t\r\n]+base64/i);
-
-		this.logMessage("contentIdx === -1: looks like its encoded: QP=" + isQP + " B64=" + isBase64, synckolab.global.LOG_DEBUG);
-		
-		if (isBase64 !== -1)
-		{
-			this.logMessage("Base64 Decoding message. (Boundary: "+boundary+")", synckolab.global.LOG_DEBUG);
-			// get rid of the header
-			skcontent = skcontent.substring(isBase64, skcontent.length);
-			startPos = skcontent.indexOf("\r\n\r\n");
-			var startPos2 = skcontent.indexOf("\n\n");
-			if (startPos2 !== -1 && (startPos2 < startPos || startPos === -1)) {
-				startPos = startPos2;
-			}
-
-			var endPos = skcontent.indexOf("--"); // we could check for "--"+boundary but its not necessary since base64 doesnt allow it anyways
-			// we probably removed the -- already, but to make sure
-			if (endPos === -1) {
-				endPos = skcontent.length;
-			}
-
-			skcontent = skcontent.substring(startPos, endPos).replace(/[\r\n \t]+/g, "");
-
-			this.logMessage("Base64 message: " + skcontent, synckolab.global.LOG_DEBUG);
-
-			// for base64 we use a two storied approach
-			// first: use atob 
-			// if that gives us an outofmemoryexception use the slow but working javascript
-			// engine
-			try {
-				skcontent = atob(skcontent);
-			} catch (e) {
-				// out of memory error... this can be handled :)
-				if (e.result === Components.results.NS_ERROR_OUT_OF_MEMORY)
-				{
-					skcontent = synckolab.tools.text.base64.decode(skcontent);
-					this.logMessage("decoded base64: " + skcontent, synckolab.global.LOG_DEBUG);
-
+			if(!gotHeader) {
+				// empty line - done with the header
+				if(li > 2 && line.replace(/[\r\n]/g, "").length === 0) {
+					part.content = "";
+					gotHeader = true;
+					continue;
 				}
-				else
-				{
-					this.logMessage("Error decoding base64 (" + e + "): " + skcontent, synckolab.global.LOG_ERROR);
-					return null;
+				// look ahead - 
+				if(msgContent.length > li+1 && msgContent[li+1].charAt(0) === ' ') {
+					line += msgContent[li+1];
+					// skip the next line
+					li++;
 				}
+				
+				if(line.indexOf(":") === -1) {
+					continue;
+				}
+				
+				// check the header
+				var val;
+				switch(line.substring(0, line.indexOf(':'))) {
+				case "Content-Type":
+					val = line.substring(line.indexOf(':') + 1).split(";");
+					val[0] = val[0].toLowerCase();
+					if(val[0].indexOf('text/plain') !== -1) {
+						part.contentType = "text";
+					}  else {
+						part.contentType = val[0];
+					}
+					
+					if(val.length > 1) {
+						if(val[1].indexOf("name") !== -1 ) {
+							part.name = val[1].substring(val[1].indexOf("name")+4);
+							// get rid of special chars
+							part.name = part.name.replace(/[ "';=\n\r]/g, "");
+						}
+					}
+					part.contentType = part.contentType.toLowerCase();
+					break;
+				case "Content-ID":
+					if(line.indexOf('<') !== -1) {
+						part.id = line.substring(line.indexOf('<') + 1, line.indexOf('>'));
+					} else {
+						part.id = line.substring(line.indexOf(':' + 1));
+						part.id = part.id.replace(/[ "';=]/g, "");
+					}
+					break;
+				case "Content-Transfer-Encoding":
+					part.encoding = line.substring(line.indexOf(':' + 1));
+					part.encoding = part.encoding.replace(/[ "';=]/g, "");
+					break;
+				}
+			} else {
+				// jsut add the content up
+				part.content += line + "\n";
 			}
-			// decode utf8
-			if(skcontent) {
-				skcontent = synckolab.tools.text.utf8.decode(skcontent);
+			
+		} // # end go through lines
+		
+		// only check the part if it's valid
+		if(part && part.content && (part.encoding || part.contentType || part.id)) {
+			// check encoding
+			isQP = part.encoding.indexOf("quoted-printable") !== -1;
+			var isBase64 = part.encoding.indexOf("base64") !== -1;
+			
+			if(!part.id && part.contentType.indexOf("image") !== -1) {
+				part.id = part.name;
 			}
-		}
-		
-		
+			
+			// lets check the "main" part - should not have an id, type include xml
+			if(!part.id) {
+				var valid = false;
+				if(part.contentType.indexOf("text/x-vcard") !== -1) {
+					valid = true;
+				}
+				if(part.contentType.indexOf("text/x-ical") !== -1) {
+					valid = true;
+				}
+				if(part.contentType.indexOf("text/calendar") !== -1) {
+					valid = true;
+				}
+				if(part.contentType.indexOf("x-vnd.kolab") !== -1) {
+					valid = true;
+				}
+				if(part.contentType.indexOf("application") !== -1 && part.contentType.indexOf("xml") !== -1) {
+					valid = true;
+				}
+				
+				// skip if not valid
+				if(!valid) {
+					this.logMessage("INVALID PART: " + part.contentType, synckolab.global.LOG_INFO);
+					continue;
+				}
+				
+				if (isBase64)
+				{
+					// clean up the base64
+					part.content = part.content.replace(/[\r\n \t]+/g, "");
 
-		if (isQP !== -1)
-		{
-			skcontent = skcontent.substring(isQP, skcontent.length);
-			skcontent = synckolab.tools.text.quoted.decode(skcontent);
-		}
-		
-		
+					this.logMessage("Base64 message:\n" + part.content , synckolab.global.LOG_DEBUG);
 
-		if (isQP === -1 && isBase64 === -1)
-		{
-			// so this message has no <xml>something</xml> area
-			this.logMessage("Error parsing this message: no xml segment found\n" + skcontent, synckolab.global.LOG_ERROR);
-			return null;
-		}
-		
-		// with the decoded content - check for the real start
-		contentIdx = skcontent.indexOf("<?xml");
-		if (contentIdx === -1) {
-			contentIdx = skcontent.indexOf("BEGIN:");
-		}
+					// for base64 we use a two storied approach
+					// first: use atob 
+					// if that gives us an outofmemoryexception use the slow but working javascript
+					// engine
+					try {
+						part.content = atob(part.content);
+					} catch (e) {
+						// out of memory error... this can be handled :)
+						if (typeof Components !== "undefined" && e.result === Components.results.NS_ERROR_OUT_OF_MEMORY)
+						{
+							part.content = synckolab.tools.text.base64.decode(part.content);
+							this.logMessage("decoded base64", synckolab.global.LOG_DEBUG);
+						}
+						else
+						{
+							// skip this part
+							this.logMessage("Error decoding base64 (" + e.message + "):\n" + part.content, synckolab.global.LOG_ERROR);
+							continue;
+						}
+					}
+					// decode utf8 only for testing! (no Components there) - tbird already does the decoding correctly
+					if(typeof Components === "undefined"  && part.content) {
+						part.content = synckolab.tools.text.utf8.decode(part.content);
+					}
+				}
 
-		
-		if (contentIdx !== -1) {
-			skcontent = skcontent.substring(contentIdx);
-		}
-	}
-	else
-	{
-		skcontent = skcontent.substring(contentIdx);
-		// until the boundary = end of xml|vcard/ical
-		if (skcontent.indexOf(boundary) !== -1) {
-			skcontent = skcontent.substring(0, skcontent.indexOf("--"+boundary));
+				// decode the content (quoted-printable)
+				if (isQP)
+				{
+					part.content = synckolab.tools.text.quoted.decode(part.content);
+				}
+
+				// content might still be quoted printable... doublecheck
+				// check if we have to decode quoted printable
+				if (part.content.indexOf(" version=3D") !== -1 || part.content.indexOf("TZID=3D")) // we know from the version (or in case of citadel from the tzid)
+				{
+					this.logMessage("Message is quoted", synckolab.global.LOG_DEBUG);
+					part.content = synckolab.tools.text.quoted.decode(part.content);
+				}
+				
+				// now set the main content
+				messageContent.content = part.content;
+			} else {
+				this.logMessage("Adding part: " + part.contentType + " name: "+ part.name, synckolab.global.LOG_DEBUG);
+
+				// add the part
+				messageContent.parts.push(part);
+			}
 		}
 	}
 	
-	// content might still be quoted printable... doublecheck
-	// check if we have to decode quoted printable
-	if (skcontent.indexOf(" version=3D") !== -1 || skcontent.indexOf("TZID=3D")) // we know from the version (or in case of citadel from the tzid)
-	{
-		this.logMessage("Message is quoted", synckolab.global.LOG_DEBUG);
-		skcontent = synckolab.tools.text.quoted.decode(skcontent);
+	// only continue if we found a "main" content part
+	if(messageContent.content !== null) {
+		return messageContent;
 	}
-
-	return {
-		content: synckolab.tools.text.trim(skcontent),
-		imageName: imgName,
-		image: imgC
-	};
+	
+	this.logMessage("Empty message.. ignoring", synckolab.global.LOG_INFO);
+	return null;
 },
 
 /**
@@ -547,6 +534,18 @@ getProfileFolder: function () {
 },
 
 /**
+ * get the profile folder object
+ */
+getFile: function (path) {
+	var localFile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
+	// strip away the path
+	if(path.indexOf("file://") !== -1) {
+		path = path.substring(7);
+	}
+	localFile.initWithPath(path);
+	return localFile;
+},
+/**
  * Create a message to be stored on the Kolab server
  *
  * @param cid the id of the card/event
@@ -555,9 +554,9 @@ getProfileFolder: function () {
  * @param part true if this is a multipart message
  * @param content the content for the message
  * @param hr human Readable Part (optional)
- * @param image optional image attachment (must be {"name": nameOfImage, "data": base64data} )
+ * @param attachments optional image attachment(s) (must be {"id":optionalId, "name": nameOfImage, "data": base64data} )
  */
-generateMail: function (cid, mail, adsubject, mime, part, skcontent, hr, image){
+generateMail: function (cid, mail, adsubject, mime, part, skcontent, hr, attachments){
 	// sometime we just do not want a new message :)
 	if (skcontent === null) {
 		return null;
@@ -626,19 +625,10 @@ generateMail: function (cid, mail, adsubject, mime, part, skcontent, hr, image){
 		msg += 'Content-Type: '+mime+';\n name="kolab.xml"\n';
 		msg += 'Content-Transfer-Encoding: base64\n';
 		msg += 'Content-Disposition: attachment;\n filename="kolab.xml"\n\n';
+		
 		// keep lines at 80 chars
 		var acontent = btoa(skcontent);
-		var n = 0;
-		for (n= 0; n < acontent.length; )
-		{
-			if (n + 80 < acontent.length) {
-				msg += acontent.slice(n, n+80);
-			} else {
-				msg += acontent.slice(n);
-			}
-			msg += "=\n";
-			n+=80;
-		}
+		msg += synckolab.tools.text.splitInto(acontent, 72);
 	}
 	else {
 		// add the content
@@ -646,25 +636,21 @@ generateMail: function (cid, mail, adsubject, mime, part, skcontent, hr, image){
 	}
 	
 	// if we have an image try to read it and create a new part (ONLY for xml)
-	if (part && image && image.data) {
-		try {
-			if (image.data !== null) {
-				// now we got the image into fileContent - lets attach
-				msg += '\n--Boundary-00='+bound+'\n';
-				// based on the name - get the MIME
-				var ptype = synckolab.tools.file.getMimeType(image.name.substring(image.name.lastIndexOf(".")+1));
-				msg += 'Content-Type: '+ptype+';\n name="'+image.name+'"\n';
-				msg += 'Content-Transfer-Encoding: base64\n';
-				msg += 'Content-Disposition: attachment;\n filename="'+image.name+'"\n\n';
-				msg += synckolab.tools.text.splitInto(image.data, 72);
+	if (part && attachments && attachments.length > 0) {
+		for(var i = 0; i < attachments.length; i++) {
+			var cur = attachments[i];
+			// now we got the image into fileContent - lets attach
+			msg += '\n--Boundary-00='+bound+'\n';
+			// based on the name - get the MIME
+			var ptype = synckolab.tools.file.getMimeType(cur.name.substring(cur.name.lastIndexOf(".")+1));
+			if(cur.id) {
+				msg += "Content-ID: <"+cur.id+">\n";
 			}
+			msg += 'Content-Type: '+ptype+';\n name="'+cur.name+'"\n';
+			msg += 'Content-Transfer-Encoding: base64\n';
+			msg += 'Content-Disposition: attachment;\n filename="'+cur.name+'"\n\n';
+			msg += synckolab.tools.text.splitInto(cur.data, 72);
 		}
-		catch (ex)
-		{
-			this.logMessage("Unable to read image: "+image+"\n" + ex, synckolab.global.LOG_WARNING);
-			return null;
-		}
-		
 	}
 
 	if (part) {
@@ -694,20 +680,7 @@ readFileIntoBase64: function (file) {
 		while ((csize = fileIO.available()) !== 0)
 		{
 			var data = fileIO.readBytes(csize);
-			
-			// keep lines at 80 chars
-			var acontent = btoa(data);
-			var n = 0;
-			for (n= 0; n < acontent.length; )
-			{
-				if (n + 80 < acontent.length) {
-					fileContent += acontent.slice(n, n+80);
-				} else {
-					fileContent += acontent.slice(n);
-				}
-				fileContent += "=\n";
-				n+=80;
-			}
+			fileContent += btoa(data);
 		}
 		fileIO.close();
 		istream.close();
@@ -900,7 +873,7 @@ synckolab.tools.file = {
 		case "jpeg":
 		case "jpg":
 		case "image/jpg": 
-			return "png";
+			return "jpg";
 		case "gif":
 		case "image/gif": 
 			return "gif";
@@ -1013,7 +986,7 @@ synckolab.tools.writeSyncDBFile = function (file, data, direct)
 	if(direct) {
 		skcontent = data;
 	} else {
-		skcontent = JSON.stringify(data);
+		skcontent = JSON.stringify(data, null, " ");
 	}
 	
 	file.create(file.NORMAL_FILE_TYPE, parseInt("0666", 8));
@@ -1021,7 +994,7 @@ synckolab.tools.writeSyncDBFile = function (file, data, direct)
 	stream.init(file, 2, 0x200, false); // open as "write only"
 	
 	var cstream = Components.classes["@mozilla.org/intl/converter-output-stream;1"].createInstance(Components.interfaces.nsIConverterOutputStream);
-	cstream.init(stream, "UTF-8", 0, 0);
+	cstream.init(stream, "UTF-8", 0, 0x000);
 
 	cstream.writeString(skcontent);
 	cstream.close();
@@ -1056,7 +1029,7 @@ synckolab.tools.readSyncDBFile = function (file, direct)
 		istream.init(file, 0x01, 4, null);
 		
 		var cstream = Components.classes["@mozilla.org/intl/converter-input-stream;1"].createInstance(Components.interfaces.nsIConverterInputStream);
-		cstream.init(istream, "UTF-8", 0, 0);
+		cstream.init(istream, "UTF-8", 1024, 0);
 		
 		var fileContent = "";
 		var csize = 0; 
@@ -1440,7 +1413,15 @@ synckolab.Node.prototype.getFirstData = function () {
 		if (!text.firstChild) {
 			return null;
 		}
-		return synckolab.tools.text.decode4XML(text.firstChild.data);
+		// uri can be quite large so handle ALL childs
+		var combinedNode = "";
+		var cur = text.firstChild;
+		while(cur) {
+			combinedNode = cur.data;
+			cur = cur.nextSibling;
+		}
+		
+		return synckolab.tools.text.decode4XML(combinedNode);
 	}
 
 	// cur.nodeType === Node.TEXT_NODE

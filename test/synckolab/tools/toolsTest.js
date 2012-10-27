@@ -26,13 +26,26 @@ test("synckolab.Node", function(){
 	
 });
 
+test("synckolab.tools.parseMail", function(){
+	var message = readFile("test/synckolab/tools/data/multipart.eml");
+	message = synckolab.tools.parseMail(message);
+	equal(message.content.replace(/[\r\n ]+/g, ""), ("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>" +
+"<xml>" +
+"	<part>2</part>" +
+"</xml>").replace(/[\r\n ]+/g, ""), "content");
+	equal(2, message.parts.length, "2 attachments");
+	equal(message.parts[0].id, "2838853.9Y25si6h6e@kolab.resource.akonadi", "content id of attchment 1");
+	equal(message.parts[0].name, "akonadi.png", "name of attchment 1");
+	equal(message.parts[1].id, "2222@kolab.resource.akonadi", "content id of attchment 2");
+	equal(message.parts[1].name, "akonadi2.png", "name of attchment 2");
+});
 
 /**
  * Test uuencoded message
  */
 test("synckolab.tools.uudecode", function(){
 	var message = readFile("test/synckolab/tools/data/uutest1.eml");
-	message = synckolab.tools.stripMailHeader(message);
+	message = synckolab.tools.parseMail(message);
 	equal(message.content.replace(/[\r\n]+/g, " "), ("BEGIN:VCARD " +
 "VERSION:3.0 " +
 "PRODID:-//kerio.com/Contacts//NONSGML v1.0//EN " +
@@ -56,7 +69,7 @@ test("synckolab.tools.uudecode", function(){
  */
 test("synckolab.tools.quoteddecode", function(){
 	var message = readFile("test/synckolab/tools/data/quotedtest1.eml");
-	message = synckolab.tools.stripMailHeader(message);
+	message = synckolab.tools.parseMail(message);
 	equal(message.content.replace(/[ \r\n]+/g, ""), ("BEGIN:VCALENDAR" + 
 "PRODID:-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN " + 
 "VERSION:2.0 " + 
@@ -74,5 +87,5 @@ test("synckolab.tools.quoteddecode", function(){
 
 /*
 var content = readFile("test/synckolab/tools/data/uutest1.eml");
-print(synckolab.tools.stripMailHeader(content));
+print(synckolab.tools.parseMail(content));
 */

@@ -21,7 +21,7 @@ test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
 		print("INFO: KOLAB 3 TESTING - EVENT: " + src +"\n")
 		
 		content = readFile("test/synckolab/parser/kolab3/raw/"+src);
-		content = synckolab.tools.stripMailHeader(content);
+		content = synckolab.tools.parseMail(content);
 		entry = synckolab.calendarTools.message2json(content, false);
 		content = readFile("test/synckolab/parser/kolab3/json/"+src+".json");
 		jsonEntry = JSON.parse(content);
@@ -42,7 +42,7 @@ test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
 		var src = testFiles[i];
 		
 		content = readFile("test/synckolab/parser/kolab3/raw/"+src);
-		content = synckolab.tools.stripMailHeader(content);
+		content = synckolab.tools.parseMail(content);
 		print(content);
 		print("==== STARTING PARSE")
 		entry = synckolab.calendarTools.message2json(content, false);

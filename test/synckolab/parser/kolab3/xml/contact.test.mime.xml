@@ -36,6 +36,7 @@ with empty</text>
    <code>1234</code>
    <country>homecountry</country>
  </adr>
+ <x-custom><identifier>X-PreferMailFormat</identifier><value>unknown</value></x-custom>
  <x-custom><identifier>X-AllowRemoteContent</identifier><value>false</value></x-custom>
 </vcard>
 </vcards>

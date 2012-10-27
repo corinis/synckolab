@@ -8,8 +8,8 @@
  <kind><text>individual</text></kind>
  <fn><text>Displayname</text></fn>
  <n>
-   <surname>Firstname</surname>
-   <given>Lastname</given>
+   <surname>Lastname</surname>
+   <given>Firstname</given>
  </n>
  <note>
     <text>Notes</text>
@@ -70,7 +70,7 @@ IUt0Z9/7qv7bVKXME74jIbeLXQ+SU6zKjLemeREDIkhAwJIUNCyNieN8p14NWhutUuepdEP
 zVeofxQbugWyivVRa/78r8A8Zf9CPOBzA0U70lC+PcK0qBtX5nQDCFDQsiQEDIkhAwJIWP3
 fYPqevg5ig8ePPALynu7e72tdfbnk3m8je54eArF+8v7n6G8mOnza7xwaugbVLsDCSFDQsi
 QEDIkhAwJIWP3tb0eNw2+MTnoyl7zLmlOx985h/DvwV6Nnk1qfNtaDc0QMiSEDAkhQ0LIkB
-AhhBBCCPEe8D+b5dDLeP4TXAAAAABJRU5ErkJggg</uri>
+AhhBBCCPEe8D+b5dDLeP4TXAAAAABJRU5ErkJggg==</uri>
    </photo>
  <tel>
   <parameters><type><text>home</text></type></parameters>
@@ -99,6 +99,7 @@ AhhBBCCPEe8D+b5dDLeP4TXAAAAABJRU5ErkJggg</uri>
   <text>second@email.org</text>
  </email>
  <x-custom><identifier>Profession</identifier><value>Profession</value></x-custom>
+ <x-custom><identifier>X-PreferMailFormat</identifier><value>unknown</value></x-custom>
  <x-custom><identifier>X-AllowRemoteContent</identifier><value>true</value></x-custom>
 </vcard>
 </vcards>

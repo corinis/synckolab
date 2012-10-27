@@ -36,7 +36,7 @@ synckolab.tools.parseXml = function(content) {
 }
 
 synckolab.tools.logMessage = function(msg, level) {
-	if (!level) {
+	if (typeof (level) === "undefined") {
 		print("NO LEVEL GIVEN: " + synckolab.tools.trace());
 	}
 	var infolvl = synckolab.config.DEBUG_SYNCKOLAB_LEVEL%4;

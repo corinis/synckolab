@@ -1,0 +1,74 @@
+Date: Fri, 27 Apr 2012 16:58:49 +0200
+X-Kolab-Type: application/x-vnd.kolab.task
+X-Kolab-Mime-Version: 3.0
+User-Agent: Libkolab-0.2.0
+Content-Type: multipart/mixed; boundary="nextPart1676922.i4WXLoZAWe"
+Subject: KOrganizer-396756838.184
+MIME-Version: 1.0
+
+
+--nextPart1676922.i4WXLoZAWe
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+
+plaintext-part1
+
+--nextPart1676922.i4WXLoZAWe
+Content-Type: application/calendar+xml; name="kolab.xml"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment; filename="kolab.xml"
+
+<?xml version=3D"1.0" encoding=3D"UTF-8" standalone=3D"no" ?>
+<xml>
+	<part>2</part>
+</xml>
+
+--nextPart1676922.i4WXLoZAWe
+Content-ID: <2838853.9Y25si6h6e@kolab.resource.akonadi>
+Content-Type: image/png; name="akonadi.png"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="akonadi.png"
+
+iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A
+/wD/oL2nkwAAAAlwSFlzAAAbrwAAG68BXhqRHAAAAAd0SU1FB9gFEQkdFPibCIYAAAMrSURBVDjL
+pZNLaBx1AMZ/M/P/78zOzO7ObDbvNUnTxsUUm6YmaulNxN70UKEIRTyIBy8KHrypRUTw4Ek8CqKn
+XuyhHgQRFTRNAvVFbOnDNO/EfWZmdmczszPrwcdBvPnBd/ng98F3+OB/Svl3cPbSx5mZ+ZkXjKx+
+setHs4cHbaW+7d2s79SvhK29j+6vvXH0nwVPfLh1WsTptdnxuDDxoGv3NZWuf4S3G1C722BrrcrO
+nY1f/ebO05s337n3N6cBLLy1bI7njr4uD4nJhx4by5SGLQYcAzWnI6SGVFUkQKwMRqH/jGHNfXJY
+XwoBBMDc/MhLThpOJ6ZEMzM4moquQpIVxI5Br5QlHrEImw5xuzRJ0n4beBlABRgwxcXhUp5Ww6OX
+QvCXo/TPjUJq6FmJldPJOTZ2znj++HOfnwQQ0y9+e67X6iykpmTCNTnY9xBjeTQVelFC0u3RjxNI
++6iaQiajYtmGlXa6NxZe/f4pobv24/X9thBSYebUEHc26zT6kLMkaZTQ84+IvYioE9PrRvTTCBSF
+2PczUTxyVuiOsXHju58Y0XTaQcTJM0OsXt9kaqqIrinEQUTYCPGrAR2vRbcbELS7ZGWEj72hzL+5
+MqS0uzvBys/CzbsUxx0KJROvnTBZLtCPU/y6j1erE/g1wrBNdqREWKwktdB4QP3h8qO/K6Z2RR8b
+JmjtUx7KMDtd4MSozuatXX5Zus3tH29Rre7S18GtjFNanAMpr37w2ti+ABAyeT0eLJ7vtWoDX1z9
+BiXV0DRJmqakSRfd1iiMOmSPjeKeqVC/H3oPT8r3ZNyzVID3L1V2nDzPqsPlQ2PiGKoJCQFJ4qPI
+FH0gh3P6ONlHKlQ3ve6EEb57fl7GSh9DAVjaqmrNRsv97Kv1xeurjcthkCyqURs7JzBdE6NokQgJ
+SbQ+O65+euqEszo4UPytWMhvCwBUkSqq1jk356xNDUevLK/sPbl+L7jQ8ZLyUaepGE1xMDZhfDlb
+KSwPFt1tXcp9qWk1VWjhP2e6dneLvhdqLc/L7B3UzfX1qttsdfKKguo4ZlguO36xWAgLth3mbSsy
+TatnyFz6B+BnWV0A/UiAAAAAAElFTkSuQmCC
+
+--nextPart1676922.i4WXLoZAWe
+Content-ID: <2222@kolab.resource.akonadi>
+Content-Type: image/png; name="akonadi2.png"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="akonadi2.png"
+
+iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A
+/wD/oL2nkwAAAAlwSFlzAAAbrwAAG68BXhqRHAAAAAd0SU1FB9gFEQkdFPibCIYAAAMrSURBVDjL
+pZNLaBx1AMZ/M/P/78zOzO7ObDbvNUnTxsUUm6YmaulNxN70UKEIRTyIBy8KHrypRUTw4Ek8CqKn
+XuyhHgQRFTRNAvVFbOnDNO/EfWZmdmczszPrwcdBvPnBd/ng98F3+OB/Svl3cPbSx5mZ+ZkXjKx+
+setHs4cHbaW+7d2s79SvhK29j+6vvXH0nwVPfLh1WsTptdnxuDDxoGv3NZWuf4S3G1C722BrrcrO
+nY1f/ebO05s337n3N6cBLLy1bI7njr4uD4nJhx4by5SGLQYcAzWnI6SGVFUkQKwMRqH/jGHNfXJY
+XwoBBMDc/MhLThpOJ6ZEMzM4moquQpIVxI5Br5QlHrEImw5xuzRJ0n4beBlABRgwxcXhUp5Ww6OX
+QvCXo/TPjUJq6FmJldPJOTZ2znj++HOfnwQQ0y9+e67X6iykpmTCNTnY9xBjeTQVelFC0u3RjxNI
++6iaQiajYtmGlXa6NxZe/f4pobv24/X9thBSYebUEHc26zT6kLMkaZTQ84+IvYioE9PrRvTTCBSF
+2PczUTxyVuiOsXHju58Y0XTaQcTJM0OsXt9kaqqIrinEQUTYCPGrAR2vRbcbELS7ZGWEj72hzL+5
+MqS0uzvBys/CzbsUxx0KJROvnTBZLtCPU/y6j1erE/g1wrBNdqREWKwktdB4QP3h8qO/K6Z2RR8b
+JmjtUx7KMDtd4MSozuatXX5Zus3tH29Rre7S18GtjFNanAMpr37w2ti+ABAyeT0eLJ7vtWoDX1z9
+BiXV0DRJmqakSRfd1iiMOmSPjeKeqVC/H3oPT8r3ZNyzVID3L1V2nDzPqsPlQ2PiGKoJCQFJ4qPI
+FH0gh3P6ONlHKlQ3ve6EEb57fl7GSh9DAVjaqmrNRsv97Kv1xeurjcthkCyqURs7JzBdE6NokQgJ
+SbQ+O65+euqEszo4UPytWMhvCwBUkSqq1jk356xNDUevLK/sPbl+L7jQ8ZLyUaepGE1xMDZhfDlb
+KSwPFt1tXcp9qWk1VWjhP2e6dneLvhdqLc/L7B3UzfX1qttsdfKKguo4ZlguO36xWAgLth3mbSsy
+TatnyFz6B+BnWV0A/UiAAAAAAElFTkSuQmCC
+
+--nextPart1676922.i4WXLoZAWe--

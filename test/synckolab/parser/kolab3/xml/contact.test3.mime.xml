@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<vcards xmlns="urn:ietf:params:xml:ns:vcard-4.0">
+<vcard>
+ <uid><uri>urn:uuid:pas-id-A4E937D838A897AD</uri></uid>
+ <x-kolab-version><text>3.0dev1</text></x-kolab-version>
+ <prodid><text>SyncKolab 2.9.0, Kolab resource</text></prodid>
+ <rev><timestamp>19700101T000000ZZ</timestamp></rev>
+ <kind><text>individual</text></kind>
+  <fn><text>cont2#öüä&amp;$</text></fn>
+ <email>
+  <parameters><pref><integer>1</integer></pref></parameters>
+  <text>weird@email.com</text>
+ </email>
+ <x-custom><identifier>X-PreferMailFormat</identifier><value>unknown</value></x-custom>
+ <x-custom><identifier>X-AllowRemoteContent</identifier><value>true</value></x-custom>
+</vcard>
+</vcards>
