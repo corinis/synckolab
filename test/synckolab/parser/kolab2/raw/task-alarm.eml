@@ -1,0 +1,43 @@
+From: niko.berger@corinis.com
+Reply-To: 
+Bcc: 
+To: synckolab@no.tld
+Subject: a92bef47-9337-42f9-9df3-e42e6f4b34c2
+Date: Mon, 21 May 2012 23:12:38 +0200
+Content-Type: Multipart/Mixed;boundary="Boundary-00=ACC92FED21BE628A"
+User-Agent: SyncKolab 2.0.0
+X-Kolab-Type: application/x-vnd.kolab.task
+
+--Boundary-00=ACC92FED21BE628A
+Content-Type: Text/Plain;
+ charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+
+This is a Kolab Groupware object.
+To view this object you will need an email client that can understand the Kolab Groupware format.
+For a list of such email clients please visit
+http://www.kolab.org/kolab2-clients.html
+---
+Summary: aufgabe with alarm
+Start date: 2012-05-21T21:00:00Z
+---
+
+Notice:
+The information above is only valid, if no other client than synckolab updated this message. (ie. a client that updates the attachment but not the message)
+
+--Boundary-00=ACC92FED21BE628A
+Content-Type: application/x-vnd.kolab.task;
+ name="kolab.xml"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="kolab.xml"
+
+PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHRhc2sgdmVyc2lvbj0iMS4wIiA+
+CiA8cHJvZHVjdC1pZD5TeW5ja29sYWIgMi4wLjAsIENhbGVuZGFyIFN5bmM8L3Byb2R1Y3QtaWQ+CiAg
+PHVpZD5hOTJiZWY0Ny05MzM3LTQyZjktOWRmMy1lNDJlNmY0YjM0YzI8L3VpZD4KICA8c3RhdHVzPm5v
+dC1zdGFydGVkPC9zdGF0dXM+CiAgPHN0YXJ0LWRhdGU+MjAxMi0wNS0yMVQyMTowMDowMFo8L3N0YXJ0
+LWRhdGU+CiAgPHN1bW1hcnk+YXVmZ2FiZSB3aXRoIGFsYXJtPC9zdW1tYXJ5PgogIDxzZW5zaXRpdml0
+eT5wdWJsaWM8L3NlbnNpdGl2aXR5PgogIDxzaG93LXRpbWUtYXM+YnVzeTwvc2hvdy10aW1lLWFzPgog
+PGFsYXJtIGRlc2NyaXB0aW9uPSJNb3ppbGxhIFN0YW5kYXJkYmVzY2hyZWlidW5nIiBhY3Rpb249IkRJ
+U1BMQVkiPjEyMDwvYWxhcm0+CiA8cmV2aXNpb24+MDwvcmV2aXNpb24+CjwvdGFzaz4K
+--Boundary-00=ACC92FED21BE628A--

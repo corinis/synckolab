@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<task version="1.0" >
+ <product-id>Synckolab 3.0.0, Calendar Sync</product-id>
+  <uid>d8939a36-63cf-4a19-b854-badbaacff8a1</uid>
+  <revision>0</revision>
+  <status>not-started</status>
+  <completed>0</completed>
+  <due-date>2012-05-18T21:00:00Z</due-date>
+  <summary>Neue Aufgabe mit due</summary>
+  <sensitivity>public</sensitivity>
+  <show-time-as>busy</show-time-as>
+ <revision>0</revision>
+</task>

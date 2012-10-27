@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<task version="1.0" >
+ <product-id>Synckolab 3.0.0, Calendar Sync</product-id>
+  <uid>d60bb769-2e63-47df-b80a-565aee273881</uid>
+  <revision>0</revision>
+  <status>in-progress</status>
+  <completed>20</completed>
+  <summary>Neue Aufgabe in progress</summary>
+  <sensitivity>public</sensitivity>
+  <location>test</location>
+  <show-time-as>busy</show-time-as>
+ <revision>0</revision>
+</task>

@@ -40,6 +40,8 @@ test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
 			equal(xmlcontent.replace(/[\n\r\t ]/g, ""), content.replace(/[\n\r\t ]/g, ""), src);
 			var diff = diffString(xmlcontent, content);
 			print("ERROR: DIFF FOUND:"+ xmlcontent.replace(/[\n\r\t ]/g, "").length + " vs. "+ content.replace(/[\n\r\t ]/g, "").length +"\n" + diff);
+		} else {
+			ok(src);
 		}
 	}
 });	

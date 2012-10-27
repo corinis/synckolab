@@ -1,0 +1,41 @@
+From: niko.berger@corinis.com
+Reply-To: 
+Bcc: 
+To: synckolab@no.tld
+Subject: d8939a36-63cf-4a19-b854-badbaacff8a1
+Date: Fri, 18 May 2012 23:25:26 +0200
+Content-Type: Multipart/Mixed;boundary="Boundary-00=B9E87B1AFD091F1F"
+User-Agent: SyncKolab 2.0.0
+X-Kolab-Type: application/x-vnd.kolab.task
+
+--Boundary-00=B9E87B1AFD091F1F
+Content-Type: Text/Plain;
+ charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+
+This is a Kolab Groupware object.
+To view this object you will need an email client that can understand the Kolab Groupware format.
+For a list of such email clients please visit
+http://www.kolab.org/kolab2-clients.html
+---
+Summary: Neue Aufgabe mit due
+---
+
+Notice:
+The information above is only valid, if no other client than synckolab updated this message. (ie. a client that updates the attachment but not the message)
+
+--Boundary-00=B9E87B1AFD091F1F
+Content-Type: application/x-vnd.kolab.task;
+ name="kolab.xml"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="kolab.xml"
+
+PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHRhc2sgdmVyc2lvbj0iMS4wIiA+
+CiA8cHJvZHVjdC1pZD5TeW5ja29sYWIgMi4wLjAsIENhbGVuZGFyIFN5bmM8L3Byb2R1Y3QtaWQ+CiAg
+PHVpZD5kODkzOWEzNi02M2NmLTRhMTktYjg1NC1iYWRiYWFjZmY4YTE8L3VpZD4KICA8c3RhdHVzPm5v
+dC1zdGFydGVkPC9zdGF0dXM+CiAgPGR1ZS1kYXRlPjIwMTItMDUtMThUMjE6MDA6MDBaPC9kdWUtZGF0
+ZT4KICA8c3VtbWFyeT5OZXVlIEF1ZmdhYmUgbWl0IGR1ZTwvc3VtbWFyeT4KICA8c2Vuc2l0aXZpdHk+
+cHVibGljPC9zZW5zaXRpdml0eT4KICA8c2hvdy10aW1lLWFzPmJ1c3k8L3Nob3ctdGltZS1hcz4KIDxy
+ZXZpc2lvbj4wPC9yZXZpc2lvbj4KPC90YXNrPgo=
+--Boundary-00=B9E87B1AFD091F1F--

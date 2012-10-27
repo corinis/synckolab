@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<task version="1.0" >
+ <product-id>Synckolab 3.0.0, Calendar Sync</product-id>
+  <uid>2009024d-3db1-402c-8535-4ce560d0fb84</uid>
+  <revision>0</revision>
+  <status>not-started</status>
+  <completed>0</completed>
+  <start-date>2012-05-23T21:00:00Z</start-date>
+  <summary>Neue Aufgabe mit recurr</summary>
+  <body>test</body>
+  <sensitivity>public</sensitivity>
+  <show-time-as>busy</show-time-as>
+ <recurrence cycle="monthly" type="weekday">
+  <daynumber>-1</daynumber>
+  <day>sunday</day>
+  <interval>1</interval>
+  <range type="none"/>
+ </recurrence>
+ <revision>0</revision>
+</task>

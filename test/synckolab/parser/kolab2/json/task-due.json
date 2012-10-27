@@ -1,0 +1,14 @@
+{
+ "synckolab": "2.9.0",
+ "type": "task",
+ "completed": 0,
+ "uid": "d8939a36-63cf-4a19-b854-badbaacff8a1",
+ "status": "not-started",
+ "endDate": {
+  "tz": null,
+  "dateTime": "2012-05-18T21:00:00Z"
+ },
+ "title": "Neue Aufgabe mit due",
+ "sensitivity": "public",
+ "showTimeAs": "busy"
+}

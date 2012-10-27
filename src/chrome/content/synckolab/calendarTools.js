@@ -1655,10 +1655,22 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 					}
 				}
 				break;
+			
+			// update revision
+			case "REVISION":
+				jobj.revision = Number(cur.getFirstData());
+				if(isNaN(jobj.revision)) {
+					jobj.revision = 0;
+				}
+				break;
 				
 			// some nodes we cannot work with 
 			case "SEQUENCE": // kolab3: integer
 			case "TRANSP": // text: TRANSPARENT
+				break;
+
+			// some nodes we REALLY can ignore
+			case "PRODUCT-ID": 
 				break;
 				
 			default:
@@ -1787,13 +1799,19 @@ synckolab.calendarTools.json2xml = function (jobj, syncTasks, email) {
 	xml += " <product-id>Synckolab " + synckolab.config.version + ", Calendar Sync</product-id>\n";
 	xml += synckolab.tools.text.nodeWithContent("uid", jobj.uid, false);
 
+	xml += synckolab.tools.text.nodeWithContent("revision", jobj.revision, false);
+
 	if(syncTasks === true)
 	{
 		// tasks have a status
 		xml += synckolab.tools.text.nodeWithContent("status", jobj.status, false);
 		xml += synckolab.tools.text.nodeWithContent("completed", jobj.completed, false);
-		xml += synckolab.tools.text.nodeWithContent("start-date", jobj.startDate.dateTime, false);
-		xml += synckolab.tools.text.nodeWithContent("due-date", jobj.endDate.dateTime, false);
+		if(jobj.startDate) {
+			xml += synckolab.tools.text.nodeWithContent("start-date", jobj.startDate.dateTime, false);
+		}
+		if(jobj.endDate) {
+			xml += synckolab.tools.text.nodeWithContent("due-date", jobj.endDate.dateTime, false);
+		}
 		xml += synckolab.tools.text.nodeWithContent("priority", jobj.priority, false);
 		
 		// xml += " <completed-date>" + synckolab.tools.text.calDateTime2String(completedDate, true) + "</completed-date>\n";

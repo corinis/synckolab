@@ -1,0 +1,23 @@
+{
+ "synckolab": "2.9.0",
+ "type": "task",
+ "completed": 0,
+ "uid": "2009024d-3db1-402c-8535-4ce560d0fb84",
+ "status": "not-started",
+ "startDate": {
+  "tz": null,
+  "dateTime": "2012-05-23T21:00:00Z"
+ },
+ "title": "Neue Aufgabe mit recurr",
+ "body": "test",
+ "sensitivity": "public",
+ "showTimeAs": "busy",
+ "recurrence": {
+  "cycle": "monthly",
+  "daynumber": -1,
+  "weekday": "sunday",
+  "interval": 1,
+  "count": 0,
+  "exclusion": []
+ }
+}

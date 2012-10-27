@@ -1,0 +1,22 @@
+{
+ "synckolab": "2.9.0",
+ "type": "task",
+ "completed": 0,
+ "uid": "a92bef47-9337-42f9-9df3-e42e6f4b34c2",
+ "status": "not-started",
+ "startDate": {
+  "tz": null,
+  "dateTime": "2012-05-21T21:00:00Z"
+ },
+ "title": "aufgabe with alarm",
+ "sensitivity": "public",
+ "showTimeAs": "busy",
+ "alarms": [
+  {
+   "related": 1,
+   "offset": 120,
+   "description": "Mozilla Standardbeschreibung",
+   "action": "DISPLAY"
+  }
+ ]
+}
