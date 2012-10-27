@@ -162,7 +162,7 @@ synckolab.config.loadAccountConfig = function (pref, acct) {
 			if(sConfs) {
 				for(i = 0; i < sConfs.length; i++) {
 					// skip empty configs
-					if(sConfs[i].length <= 3) {
+					if(sConfs[i].length === 0) {
 						continue;
 					}
 					var cConf = {

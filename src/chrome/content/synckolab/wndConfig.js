@@ -100,7 +100,7 @@ synckolab.settings.writeConfiguration = function(config) {
 	var acctList = "";
 	for(i = 0; i < config.accounts.length; i++) {
 		// skip invalid account names
-		if(!config.accounts[i] || !config.accounts[i].name || config.accounts[i].name.length < 3) {
+		if(!config.accounts[i] || !config.accounts[i].name || config.accounts[i].name.length === 0) {
 			continue;
 		}
 		
@@ -158,7 +158,7 @@ synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
 			
 			configs = "";
 			for(i=0; i < acct[type].length; i++) {
-				if(!acct[type][i] || !acct[type][i].name || acct[type][i].name.length < 3) {
+				if(!acct[type][i] || !acct[type][i].name || acct[type][i].name.length === 0) {
 					continue;
 				}
 
