@@ -1064,8 +1064,6 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 	//	  not working ATM:
 	//		  - yearly recurrence
 
-	// decode utf chars and make sure an & is an &amp; (otherwise this is unparseable)
-	xml = synckolab.tools.text.utf8.decode(xml);
 	// temporary fixes:
 	// - attribute: "summary= ; "action=
 	// TODO: remove for non-nightly!!!
@@ -1075,6 +1073,7 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 
 	// convert the string to xml
 	var doc = synckolab.tools.parseXml(xml);
+	synckolab.tools.logMessage("parsed to DOM", synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 	
 	// we start with doc.firstChild and check for ELEMENT_NODE
 	// and nodeName === event. As we know the structure of Kolab XML for
@@ -1142,6 +1141,8 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 	
 	var s, tmpobj;
 	var cDate, node;
+
+	synckolab.tools.logMessage("Starting to parse task: " + syncTasks + " startNode: " + cur.nodeName, synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 
 	// iterate over the DOM tree of the XML structure of the event (kolab3: just the properties)
 	while(cur)
