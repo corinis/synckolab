@@ -641,7 +641,7 @@ synckolab.settings.setFolders = function (act) {
 		prefix: "calendar",
 		node: document.getElementById("calendarImapFolder")
 	},{
-		prefix: "tasks",
+		prefix: "task",
 		node: document.getElementById("taskImapFolder")
 	}]);
 };
@@ -1096,7 +1096,6 @@ synckolab.settings.fillInfo = function(type, acctName, confName) {
 	if (sCurFolder !== null && sCurFolder !== "")
 	{
 		var tree = document.getElementById(prefix + "ImapFolder");
-
 		// make sure we have the correct folder in the view
 		if (document.getElementById(prefix + sCurFolder) !== null)
 		{
