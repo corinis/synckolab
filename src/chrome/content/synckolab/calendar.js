@@ -800,7 +800,7 @@ synckolab.Calendar = {
 					}
 				} else {
 					// local change to server
-					synckolab.tools.logMessage("put event on server: " + newEvent.uid, synckolab.global.LOG_CAL + synckolab.global.LOG_INFO);
+					synckolab.tools.logMessage("put event on server: " + foundEvent.uid, synckolab.global.LOG_CAL + synckolab.global.LOG_INFO);
 
 					// first check privacy info
 					//foundEvent = this.calTools.checkEventOnDeletion(foundEvent, newEvent, this);
@@ -810,10 +810,12 @@ synckolab.Calendar = {
 					}
 
 					msg = null;
-					if (this.gConfig.format === "Xml") {
-						msg = this.calTools.event2kolabXmlMsg(foundEvent, this.gConfig.email, this.gConfig.type === "task");
+					if (this.gConfig.format === "xml-k2") {
+						msg = synckolab.calendarTools.event2kolabXmlMsg(foundEvent, this.gConfig.email, this.gConfig.type === "task");
+					} else if (this.gConfig.format === "xml-k3") {
+						msg = synckolab.calendarTools.event2kolab3XmlMsg(foundEvent, this.gConfig.email, this.gConfig.type === "task");
 					} else {
-						tmpEventObj = synckolab.calendarTools.json2event(newEvent);
+						tmpEventObj = synckolab.calendarTools.json2event(foundEvent);
 
 						calComp = Components.classes["@mozilla.org/calendar/ics-service;1"].getService(Components.interfaces.calIICSService).createIcalComponent("VCALENDAR");
 						calComp.version = "2.0";
@@ -821,9 +823,9 @@ synckolab.Calendar = {
 						calComp.addSubcomponent(tmpEventObj.icalComponent);
 
 						if (this.gConfig.type === "task") {
-							msg = synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/todo", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
+							msg = synckolab.tools.generateMail(foundEvent.uid, this.gConfig.email, "iCal", "text/todo", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
 						} else {
-							msg = synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/calendar", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
+							msg = synckolab.tools.generateMail(foundEvent.uid, this.gConfig.email, "iCal", "text/calendar", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
 						}
 					}
 
@@ -863,7 +865,7 @@ synckolab.Calendar = {
 
 						try {
 							// modify the item - catch exceptions due to triggered alarms
-							// because they will break the sync process								
+							// because they will break the sync process
 							this.gConfig.calendar.modifyItem(tmpEventObj, this.gEvents.events[i], this.gEvents);
 						} catch (e1) {
 							synckolab.tools.logMessage("gCalendar.modifyItem() failed: " + e1, synckolab.global.LOG_CAL + synckolab.global.LOG_WARNING);
@@ -875,7 +877,7 @@ synckolab.Calendar = {
 				}
 
 				
-				synckolab.tools.logMessage("write sync db " + foundEvent.uid, synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
+				synckolab.tools.logMessage("write sync db " + newEvent.uid, synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 				
 				// write the current content in the sync-db file
 				synckolab.tools.writeSyncDBFile(idxEntry, newEvent);
@@ -899,8 +901,10 @@ synckolab.Calendar = {
 				
 				// remember this message for update - generate mail message (incl. extra fields)
 				msg = null;
-				if (this.gConfig.format === "Xml") {
-					msg = this.calTools.event2kolabXmlMsg(foundEvent, this.gConfig.email, this.gConfig.type === "task");
+				if (this.gConfig.format === "xml-k2") {
+					msg = synckolab.calendarTools.event2kolabXmlMsg(foundEvent, this.gConfig.email, this.gConfig.type === "task");
+				} else if (this.gConfig.format === "xml-k3") {
+					msg = synckolab.calendarTools.event2kolab3XmlMsg(foundEvent, this.gConfig.email, this.gConfig.type === "task");
 				} else {
 					tmpEventObj = synckolab.calendarTools.json2event(foundEvent);
 
@@ -908,12 +912,8 @@ synckolab.Calendar = {
 					calComp.version = "2.0";
 					calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
 					calComp.addSubcomponent(tmpEventObj.icalComponent);
-
-					if (this.gConfig.type === "task") {
-						msg = synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/todo", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
-					} else {
-						msg = synckolab.tools.generateMail(newEvent.uid, this.gConfig.email, "iCal", "text/calendar", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
-					}
+					
+					msg = synckolab.tools.generateMail(foundEvent.uid, this.gConfig.email, "iCal", (this.gConfig.type === "task")?"text/todo":"text/calendar", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
 				}
 				
 				// write the current content in the sync-db file
@@ -1063,8 +1063,10 @@ synckolab.Calendar = {
 				var clonedEvent = cur;
 				clonedEvent = this.calTools.event2json(cur, this.gConfig.type === "task");
 
-				if (this.gConfig.format === "Xml") {
-					msg = this.calTools.event2kolabXmlMsg(clonedEvent, this.gConfig.email, this.gConfig.type === "task");
+				if (this.gConfig.format === "xml-k2") {
+					msg = synckolab.calendarTools.event2kolabXmlMsg(clonedEvent, this.gConfig.email, this.gConfig.type === "task");
+				} else if (this.gConfig.format === "xml-k3") {
+					msg = synckolab.calendarTools.event2kolab3XmlMsg(clonedEvent, this.gConfig.email, this.gConfig.type === "task");
 				} else {
 					var calComp = Components.classes["@mozilla.org/calendar/ics-service;1"].getService(Components.interfaces.calIICSService).createIcalComponent("VCALENDAR");
 					calComp.version = "2.0";
