@@ -12,10 +12,11 @@ load("test/lib/testOverride.js");
 
 test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
 	equal(null, synckolab.calendarTools.message2json(null), "parsing a null message");
-	var testFiles = [{name:"task-alarm",task:true},{name:"task-due",task:true},{name:"task-progress",task:true},{name:"task-recurr",task:true}
+	var testFiles = [{name:"event-recurr",task:false},{name:"task-alarm",task:true},{name:"task-due",task:true},{name:"task-progress",task:true},{name:"task-recurr",task:true}
 	];
 	
 	var content, entry, jsonEntry;
+	synckolab.config.DEBUG_SYNCKOLAB_LEVEL = synckolab.global.LOG_ALL + synckolab.global.LOG_DEBUG;
 	
 	for(var i = 0; i < testFiles.length; i++) {
 		var src = testFiles[i];

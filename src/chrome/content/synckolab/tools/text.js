@@ -353,33 +353,66 @@ synckolab.tools.text = {
 		
 	},
 
+	/**
+	 * convert iCalDateTime to js: http://doxygen.db48x.net/mozilla-full/html/d0/d83/interfacecalIDateTime.html
+	 */
+	getJSDateFromICalDateTime: function (cal) {
+		var dt;
+
+		if (this.isDate) {
+			dt = new Date(cal.year,
+					cal.month,
+					cal.day);
+		} else {
+			dt = new Date(cal.jsDate);
+			//dt.setTime(dt.getTime() + cal.timezoneOffset);
+		}
+		synckolab.tools.logMessage("CONVERTING: " + cal.hour + "/"+ dt.getUTCHours() +" - " + cal.timezoneOffset + " - " + cal.jsDate + " vs. " + dt, synckolab.global.LOG_CAL + synckolab.global.LOG_WARNING);
+		return dt;
+	},
+	
 	// produces: 2005-03-30
 	date2String : function (datetime, normal, compact) {
 		if (!datetime) {
 			return '';
 		}
-
-		if (compact) {
-			if (normal) {
-				return datetime.getFullYear() + (datetime.getMonth() + 1 < 10 ? "0" : "") + (datetime.getMonth() + 1) + (datetime.getDate() < 10 ? "0" : "") + datetime.getDate();
-			} else {
-				return datetime.getUTCFullYear() + (datetime.getUTCMonth() + 1 < 10 ? "0" : "") + (datetime.getUTCMonth() + 1) + (datetime.getUTCDate() < 10 ? "0" : "") + datetime.getUTCDate();
-			}
-		} else { 
-			if (normal) {
-				return datetime.getFullYear() + "-" + (datetime.getMonth() + 1 < 10 ? "0" : "") + (datetime.getMonth() + 1) + "-" + (datetime.getDate() < 10 ? "0" : "") + datetime.getDate();
-			} else {
-				return datetime.getUTCFullYear() + "-" + (datetime.getUTCMonth() + 1 < 10 ? "0" : "") + (datetime.getUTCMonth() + 1) + "-" + (datetime.getUTCDate() < 10 ? "0" : "") + datetime.getUTCDate();
-			}
+		
+		// if we do not have a javascript date
+		if(!datetime.getTime) {
+			// calIDateTime - http://doxygen.db48x.net/mozilla-full/html/d0/d83/interfacecalIDateTime.html
+			datetime = this.getJSDateFromICalDateTime(datetime);
 		}
+
+		var strDate;
+		if (normal) {
+			strDate = datetime.getFullYear() + "-" + (datetime.getMonth() + 1 < 10 ? "0" : "") + (datetime.getMonth() + 1) + "-" + (datetime.getDate() < 10 ? "0" : "") + datetime.getDate();
+		} else {
+			strDate = datetime.getUTCFullYear() + "-" + (datetime.getUTCMonth() + 1 < 10 ? "0" : "") + (datetime.getUTCMonth() + 1) + "-" + (datetime.getUTCDate() < 10 ? "0" : "") + datetime.getUTCDate();
+		}
+		
+		if(compact) {
+			// compact: remove seperators
+			return strDate.replace(/[\-:]/g, "");
+		}
+		return strDate;
 	},
 
 	// produces 15:28:52
 	time2String : function (datetime, compact) {
-		if(compact) {
-			return (datetime.getUTCHours() < 10 ? "0" : "") + datetime.getUTCHours() + (datetime.getUTCMinutes() < 10 ? "0" : "") + datetime.getUTCMinutes() + (datetime.getUTCSeconds() < 10 ? "0" : "") + datetime.getUTCSeconds();
+		// if we do not have a javascript date
+		if(!datetime.getTime) {
+			// calIDateTime - http://doxygen.db48x.net/mozilla-full/html/d0/d83/interfacecalIDateTime.html
+			datetime = this.getJSDateFromICalDateTime(datetime);
 		}
-		return (datetime.getUTCHours() < 10 ? "0" : "") + datetime.getUTCHours() + ":" + (datetime.getUTCMinutes() < 10 ? "0" : "") + datetime.getUTCMinutes() + ":" + (datetime.getUTCSeconds() < 10 ? "0" : "") + datetime.getUTCSeconds();
+		
+		var strDate= (datetime.getUTCHours() < 10 ? "0" : "") + datetime.getUTCHours() + ":" + (datetime.getUTCMinutes() < 10 ? "0" : "") + datetime.getUTCMinutes() + ":" + (datetime.getUTCSeconds() < 10 ? "0" : "") + datetime.getUTCSeconds();
+		
+		if(compact) {
+			// compact: remove seperators
+			return strDate.replace(/[:]/g, "");
+		}
+		
+		return strDate;
 	},
 
 	// produces: 2005-03-30T15:28:52Z for allday = false,
@@ -389,14 +422,11 @@ synckolab.tools.text = {
 			return "";
 		}
 
-		var datetime = val.jsDate ? val.jsDate: val;
-		//alert("EVENT TIME: " + datetime);
-
 		// make sure not to use UTC for all-day events
-		var resultstring = this.date2String(datetime, false, compact);
+		var resultstring = this.date2String(val, true, compact);
 		//if (!allday) {
 			resultstring += 'T';
-			resultstring += this.time2String(datetime, compact);
+			resultstring += this.time2String(val, compact);
 			resultstring += 'Z';
 		//}
 		return resultstring;

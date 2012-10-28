@@ -449,6 +449,8 @@ synckolab.Calendar = {
 			return;
 		}
 
+		synckolab.tools.logMessage("triggered add message for " + message.config.name, synckolab.global.LOG_DEBUG + synckolab.global.LOG_CAL);
+
 		// parse the content
 		var newEvent = synckolab.calendarTools.message2json(message.fileContent, message.config.type === "task");
 		
@@ -492,6 +494,8 @@ synckolab.Calendar = {
 		if(synckolab.global.running || synckolab.global.triggerRunning) {
 			return;
 		}
+
+		synckolab.tools.logMessage("triggered delete message for " + message.config.name, synckolab.global.LOG_DEBUG + synckolab.global.LOG_CAL);
 
 		var messageFields = new synckolab.dataBase();
 

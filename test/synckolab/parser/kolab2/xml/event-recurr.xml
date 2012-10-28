@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<event version="1.0" >
+ <product-id>Synckolab 2.9.0, Calendar Sync</product-id>
+  <uid>ec80aeec-1030-4ba4-bac5-8352b2845e55</uid>
+  <revision>0</revision>
+  <start-date>2012-03-12T10:00:00Z</start-date>
+  <end-date>2012-03-12T11:00:00Z</end-date>
+  <summary>Jour Fixe Administration</summary>
+  <body>Event is CONFIDENTIAL!</body>
+  <sensitivity>confidential</sensitivity>
+  <location>Büro Boris, 3.OG</location>
+  <show-time-as>busy</show-time-as>
+ <recurrence cycle="weekly">
+  <day>sunday</day>
+  <interval>2</interval>
+  <range type="date">2013-02-26</range>
+ </recurrence>
+ <revision>0</revision>
+</event>

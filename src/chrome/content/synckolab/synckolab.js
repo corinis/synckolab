@@ -888,7 +888,7 @@ synckolab.main.getMessage = function()
 
 /**
  * 
- * @param content the content structure contianing the message key and the buffer for the content
+ * @param content the content structure containing the message key and the buffer for the content
  */
 synckolab.main.getMessageIntoContent = function(content) {
 	var aurl = {};
@@ -911,15 +911,13 @@ synckolab.main.getMessageIntoContent = function(content) {
 					onStartRequest: function (request, context) {
 					},
 					onStopRequest: function (aRequest, aContext, aStatusCode) {
-						synckolab.tools.logMessage("got Message [" + content.message + "]:\n" + content.fileContent, synckolab.global.LOG_DEBUG);
-
+						synckolab.tools.logMessage("synckolab.main.getMessageIntoContent [" + content.message + "]:\n" + content.fileContent, synckolab.global.LOG_DEBUG);
+						
 						// parse the mail
-						synckolab.main.currentMessage.fileContent = synckolab.tools.parseMail(content.fileContent);
+						content.fileContent = synckolab.tools.parseMail(content.fileContent);
 						
 						// make sure we dont come into an endless loop here
-						synckolab.global.triggerRunning = true;
-						content.nextFunc(synckolab.main.currentMessage.fileContent);
-						synckolab.global.triggerRunning = false;
+						content.nextFunc(content);
 					}
 			}, false, null, msgWindow, aurl
 	);

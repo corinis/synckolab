@@ -1,0 +1,28 @@
+{
+ "synckolab": "2.9.0",
+ "type": "calendar",
+ "startDate": {
+  "dateTime": "2012-03-12T10:00:00Z",
+  "tz": null
+ },
+ "endDate": {
+  "dateTime": "2012-03-12T11:00:00Z",
+  "tz": null
+ },
+ "uid": "ec80aeec-1030-4ba4-bac5-8352b2845e55",
+ "title": "Jour Fixe Administration",
+ "body": "Event is CONFIDENTIAL!",
+ "sensitivity": "confidential",
+ "location": "Büro Boris, 3.OG",
+ "showTimeAs": "busy",
+ "recurrence": {
+  "cycle": "weekly",
+  "days": [
+   "sunday"
+  ],
+  "interval": 2,
+  "count": 0,
+  "untilDate": "2013-02-26",
+  "exclusion": []
+ }
+}
