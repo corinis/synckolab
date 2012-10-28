@@ -472,14 +472,14 @@ synckolab.calendarTools.event2json = function (event, syncTasks) {
 		if(event.entryDate) {
 			// TODO add timezone
 			jobj.startDate = {
-					dateTime: synckolab.tools.text.calDateTime2String(event.entryDate, isAllDay),
+					dateTime: synckolab.tools.text.calDateTime2String(event.entryDate),
 					tz: null
 			};
 		}
 		if(endDate) {
 			// TODO add timezone
 			jobj.endDate = {
-					dateTime: synckolab.tools.text.calDateTime2String(endDate, isAllDay),
+					dateTime: synckolab.tools.text.calDateTime2String(endDate),
 					tz: null
 			};
 		}
@@ -500,11 +500,11 @@ synckolab.calendarTools.event2json = function (event, syncTasks) {
 	} else {
 		// TODO add timezone
 		jobj.startDate = {
-				dateTime: synckolab.tools.text.calDateTime2String(event.startDate, isAllDay),
+				dateTime: synckolab.tools.text.calDateTime2String(event.startDate),
 				tz: null
 		};
 		jobj.endDate = {
-			dateTime:synckolab.tools.text.calDateTime2String(endDate, isAllDay),
+			dateTime:synckolab.tools.text.calDateTime2String(endDate),
 			tz: null
 		};
 	}
@@ -1963,7 +1963,7 @@ synckolab.calendarTools.json2xml = function (jobj, syncTasks, email) {
 };
 
 /**
- * convert an ICAL event into a Kolab3 XML string representation,
+ * convert an json event into a Kolab3 XML string representation,
  * allow to caller to skip fields which change frequently such as
  * "last-modification-date" because this can confuse the hash IDs.
  *
@@ -1978,7 +1978,7 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 		'<icalendar xmlns="urn:ietf:params:xml:ns:icalendar-2.0">\n'+
 		'<vcalendar>\n' +
 		'<properties>\n' +
-		" <prodid><text>Synckolab " + synckolab.config.version + ", Calendar Sync</text></prodid>\n" +
+		' <prodid><text>Synckolab " + synckolab.config.version + ", Calendar Sync</text></prodid>\n' +
 		' <version><text>2.0</text></version>\n' +
 		'</properties>\n' + 
 		'<components>';
