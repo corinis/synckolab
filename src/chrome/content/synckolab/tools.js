@@ -990,15 +990,29 @@ synckolab.tools.writeSyncDBFile = function (file, data, direct)
 	}
 	
 	file.create(file.NORMAL_FILE_TYPE, parseInt("0666", 8));
-	var stream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
-	stream.init(file, 2, 0x200, false); // open as "write only"
+	var istream = null, cstream = null;
+	try {
+		istream = Components.classes['@mozilla.org/network/file-output-stream;1'].createInstance(Components.interfaces.nsIFileOutputStream);
+		istream.init(file, 2, 0x200, false); // open as "write only"
+		
+		cstream = Components.classes["@mozilla.org/intl/converter-output-stream;1"].createInstance(Components.interfaces.nsIConverterOutputStream);
+		cstream.init(istream, "UTF-8", 0, 0x000);
 	
-	var cstream = Components.classes["@mozilla.org/intl/converter-output-stream;1"].createInstance(Components.interfaces.nsIConverterOutputStream);
-	cstream.init(stream, "UTF-8", 0, 0x000);
+		cstream.writeString(skcontent);
+		cstream.close();
+		istream.close();
+	}
+	catch (ex)
+	{
+		if(cstream) {
+			cstream.close();
+		}
+		if(istream) {
+			istream.close();
+		}
+		synckolab.tools.logMessage("readSyncDBFile ERROR while writing file: " + ex, synckolab.global.LOG_ERROR);
+	}
 
-	cstream.writeString(skcontent);
-	cstream.close();
-	stream.close();
 };
 
 
@@ -1020,15 +1034,17 @@ synckolab.tools.readSyncDBFile = function (file, direct)
 	if (!file.exists() || !file.isReadable()) {
 		return null;
 	}
+	var istream = null;
+	var cstream = null;
 
 	try
 	{
 		// setup the input stream on the file
-		var istream = Components.classes["@mozilla.org/network/file-input-stream;1"]
+		istream = Components.classes["@mozilla.org/network/file-input-stream;1"]
 		                                 .createInstance(Components.interfaces.nsIFileInputStream);
 		istream.init(file, 0x01, 4, null);
 		
-		var cstream = Components.classes["@mozilla.org/intl/converter-input-stream;1"].createInstance(Components.interfaces.nsIConverterInputStream);
+		cstream = Components.classes["@mozilla.org/intl/converter-input-stream;1"].createInstance(Components.interfaces.nsIConverterInputStream);
 		cstream.init(istream, "UTF-8", 1024, 0);
 		
 		var fileContent = "";
@@ -1040,7 +1056,9 @@ synckolab.tools.readSyncDBFile = function (file, direct)
 		}
 		
 		cstream.close();
+		cstream = null;
 		istream.close();
+		istream = null;
 		
 		// use json instead
 		if (direct) {
@@ -1051,7 +1069,13 @@ synckolab.tools.readSyncDBFile = function (file, direct)
 	}
 	catch (ex)
 	{
-		synckolab.tools.logMessage("readSyncDBFile ERROR while reading file" + ex);
+		if(cstream) {
+			cstream.close();
+		}
+		if(istream) {
+			istream.close();
+		}
+		synckolab.tools.logMessage("readSyncDBFile ERROR while reading file: " + ex, synckolab.global.LOG_ERROR);
 	}
 	return null;
 };
