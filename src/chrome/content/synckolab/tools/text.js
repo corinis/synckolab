@@ -417,18 +417,18 @@ synckolab.tools.text = {
 
 	// produces: 2005-03-30T15:28:52Z for allday = false,
 	// produces: 2005-03-30 for allday = true
-	calDateTime2String : function (val, compact) {
+	calDateTime2String : function (val, onlyDate, compact) {
 		if (val === null) {
 			return "";
 		}
 
 		// make sure not to use UTC for all-day events
 		var resultstring = this.date2String(val, true, compact);
-		//if (!allday) {
+		if (!allday) {
 			resultstring += 'T';
 			resultstring += this.time2String(val, compact);
 			resultstring += 'Z';
-		//}
+		}
 		return resultstring;
 	},
 

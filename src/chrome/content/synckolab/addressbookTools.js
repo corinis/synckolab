@@ -1449,7 +1449,7 @@ synckolab.addressbookTools.list2Kolab3 = function (card, fields) {
 	}
 	xml += " <x-kolab-version><text>3.0dev1</text></x-kolab-version>\n";
 	xml += " <prodid><text>SyncKolab " + synckolab.config.version + ", Kolab resource</text></prodid>\n";
-	xml += " <rev><timestamp>" + synckolab.tools.text.calDateTime2String(new Date(), true) + "Z</timestamp></rev>\n";
+	xml += " <rev><timestamp>" + synckolab.tools.text.calDateTime2String(new Date(), false, true) + "Z</timestamp></rev>\n";
 	xml += " <kind><text>group</text></kind>\n";
 
 	// default: public - tbird doesnt know of other types of list like private
@@ -1501,8 +1501,8 @@ synckolab.addressbookTools.list2Xml = function (card, fields) {
 	xml += "<distribution-list version=\"1.0\" >\n";
 	xml += " <product-id>SyncKolab, Kolab resource</product-id>\n";
 	xml += " <uid>" + this.getUID(card) + "</uid>\n";
-	xml += " <creation-date>" + synckolab.tools.text.calDateTime2String(new Date(), true) + "</creation-date>\n";
-	xml += " <last-modification-date>"  + synckolab.tools.text.calDateTime2String(new Date(), true) + "</last-modification-date>\n";
+	xml += " <creation-date>" + synckolab.tools.text.calDateTime2String(new Date(), false, true) + "</creation-date>\n";
+	xml += " <last-modification-date>"  + synckolab.tools.text.calDateTime2String(new Date(), false, true) + "</last-modification-date>\n";
 
 	// default: public - tbird doesnt know of other types of list like private
 	xml += " <sensitivity>public</sensitivity>\n";
@@ -1675,7 +1675,7 @@ synckolab.addressbookTools.card2Kolab3 = function (card, skipHeader, fields) {
 	}
 	xml += " <x-kolab-version><text>3.0dev1</text></x-kolab-version>\n";
 	xml += " <prodid><text>SyncKolab " + synckolab.config.version + ", Kolab resource</text></prodid>\n";
-	xml += " <rev><timestamp>" + synckolab.tools.text.calDateTime2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000), true) + "Z</timestamp></rev>\n";
+	xml += " <rev><timestamp>" + synckolab.tools.text.calDateTime2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000), false, true) + "Z</timestamp></rev>\n";
 	xml += " <kind><text>individual</text></kind>\n";
 	
 	// ??
@@ -2045,7 +2045,7 @@ synckolab.addressbookTools.card2Xml = function (card, fields) {
 	xml += " <uid>" + synckolab.tools.text.encode4XML(this.getUID(card)) + "</uid>\n";
 	xml += synckolab.tools.text.nodeWithContent("categories", this.getCardProperty(card, "Category"), false);
 	//xml += " <creation-date>"+synckolab.tools.text.date2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000))+"T"+synckolab.tools.text.time2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000))+"Z</creation-date>\n";
-	xml += " <last-modification-date>" + synckolab.tools.text.calDateTime2String(new Date(this.getCardProperty(card, "LastModifiedDate")), false) + "</last-modification-date>\n";
+	xml += " <last-modification-date>" + synckolab.tools.text.calDateTime2String(new Date(this.getCardProperty(card, "LastModifiedDate")), false, false) + "</last-modification-date>\n";
 	
 	// ??
 	xml += " <sensitivity>public</sensitivity>\n";

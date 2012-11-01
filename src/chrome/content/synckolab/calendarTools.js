@@ -473,14 +473,16 @@ synckolab.calendarTools.event2json = function (event, syncTasks) {
 		if(event.entryDate) {
 			// TODO add timezone
 			jobj.startDate = {
-					dateTime: synckolab.tools.text.calDateTime2String(event.entryDate),
+					dateTime: synckolab.tools.text.calDateTime2String(event.entryDate, isAllDay),
+					allday: isAllDay,
 					tz: null
 			};
 		}
 		if(endDate) {
 			// TODO add timezone
 			jobj.endDate = {
-					dateTime: synckolab.tools.text.calDateTime2String(endDate),
+					dateTime: synckolab.tools.text.calDateTime2String(endDate, isAllDay),
+					allday: isAllDay,
 					tz: null
 			};
 		}
@@ -501,11 +503,13 @@ synckolab.calendarTools.event2json = function (event, syncTasks) {
 	} else {
 		// TODO add timezone
 		jobj.startDate = {
-				dateTime: synckolab.tools.text.calDateTime2String(event.startDate),
+				dateTime: synckolab.tools.text.calDateTime2String(event.startDate, isAllDay),
+				allday: isAllDay,
 				tz: null
 		};
 		jobj.endDate = {
-			dateTime:synckolab.tools.text.calDateTime2String(endDate),
+			dateTime:synckolab.tools.text.calDateTime2String(endDate, isAllDay),
+			allday: isAllDay,
 			tz: null
 		};
 	}
@@ -1188,10 +1192,11 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				if (!cur.firstChild) {
 					break;
 				}
-
+				s = cur.getXmlResult("date-time", "");
 				jobj.startDate = {
 					tz: cur.getXmlResult(["parameters","tzid","text"], null),
-					dateTime: cur.getXmlResult("date-time", "")
+					allday: s.indexOf("T") === -1,
+					dateTime: s
 				};
 				
 				break;
@@ -1203,9 +1208,11 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 					break;
 				}
 				// TODO: add timezone
+				s = cur.getFirstData();
 				jobj.startDate = {
 					tz: null,
-					dateTime: cur.getFirstData()
+					allday: s.indexOf("T") === -1,
+					dateTime: s
 				};
 				break;
 
@@ -1213,10 +1220,11 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				if (!cur.firstChild) {
 					break;
 				}
-				
+				s =  cur.getXmlResult("date-time", "");
 				jobj.endDate = {
 						tz: cur.getXmlResult(["parameters","tzid","text"], null),
-						dateTime: cur.getXmlResult("date-time", "")
+						allday: s.indexOf("T") === -1,
+						dateTime: s
 					};
 				break;
 
@@ -1225,11 +1233,12 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				if (!cur.firstChild) {
 					break;
 				}
-				
+				s = cur.getFirstData();
 				// TODO: add timezone
 				jobj.endDate = {
 						tz: null,
-						dateTime: cur.getFirstData()
+						allday: s.indexOf("T") === -1,
+						dateTime: s
 				};
 				break;
 
@@ -1816,7 +1825,7 @@ synckolab.calendarTools.json2xml = function (jobj, syncTasks, email) {
 		}
 		xml += synckolab.tools.text.nodeWithContent("priority", jobj.priority, false);
 		
-		// xml += " <completed-date>" + synckolab.tools.text.calDateTime2String(completedDate, true) + "</completed-date>\n";
+		// xml += " <completed-date>" + synckolab.tools.text.calDateTime2String(completedDate, true, false) + "</completed-date>\n";
 	}
 	else
 	{
@@ -2010,7 +2019,7 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 		}
 		xml += synckolab.tools.text.nodeContainerWithContent("priority", "text", jobj.priority, false);
 		
-		// xml += " <completed-date>" + synckolab.tools.text.calDateTime2String(completedDate, true) + "</completed-date>\n";
+		// xml += " <completed-date>" + synckolab.tools.text.calDateTime2String(completedDate, true, false) + "</completed-date>\n";
 	}
 	else
 	{
