@@ -317,6 +317,45 @@ synckolab.tools.text = {
 		}
 	},
 
+	/**
+	 * Helper function that converts a compact Date or DateTime to a long version
+	 */
+	getLongDateTime: function(val) {
+		if(!val) {
+			return val;
+		}
+		// already a long format
+		if(val.indexOf('-') !== -1) {
+			return val;
+		}
+		var s = val;
+		s = s.replace('T', ' ');
+		var both = s.split(' ');
+		var cdate = both[0];
+		// kolab3: YYYYMMDD
+		cdate = [];
+		cdate[0] = both[0].substr(0,4);
+		if(both[0].length > 7) {
+			cdate[1] = both[0].substr(4,2);
+			cdate[2] = both[0].substr(6,2);
+		} else {
+			cdate[1] = 1;
+			cdate[2] = 1;
+		}
+		
+		
+		s = cdate[0] + "-" + cdate[1] + "-" + cdate[2];
+
+		if(val.indexOf('T') !== -1) {
+			var ctime = [];
+			// kolab3: HHmmSS
+			ctime[0] = both[1].substr(0,2);
+			ctime[1] = both[1].substr(2,2);
+			s += "T" + ctime[0] + ":" + ctime[1] + ":" + both[1].substring(4);
+		}
+		return s;
+	},
+	
 	// takes: 2005-03-30T15:28:52Z or 2005-03-30 15:28:52
 	string2CalDateTime : function (val, useUTC) {
 		// in case its a date without time fall back to string2CalDate()
@@ -424,7 +463,7 @@ synckolab.tools.text = {
 
 		// make sure not to use UTC for all-day events
 		var resultstring = this.date2String(val, true, compact);
-		if (!allday) {
+		if (!onlyDate) {
 			resultstring += 'T';
 			resultstring += this.time2String(val, compact);
 			resultstring += 'Z';

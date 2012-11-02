@@ -820,7 +820,13 @@ synckolab.calendarTools.json2event = function (jobj, calendar) {
 		if (jobj.startDate.dateTime.indexOf(":") === -1) {
 			// entry date and start date can be handled the same way
 			synckolab.tools.logMessage("setting all day: " + (syncTasks?"entryDate":"startDate"), synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
-			this.setKolabItemProperty(event, syncTasks?"entryDate":"startDate", synckolab.tools.text.string2CalDateTime(jobj.startDate));
+			cDate = synckolab.tools.text.string2CalDateTime(jobj.startDate);
+			// this is a date
+			var tmp_date = cDate.jsDate;
+			tmp_date.setTime(tmp_date.getTime() + 12*60*60000);
+			cDate.jsDate = tmp_date;
+			cDate.isDate = true;
+			this.setKolabItemProperty(event, syncTasks?"entryDate":"startDate", cDate);
 		} else {
 			// entry date and start date can be handled the same way
 			synckolab.tools.logMessage("setting: " + (syncTasks?"entryDate":"startDate"), synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
@@ -835,7 +841,8 @@ synckolab.calendarTools.json2event = function (jobj, calendar) {
 			jobj.endDate.dateTime = jobj.endDate;
 		}
 		
-		if (jobj.endDate.dateTime.indexOf(":") === -1) {
+		if (jobj.endDate.dateTime.indexOf("T") === -1) {
+			synckolab.tools.logMessage("setting endate all day!" , synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 			cDate = synckolab.tools.text.string2CalDateTime(jobj.endDate);
 			// Kolab uses for 1-day-event:
 			// startdate = day_x, enddate = day_x
@@ -1192,7 +1199,7 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				if (!cur.firstChild) {
 					break;
 				}
-				s = cur.getXmlResult("date-time", "");
+				s = synckolab.tools.text.getLongDateTime(cur.getXmlResult("date-time", ""));
 				jobj.startDate = {
 					tz: cur.getXmlResult(["parameters","tzid","text"], null),
 					allday: s.indexOf("T") === -1,
@@ -1220,7 +1227,7 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				if (!cur.firstChild) {
 					break;
 				}
-				s =  cur.getXmlResult("date-time", "");
+				s = synckolab.tools.text.getLongDateTime(cur.getXmlResult("date-time", ""));
 				jobj.endDate = {
 						tz: cur.getXmlResult(["parameters","tzid","text"], null),
 						allday: s.indexOf("T") === -1,
@@ -1592,7 +1599,7 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				}
 				
 				// add exclusion
-				jobj.recurrence.exclusion.push(cur.getXmlResult("date", null));
+				jobj.recurrence.exclusion.push(synckolab.tools.text.getLongDateTime(cur.getXmlResult("date", null)));
 				break;
 
 			case "ATTENDEE":

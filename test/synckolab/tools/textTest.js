@@ -40,8 +40,8 @@ test("synckolab.tools.text.utf8.decode", function() {
 
 test("synckolab.tools.text.string2DateTime", function() {
 	// 2005-03-30T15:28:52Z or 2005-03-30 15:28:52 or: 20050303T152852Z
-	equal(synckolab.tools.text.string2DateTime("2005-03-30T15:28:52Z", true).getTime(), 1112196532000, "datetime with - and T/Z (kolab2)");
-	equal(synckolab.tools.text.string2DateTime("20050330T152852Z", true).getTime(), 1112196532000, "datetime with T/Z (kolab3)");
+	equal(synckolab.tools.text.string2DateTime("2005-03-30T15:28:52Z", false, true).getTime(), 1112189332000, "datetime with - and T/Z (kolab2)");
+	equal(synckolab.tools.text.string2DateTime("20050330T152852Z", false, true).getTime(), 1112189332000, "datetime with T/Z (kolab3)");
 	equal(synckolab.tools.text.string2DateTime("2005-03-30T").getTime(), 1112133600000, "date with - (kolab2)");
 	equal(synckolab.tools.text.string2DateTime("20050330T").getTime(), 1112133600000, "date (kolab3)");
 	
@@ -56,7 +56,15 @@ test("synckolab.tools.text.string2DateTime", function() {
 test("synckolab.tools.text.calDateTime2String", function() {
 	// 2005-03-30T15:28:52Z or 2005-03-30 15:28:52 or: 20050303T152852Z
 	var cdate = new Date(1112196532000);
-	equal(synckolab.tools.text.calDateTime2String(cdate, false), "2005-03-30T15:28:52Z", "datetime with - and T/Z (kolab2)");
-	equal(synckolab.tools.text.calDateTime2String(cdate, true), "20050330T152852Z", "datetime with T/Z (kolab3)");
+	equal(synckolab.tools.text.calDateTime2String(cdate, false, false), "2005-03-30T15:28:52Z", "datetime with - and T/Z (kolab2)");
+	equal(synckolab.tools.text.calDateTime2String(cdate, false, true), "20050330T152852Z", "datetime with T/Z (kolab3)");
+	equal(synckolab.tools.text.calDateTime2String(cdate, true, false), "2005-03-30", "date with - and T/Z (kolab2)");
+	equal(synckolab.tools.text.calDateTime2String(cdate, true, true), "20050330", "date with T/Z (kolab3)");
 });
 
+test("synckolab.tools.text.getLongDateTime", function(){
+	equal(synckolab.tools.text.getLongDateTime("20050330T152852Z"), "2005-03-30T15:28:52Z", "normalize datetime");
+	equal(synckolab.tools.text.getLongDateTime("20050330"), "2005-03-30", "normalize date");
+	equal(synckolab.tools.text.getLongDateTime("2005-03-30"), "2005-03-30", "normalize date");
+	equal(synckolab.tools.text.getLongDateTime("20050330T152852ZEurope/Vienna"), "2005-03-30T15:28:52ZEurope/Vienna", "normalize datetime");
+});
