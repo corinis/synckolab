@@ -1507,7 +1507,7 @@ synckolab.addressbookTools.list2Xml = function (card, fields) {
 	// default: public - tbird doesnt know of other types of list like private
 	xml += " <sensitivity>public</sensitivity>\n";
 
-	xml += " <name>" + synckolab.tools.text.encode4XML(this.getCardProperty(card, "DisplayName")) + "</name>\n";
+	xml += " <display-name>" + synckolab.tools.text.encode4XML(this.getCardProperty(card, "DisplayName")) + "</display-name>\n";
 
 	if (this.haveCardProperty(card, "Notes")) {
 		xml += " <body>" + synckolab.tools.text.encode4XML(this.getCardProperty(card, "Notes")) + "</body>\n";
@@ -2536,7 +2536,9 @@ synckolab.addressbookTools.Xml2List = function (topNode, card) {
 				}
 				*/
 				break;
-			// very important!!!
+				
+			// very important - this is used for displaying/finding lists
+			case "DISPLAY-NAME":
 			case "NAME":
 				if (cur.firstChild === null) {
 					break;

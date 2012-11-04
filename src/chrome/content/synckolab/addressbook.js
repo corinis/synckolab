@@ -492,7 +492,7 @@ synckolab.AddressBook = {
 			}
 			
 			// create a UUID if it does not exist!
-			var cUID = this.tools.getTbirdUUID(card, this.gConfig);
+			var cUID = synckolab.addressbookTools.getTbirdUUID(card, this.gConfig);
 			this.gCardDB.put(cUID, card);
 		}
 	},
@@ -562,7 +562,7 @@ synckolab.AddressBook = {
 					card = card.QueryInterface(Components.interfaces.nsIAbCard);
 					
 					// create a UUID if it does not exist!
-					var cUID = this.tools.getTbirdUUID(card, message.config);
+					var cUID = synckolab.addressbookTools.getTbirdUUID(card, message.config);
 					message.config.cardDb.put(cUID, card);
 				}
 			}
@@ -1175,7 +1175,7 @@ synckolab.AddressBook = {
 		var curListItem;
 		
 		// get the UUID and create on eif it does not exist yet
-		var cUID = this.tools.getTbirdUUID(curItem, this.gConfig);
+		var cUID = synckolab.addressbookTools.getTbirdUUID(curItem, this.gConfig);
 		
 		var alreadyProcessed = false;
 		
