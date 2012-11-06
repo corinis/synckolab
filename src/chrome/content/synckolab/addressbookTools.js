@@ -3622,7 +3622,7 @@ synckolab.addressbookTools.card2Message = function (card, email, format, fields)
 	if (format === "xml-k2") {
 		// mailing list
 		if (card.isMailList) {
-			return synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vnd.kolab.contact.distlist", true, synckolab.tools.text.utf8.encode(this.list2Xml(card, fields)), this.list2Human(card));
+			return synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vnd.kolab.distribution-list", true, synckolab.tools.text.utf8.encode(this.list2Xml(card, fields)), this.list2Human(card));
 		} else {
 			// generat email with optional image attachment
 			var img = null;
@@ -3641,7 +3641,7 @@ synckolab.addressbookTools.card2Message = function (card, email, format, fields)
 	} else if(format === "xml-k3") {
 		// mailing list
 		if (card.isMailList) {
-			return synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vcard.list+xml", true, synckolab.tools.text.utf8.encode(this.list2Kolab3(card, fields)), this.list2Human(card));
+			return synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vnd.kolab.distribution-list", true, synckolab.tools.text.utf8.encode(this.list2Kolab3(card, fields)), this.list2Human(card));
 		} else {
 			data = this.card2Kolab3(card, fields);
 			if(data.content) {
