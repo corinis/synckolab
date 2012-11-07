@@ -921,7 +921,7 @@ synckolab.calendarTools.json2event = function (jobj, calendar) {
 	if (!event.setCategories) {
 		this.setKolabItemProperty(event, "CATEGORIES", jobj.categories);
 	}
-	else {
+	else if(typeof categoriesStringToArray !== "undefined"){
 		// from calUtils.js
 		var categories = categoriesStringToArray(jobj.categories);
 		event.setCategories(categories.length, categories);
