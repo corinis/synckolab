@@ -1,7 +1,29 @@
+SyncKolab 3.0.0
+===============
+
+Version Bump
+
 SyncKolab 2.9.0
 ===============
 * Add support for kolab3
-* Add unit test framework 
+* Add unit test framework
+* Locking problem on windows
+* complete rewrite of message parsing
+* #25166 added UU Encoding support
+* Remove com. prefix to allow unit testing
+* #25035 Sync hangs on sensitivity
+* Fix typo
+* Fix distribution list problems (hopefully for good):
+  * kolab2 xml writing: use json intermediate format
+  * kolab3: initial support
+  * kolab1: fix uid listing
+  * create missing contacts when adding a mailing list
+  * fix field definition
+* Unit Tests for all contact formats
+* #25074  Task folder selection
+* #24960 Windows XP file locking
+* Incompatiblity with horde
+* Fix content type for lists 
 
 SyncKolab 2.0.2
 ===============
