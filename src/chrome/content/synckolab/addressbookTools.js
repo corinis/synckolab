@@ -1879,7 +1879,7 @@ synckolab.addressbookTools.card2Kolab3 = function (card, skipHeader, fields) {
 		xml += "</vcards>\n";
 	}
 
-	if(attach.length == 0) {
+	if(attach.length === 0) {
 		return xml;
 	}
 	

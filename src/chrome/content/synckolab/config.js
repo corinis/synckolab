@@ -43,7 +43,7 @@ synckolab.config = {
 		// set this to true to also print timing information
 		PERFLOG_SYNCKOLAB: true,
 		
-		DEBUG_SYNCKOLAB_LEVEL: 15, // global.global.LOG_ALL + global.global.LOG_DEBUG
+		DEBUG_SYNCKOLAB_LEVEL: 12, // global.global.LOG_ALL + global.global.LOG_ERROR
 
 		//set this to true and on every error there will be a pause so you can check the logs
 		PAUSE_ON_ERROR: false,
@@ -113,7 +113,8 @@ synckolab.config.loadConfiguration = function(pref) {
 	
 	var config = {
 		version: synckolab.tools.getConfigValue(pref, "configVersion", synckolab.tools.CONFIG_TYPE_INT, 0),
-		debugLevel: synckolab.tools.getConfigValue(pref, "debugLevel", synckolab.tools.CONFIG_TYPE_INT, synckolab.global.LOG_WARNING),
+		// default: only errors
+		debugLevel: synckolab.tools.getConfigValue(pref, "debugLevel", synckolab.tools.CONFIG_TYPE_INT, synckolab.global.LOG_ERROR),
 		// hide folder
 		hideFolder: synckolab.tools.getConfigValue(pref, "hideFolder", synckolab.tools.CONFIG_TYPE_BOOL, false),
 		// close window when done
