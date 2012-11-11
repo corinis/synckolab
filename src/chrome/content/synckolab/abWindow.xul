@@ -44,10 +44,7 @@
 		
 	<menupopup id="taskPopup">
 		<menuseparator/>
-		<menuitem id="SyncKolab-Sync" oncommand="synckolab.main.sync('manual');" label="&synckolab.syncMenu.label;"/>
-		<menuitem id="SyncKolab-Options" 
-			oncommand="window.openDialog('chrome://synckolab/content/wndConfig.xul', 'options', 'chrome=yes,resizable=yes,modal=yes');"
-			label="&synckolab.optionMenu.label;"/>
+		<menuitem id="SyncKolab-Sync" oncommand="synckolab.main.sync('manual');" accesskey="y" label="&synckolab.syncMenu.label;"/>
 	</menupopup>
 
 	<toolbarpalette id="AddressBookToolbarPalette">

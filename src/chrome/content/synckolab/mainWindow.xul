@@ -65,8 +65,8 @@
 		
 	<menupopup id="taskPopup">
 		<menuseparator/>
-		<menuitem id="SyncKolab-Sync" command="cmd_synckolab_sync" label="&synckolab.syncMenu.label;"/>
-		<menuitem id="SyncKolab-Options" command="cmd_synckolab_options" label="&synckolab.optionMenu.label;"/>
+		<menuitem id="SyncKolab-Sync" command="cmd_synckolab_sync" accesskey="y" label="&synckolab.syncMenu.label;"/>
+		<menuitem id="SyncKolab-Options" command="cmd_synckolab_options" accesskey="o" label="&synckolab.optionMenu.label;"/>
 	</menupopup>
 	<toolbarpalette id="MailToolbarPalette">
 		<toolbarbutton id="SyncKolab-button" command="cmd_synckolab_sync" class="toolbarbutton-1" label="&synckolab.sync.label;"/>
