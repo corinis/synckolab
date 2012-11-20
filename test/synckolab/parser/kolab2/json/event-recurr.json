@@ -3,10 +3,12 @@
  "type": "calendar",
  "startDate": {
   "dateTime": "2012-03-12T10:00:00Z",
+  "allday": false,
   "tz": null
  },
  "endDate": {
   "dateTime": "2012-03-12T11:00:00Z",
+  "allday": false,
   "tz": null
  },
  "uid": "ec80aeec-1030-4ba4-bac5-8352b2845e55",

@@ -1,0 +1,55 @@
+From: test1@demo.kolab.org
+To: test1@demo.kolab.org
+Date: Sat, 03 Nov 2012 08:13:34 +0100
+X-Kolab-Type: application/x-vnd.kolab.contact
+Subject: 52c9db1f77ed8e397a8e76660f54dfb2
+User-Agent: Horde::Kolab::Storage v0.2
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="=_3inftkqnnl4w4"
+Content-Transfer-Encoding: 7bit
+
+This message is in MIME format.
+
+--=_3inftkqnnl4w4
+Content-Type: text/plain;
+ charset=UTF-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+This is a Kolab Groupware object. To view this object you will need an emai=
+l
+client that understands the Kolab Groupware format. For a list of such emai=
+l
+clients please visit http://www.kolab.org/kolab2-clients.html
+--=_3inftkqnnl4w4
+Content-Type: application/x-vnd.kolab.contact;
+ name="kolab.xml"
+Content-Disposition: attachment;
+ filename="kolab.xml"
+Content-Transfer-Encoding: quoted-printable
+
+<?xml version=3D"1.0"?>
+<contact version=3D"1.0">
+  <uid>52c9db1f77ed8e397a8e76660f54dfb2</uid>
+  <body></body>
+  <categories></categories>
+  <creation-date>2012-11-03T07:13:34Z</creation-date>
+  <last-modification-date>2012-11-03T07:13:34Z</last-modification-date>
+  <sensitivity>public</sensitivity>
+  <product-id>Horde::Kolab</product-id>
+  <name>
+    <given-name>test2</given-name>
+    <middle-names></middle-names>
+    <last-name>user</last-name>
+    <full-name>test2 user</full-name>
+    <prefix></prefix>
+    <suffix></suffix>
+  </name>
+  <organization></organization>
+  <department></department>
+  <job-title></job-title>
+  <nick-name></nick-name>
+  <birthday></birthday>
+</contact>
+--=_3inftkqnnl4w4--

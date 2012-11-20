@@ -1,0 +1,51 @@
+From: test1@demo.kolab.org
+To: test1@demo.kolab.org
+Date: Sat, 03 Nov 2012 08:14:19 +0100
+X-Kolab-Type: application/x-vnd.kolab.distribution-list
+Subject: bbcd7d1e7e0c5dd287f15412d97245b8
+User-Agent: Horde::Kolab::Storage v0.2
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="=_evxmk86gb2w8"
+Content-Transfer-Encoding: 7bit
+
+This message is in MIME format.
+
+--=_evxmk86gb2w8
+Content-Type: text/plain;
+ charset=UTF-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+This is a Kolab Groupware object. To view this object you will need an emai=
+l
+client that understands the Kolab Groupware format. For a list of such emai=
+l
+clients please visit http://www.kolab.org/kolab2-clients.html
+
+
+
+--=_evxmk86gb2w8
+Content-Type: application/x-vnd.kolab.distribution-list;
+ name="kolab.xml"
+Content-Disposition: attachment;
+ filename="kolab.xml"
+Content-Transfer-Encoding: quoted-printable
+
+<?xml version=3D"1.0"?>
+<distribution-list version=3D"1.0">
+  <uid>bbcd7d1e7e0c5dd287f15412d97245b8</uid>
+  <body></body>
+  <categories></categories>
+  <creation-date>2012-11-03T07:13:40Z</creation-date>
+  <last-modification-date>2012-11-03T07:14:19Z</last-modification-date>
+  <sensitivity>public</sensitivity>
+  <product-id>Horde::Kolab</product-id>
+  <display-name>group1</display-name>
+  <member>
+    <display-name>test3 user</display-name>
+    <smtp-address>email@email.com</smtp-address>
+    <uid>78c7418437b0ae128bc5fa96c1248474</uid>
+  </member>
+</distribution-list>
+--=_evxmk86gb2w8--

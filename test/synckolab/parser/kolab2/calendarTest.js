@@ -10,7 +10,7 @@ load("src/chrome/content/synckolab/calendarTools.js");
 load("test/lib/testOverride.js");
 
 
-test("kolab3 synckolab.addressbookTools.parseMessageContent", function(){
+test("kolab2 synckolab.calendarTest", function(){
 	equal(null, synckolab.calendarTools.message2json(null), "parsing a null message");
 	var testFiles = [{name:"event-recurr",task:false},{name:"task-alarm",task:true},{name:"task-due",task:true},{name:"task-progress",task:true},{name:"task-recurr",task:true}
 	];

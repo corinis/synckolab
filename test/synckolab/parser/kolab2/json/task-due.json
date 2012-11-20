@@ -6,6 +6,7 @@
  "status": "not-started",
  "endDate": {
   "tz": null,
+  "allday": false,
   "dateTime": "2012-05-18T21:00:00Z"
  },
  "title": "Neue Aufgabe mit due",

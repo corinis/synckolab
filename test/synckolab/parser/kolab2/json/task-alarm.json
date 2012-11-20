@@ -6,6 +6,7 @@
  "status": "not-started",
  "startDate": {
   "tz": null,
+  "allday": false,
   "dateTime": "2012-05-21T21:00:00Z"
  },
  "title": "aufgabe with alarm",

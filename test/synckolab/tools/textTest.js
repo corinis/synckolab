@@ -68,3 +68,11 @@ test("synckolab.tools.text.getLongDateTime", function(){
 	equal(synckolab.tools.text.getLongDateTime("2005-03-30"), "2005-03-30", "normalize date");
 	equal(synckolab.tools.text.getLongDateTime("20050330T152852ZEurope/Vienna"), "2005-03-30T15:28:52ZEurope/Vienna", "normalize datetime");
 });
+
+test("synckolab.tools.text.pad", function(){
+	equal(synckolab.tools.text.pad(5, 2), "05", "single digit to two");
+	equal(synckolab.tools.text.pad("5", 2), "05", "single character to two");
+	equal(synckolab.tools.text.pad(15, 2), "15", "double digit");
+	equal(synckolab.tools.text.pad(115, 2), "115", "triple digit");
+	equal(synckolab.tools.text.pad(15, 4, 'X'), "XX15", "pad to four");
+});

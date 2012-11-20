@@ -1,0 +1,48 @@
+From: test1@demo.kolab.org
+To: test1@demo.kolab.org
+Date: Sat, 03 Nov 2012 08:12:40 +0100
+X-Kolab-Type: application/x-vnd.kolab.event
+Subject: C74C6521B1E512D2A820E10EA8E048F3-39E78D2C9C5F0549
+User-Agent: Horde::Kolab::Storage v0.2
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="=_k7g1tueok232"
+Content-Transfer-Encoding: 7bit
+
+This message is in MIME format.
+
+--=_k7g1tueok232
+Content-Type: text/plain;
+ charset=UTF-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+This is a Kolab Groupware object. To view this object you will need an emai=
+l
+client that understands the Kolab Groupware format. For a list of such emai=
+l
+clients please visit http://www.kolab.org/kolab2-clients.html
+--=_k7g1tueok232
+Content-Type: application/x-vnd.kolab.event;
+ name="kolab.xml"
+Content-Disposition: attachment;
+ filename="kolab.xml"
+Content-Transfer-Encoding: quoted-printable
+
+<?xml version=3D"1.0"?>
+<event version=3D"1.0">
+  <uid>C74C6521B1E512D2A820E10EA8E048F3-39E78D2C9C5F0549</uid>
+  <body></body>
+  <categories></categories>
+  <creation-date>2012-11-03T07:12:40Z</creation-date>
+  <last-modification-date>2012-11-03T07:12:40Z</last-modification-date>
+  <sensitivity>public</sensitivity>
+  <product-id>Horde::Kolab</product-id>
+  <summary>all day event</summary>
+  <location>test</location>
+  <start-date>2012-11-03</start-date>
+  <priority>0</priority>
+  <show-time-as>busy</show-time-as>
+  <end-date>2012-11-03</end-date>
+</event>
+--=_k7g1tueok232--

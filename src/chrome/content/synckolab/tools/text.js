@@ -630,7 +630,10 @@ synckolab.tools.text = {
 		if(n.length === width) {
 			return n;
 		} else {
-			return [width - n.length + 1].join(z) + n;
+			for(var i = n.length; i < width; i++) {
+				n = z + n;
+			}
+			return n;
 		}
 	},
 	
