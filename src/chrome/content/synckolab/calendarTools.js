@@ -1707,40 +1707,45 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 			}
 			
 			while(alarmNode) {
-				
-				cur = new synckolab.Node(alarmNode.getChildNode("properties").firstChild);
-				// a new alarm
-				tmpobj = {};
-				
-				// iterate over the DOM tree of the XML structure of the event (kolab3: just the properties)
-				while(cur)
-				{
-					if (cur.nodeType === Node.ELEMENT_NODE)
+				var propNode = alarmNode.getChildNode("properties");
+				if(propNode) {
+					cur = new synckolab.Node(propNode.firstChild);
+					// a new alarm
+					tmpobj = {};
+					
+					// iterate over the DOM tree of the XML structure of the event (kolab3: just the properties)
+					while(cur)
 					{
-						switch (cur.nodeName.toUpperCase())
+						if (cur.nodeType === Node.ELEMENT_NODE)
 						{
-							case "ACTION":
-								tmpobj.action = cur.getFirstData();
-								break;
-							case "DESCRIPTION":
-								tmpobj.description = cur.getFirstData();
-								break;
-							case "SUMMARY":
-								tmpobj.summary = cur.getFirstData();
-								break;
-							// some things we dont know about in tbird
-							case "TRIGGER":
-							case "DURATION":
-							case "REPEAT":
-								break;
-							
-							default:
+							switch (cur.nodeName.toUpperCase())
+							{
+								case "ACTION":
+									tmpobj.action = cur.getFirstData();
+									break;
+								case "DESCRIPTION":
+									tmpobj.description = cur.getFirstData();
+									break;
+								case "SUMMARY":
+									tmpobj.summary = cur.getFirstData();
+									break;
+								// some things we dont know about in tbird
+								case "TRIGGER":
+								case "DURATION":
+								case "REPEAT":
+									break;
+								
+								default:
+							}
 						}
+						cur = cur.nextSibling;
+					}	// end while loop through properties
+					
+					if(tmpobj.action || tmpobj.summary || tmpobj.description) {
+						jobj.alarms.push(tmpobj);
 					}
-					cur = cur.nextSibling;
-				}	// end while loop thorugh properties
-				
-				jobj.alarms.push(tmpobj);
+				}
+
 				alarmNode = alarmNode.getNextNode("valarm");
 			}
 		}
