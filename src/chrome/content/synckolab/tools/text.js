@@ -618,6 +618,26 @@ synckolab.tools.text = {
 		return out;
 	},
 
+	/**
+	 * pad a given "number" with a prefix
+	 * @param n the number to pad (or string)
+	 * @param width the width in characters to pad to
+	 * @param z the padding character 
+	 */
+	pad : function (n, width, z) {
+		z = z || '0';
+		n = n + '';
+		if(n.length === width) {
+			return n;
+		} else {
+			return [width - n.length + 1].join(z) + n;
+		}
+	},
+	
+	/**
+	 * Url Decode a string
+	 * @param encoded the encoded string
+	 */
 	URLDecode : function (encoded) {
 		// Replace + with ' '
 		// Replace %xx with equivalent character
@@ -882,8 +902,8 @@ synckolab.tools.text.quoted = {
 		// *    example 4: quoted_printable_decode("Lorem ipsum dolor sit amet=23, consectetur adipisicing elit");
 		// *    returns 4: Lorem ipsum dolor sit amet#, consectetur adipisicing elit
 		// Removes softline breaks
-		var RFC2045Decode1 = /=\r\n/gm,
-		// Decodes all equal signs followed by two hex digits
+		
+		var RFC2045Decode1 = /=\r\n/gm , // Decodes all equal signs followed by two hex digits
 		RFC2045Decode2IN = /=([0-9A-F]{2})/gim,
 		// the RFC states against decoding lower case encodings, but following apparent PHP behavior
 		// RFC2045Decode2IN = /=([0-9A-F]{2})/gm,

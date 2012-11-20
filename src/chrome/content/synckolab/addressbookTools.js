@@ -2084,11 +2084,11 @@ synckolab.addressbookTools.card2Xml = function (card, fields) {
 	xml += synckolab.tools.text.nodeWithContent("nick-name", this.getCardProperty(card, "NickName"), false);
 	var adate;
 	if (this.haveCardProperty(card, "BirthYear") && this.haveCardProperty(card, "BirthMonth") && this.haveCardProperty(card, "BirthDay")) {
-		adate = this.getCardProperty(card, "BirthYear") + "-" + this.getCardProperty(card, "BirthMonth") + "-" + this.getCardProperty(card, "BirthDay");
+		adate = this.getCardProperty(card, "BirthYear") + "-" + synckolab.tools.text.pad(this.getCardProperty(card, "BirthMonth"), 2) + "-" + synckolab.tools.text.pad(this.getCardProperty(card, "BirthDay"), 2);
 		xml += synckolab.tools.text.nodeWithContent("birthday", adate, false);
 	}
 	if (this.haveCardProperty(card, "AnniversaryYear") && this.haveCardProperty(card, "AnniversaryMonth") && this.haveCardProperty(card, "AnniversaryDay")) {
-		adate = this.getCardProperty(card, "AnniversaryYear") + "-" + this.getCardProperty(card, "AnniversaryMonth") + "-" + this.getCardProperty(card, "AnniversaryDay");
+		adate = this.getCardProperty(card, "AnniversaryYear") + "-" + synckolab.tools.text.pad(this.getCardProperty(card, "AnniversaryMonth"), 2) + "-" + synckolab.tools.text.pad(this.getCardProperty(card, "AnniversaryDay"), 2);
 		xml += synckolab.tools.text.nodeWithContent("anniversary", adate, false);
 	}
 	if (this.haveCardProperty(card, "HomePhone")) {
