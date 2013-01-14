@@ -2023,10 +2023,10 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 		// tasks have a status
 		xml += synckolab.tools.text.nodeContainerWithContent("status", "text", jobj.status, false);
 		xml += synckolab.tools.text.nodeContainerWithContent("completed", "text", jobj.completed, false);
-		if (jobj.startDate.dateTime) {
+		if (jobj.startDate && jobj.startDate.dateTime) {
 			xml += synckolab.tools.text.nodeContainerWithContent("dtstart", "date-time", jobj.startDate.dateTime.replace(/[\-:]/g, ""), false);
 		}
-		if (jobj.endDate.dateTime) {
+		if (jobj.endDate && jobj.endDate.dateTime) {
 			xml += synckolab.tools.text.nodeContainerWithContent("dtdue", "date-time", jobj.endDate.dateTime.replace(/[\-:]/g, ""), false);
 		}
 		xml += synckolab.tools.text.nodeContainerWithContent("priority", "text", jobj.priority, false);
@@ -2035,10 +2035,10 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 	}
 	else
 	{
-		if (jobj.startDate.dateTime) {
+		if (jobj.startDate && jobj.startDate.dateTime) {
 			xml += synckolab.tools.text.nodeContainerWithContent("dtstart", "date-time", jobj.startDate.dateTime.replace(/[\-:]/g, ""), false);
 		}
-		if (jobj.endDate.dateTime) {
+		if (jobj.endDate && jobj.endDate.dateTime) {
 			xml += synckolab.tools.text.nodeContainerWithContent("dtend", "date-time", jobj.endDate.dateTime.replace(/[\-:]/g, ""), false);
 		}
 	}
