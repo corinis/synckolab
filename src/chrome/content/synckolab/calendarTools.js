@@ -2001,8 +2001,8 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 		'<icalendar xmlns="urn:ietf:params:xml:ns:icalendar-2.0">\n'+
 		'<vcalendar>\n' +
 		'<properties>\n' +
-		' <prodid><text>Synckolab " + synckolab.config.version + ", Calendar Sync</text></prodid>\n' +
-		' <version><text>2.0</text></version>\n' +
+		' <prodid><text>Synckolab , Calendar Sync</text></prodid>\n' +
+		' <version><text>'+synckolab.config.version+'</text></version>\n' +
 		'</properties>\n' + 
 		'<components>';
 		
