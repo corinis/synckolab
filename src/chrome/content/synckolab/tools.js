@@ -584,6 +584,8 @@ generateMail: function (cid, mail, adsubject, mime, part, skcontent, hr, attachm
 	msg += cid + "\n";
 
 	msg += sdate;
+	// add mime version (#25271)
+	msg += "MIME-Version: 1.0\n";
 	if (!part) {
 		msg += 'Content-Type: '+mime+';\n  charset="utf-8"\n';
 	} else {
