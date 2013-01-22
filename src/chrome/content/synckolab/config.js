@@ -129,7 +129,7 @@ synckolab.config.loadConfiguration = function(pref) {
 		var sAccts = sAcct.split(';');
 		for(var i = 0; i < sAccts.length; i++) {
 			// skip empty configs
-			if(sAccts[i].length <= 3) {
+			if(sAccts[i].length < 1) {
 				continue;
 			}
 			var acct = {
@@ -298,7 +298,7 @@ synckolab.config.prepareConfig = function(baseConfig, confType) {
 		return;
 	}
 	// no folder - not enabled
-	if(!baseConfig.folderPath || baseConfig.folderPath.length < 5) {
+	if(!baseConfig.folderPath || baseConfig.folderPath.length < 1) {
 		synckolab.tools.logMessage("disabling " + baseConfig.name +"/"+confType + "- no folderpath found", synckolab.global.LOG_INFO);
 		baseConfig.enabled = false;
 		return;
