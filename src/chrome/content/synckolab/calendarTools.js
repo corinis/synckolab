@@ -456,6 +456,7 @@ synckolab.calendarTools.event2json = function (event, syncTasks) {
 	if (isAllDay && endDate)
 	{
 		var tmp_date = endDate;
+
 		tmp_date.setTime(tmp_date.getTime() - 24*60*60000);
 		// lightning 0.9pre fix
 		if (createDateTime) {
@@ -849,7 +850,7 @@ synckolab.calendarTools.json2event = function (jobj, calendar) {
 			// Sunbird uses for 1-day-event:
 			// startdate = day_x, enddate = day_x + 1
 			var tmp_date = cDate.jsDate;
-			tmp_date.setTime(tmp_date.getTime() + 24*60*60000);
+			tmp_date.setTime(tmp_date.getTime() + 36*60*60000);
 			cDate.jsDate = tmp_date;
 			cDate.isDate = true;
 			// due date and end date can be handled the same way
