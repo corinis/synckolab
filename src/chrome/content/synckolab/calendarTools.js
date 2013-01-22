@@ -1707,7 +1707,7 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				jobj.alarms = [];
 			}
 			
-			while(alarmNode) {
+			while(alarmNode && alarmNode.getChildNode) {
 				var propNode = alarmNode.getChildNode("properties");
 				if(propNode) {
 					cur = new synckolab.Node(propNode.firstChild);
@@ -2068,6 +2068,7 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 	}
 	
 	if(jobj.recurrence) {
+		xml += " <rrule>\n";
 		xml += " <recur>\n";
 		switch(jobj.recurrence.cycle) {
 		case "daily":
@@ -2123,7 +2124,8 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 			xml += "  <count>" + jobj.recurrence.count + "</count>\n";
 		} 
 		xml += " </recur>\n";
-		if(jobj.recurrence.exclusion) {
+		xml += " </rrule>\n";
+		if(jobj.recurrence.exclusion && jobj.recurrence.exclusion.length > 0) {
 			xml+= " <exdate>\n";
 			for(i=0; i < jobj.recurrence.exclusion.length; i++) {
 				// convert longdate to compact one: 2005-03-30T15:28:52Z -> 20050330T152852Z 
