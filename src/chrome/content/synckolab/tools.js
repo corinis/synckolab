@@ -1457,6 +1457,7 @@ synckolab.Node.prototype.getFirstData = function () {
 /**
  * return the content of a child node with name "name" of the node "node"
  * or the given default "def" if no such node exists
+ * @param name the name or path to the result. this can be a string, a one dimensional array (the path) or a two dimensianel array (different paths to check)
  */
 synckolab.Node.prototype.getXmlResult =  function (name, def)
 {
@@ -1479,14 +1480,30 @@ synckolab.Node.prototype.getXmlResult =  function (name, def)
 
 
 /**
- * @param name a name of path (by passing an array) to a child
+ * @param name a name of path (by passing an array) or multiple paths (by passing a two-dimensional array) to a child
  * return a direct child node with the name "name" of the node "node"
  */
 synckolab.Node.prototype.getChildNode = function (name)
 {
-	// passed an array - go deep
+	// passed an array -
 	if( Object.prototype.toString.call( name ) === '[object Array]') {
-		var curNode = this;
+		var curNode;
+
+		// check for two-dimensional array
+		if( Object.prototype.toString.call( name[0] ) === '[object Array]') {
+			for(var j = 0; j < name.length; j++){
+				// try each path
+				curNode = this.getChildNode(name[j]);
+				if(curNode !== null) {
+					return curNode;
+				}
+			}
+			// none of the paths matched a child
+			return null;
+		}
+
+		// check if we have to go deep
+		curNode = this;
 		for(var i = 0; i < name.length && curNode !== null; i++){
 			curNode = curNode.getChildNode(name[i]);
 		}

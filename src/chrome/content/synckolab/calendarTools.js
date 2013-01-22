@@ -1200,7 +1200,7 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				if (!cur.firstChild) {
 					break;
 				}
-				s = synckolab.tools.text.getLongDateTime(cur.getXmlResult("date-time", ""));
+				s = synckolab.tools.text.getLongDateTime(cur.getXmlResult([["date-time"],["date"]], ""));
 				jobj.startDate = {
 					tz: cur.getXmlResult(["parameters","tzid","text"], null),
 					allday: s.indexOf("T") === -1,
@@ -1228,7 +1228,7 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				if (!cur.firstChild) {
 					break;
 				}
-				s = synckolab.tools.text.getLongDateTime(cur.getXmlResult("date-time", ""));
+				s = synckolab.tools.text.getLongDateTime(cur.getXmlResult([["date-time"],["date"]], ""));
 				jobj.endDate = {
 						tz: cur.getXmlResult(["parameters","tzid","text"], null),
 						allday: s.indexOf("T") === -1,
