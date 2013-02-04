@@ -23,6 +23,7 @@
 <!ENTITY synckolab.settings.Tasks		"タスクリスト">
 <!ENTITY synckolab.settings.hideFolder		"Hide selected folders (opens calendar/addressbook instead)">
 
+<!ENTITY synckolab.settings.Format	"の保存形式">
 <!ENTITY synckolab.settings.ContactFolder	"コンタクトを保存するフォルダ">
 <!ENTITY synckolab.settings.ContactFormat	"コンタクトの保存形式">
 <!ENTITY synckolab.settings.SaveToImap		"IMAPフォルダへ保存する">

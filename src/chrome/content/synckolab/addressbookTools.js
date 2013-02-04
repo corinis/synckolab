@@ -328,6 +328,33 @@ synckolab.addressbookTools.getABDirectory = function (listener) {
 };
 
 /**
+ * find a given addressbook
+ * @param name the name of the address book
+ * @returns null if not found, otherwise the addressbook
+ */
+synckolab.addressbookTools.findAB = function (name) {
+	var cn = synckolab.addressbookTools.getABDirectory();
+	var ABook = cn.getNext();
+	var actualBook = null;
+	while (ABook)
+	{
+		var cur = ABook.QueryInterface(Components.interfaces.nsIAbDirectory);
+		if (cur.dirName === name ||
+			synckolab.tools.text.fixNameToMiniCharset(name).toLowerCase() === synckolab.tools.text.fixNameToMiniCharset(cur.dirName).toLowerCase()
+			)
+		{
+			return cur;
+		}
+		if (cn.hasMoreElements())
+		{
+			ABook = cn.getNext();
+		}
+	}
+	return null;
+}
+
+
+/**
  * @param card the card to change
  * @prop the name of the property (String)
  * @value the value to set the property to, null will be changed to an empty string ("")

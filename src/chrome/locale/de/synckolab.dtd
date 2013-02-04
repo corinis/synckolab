@@ -25,6 +25,7 @@
 <!ENTITY synckolab.settings.Tasks		"Aufgaben">
 <!ENTITY synckolab.settings.hideFolder		"Verwendete Folder verstecken (Startet stattdessen Kalender/Adressbuch)">
 
+<!ENTITY synckolab.settings.Format	"Format">
 <!ENTITY synckolab.settings.ContactFolder	"Verzeichnis">
 <!ENTITY synckolab.settings.ContactFormat	"Format">
 <!ENTITY synckolab.settings.SaveToImap		"Auf das IMAP Konto schreiben">

@@ -271,7 +271,7 @@ synckolab.main.sync =  function (event, syncconfig)
 	if (synckolab.main.doHideWindow) {
 		synckolab.global.wnd = null;
 	} else {
-		synckolab.global.wnd = window.openDialog("chrome://synckolab/content/progressWindow.xul", "bmarks", "chrome,width=500,height=350,resizable=yes,alwaysRaised=yes,dependent=yes,modal=no");
+		synckolab.global.wnd = window.openDialog("chrome://synckolab/content/progressWindow.xul", "skprogress", "chrome,width=500,height=350,resizable=yes,alwaysRaised=yes,dependent=yes,modal=no");
 	}
 
 	// reset variables

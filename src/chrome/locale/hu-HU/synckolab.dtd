@@ -23,6 +23,7 @@
 <!ENTITY synckolab.settings.Tasks		"Feladatok">
 <!ENTITY synckolab.settings.hideFolder		"Hide selected folders (opens calendar/addressbook instead)">
 
+<!ENTITY synckolab.settings.Format	"Formátum">
 <!ENTITY synckolab.settings.ContactFolder	"Kapcsolat mappa">
 <!ENTITY synckolab.settings.ContactFormat	"Kapcsolat formátum">
 <!ENTITY synckolab.settings.SaveToImap		"Mentés Imap mappába">

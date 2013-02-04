@@ -23,6 +23,7 @@
 <!ENTITY synckolab.settings.Tasks		"Úkoly">
 <!ENTITY synckolab.settings.hideFolder		"Hide selected folders (opens calendar/addressbook instead)">
 
+<!ENTITY synckolab.settings.Format	"Formát">
 <!ENTITY synckolab.settings.ContactFolder	"Složka kontaktů">
 <!ENTITY synckolab.settings.ContactFormat	"Formát kontaktů">
 <!ENTITY synckolab.settings.SaveToImap		"Uložit do IMAP složky">

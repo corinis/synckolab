@@ -38,7 +38,11 @@ synckolab.settings = {
 		// account types
 		baseTypes: ["contact", "calendar", "task"],
 		// the current configuration
-		config: null
+		config: null,
+		// time for callbacks so not to block the ui
+		timer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
+		// milliseconds for async switch
+		SWITCH_TIME: 200
 };
 
 
@@ -634,7 +638,7 @@ synckolab.settings.fillAddressBook = function (cn, ABook) {
  */
 synckolab.settings.setFolders = function (act) {
 	
-	this.updateFolder(act, [{
+	synckolab.settings.updateFolder(act, [{
 		prefix: "contact",
 		node: document.getElementById("contactImapFolder")
 	},{
@@ -816,7 +820,7 @@ synckolab.settings.updateFolderElements = function (msgFolder, origSets)
 synckolab.settings.setSyncPrefView = function(viewName) {
 	if (viewName.indexOf("-") === -1)
 	{
-		alert("Fatal ERROR - unable to get view - Pleasere install!");
+		alert("Fatal ERROR - unable to get view - Please re-install synckolab and clean your configuration!");
 		return;
 	}
 	
@@ -913,7 +917,12 @@ synckolab.settings.fillBaseInfo = function() {
 		} else {
 			synckolab.tools.logMessage("WARNING: could not find Label " + sCLabel, synckolab.global.LOG_WARNING);
 		}
+	} else {
+		conf.debugLevel = 12;
 	}
+	
+	// set debug level
+	synckolab.config.DEBUG_SYNCKOLAB_LEVEL = conf.debugLevel;
 	
 };
 
@@ -1181,6 +1190,9 @@ synckolab.settings.fillInfo = function(type, acctName, confName) {
  */
 synckolab.settings.addConfig = function() {
 	switch(synckolab.settings.activeType) {
+		case "Acct":
+			alert("Searching for existing kolab configurations.");
+			break;
 		case "contact":
 		case "calendar":
 		case "task":
@@ -1289,4 +1301,554 @@ synckolab.settings.resetConfiguration = function (account, type, config)
 			file.remove(true);
 		}
 	}
+};
+
+/**
+ * start autoconfiguration on the current selected account
+ */
+synckolab.settings.autoConfigure = function() {
+	// open status dialog (modal)
+	var statusDlg = {
+			wnd: window.openDialog("chrome://synckolab/content/wndAutoSetup.xul", "sksearchprogress", "chrome,width=450,height=200,resizable=no,alwaysRaised=yes,dependent=yes,modal=no")
+	};
+	
+	// wait until loaded
+	synckolab.settings.timer.initWithCallback({
+		notify:
+			function (){
+			synckolab.settings.autoConfigureStart(statusDlg, synckolab.settings.activeAccount);
+		}
+	}, synckolab.settings.SWITCH_TIME, 0);
+};
+
+/**
+ * Callback for autoconfigure
+ * @param statusDlg the status dialog
+ * @param acctName the account to configure
+ * @private
+ */
+synckolab.settings.autoConfigureStart = function(statusDlg, acctName) {
+	// remember each folder
+	
+	// some window elements for displaying the status
+	statusDlg.meter = statusDlg.wnd.document.getElementById('total-progress');
+	statusDlg.statusMsg = statusDlg.wnd.document.getElementById('current-action');
+	statusDlg.itemList = statusDlg.wnd.document.getElementById('item-list');
+
+	statusDlg.statusMsg.value ="Initializing " + acctName;
+	statusDlg.meter.mode = "undetermined";
+	statusDlg.folders = [];
+	
+	// get the richt account
+	var gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
+	for (var i = 0; i < gAccountManager.allServers.Count(); i++) {
+		try
+		{
+			var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
+			if (account.rootMsgFolder.baseMessageURI === acctName || synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === acctName)
+			{
+				// collect ALL folders before going throughthem
+				synckolab.settings.collectFolder(account.rootFolder, statusDlg.folders);
+				synckolab.tools.logMessage("collected " + statusDlg.folders.length + " folders...", synckolab.global.LOG_INFO);
+
+				statusDlg.meter.mode = "determined";
+				statusDlg.curFolderNum = 0;
+				statusDlg.identifiedFolder = [];
+				// start with the identification process
+				synckolab.settings.identifyFolder(statusDlg);
+				break;
+			}
+		}
+		catch (ex)
+		{
+
+		}
+	}
+};
+
+synckolab.settings.finishIdentification = function(statusDlg) {
+	alert("folderinfo: " + statusDlg.identifiedFolder.toSource());
+	
+	statusDlg.meter.value = 100;
+	statusDlg.statusMsg.value ="Finished";
+	
+	statusDlg.wnd.document.getElementById("ok-button").onclick = function(){
+		if(statusDlg.identifiedFolder.length === 0) {
+			if(confirm("No existing folders found. Do you want to create a default configuration?")) {
+				synckolab.settings.autocreateNewConfig();
+			}
+			statusDlg.wnd.close();
+			return;
+		}
+		
+		var acctIdx = synckolab.settings.getAccountIdx(synckolab.settings.config, synckolab.settings.activeAccount);
+		var acct = synckolab.settings.config.accounts[acctIdx];
+		
+		// add configuration
+		for(var i = 0; i < statusDlg.identifiedFolder.length; i++) {
+			// add a new config based on the id
+			var curFolder = statusDlg.identifiedFolder[i];
+			var name = curFolder.name;
+
+			// create a base config object
+			var cConf = {
+					name: name
+			};
+			
+			// read all the base settings
+			for(var n in synckolab.config.baseSetting) {
+				// skip unwanted prototypes (without type)
+				if(synckolab.config.baseSetting[n].type >= 0) {
+					cConf[n] = synckolab.config.baseSetting[n].def;
+				}
+			}
+
+			// true if the config is enabled
+			cConf.enabled = true;
+			// save changes to imap (vs. read only)
+			cConf.saveToImap = true;
+			// format to use: xml|vcard
+			switch(curFolder.kolab) {
+				case 2:
+					cConf.format = "xml-k2";
+					break;
+				case 1: 
+					cConf.format = "vcard";
+					break;
+				default:
+					cConf.format = "xml-k3";
+			}
+			// enable the sync listener
+			cConf.syncListener = false;
+
+			switch (curFolder.type) {
+			case "CONTACT":
+				// try to find a matching addresbook - if none exists create one
+				var actualBook = synckolab.addressbookTools.findAB(name);
+				
+				// did not find one - lets create one
+				if(actualBook === null) {
+					try {
+						var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+						abManager.newAddressBook(name, "moz-abmdbdirectory://", 2);
+					} catch (ex) {
+						try {	// postbox
+							var addressbook = Components.classes["@mozilla.org/addressbook;1"].createInstance(Components.interfaces.nsIAddressBook);
+							addressbook.newAddressBook(name, "", 2);
+						} catch (ex2) {
+						}
+					}
+					
+					// update address book
+					var cn = synckolab.addressbookTools.getABDirectory();
+					var ABook = cn.getNext();
+					this.fillAddressBook(cn, ABook);
+
+					// search again
+					actualBook = synckolab.addressbookTools.findAB(name);
+				}
+				
+				if(actualBook === null) {
+					alert("Unable to create an address book for your configuration. Please create it manually with the name: " + name);
+					break;
+				}
+
+				// abook source
+				cConf.source = actualBook.dirName;
+
+				// the imap folder path 
+				cConf.folderPath = curFolder.folder.URI;
+
+				// we got a matching address book - create the configuration
+				acct.contact.push(cConf);
+				
+				synckolab.tools.logMessage("New config: " + synckolab.settings.config.toSource(), synckolab.global.LOG_DEBUG);
+				break;
+			case "TASK":
+				break;
+			case "CALENDAR":
+				break;
+			}
+			
+			alert("Updated your configuration - please verify that all mappings are correct.");
+		}
+		synckolab.settings.repaintConfigTree();
+		statusDlg.wnd.close();
+	};
+};
+
+/**
+ * simepl function that collects all existing folders
+ * @param msgFolder the current folder
+ * @param folders the object to save the folders in
+ */
+synckolab.settings.collectFolder = function(msgFolder, folders) {
+	// make sure we talk about the right interface
+	msgFolder = msgFolder.QueryInterface(Components.interfaces.nsIMsgFolder);
+	
+	// remember this folder
+	folders.push(msgFolder);
+	
+	// check for subfolders and recurse into them
+	try {
+		if (msgFolder.hasSubFolders)
+		{
+			// tbird 3 uses subFolders enumerator instead of getsubfolders
+			var subfolders = msgFolder.subFolders ? msgFolder.subFolders : msgFolder.GetSubFolders();
+	
+			// this block is only for tbird < 3
+			try
+			{
+				if (subfolders.first) {
+					subfolders.first();
+				}
+			}
+			catch (sfex)
+			{
+				return;
+			}
+	
+			while (subfolders !== null)
+			{
+				var curFolder = null;
+				// tbird < 3
+				if (subfolders.currentItem) {
+					curFolder = subfolders.currentItem();
+				} else {
+					curFolder = subfolders.getNext();
+				}
+	
+				if (curFolder === null) {
+					break;
+				}
+	
+				curFolder = curFolder.QueryInterface(Components.interfaces.nsIMsgFolder);
+	
+				// go deep
+				synckolab.settings.collectFolder(curFolder, folders);
+	
+				// break condition tbird3
+				if (subfolders.hasMoreElements && !subfolders.hasMoreElements()) {
+					break;
+				}
+	
+				// tbird <3 break condition
+				if (subfolders.isDone && subfolders.isDone()) {
+					break;
+				}
+				if (subfolders.next)
+				{
+					try
+					{
+						subfolders.next();
+					}
+					catch (exi1)
+					{
+						break;
+					}
+				}
+			}
+		}
+	} catch (sfEx) {
+		synckolab.tools.logMessage("Unable to retrieve subfolders in  " + msgFolder.prettyName + "(" + sfEx + ")", synckolab.global.LOG_INFO);
+	}
+	
+};
+
+
+/**
+ * check the first few messages and try to identify them. If they are kolab messages, remember the folder
+ * with the identified type.
+ * 
+ * @param msgFolder the folder to check
+ * @param identifiedFolder the array that keeps the identified objects
+ */
+synckolab.settings.identifyFolder = function(statusDlg) {
+	var MAX_CHECK = 10;
+	
+	// done
+	if (statusDlg.curFolderNum >= statusDlg.folders.length) {
+		synckolab.settings.finishIdentification(statusDlg);
+		return;
+	}
+	
+	// update progressmeter
+	statusDlg.meter.setAttribute("value", Math.round((statusDlg.curFolderNum / statusDlg.folders.length)*100) + "%");
+
+	var msgFolder = statusDlg.folders[statusDlg.curFolderNum++];
+	
+	statusDlg.currentFolder = {
+			folder: msgFolder,
+			name: msgFolder.prettyName,
+			task: 0, 
+			calendar: 0, 
+			contact: 0,
+			kolab1: 0,
+			kolab2: 0,
+			kolab3: 0,
+			unknown: 0,
+			// remember how many messages are still to check
+			msgToCheck: MAX_CHECK
+	};
+
+	// we should have a folder at least
+	if(!msgFolder) {
+		synckolab.settings.identifyFolder(statusDlg);
+		return;
+	}
+	
+	statusDlg.statusMsg.value ="Checking " + msgFolder.prettyName;
+	
+	// go through the headers
+	try {
+		if (msgFolder.getMessages) {
+			statusDlg.currentFolder.messages = msgFolder.getMessages(null);	 // dont need the msgWindow use null
+		} else {
+			statusDlg.currentFolder.messages = msgFolder.messages; // tbird 3 uses an enumerator property instead of a function
+		}
+	} catch (getMsgEx) {
+		synckolab.tools.logMessage("Unable to retrieve messages... skipping " + msgFolder.prettyName, synckolab.global.LOG_INFO);
+		synckolab.settings.identifyFolder(statusDlg);
+		return;
+	}
+	
+	// start reading the first X message:
+	synckolab.settings.identifyMessage(statusDlg);
+};
+
+/**
+ * start identificatio process: this will download the next message
+ * @param statusDlg
+ */
+synckolab.settings.identifyMessage = function(statusDlg) {
+
+	// finished checking - next folder
+	if(statusDlg.currentFolder.msgToCheck === 0) {
+		synckolab.settings.nextFolder(statusDlg);
+		return;
+	}
+	
+	var messages = statusDlg.currentFolder.messages;
+	
+	var cur = null;
+	try
+	{
+		if (messages.hasMoreElements()) {
+			cur = messages.getNext().QueryInterface(Components.interfaces.nsIMsgDBHdr);
+		}
+	}
+	catch (ex)
+	{
+		synckolab.tools.logMessage("skipping read of messages - since there are none :)", synckolab.global.LOG_INFO);
+	}
+
+	//  reached last message - next Folder
+	if(!cur) {
+		synckolab.tools.logMessage("last message found... next Folder", synckolab.global.LOG_INFO);
+		synckolab.settings.nextFolder(statusDlg);
+		return;
+	}
+
+	// message tests
+	if (cur.flags&0x200000)
+	{
+		synckolab.tools.logMessage("Message " + cur.mime2DecodedSubject + " has been DELETED on imap!", synckolab.global.LOG_INFO);
+		
+		// skip current and process next nessage
+		synckolab.settings.identifyMessage(statusDlg);
+		return;
+	}
+	
+	if(!cur.mime2DecodedSubject || cur.mime2DecodedSubject.length < 3) {
+		statusDlg.currentFolder.unknown++;
+		synckolab.tools.logMessage("Message '" + cur.mime2DecodedSubject + "' has an invalid subject!", synckolab.global.LOG_INFO);
+		// skip current and process next nessage	
+		synckolab.settings.identifyMessage(statusDlg);
+		return;
+	}
+	
+	// check next message
+	statusDlg.currentFolder.msgToCheck--;
+
+	// read the current message (async)
+	statusDlg.currentMessage = {
+			message: statusDlg.currentFolder.folder.baseMessageURI +"#"+cur.messageKey,
+			fileContent: ""
+	};
+
+	var aurl = {};
+	synckolab.global.messageService.CopyMessage(
+			statusDlg.currentMessage.message, 
+			/* nsIStreamListener */
+			{
+					onDataAvailable: function (request, context, inputStream, offset, count){
+						try
+						{
+							var sis=Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance(Components.interfaces.nsIScriptableInputStream);
+							sis.init(inputStream);
+							statusDlg.currentMessage.fileContent += sis.read(count);
+						}
+						catch(ex)
+						{
+							alert("exception caught: "+ex.message+"\n");
+						}
+					},
+					onStartRequest: function (request, context) {
+					},
+					onStopRequest: function (aRequest, aContext, aStatusCode) {
+						// make sure we dont come into an endless loop here
+						synckolab.settings.analyzeMessage(statusDlg);
+					}
+			}, false, null, null, aurl
+	);
+};
+	
+/**
+ * analyze the filecontent based on the last copymessage call
+ * @param statusDlg the status object
+ * @private
+ */
+synckolab.settings.analyzeMessage = function(statusDlg) {
+	// start analyzing
+	var content = statusDlg.currentMessage.fileContent;
+	// next
+	if(!content) {
+		synckolab.settings.identifyMessage(statusDlg);
+		return;
+	}
+
+	var headerLen = content.length;
+	
+	// header should really be smaller than 5k
+	if(headerLen > 5000) {
+		headerLen = 5000;
+	}
+	content = content.substring(0, headerLen - 1).toLowerCase();
+
+	// get the header (everything before the first \n\n)
+	//content = content.substring(0, content.indexOf("\n\n")).toLowerCase();
+	
+	// kolab1 vcard checks:
+	
+	// kolab2/3 checks:
+	var kolab3 = false;
+	if(content.indexOf("x-kolab-mime-version: 3.0") !== -1) {
+		kolab3 = true;
+	}
+	if(content.indexOf("application/vcard+xml") !== -1) {
+		statusDlg.currentFolder.kolab3++;
+		statusDlg.currentFolder.contact++;
+	} else if(content.indexOf("application/i-cal+xml") !== -1) {
+		if(kolab3) { statusDlg.currentFolder.kolab3++; } 
+		else { statusDlg.currentFolder.kolab2++;}
+		statusDlg.currentFolder.task++;
+	} else if(content.indexOf("application/x-vnd.kolab.distribution-list") !== -1) {
+		if(kolab3) { statusDlg.currentFolder.kolab3++; } 
+		else { statusDlg.currentFolder.kolab2++;}
+		statusDlg.currentFolder.contact++;
+	} else if(content.indexOf("application/x-vnd.kolab.event") !== -1) {
+		if(kolab3) { statusDlg.currentFolder.kolab3++; } 
+		else { statusDlg.currentFolder.kolab2++;}
+		statusDlg.currentFolder.calendar++;
+	} else if(content.indexOf("application/x-vnd.kolab.contact") !== -1) {
+		if(kolab3) { statusDlg.currentFolder.kolab3++; } 
+		else { statusDlg.currentFolder.kolab2++;}
+		statusDlg.currentFolder.contact++;
+	} else if(content.indexOf("application/x-vnd.kolab.task") !== -1) {
+		if(kolab3) { statusDlg.currentFolder.kolab3++; } 
+		else { statusDlg.currentFolder.kolab2++;}
+		statusDlg.currentFolder.task++;
+	} else if(content.indexOf("application/x-vnd.kolab.distribution-list") !== -1) {
+		if(kolab3) { statusDlg.currentFolder.kolab3++; } 
+		else { statusDlg.currentFolder.kolab2++;}
+		statusDlg.currentFolder.contact++;
+	} else if(content.indexOf("text/x-vcard") !== -1) {
+		statusDlg.currentFolder.kolab1++;
+		statusDlg.currentFolder.contact++;
+	} else if(content.indexOf("text/x-ical") !== -1 || content.indexOf("text/calendar") !== -1) {
+		statusDlg.currentFolder.kolab1++;
+		statusDlg.currentFolder.calendar++;
+	} else if(content.indexOf("text/todo") !== -1) {
+		statusDlg.currentFolder.kolab1++;
+		statusDlg.currentFolder.task++;
+	} else {
+		statusDlg.currentFolder.unknown++;
+		// if unknown - we only need to check less 
+		statusDlg.currentFolder.msgToCheck--;
+	}
+
+	
+	//next message
+	synckolab.settings.identifyMessage(statusDlg);
+};
+
+
+/**
+ * after parsing one folder - go deep
+ * @param msgFolder
+ * @param identifiedFolder
+ * @param statusDlg
+ */
+synckolab.settings.nextFolder = function(statusDlg) {
+	
+	// analyse current folder stats
+	var cur = statusDlg.currentFolder;
+	if(cur.msgToCheck < 3) {
+		synckolab.tools.logMessage("stats: " + cur.toSource(), synckolab.global.LOG_INFO)
+	}
+
+	if(cur.unknown < 2) {
+		// kolab3 wins
+		if(cur.kolab3 > 0) {
+			cur.kolab = 3;
+		} else if(cur.kolab2 > 0) {
+			cur.kolab = 2;
+		} else if(cur.kolab1 > 0) {
+			cur.kolab = 1;
+		}
+		
+		// add if we have identified at least one type
+		if(cur.contact > 0 && cur.contact > cur.calendar && cur.contact > cur.task) {
+			cur.type = "CONTACT";
+			statusDlg.identifiedFolder.push(cur);
+		} else if(cur.calendar > 0 && cur.calendar > cur.task) {
+			cur.type = "CALENDAR";
+			statusDlg.identifiedFolder.push(cur);
+		} else if(cur.task > 0) {
+			cur.type = "TASK";
+			statusDlg.identifiedFolder.push(cur);
+		}
+		
+		if(cur.kolab > 0) {
+			// add a new line since we think we know whats going on
+			var doc = statusDlg.wnd.document;
+			
+			var curItemInList = doc.createElement("treerow");
+			var curItemInListId = doc.createElement("treecell");
+			var curItemInListStatus = doc.createElement("treecell");
+			var curItemInListContent = doc.createElement("treecell");
+			curItemInListId.setAttribute("label", cur.name);
+			curItemInListStatus.setAttribute("label", cur.type);
+			curItemInListContent.setAttribute("label", "kolab" + cur.kolab);
+			
+			curItemInList.appendChild(curItemInListId);
+			curItemInList.appendChild(curItemInListStatus);
+			curItemInList.appendChild(curItemInListContent);
+			
+			var curListItem = doc.createElement("treeitem");
+			curListItem.appendChild(curItemInList);
+			statusDlg.itemList.appendChild(curListItem);
+		}
+	}
+
+	// next folder
+	synckolab.settings.identifyFolder(statusDlg);
+};
+
+/**
+ * create a new configuration basedon the current addressbook/cal installed.
+ * Create folders in imap and set them as default.
+ */
+synckolab.settings.autocreateNewConfig = function() {
+	var acct = synckolab.settings.getAccount(synckolab.settings.config, synckolab.settings.activeAccount, true);
 };

@@ -47,7 +47,7 @@
 						<vbox>
 							<hbox>
 								<label value="&synckolab.settings.SyncKolabHeader;" style="font-size: 16pt;" />
-								<label value=" 2.0.2" />
+								<label value=" 3.1.0" />
 							</hbox>
 							<description flex="1" style="width: 300px">
                                 &synckolab.settings.SyncKolabDescription;
@@ -97,6 +97,18 @@
 							<label value="&synckolab.settings.Updates;" />
 							<label class="text-link" onclick="synckolab.tools.launchUrl('http://www.gargan.org')">www.gargan.org</label>
 							<separator class="thin" />
+							<description flex="1" style="width: 300px">
+                                Synckolab can setup a default configuration for you. 
+                                This will create a seperate folder for each type of data to sync (Calendar, Addressbook, Task) and
+                                a new Addressbook and Calendar to use (called Kolab).  
+							</description>
+							<button label="Create Configuration" oncommand="synckolab.settings.autocreateNewConfig();" />
+							<description flex="1" style="width: 300px">
+                                You can let SyncKolab search for existing folders with kolab content. Note: depending on the amount
+                                of folders you have setup in this imap account, this might take a while.<br/>
+                                Existing configuration will be overwritten!
+							</description>
+							<button label="Search Imap Account" oncommand="synckolab.settings.autoConfigure();" />
 						</vbox>
 					</tabpanel>
 					<tabpanel id="contactTab" style="border:0px solid #000" flex="1">
