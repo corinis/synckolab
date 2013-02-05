@@ -1596,15 +1596,49 @@ synckolab.settings.autocreateNewConfig = function() {
 		types.push("task");
 	}
 	
+	// first create the imap folders
+	for(i = 0; i < types.length; i++) {
+		// create default imap folders for contact, calendar and task
+		msgFolder.createSubfolder(types[i], null);
+	}
+	
+	// update the folder list
+	synckolab.settings.setFolders(synckolab.settings.activeAccount);
+	
 	for(i = 0; i < types.length; i++) {
 		// clear existing configuration
 		acct[types[i]] = [];
-	
-		// create default imap folders for contact, calendar and task
-		msgFolder.createSubfolder(types[i], null);
 		
-		// find the correct folder 
-		var newFolder = msgFolder.URI + "/" + types[i];
+		// find the correct folder
+		// tbird 3 uses subFolders enumerator instead of getsubfolders
+		var subfolders = msgFolder.subFolders ? msgFolder.subFolders : msgFolder.GetSubFolders();
+
+		// this block is only for tbird < 3
+		try
+		{
+			if (subfolders.first) {
+				subfolders.first();
+			}
+		}
+		catch (sfex)
+		{ continue; }
+
+		var curFolder = null;
+		// tbird < 3
+		if (subfolders.currentItem) {
+			curFolder = subfolders.currentItem();
+		} else {
+			curFolder = subfolders.getNext();
+		}
+
+		if (curFolder === null) {
+			break;
+		}
+
+		curFolder = curFolder.QueryInterface(Components.interfaces.nsIMsgFolder);
+		
+		var newFolder = curFolder.URI + "/" + types[i];
+		alert(newFolder);
 		
 		// create a base config object
 		var cConf = {
