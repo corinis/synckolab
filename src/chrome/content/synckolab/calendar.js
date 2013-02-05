@@ -84,13 +84,7 @@ synckolab.Calendar = {
 		config.dbFile = synckolab.tools.file.getHashDataBaseFile(config);
 			
 		// get the correct calendar instance
-		var calendars = synckolab.calendarTools.getCalendars();
-		for ( var i = 0; i < calendars.length; i++) {
-			if (calendars[i].name === config.source || synckolab.tools.text.fixNameToMiniCharset(calendars[i].name) === synckolab.tools.text.fixNameToMiniCharset(config.source)) {
-				config.calendar = calendars[i];
-				break;
-			}
-		}
+		config.calendar = synckolab.calendarTools.findCalendar(config.source);
 		
 		// check if we want to add an observer to this calendar 
 		if(config.calendar && config.syncListener) {

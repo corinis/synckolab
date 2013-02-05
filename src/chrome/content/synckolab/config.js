@@ -107,6 +107,7 @@ synckolab.global = {
  * @returns a configuration object
  */
 synckolab.config.loadConfiguration = function(pref) {
+	// create a pref service if none is given already
 	if(!pref) {
 		pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 	}

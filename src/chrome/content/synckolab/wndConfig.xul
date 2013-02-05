@@ -103,12 +103,14 @@
                                 a new Addressbook and Calendar to use (called Kolab).  
 							</description>
 							<button label="Create Configuration" oncommand="synckolab.settings.autocreateNewConfig();" />
+							<separator class="thin" />
 							<description flex="1" style="width: 300px">
                                 You can let SyncKolab search for existing folders with kolab content. Note: depending on the amount
                                 of folders you have setup in this imap account, this might take a while.<br/>
                                 Existing configuration will be overwritten!
 							</description>
 							<button label="Search Imap Account" oncommand="synckolab.settings.autoConfigure();" />
+							
 						</vbox>
 					</tabpanel>
 					<tabpanel id="contactTab" style="border:0px solid #000" flex="1">

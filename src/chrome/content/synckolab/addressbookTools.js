@@ -349,9 +349,12 @@ synckolab.addressbookTools.findAB = function (name) {
 		{
 			ABook = cn.getNext();
 		}
+		else {
+			return null;
+		}
 	}
 	return null;
-}
+};
 
 
 /**

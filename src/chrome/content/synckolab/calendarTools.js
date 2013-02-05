@@ -59,7 +59,7 @@ synckolab.calendarTools = {
 
 			// create a new calendar if none exists
 			if (this.activeCalendarManager.getCalendars({}).length === 0) {
-				var homeCalendar = this.activeCalendarManager.createCalendar("storage", makeURL("moz-profile-calendar://"));
+				var homeCalendar = this.activeCalendarManager.createCalendar("storage", synckolab.calendarTools.makeURL("moz-profile-calendar://"));
 				this.activeCalendarManager.registerCalendar(homeCalendar);
 
 				var sbs = Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService);
@@ -67,12 +67,15 @@ synckolab.calendarTools = {
 				var props = sbs.createBundle("chrome://calendar/locale/calendar.properties");
 				homeCalendar.name = props.GetStringFromName("homeCalendarName");
 
-				var composite = getCompositeCalendar();
-				composite.addCalendar(homeCalendar);
+				this.addCalendar(homeCalendar);
 			}
 			return this.activeCalendarManager;
 		},
-
+		
+		
+		addCalendar: function(newCalendar) {
+			getCompositeCalendar().addCalendar(newCalendar);
+		},
 
 		/**
 		 * Returns a list of calendars (calICalendar)
@@ -90,6 +93,20 @@ synckolab.calendarTools = {
 				synckolab.tools.logMessage("Error getting calendars: " + e, synckolab.global.LOG_ERROR);
 				return null;
 			}
+		},
+		
+		
+		/**
+		 * find a calendarby its name
+		 */
+		findCalendar: function(name) {
+			var calendars = synckolab.calendarTools.getCalendars();
+			for ( var i = 0; i < calendars.length; i++) {
+				if (calendars[i].name === name || synckolab.tools.text.fixNameToMiniCharset(calendars[i].name) === synckolab.tools.text.fixNameToMiniCharset(name)) {
+					return calendars[i];
+				}
+			}
+			return null;
 		},
 
 		/**
@@ -339,9 +356,20 @@ synckolab.calendarTools = {
 				return null;
 			}
 			return this.modifyDescriptionOnExport(levent, lsyncCalendar.syncTasks);
+		},
+		
+		
+		/**
+		 * Takes a string and returns an nsIURI
+		 *
+		 * @param aUriString  the string of the address to for the spec of the nsIURI
+		 *
+		 * @returns  an nsIURI whose spec is aUriString
+		 */
+		makeURL: function(aUriString) {
+			var ioService = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService);
+			return ioService.newURI(aUriString, null, null);
 		}
-
-
 };
 
 

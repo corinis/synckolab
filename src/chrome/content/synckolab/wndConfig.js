@@ -207,6 +207,76 @@ synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
 	}
 };
 
+synckolab.settings.fillCalendar = function() {
+	// the calendar
+	// if we do not have a calendar, we can easily skip this
+	if (synckolab.settings.isCalendar)
+	{
+		var abList = document.getElementById("calendarURL");
+		var taskList = document.getElementById("taskURL");
+
+		// first clear exising ones
+		// delete the childs of the list
+		var cnode = abList.firstChild;
+		try {
+			while (cnode !== null)
+			{
+				if (cnode.nodeName === "menupopup")
+				{
+					abList.removeChild(cnode);
+				}
+				cnode = cnode.nextSibling;
+			}
+		} catch (ex) { /*ignore */}
+		cnode = taskList.firstChild;
+		try {
+			while (cnode !== null)
+			{
+				if (cnode.nodeName === "menupopup")
+				{
+					abList.removeChild(cnode);
+				}
+				cnode = cnode.nextSibling;
+			}
+		} catch (ex) { /*ignore */}
+
+		
+		var calendars = synckolab.calendarTools.getCalendars();
+		var abpopup = document.createElement("menupopup");
+		abList.appendChild(abpopup);
+
+		var taskpopup = document.createElement("menupopup");
+		taskList.appendChild(taskpopup);
+
+		// get the calendar manager to find the right files
+		for (var i = 0; i < calendars.length; i++ )
+		{
+			// only non-remote calendars - hey we are already doin remote sync here :)
+			var abchild = document.createElement("menuitem");
+			abpopup.appendChild(abchild);
+			abchild.setAttribute("label", calendars[i].name);
+			abchild.setAttribute("value", synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
+			if (i === 0)
+			{
+				abchild.setAttribute("selected", "true");
+				abList.setAttribute("label", calendars[i].name);
+				abList.setAttribute("value", synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
+			}
+
+			abchild = document.createElement("menuitem");
+			taskpopup.appendChild(abchild);
+			abchild.setAttribute("label", calendars[i].name);
+			abchild.setAttribute("value", synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
+			if (i === 0)
+			{
+				abchild.setAttribute("selected", "true");
+				taskList.setAttribute("label", calendars[i].name);
+				taskList.setAttribute("value", synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
+			}
+		}
+	}
+};
+
 /**
  * Init function. This is called when the configuration dialog or wizard is started.
  * This will read the current configuration and the window elements.
@@ -302,49 +372,10 @@ synckolab.settings.init = function () {
 		window.close();
 	}
 
+	// fill calendar+task and addresbook
 	this.fillAddressBook(cn, ABook);
+	this.fillCalendar();
 
-	// the calendar
-	// if we do not have a calendar, we can easily skip this
-	if (synckolab.settings.isCalendar)
-	{
-		var calendars = synckolab.calendarTools.getCalendars();
-		abList = document.getElementById("calendarURL");
-		abpopup = document.createElement("menupopup");
-		abList.appendChild(abpopup);
-
-		var taskList = document.getElementById("taskURL");
-		var taskpopup = document.createElement("menupopup");
-		taskList.appendChild(taskpopup);
-
-		// get the calendar manager to find the right files
-		for (i = 0; i < calendars.length; i++ )
-		{
-			// only non-remote calendars - hey we are already doin remote sync here :)
-			abchild = document.createElement("menuitem");
-			abpopup.appendChild(abchild);
-			abchild.setAttribute("label", calendars[i].name);
-			abchild.setAttribute("value", synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
-			if (i === 0)
-			{
-				abchild.setAttribute("selected", "true");
-				abList.setAttribute("label", calendars[i].name);
-				abList.setAttribute("value", synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
-			}
-
-			abchild = document.createElement("menuitem");
-			taskpopup.appendChild(abchild);
-			abchild.setAttribute("label", calendars[i].name);
-			abchild.setAttribute("value", synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
-			if (i === 0)
-			{
-				abchild.setAttribute("selected", "true");
-				taskList.setAttribute("label", calendars[i].name);
-				taskList.setAttribute("value", synckolab.tools.text.fixNameToMiniCharset(calendars[i].name));
-			}
-		}
-	}
-	
 	// get the root tree element
 	var tree = document.getElementById("configTree");
 
@@ -984,7 +1015,9 @@ synckolab.settings.getAccountIdx = function(config, name) {
 			return i;
 		}
 	}
-	return null;
+	
+	synckolab.tools.logMessage("Unable to find account for " + name, synckolab.global.LOG_WARN);
+	return -1;
 };
 
 /**
@@ -1339,7 +1372,7 @@ synckolab.settings.autoConfigureStart = function(statusDlg, acctName) {
 	statusDlg.meter.mode = "undetermined";
 	statusDlg.folders = [];
 	
-	// get the richt account
+	// get the right account
 	var gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
 	for (var i = 0; i < gAccountManager.allServers.Count(); i++) {
 		try
@@ -1367,8 +1400,6 @@ synckolab.settings.autoConfigureStart = function(statusDlg, acctName) {
 };
 
 synckolab.settings.finishIdentification = function(statusDlg) {
-	alert("folderinfo: " + statusDlg.identifiedFolder.toSource());
-	
 	statusDlg.meter.value = 100;
 	statusDlg.statusMsg.value ="Finished";
 	
@@ -1380,9 +1411,14 @@ synckolab.settings.finishIdentification = function(statusDlg) {
 			statusDlg.wnd.close();
 			return;
 		}
+
+		// get the account
+		var acct = synckolab.settings.getAccount(synckolab.settings.config, synckolab.settings.activeAccount, true);
 		
-		var acctIdx = synckolab.settings.getAccountIdx(synckolab.settings.config, synckolab.settings.activeAccount);
-		var acct = synckolab.settings.config.accounts[acctIdx];
+		// clear existing configuration
+		acct.calendar = [];
+		acct.task = [];
+		acct.contact = [];
 		
 		// add configuration
 		for(var i = 0; i < statusDlg.identifiedFolder.length; i++) {
@@ -1428,6 +1464,8 @@ synckolab.settings.finishIdentification = function(statusDlg) {
 				
 				// did not find one - lets create one
 				if(actualBook === null) {
+					synckolab.tools.logMessage("Unable to find matching address book: Creating" + name, synckolab.global.LOG_INFO);
+
 					try {
 						var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
 						abManager.newAddressBook(name, "moz-abmdbdirectory://", 2);
@@ -1440,9 +1478,10 @@ synckolab.settings.finishIdentification = function(statusDlg) {
 					}
 					
 					// update address book
+					synckolab.tools.logMessage("Updating list of address books", synckolab.global.LOG_INFO);
 					var cn = synckolab.addressbookTools.getABDirectory();
 					var ABook = cn.getNext();
-					this.fillAddressBook(cn, ABook);
+					synckolab.settings.fillAddressBook(cn, ABook);
 
 					// search again
 					actualBook = synckolab.addressbookTools.findAB(name);
@@ -1465,17 +1504,200 @@ synckolab.settings.finishIdentification = function(statusDlg) {
 				synckolab.tools.logMessage("New config: " + synckolab.settings.config.toSource(), synckolab.global.LOG_DEBUG);
 				break;
 			case "TASK":
-				break;
 			case "CALENDAR":
+				// only create if we actually HAVE a calendar
+				if (synckolab.settings.isCalendar)
+				{
+					var actualCal = synckolab.calendarTools.findCalendar(name);
+					
+					if(actualCal === null) {
+						synckolab.tools.logMessage("Unable to find matching calendar: Creating" + name, synckolab.global.LOG_INFO);
+						var manager = synckolab.calendarTools.getCalendarManager();
+						
+						var newCalendar = manager.createCalendar("storage", synckolab.calendarTools.makeURL("moz-profile-calendar://"));
+						manager.registerCalendar(newCalendar);
+						newCalendar.name = name;
+						try {
+						synckolab.calendarTools.addCalendar(newCalendar);
+						} catch (excal) {
+							// ignore
+						}
+						
+						// update calendar list
+						synckolab.settings.fillCalendar();
+					}
+					
+					// cal source
+					cConf.source = name;
+	
+					// the imap folder path 
+					cConf.folderPath = curFolder.folder.URI;
+	
+					// we got a matching address book - create the configuration
+					if(curFolder.type === "TASK") {
+						acct.task.push(cConf);
+					} else {
+						acct.calendar.push(cConf);
+					}
+					
+					synckolab.tools.logMessage("New config: " + synckolab.settings.config.toSource(), synckolab.global.LOG_DEBUG);
+				}
 				break;
 			}
 			
-			alert("Updated your configuration - please verify that all mappings are correct.");
 		}
+		
+		alert("Updated your configuration - please verify that all mappings are correct and correct if necessary.\nAlso make sure to ru one manual sync before enabling autosync on change!");
 		synckolab.settings.repaintConfigTree();
 		statusDlg.wnd.close();
 	};
 };
+
+
+/**
+ * create a new configuration basedon the current addressbook/cal installed.
+ * Create folders in imap and set them as default.
+ */
+synckolab.settings.autocreateNewConfig = function() {
+	if(!confirm("SyncKolab will create a default configuration for you.")) {
+		return;
+	}
+		
+	// get the account
+	var acct = synckolab.settings.getAccount(synckolab.settings.config, synckolab.settings.activeAccount, true);
+	
+	var msgFolder = null, i;
+	
+	// get the right account
+	var gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
+	for (i = 0; i < gAccountManager.allServers.Count(); i++) {
+		try
+		{
+			var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
+			if (account.rootMsgFolder.baseMessageURI === synckolab.settings.activeAccount || synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === synckolab.settings.activeAccount)
+			{
+				// collect ALL folders before going throughthem
+				msgFolder = account.rootFolder;
+				msgFolder = msgFolder.QueryInterface(Components.interfaces.nsIMsgFolder);
+				break;
+			}
+		}
+		catch (ex)
+		{
+
+		}
+	}
+	
+	var types = ["contact"];
+	
+	// only create other types if there is a calendar
+	if(synckolab.settings.isCalendar) {
+		types.push("calendar");
+		types.push("task");
+	}
+	
+	for(i = 0; i < types.length; i++) {
+		// clear existing configuration
+		acct[types[i]] = [];
+	
+		// create default imap folders for contact, calendar and task
+		msgFolder.createSubfolder(types[i], null);
+		
+		// find the correct folder 
+		var newFolder = msgFolder.URI + "/" + types[i];
+		
+		// create a base config object
+		var cConf = {
+				name: types[i]
+		};
+		
+		// read all the base settings
+		for(var n in synckolab.config.baseSetting) {
+			// skip unwanted prototypes (without type)
+			if(synckolab.config.baseSetting[n].type >= 0) {
+				cConf[n] = synckolab.config.baseSetting[n].def;
+			}
+		}
+	
+		// true if the config is enabled
+		cConf.enabled = true;
+		// save changes to imap (vs. read only)
+		cConf.saveToImap = true;
+		// format to use: kolab3
+		cConf.format = "xml-k3";
+		// enable the sync listener
+		cConf.syncListener = false;
+	
+		// the imap folder path 
+		cConf.folderPath = newFolder;
+
+		var name = types[i];
+		if(name === "contact") {
+			// try to find a matching addresbook - if none exists create one
+			var actualBook = synckolab.addressbookTools.findAB(name);
+			
+			// did not find one - lets create one
+			if(actualBook === null) {
+				synckolab.tools.logMessage("Unable to find matching address book: Creating" + name, synckolab.global.LOG_INFO);
+
+				try {
+					var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+					abManager.newAddressBook(name, "moz-abmdbdirectory://", 2);
+				} catch (ex1) {
+					try {	// postbox
+						var addressbook = Components.classes["@mozilla.org/addressbook;1"].createInstance(Components.interfaces.nsIAddressBook);
+						addressbook.newAddressBook(name, "", 2);
+					} catch (ex2) {
+					}
+				}
+				
+				// update address book
+				synckolab.tools.logMessage("Updating list of address books", synckolab.global.LOG_INFO);
+				var cn = synckolab.addressbookTools.getABDirectory();
+				var ABook = cn.getNext();
+				synckolab.settings.fillAddressBook(cn, ABook);
+
+				// search again
+				actualBook = synckolab.addressbookTools.findAB(name);
+			}
+			
+			if(actualBook === null) {
+				alert("Unable to create an address book for your configuration. Please create it manually with the name: " + name);
+				break;
+			}
+
+			// abook source
+			cConf.source = actualBook.dirName;
+		} else {
+			var actualCal = synckolab.calendarTools.findCalendar(name);
+			
+			if(actualCal === null) {
+				synckolab.tools.logMessage("Unable to find matching calendar: Creating" + name, synckolab.global.LOG_INFO);
+				var manager = synckolab.calendarTools.getCalendarManager();
+				
+				var newCalendar = manager.createCalendar("storage", synckolab.calendarTools.makeURL("moz-profile-calendar://"));
+				manager.registerCalendar(newCalendar);
+				newCalendar.name = name;
+				try {
+				synckolab.calendarTools.addCalendar(newCalendar);
+				} catch (excal) {
+					// ignore
+				}
+				
+				// update calendar list
+				synckolab.settings.fillCalendar();
+				
+				// cal source
+				cConf.source = name;
+			}
+		}
+		
+		acct[types[i]].push(cConf);
+	}
+	alert("Updated your configuration - please verify that all mappings are correct and correct if necessary.\nAlso make sure to ru one manual sync before enabling autosync on change!");
+	synckolab.settings.repaintConfigTree();
+};
+
 
 /**
  * simepl function that collects all existing folders
@@ -1793,9 +2015,6 @@ synckolab.settings.nextFolder = function(statusDlg) {
 	
 	// analyse current folder stats
 	var cur = statusDlg.currentFolder;
-	if(cur.msgToCheck < 3) {
-		synckolab.tools.logMessage("stats: " + cur.toSource(), synckolab.global.LOG_INFO)
-	}
 
 	if(cur.unknown < 2) {
 		// kolab3 wins
@@ -1843,12 +2062,4 @@ synckolab.settings.nextFolder = function(statusDlg) {
 
 	// next folder
 	synckolab.settings.identifyFolder(statusDlg);
-};
-
-/**
- * create a new configuration basedon the current addressbook/cal installed.
- * Create folders in imap and set them as default.
- */
-synckolab.settings.autocreateNewConfig = function() {
-	var acct = synckolab.settings.getAccount(synckolab.settings.config, synckolab.settings.activeAccount, true);
 };
