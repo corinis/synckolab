@@ -628,7 +628,7 @@ generateMail: function (cid, mail, adsubject, mime, part, skcontent, hr, attachm
 		msg += 'Content-Transfer-Encoding: quoted-printable\n';
 		msg += 'Content-Disposition: attachment;\n filename="kolab.xml"\n\n';
 		
-		msg += synckolab.tools.text.quoted(skcontent);
+		msg += synckolab.tools.text.quoted.encode(skcontent);
 	}
 	else {
 		// add the content
