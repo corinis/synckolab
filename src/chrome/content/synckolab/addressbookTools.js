@@ -3682,7 +3682,7 @@ synckolab.addressbookTools.card2Message = function (card, email, format, fields)
 				data = null;
 			}
 			
-			return synckolab.tools.generateMail(this.getUID(card), email, "", "application/vcard+xml", true, synckolab.tools.text.utf8.encode(content), this.card2Human(card), data);
+			return synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vnd.kolab.contact", true, synckolab.tools.text.utf8.encode(content), this.card2Human(card), data);
 		}
 	}
 
