@@ -625,12 +625,10 @@ generateMail: function (cid, mail, adsubject, mime, part, skcontent, hr, attachm
 
 		msg += '\n--Boundary-00='+bound+'\n';
 		msg += 'Content-Type: '+mime+';\n name="kolab.xml"\n';
-		msg += 'Content-Transfer-Encoding: base64\n';
+		msg += 'Content-Transfer-Encoding: quoted-printable\n';
 		msg += 'Content-Disposition: attachment;\n filename="kolab.xml"\n\n';
 		
-		// keep lines at 80 chars
-		var acontent = btoa(skcontent);
-		msg += synckolab.tools.text.splitInto(acontent, 72);
+		msg += synckolab.tools.text.quoted(skcontent);
 	}
 	else {
 		// add the content
