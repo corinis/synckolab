@@ -2045,7 +2045,7 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 	
 	xml += '<properties>\n';
 	
-	xml += synckolab.tools.text.nodeContainerWithContent("uid", "text", jobj.uid, false);
+	xml += synckolab.tools.text.nodeContainerWithContent("uid", "uri", jobj.uid, false);
 
 	if(syncTasks === true)
 	{

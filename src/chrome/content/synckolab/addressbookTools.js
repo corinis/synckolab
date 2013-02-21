@@ -1698,14 +1698,11 @@ synckolab.addressbookTools.card2Kolab3 = function (card, skipHeader, fields) {
 	
 	xml += "<vcard>\n";
 	var uid = synckolab.tools.text.encode4XML(this.getUID(card));
-	if(uid.indexOf("urn:") !== -1) {
-		xml += " <uid><uri>" + uid + "</uri></uid>\n";
-	} else {
-		xml += " <uid><text>" + uid + "</text></uid>\n";
-	}
+	// uid is always an uri
+	xml += " <uid><uri>" + uid + "</uri></uid>\n";
 	xml += " <x-kolab-version><text>3.0dev1</text></x-kolab-version>\n";
 	xml += " <prodid><text>SyncKolab " + synckolab.config.version + ", Kolab resource</text></prodid>\n";
-	xml += " <rev><timestamp>" + synckolab.tools.text.calDateTime2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000), false, true) + "Z</timestamp></rev>\n";
+	xml += " <rev><timestamp>" + synckolab.tools.text.calDateTime2String(new Date(this.getCardProperty(card, "LastModifiedDate")*1000), false, true) + "</timestamp></rev>\n";
 	xml += " <kind><text>individual</text></kind>\n";
 	
 	// ??
