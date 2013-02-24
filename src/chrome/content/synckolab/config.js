@@ -262,7 +262,7 @@ synckolab.config.readConfiguration = function() {
 		}
 		if(account.task) {
 			for(j = 0; j < account.task.length; j++) {
-				synckolab.tools.logMessage("checking task " + account.calendar[j].name, synckolab.global.LOG_INFO);
+				synckolab.tools.logMessage("checking task " + account.task[j].name, synckolab.global.LOG_INFO);
 				account.task[j].serverKey = account.name;
 				synckolab.config.prepareConfig(account.task[j], "task");
 				if(account.task[j].enabled) {
