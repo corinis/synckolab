@@ -427,10 +427,14 @@ parseMail: function (skcontent) {
 		// only check the part if it's valid
 		if(part && part.content && (part.encoding || part.contentType || part.id)) {
 			// check encoding
-			isQP = part.encoding.indexOf("quoted-printable") !== -1;
-			var isBase64 = part.encoding.indexOf("base64") !== -1;
+			var isBase64 = false;
 			
-			if(!part.id && part.contentType.indexOf("image") !== -1) {
+			if(part.encoding) {
+				isQP = part.encoding.indexOf("quoted-printable") !== -1;
+				isBase64 = part.encoding.indexOf("base64") !== -1;
+			}
+			
+			if(!part.id && part.contentType && part.contentType.indexOf("image") !== -1) {
 				part.id = part.name;
 			}
 			
