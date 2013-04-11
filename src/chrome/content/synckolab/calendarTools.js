@@ -2141,7 +2141,7 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 			//xml += "  <month>july</month>\n";
 
 			// yearday has <daynumber>
-			xml += "  <freq>monthly</freq>\n  <type>YEARLY</type>\n";
+			xml += "  <freq>yearly</freq>\n  <type>YEARLY</type>\n";
 			// FIXME we have no matching field in Lighning yet
 			xml += "  <daynumber>1</daynumber>\n";
 			break;
