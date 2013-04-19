@@ -179,9 +179,9 @@ synckolab.Calendar = {
 						calComp.addSubcomponent(cur.icalComponent);
 
 						if (cConfig.type === "task") {
-							msg = synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/todo", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
+							msg = synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/todo", false, synckolab.calendarTools.event2ICal(calComp), null);
 						} else {
-							msg = synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/calendar", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
+							msg = synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/calendar", false, synckolab.calendarTools.event2ICal(calComp), null);
 						}
 					}
 
@@ -248,9 +248,9 @@ synckolab.Calendar = {
 						calComp.addSubcomponent(cur.icalComponent);
 
 						if (cConfig.type === "task") {
-							msg = synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/todo", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
+							msg = synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/todo", false, synckolab.calendarTools.event2ICal(calComp), null);
 						} else {
-							msg = synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/calendar", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
+							msg = synckolab.tools.generateMail(cur.id, cConfig.email, "iCal", "text/calendar", false, synckolab.calendarTools.event2ICal(calComp), null);
 						}
 					}
 					
@@ -821,9 +821,9 @@ synckolab.Calendar = {
 						calComp.addSubcomponent(tmpEventObj.icalComponent);
 
 						if (this.gConfig.type === "task") {
-							msg = synckolab.tools.generateMail(foundEvent.uid, this.gConfig.email, "iCal", "text/todo", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
+							msg = synckolab.tools.generateMail(foundEvent.uid, this.gConfig.email, "iCal", "text/todo", false, synckolab.calendarTools.event2ICal(calComp), null);
 						} else {
-							msg = synckolab.tools.generateMail(foundEvent.uid, this.gConfig.email, "iCal", "text/calendar", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
+							msg = synckolab.tools.generateMail(foundEvent.uid, this.gConfig.email, "iCal", "text/calendar", false, synckolab.calendarTools.event2ICal(calComp), null);
 						}
 					}
 
@@ -911,7 +911,7 @@ synckolab.Calendar = {
 					calComp.prodid = "-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN";
 					calComp.addSubcomponent(tmpEventObj.icalComponent);
 					
-					msg = synckolab.tools.generateMail(foundEvent.uid, this.gConfig.email, "iCal", (this.gConfig.type === "task")?"text/todo":"text/calendar", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
+					msg = synckolab.tools.generateMail(foundEvent.uid, this.gConfig.email, "iCal", (this.gConfig.type === "task")?"text/todo":"text/calendar", false, synckolab.calendarTools.event2ICal(calComp), null);
 				}
 				
 				// write the current content in the sync-db file
@@ -1072,9 +1072,9 @@ synckolab.Calendar = {
 					calComp.addSubcomponent(cur.icalComponent);
 
 					if (this.gConfig.type === "task") {
-						msg = synckolab.tools.generateMail(cur.id, this.gConfig.email, "iCal", "text/todo", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
+						msg = synckolab.tools.generateMail(cur.id, this.gConfig.email, "iCal", "text/todo", false, synckolab.calendarTools.event2ICal(calComp), null);
 					} else {
-						msg = synckolab.tools.generateMail(cur.id, this.gConfig.email, "iCal", "text/calendar", false, synckolab.tools.text.quoted.encode(calComp.serializeToICS()), null);
+						msg = synckolab.tools.generateMail(cur.id, this.gConfig.email, "iCal", "text/calendar", false, synckolab.calendarTools.event2ICal(calComp), null);
 					}
 				}
 

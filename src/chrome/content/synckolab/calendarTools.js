@@ -446,6 +446,15 @@ synckolab.calendarTools.message2json = function (fileContent, syncTasks) {
 	return this.event2json(parsedEvent, syncTasks);
 };
 
+
+synckolab.calendarTools.event2ICal = function(event, syncTasks) {
+	synckolab.tools.logMessage("Event To ICAL", synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
+	var calTxt = event.serializeToICS();
+	
+	// remove the nbsp \0 from the serialization and add a few spaces
+	return synckolab.tools.text.quoted.encode(calTxt.replace(/\s+$/,"") + "    ");
+};
+
 /**
  * converts a lightning event into a json representation.
  * @param event the lightning event
@@ -1148,7 +1157,7 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 		topNode = new synckolab.Node(topNode);
 		if(syncTasks) {
 			// TODO
-			topNode = topNode.getChildNode(["vcalendar","components","vtodo"]);
+			topNode = topNode.getChildNode(["vcalendar","components","vtask"]);
 		} else {
 			topNode = topNode.getChildNode(["vcalendar","components","vevent"]);
 		}

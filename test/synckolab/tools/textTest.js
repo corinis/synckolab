@@ -76,3 +76,8 @@ test("synckolab.tools.text.pad", function(){
 	equal(synckolab.tools.text.pad(115, 2), "115", "triple digit");
 	equal(synckolab.tools.text.pad(15, 4, 'X'), "XX15", "pad to four");
 });
+
+
+test("synckolab.tools.text.quoted.encode", function(){
+	equal(synckolab.tools.text.quoted.encode("VCALENDAR"), "VCALENDAR", "sample quoted");
+});
