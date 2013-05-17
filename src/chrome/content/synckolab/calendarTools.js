@@ -1353,6 +1353,7 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				break;
 
 			case "CLASS":	// kolab3
+			case "X-CUSTOM-SENSITIVITY":
 			case "SENSITIVITY":	// kolab2
 				jobj.sensitivity = "public";
 				if (cur.firstChild) {
@@ -1368,12 +1369,14 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				break;
 
 			case "SHOW-TIME-AS":
+			case "X-CUSTOM-SHOW-TIME-AS":
 				if (cur.firstChild) {
 					jobj.showTimeAs = cur.getFirstData();
 				}
 				break;
 
 			case "COLOR-LABEL":
+			case "X-CUSTOM-COLOR-LABEL":
 				if (cur.firstChild) {
 					jobj.colorLabel = cur.getFirstData();
 				}
@@ -2041,6 +2044,7 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 		'<properties>\n' +
 		' <prodid><text>Synckolab , Calendar Sync</text></prodid>\n' +
 		' <version><text>'+synckolab.config.version+'</text></version>\n' +
+		' <x-kolab-version><text>3.0</text></x-kolab-version>\n' +
 		'</properties>\n' + 
 		'<components>';
 		
@@ -2054,7 +2058,7 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 	
 	xml += '<properties>\n';
 	
-	xml += synckolab.tools.text.nodeContainerWithContent("uid", "uri", jobj.uid, false);
+	xml += synckolab.tools.text.nodeContainerWithContent("uid", "text", jobj.uid, false);
 
 	if(syncTasks === true)
 	{
@@ -2062,10 +2066,10 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 		xml += synckolab.tools.text.nodeContainerWithContent("status", "text", jobj.status, false);
 		xml += synckolab.tools.text.nodeContainerWithContent("completed", "text", jobj.completed, false);
 		if (jobj.startDate && jobj.startDate.dateTime) {
-			xml += synckolab.tools.text.nodeContainerWithContent("dtstart", "date-time", jobj.startDate.dateTime.replace(/[\-:]/g, ""), false);
+			xml += synckolab.tools.text.nodeContainerWithContent("dtstart", "date-time", jobj.startDate.dateTime, false);
 		}
 		if (jobj.endDate && jobj.endDate.dateTime) {
-			xml += synckolab.tools.text.nodeContainerWithContent("dtdue", "date-time", jobj.endDate.dateTime.replace(/[\-:]/g, ""), false);
+			xml += synckolab.tools.text.nodeContainerWithContent("dtdue", "date-time", jobj.endDate.dateTime, false);
 		}
 		xml += synckolab.tools.text.nodeContainerWithContent("priority", "text", jobj.priority, false);
 		
@@ -2074,22 +2078,22 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 	else
 	{
 		if (jobj.startDate && jobj.startDate.dateTime) {
-			xml += synckolab.tools.text.nodeContainerWithContent("dtstart", "date-time", jobj.startDate.dateTime.replace(/[\-:]/g, ""), false);
+			xml += synckolab.tools.text.nodeContainerWithContent("dtstart", "date-time", jobj.startDate.dateTime, false);
 		}
 		if (jobj.endDate && jobj.endDate.dateTime) {
-			xml += synckolab.tools.text.nodeContainerWithContent("dtend", "date-time", jobj.endDate.dateTime.replace(/[\-:]/g, ""), false);
+			xml += synckolab.tools.text.nodeContainerWithContent("dtend", "date-time", jobj.endDate.dateTime, false);
 		}
 	}
 
 
 	xml += synckolab.tools.text.nodeContainerWithContent("summary", "text", jobj.title, false);
 	xml += synckolab.tools.text.nodeContainerWithContent("description", "text", jobj.body, false);
-	xml += synckolab.tools.text.nodeContainerWithContent("sensitivity", "text", jobj.sensitivity, false);
+	xml += synckolab.tools.text.nodeContainerWithContent("x-custom-sensitivity", "text", jobj.sensitivity, false);
 	// xml += " <creation-date>" + jobj.createdDate + "</creation-date>\n";
 	// xml += " <last-modification-date>" + jobj.lastModificationDate + "</last-modification-date>\n";
 	xml += synckolab.tools.text.nodeContainerWithContent("location", "text", jobj.location, false);
-	xml += synckolab.tools.text.nodeContainerWithContent("show-time-as", "text",  jobj.showTimeAs, false);
-	xml += synckolab.tools.text.nodeContainerWithContent("color-label", "text", jobj.colorLabel, false);
+	xml += synckolab.tools.text.nodeContainerWithContent("x-custom-show-time-as", "text",  jobj.showTimeAs, false);
+	xml += synckolab.tools.text.nodeContainerWithContent("x-custom-color-label", "text", jobj.colorLabel, false);
 
 	var i;
 
@@ -2166,7 +2170,7 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 			xml+= " <exdate>\n";
 			for(i=0; i < jobj.recurrence.exclusion.length; i++) {
 				// convert longdate to compact one: 2005-03-30T15:28:52Z -> 20050330T152852Z 
-				xml += synckolab.tools.text.nodeWithContent("date", jobj.recurrence.exclusion[i].replace(/[\-:]/g, ""), true);
+				xml += synckolab.tools.text.nodeWithContent("date", jobj.recurrence.exclusion[i], true);
 			}
 			xml+= " </exdate>\n";
 		}
