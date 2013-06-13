@@ -1520,6 +1520,10 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 					// need to process extra type "type" which can be
 					// "weekday", monthday" or "yearday"
 					mode = cur.getAttribute("type");
+					if(!mode) {
+						mode = "YEARDAY";
+					}
+					
 					switch (mode.toUpperCase())
 					{
 					case "YEARDAY":
