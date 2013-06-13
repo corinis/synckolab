@@ -713,9 +713,16 @@ launchUrl: function (url)
 getAccountName: function (accountKey) {
 	var accountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
 	var gInc = null;
-	for (var i = 0; i < accountManager.allServers.Count(); i++)
+	// get the right account
+	var allServerLength = gAccountManager.allServers.Count ? gAccountManager.allServers.Count() : gAccountManager.allServers.length;
+	for (i = 0; i < allServerLength; i++)
 	{
-		var account = accountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
+		var account;
+		if (gAccountManager.allServers.GetElementAt){
+			account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
+		} else {
+			account = gAccountManager.allServers.queryElementAt(i, Components.interfaces.nsIMsgIncomingServer);
+		}
 		if (account.rootMsgFolder.baseMessageURI === accountKey || synckolab.tools.text.fixNameToMiniCharset(account.rootMsgFolder.baseMessageURI) === accountKey ||
 				synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === accountKey)
 		{
@@ -732,9 +739,16 @@ getAccountName: function (accountKey) {
 getAccountEMail: function (accountKey) {
 	var accountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
 	var gInc = null;
-	for (var i = 0; i < accountManager.allServers.Count(); i++)
+	// get the right account
+	var allServerLength = gAccountManager.allServers.Count ? gAccountManager.allServers.Count() : gAccountManager.allServers.length;
+	for (i = 0; i < allServerLength; i++)
 	{
-		var account = accountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
+		var account;
+		if (gAccountManager.allServers.GetElementAt){
+			account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
+		} else {
+			account = gAccountManager.allServers.queryElementAt(i, Components.interfaces.nsIMsgIncomingServer);
+		}
 		if (account.rootMsgFolder.baseMessageURI === accountKey || synckolab.tools.text.fixNameToMiniCharset(account.rootMsgFolder.baseMessageURI) === accountKey ||
 				synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === accountKey)
 		{
@@ -755,10 +769,17 @@ getMsgFolder: function (accountKey, path)
 	this.logMessage("trying to get folder: '" +  path + "' for account " + accountKey, synckolab.global.LOG_DEBUG);
 
 	var accountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
-	var gInc = null;
-	for (var i = 0; i < accountManager.allServers.Count(); i++)
+	var gInc = null, i;
+	// get the right account
+	var allServerLength = gAccountManager.allServers.Count ? gAccountManager.allServers.Count() : gAccountManager.allServers.length;
+	for (i = 0; i < allServerLength; i++)
 	{
-		var account = accountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
+		var account;
+		if (gAccountManager.allServers.GetElementAt){
+			account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
+		} else {
+			account = gAccountManager.allServers.queryElementAt(i, Components.interfaces.nsIMsgIncomingServer);
+		}
 		if (account.rootMsgFolder.baseMessageURI === accountKey || synckolab.tools.text.fixNameToMiniCharset(account.rootMsgFolder.baseMessageURI) === accountKey||
 				synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === accountKey)
 		{

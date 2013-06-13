@@ -413,10 +413,17 @@ synckolab.settings.init = function () {
 	var actList = document.getElementById("ImapAcct");
 	var actpopup = document.createElement("menupopup");
 	var gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
-	
-	for (i = 0; i < gAccountManager.allServers.Count(); i++)
+	// go through the servers
+	var allServerLength = gAccountManager.allServers.Count ? gAccountManager.allServers.Count() : gAccountManager.allServers.length;
+	for (i = 0; i < allServerLength; i++)
 	{
-		var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
+		var account;
+		if (gAccountManager.allServers.GetElementAt){
+			account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
+		} else {
+			account = gAccountManager.allServers.queryElementAt(i, Components.interfaces.nsIMsgIncomingServer);
+		}
+		 
 		synckolab.tools.logMessage("Account found: " + account.rootMsgFolder.baseMessageURI, synckolab.global.LOG_DEBUG);		
 		if (account.rootMsgFolder.baseMessageURI.toLowerCase().indexOf("imap") === -1)
 		{
@@ -689,11 +696,18 @@ synckolab.settings.setFolders = function (act) {
 synckolab.settings.updateFolder = function (act, sets) {
 	// dynamically read this...
 	var gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
-	for (var i = 0; i < gAccountManager.allServers.Count(); i++)
+	// get the right account
+	var allServerLength = gAccountManager.allServers.Count ? gAccountManager.allServers.Count() : gAccountManager.allServers.length;
+	for (var i = 0; i < allServerLength; i++)
 	{
 		try
 		{
-			var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
+			var account;
+			if (gAccountManager.allServers.GetElementAt){
+				account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
+			} else {
+				account = gAccountManager.allServers.queryElementAt(i, Components.interfaces.nsIMsgIncomingServer);
+			}
 			if (account.rootMsgFolder.baseMessageURI === act || synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === act)
 			{
 				for(var j = 0; j < sets.length; j++) {
@@ -1374,10 +1388,18 @@ synckolab.settings.autoConfigureStart = function(statusDlg, acctName) {
 	
 	// get the right account
 	var gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
-	for (var i = 0; i < gAccountManager.allServers.Count(); i++) {
+	// get the right account
+	var allServerLength = gAccountManager.allServers.Count ? gAccountManager.allServers.Count() : gAccountManager.allServers.length;
+	for (var i = 0; i < allServerLength; i++)
+	{
 		try
 		{
-			var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
+			var account;
+			if (gAccountManager.allServers.GetElementAt){
+				account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
+			} else {
+				account = gAccountManager.allServers.queryElementAt(i, Components.interfaces.nsIMsgIncomingServer);
+			}
 			if (account.rootMsgFolder.baseMessageURI === acctName || synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === acctName)
 			{
 				// collect ALL folders before going throughthem
@@ -1570,10 +1592,18 @@ synckolab.settings.autocreateNewConfig = function() {
 	
 	// get the right account
 	var gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
-	for (i = 0; i < gAccountManager.allServers.Count(); i++) {
+	// get the right account
+	var allServerLength = gAccountManager.allServers.Count ? gAccountManager.allServers.Count() : gAccountManager.allServers.length;
+	for (i = 0; i < allServerLength; i++)
+	{
 		try
 		{
-			var account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
+			var account;
+			if (gAccountManager.allServers.GetElementAt){
+				account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
+			} else {
+				account = gAccountManager.allServers.queryElementAt(i, Components.interfaces.nsIMsgIncomingServer);
+			}
 			if (account.rootMsgFolder.baseMessageURI === synckolab.settings.activeAccount || synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === synckolab.settings.activeAccount)
 			{
 				// collect ALL folders before going throughthem
