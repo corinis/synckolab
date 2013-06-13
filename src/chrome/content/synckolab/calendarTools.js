@@ -965,7 +965,8 @@ synckolab.calendarTools.json2event = function (jobj, calendar) {
 		event.setCategories(categories.length, categories);
 	}
 
-	if(jobj.recurrence) {
+	// check for cycle as well (#25415)
+	if(jobj.recurrence && jobj.recurrence.cycle) {
 		synckolab.tools.logMessage("recurring event", synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 
 		var recInfo = Components.classes["@mozilla.org/calendar/recurrence-info;1"].createInstance(Components.interfaces.calIRecurrenceInfo);
