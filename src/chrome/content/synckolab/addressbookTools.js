@@ -2721,7 +2721,7 @@ synckolab.addressbookTools.parseMessageContent = function (message) {
 		message = {
 				content: message
 		};
-	} else {
+	} else if(message.parts){
 		synckolab.tools.logMessage("multi part message with " + message.parts.length + " parts", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 	}
 	
@@ -2738,7 +2738,7 @@ synckolab.addressbookTools.parseMessageContent = function (message) {
 	var i;
 	// its possible we have an image - attach it (still base64 encoded)
 	if(message.parts) {
-		for(i = 0; i < message.parts; i++) {
+		for(i = 0; i < message.parts.length; i++) {
 			if(message.parts[i].contentType.indexOf("image") !== -1) {
 				this.setCardProperty(card, "PhotoName", message.parts[i].name);	// generate filename
 				this.setCardProperty(card, "PhotoType", "inline");
