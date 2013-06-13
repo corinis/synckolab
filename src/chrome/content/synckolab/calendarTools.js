@@ -1919,7 +1919,7 @@ synckolab.calendarTools.json2xml = function (jobj, syncTasks, email) {
 	}
 
 	xml += synckolab.tools.text.nodeWithContent("categories", jobj.categories, false);
-	if(jobj.recurrence) {
+	if(jobj.recurrence && jobj.recurrence.cycle) {
 		switch(jobj.recurrence.cycle) {
 		case "daily":
 			xml += " <recurrence cycle=\"daily\">\n";
