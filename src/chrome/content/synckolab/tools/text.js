@@ -222,6 +222,11 @@ synckolab.tools.text = {
 				}
 			}
 		}
+		// in case the filenameis > 128 chars -> create a sha1 instead
+		if(ret.length > 100) {
+			ret = synckolab.tools.sha1.hex_sha1(ret);
+		}
+		
 		return ret;
 	},
 
