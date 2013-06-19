@@ -711,7 +711,7 @@ launchUrl: function (url)
  * @return the account name
  */
 getAccountName: function (accountKey) {
-	var accountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
+	var gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
 	var gInc = null;
 	// get the right account
 	var allServerLength = gAccountManager.allServers.Count ? gAccountManager.allServers.Count() : gAccountManager.allServers.length;
@@ -737,7 +737,7 @@ getAccountName: function (accountKey) {
  * @return the email address
  */
 getAccountEMail: function (accountKey) {
-	var accountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
+	var gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
 	var gInc = null;
 	// get the right account
 	var allServerLength = gAccountManager.allServers.Count ? gAccountManager.allServers.Count() : gAccountManager.allServers.length;
@@ -768,7 +768,7 @@ getMsgFolder: function (accountKey, path)
 
 	this.logMessage("trying to get folder: '" +  path + "' for account " + accountKey, synckolab.global.LOG_DEBUG);
 
-	var accountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
+	var gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
 	var gInc = null, i;
 	// get the right account
 	var allServerLength = accountManager.allServers.Count ? accountManager.allServers.Count() : accountManager.allServers.length;
