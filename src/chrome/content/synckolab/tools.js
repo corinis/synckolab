@@ -771,7 +771,7 @@ getMsgFolder: function (accountKey, path)
 	var accountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
 	var gInc = null, i;
 	// get the right account
-	var allServerLength = gAccountManager.allServers.Count ? gAccountManager.allServers.Count() : gAccountManager.allServers.length;
+	var allServerLength = accountManager.allServers.Count ? accountManager.allServers.Count() : accountManager.allServers.length;
 	for (i = 0; i < allServerLength; i++)
 	{
 		var account;
