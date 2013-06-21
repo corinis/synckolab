@@ -712,7 +712,6 @@ launchUrl: function (url)
  */
 getAccountName: function (accountKey) {
 	var gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
-	var gInc = null;
 	// get the right account
 	var allServerLength = gAccountManager.allServers.Count ? gAccountManager.allServers.Count() : gAccountManager.allServers.length;
 	for (var i = 0; i < allServerLength; i++)
@@ -738,7 +737,6 @@ getAccountName: function (accountKey) {
  */
 getAccountEMail: function (accountKey) {
 	var gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
-	var gInc = null;
 	// get the right account
 	var allServerLength = gAccountManager.allServers.Count ? gAccountManager.allServers.Count() : gAccountManager.allServers.length;
 	for (var i = 0; i < allServerLength; i++)
@@ -772,7 +770,7 @@ getMsgFolder: function (accountKey, path)
 	var gInc = null, i;
 	// get the right account
 	var allServerLength = accountManager.allServers.Count ? accountManager.allServers.Count() : accountManager.allServers.length;
-	for (var i = 0; i < allServerLength; i++)
+	for (i = 0; i < allServerLength; i++)
 	{
 		var account;
 		if (gAccountManager.allServers.GetElementAt){
