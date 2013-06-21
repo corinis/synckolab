@@ -715,7 +715,7 @@ getAccountName: function (accountKey) {
 	var gInc = null;
 	// get the right account
 	var allServerLength = gAccountManager.allServers.Count ? gAccountManager.allServers.Count() : gAccountManager.allServers.length;
-	for (i = 0; i < allServerLength; i++)
+	for (var i = 0; i < allServerLength; i++)
 	{
 		var account;
 		if (gAccountManager.allServers.GetElementAt){
@@ -741,7 +741,7 @@ getAccountEMail: function (accountKey) {
 	var gInc = null;
 	// get the right account
 	var allServerLength = gAccountManager.allServers.Count ? gAccountManager.allServers.Count() : gAccountManager.allServers.length;
-	for (i = 0; i < allServerLength; i++)
+	for (var i = 0; i < allServerLength; i++)
 	{
 		var account;
 		if (gAccountManager.allServers.GetElementAt){
@@ -772,7 +772,7 @@ getMsgFolder: function (accountKey, path)
 	var gInc = null, i;
 	// get the right account
 	var allServerLength = accountManager.allServers.Count ? accountManager.allServers.Count() : accountManager.allServers.length;
-	for (i = 0; i < allServerLength; i++)
+	for (var i = 0; i < allServerLength; i++)
 	{
 		var account;
 		if (gAccountManager.allServers.GetElementAt){
