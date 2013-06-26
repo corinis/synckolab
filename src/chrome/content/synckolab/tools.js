@@ -1506,6 +1506,11 @@ synckolab.Node.prototype.getXmlResult =  function (name, def)
  */
 synckolab.Node.prototype.getChildNode = function (name)
 {
+	if(name === undefined || name === null || name === "") {
+		synckolab.tools.logMessage("Trying to get a childnode without a name!", synckolab.global.LOG_WARNING);
+		return null;
+	}
+	
 	// passed an array -
 	if( Object.prototype.toString.call( name ) === '[object Array]') {
 		var curNode;
