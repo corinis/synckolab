@@ -2064,6 +2064,11 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 	xml += '<properties>\n';
 	
 	xml += synckolab.tools.text.nodeContainerWithContent("uid", "text", jobj.uid, false);
+	
+	// added by Mihai Badici
+	xml += " <created><date-time>" + jobj.startDate.dateTime  + "</date-time></created>\n";
+	xml += " <dtstamp><date-time>" + jobj.startDate.dateTime  + "</date-time></dtstamp>\n";
+	xml += synckolab.tools.text.nodeContainerWithContent("class", "text", jobj.sensitivity, false);
 
 	if(syncTasks === true)
 	{
@@ -2091,13 +2096,12 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 	}
 
 
+	// TODO check if we really have to exclude sensetivity
 	xml += synckolab.tools.text.nodeContainerWithContent("summary", "text", jobj.title, false);
 	xml += synckolab.tools.text.nodeContainerWithContent("description", "text", jobj.body, false);
-	xml += synckolab.tools.text.nodeContainerWithContent("x-custom-sensitivity", "text", jobj.sensitivity, false);
-	// xml += " <creation-date>" + jobj.createdDate + "</creation-date>\n";
-	// xml += " <last-modification-date>" + jobj.lastModificationDate + "</last-modification-date>\n";
+//	xml += synckolab.tools.text.nodeContainerWithContent("x-custom-sensitivity", "text", jobj.sensitivity, false);
 	xml += synckolab.tools.text.nodeContainerWithContent("location", "text", jobj.location, false);
-	xml += synckolab.tools.text.nodeContainerWithContent("x-custom-show-time-as", "text",  jobj.showTimeAs, false);
+//	xml += synckolab.tools.text.nodeContainerWithContent("x-custom-show-time-as", "text",  jobj.showTimeAs, false);
 	xml += synckolab.tools.text.nodeContainerWithContent("x-custom-color-label", "text", jobj.colorLabel, false);
 
 	var i;
