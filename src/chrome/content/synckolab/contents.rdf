@@ -1,27 +1,34 @@
 <?xml version="1.0"?>
-<RDF:RDF xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:chrome="http://www.mozilla.org/rdf/chrome#">
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:chrome="http://www.mozilla.org/rdf/chrome#">
 
-<!-- list all the packages being supplied by this jar -->
-<RDF:Seq about="urn:mozilla:package:root">
-	<RDF:li resource="urn:mozilla:package:synckolab"/>
-</RDF:Seq>
+	<!-- list all the packages being supplied by this jar -->
+	<Seq about="urn:mozilla:package:root">
+		<li resource="urn:mozilla:package:synckolab" />
+	</Seq>
 
-<!-- package information -->
-<RDF:Description about="urn:mozilla:package:synckolab"
-	chrome:displayName="SyncKolab 3.1.0"
-	chrome:author="Niko Berger"
-	chrome:name="synckolab"
-	chrome:description="Synchronize an IMAP Folder with the mozilla Address Book and Calendar " 
-	chrome:settingsURL="chrome://synckolab/content/wndConfig.xul"
-	chrome:extension="true">
-</RDF:Description>
-  
-<!-- overlay information -->
-<RDF:Seq about="urn:mozilla:overlays">
-	<RDF:li resource="chrome://messenger/content/messenger.xul"/>
-</RDF:Seq>
+	<Seq about="urn:mozilla:skin:root">
+		<li resource="urn:mozilla:skin:classic/1.0" />
+	</Seq>
 
-<RDF:Seq about="chrome://messenger/content/messenger.xul">
-	<RDF:li>chrome://synckolab/content/mainWindow.xul</RDF:li>
-</RDF:Seq>
-</RDF:RDF>
+	<!-- package information -->
+	<Description about="urn:mozilla:package:synckolab" chrome:displayName="SyncKolab 3.1.1" chrome:author="Niko Berger" chrome:name="synckolab" chrome:description="Synchronize an IMAP Folder with the mozilla Address Book and Calendar " chrome:settingsURL="chrome://synckolab/content/wndConfig.xul"
+		chrome:extension="true">
+	</Description>
+
+	<Seq about="urn:mozilla:stylesheets">
+		<li resource="chrome://global/content/customizeToolbar.xul" />
+	</Seq>
+
+	<Seq about="chrome://global/content/customizeToolbar.xul">
+		<li>chrome://synckolab/skin/synckolab.css</li>
+	</Seq>
+
+	<!-- overlay information -->
+	<Seq about="urn:mozilla:overlays">
+		<li resource="chrome://messenger/content/messenger.xul" />
+	</Seq>
+
+	<Seq about="chrome://messenger/content/messenger.xul">
+		<li>chrome://synckolab/content/mainWindow.xul</li>
+	</Seq>
+</RDF>
