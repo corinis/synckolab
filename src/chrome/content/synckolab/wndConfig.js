@@ -166,8 +166,6 @@ synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
 					continue;
 				}
 
-				synckolab.tools.logMessage("checking " + type + "- " + acct[type][i].name, synckolab.global.LOG_DEBUG);
-
 				// if some values change - the cache needs to reset
 				if(orig && orig[type]) {
 					for(j=0; j < orig[type].length; j++) {
@@ -539,12 +537,9 @@ synckolab.settings.checkOldConfig = function() {
 synckolab.settings.repaintConfigTree = function() {
 	// remove all nodes under tab-account-[cal|con|task]
 	var conf = synckolab.settings.config;
-
-	synckolab.settings.batch = true;
 	
 	// sorter for configuration names
 	var configSorter = function(a,b) {
-		
 		var sa = a.name.toLowerCase();
 		var sb = b.name.toLowerCase();
 		if(sa === sb) {
@@ -553,49 +548,57 @@ synckolab.settings.repaintConfigTree = function() {
 		return (sa < sb) ? -1 : 1;
 	};
 
-	for(var i = 0; i < conf.accounts.length; i++) {
-		var acctName = conf.accounts[i].name;
-		for (var j = 0; j < synckolab.settings.baseTypes.length;j++) {
-			var cType = synckolab.settings.baseTypes[j];
-			var tItem = document.getElementById("tab-" + cType +"-" + acctName);
-			// delete the treechildren if exist
-			var cnode = tItem.firstChild;
-			while (cnode !== null)
-			{
-				if (cnode.nodeName === "treechildren")
-				{
-					tItem.removeChild(cnode);
-					break;
+	synckolab.settings.batch = true;
+	try {
+		for(var i = 0; i < conf.accounts.length; i++) {
+			var acctName = conf.accounts[i].name;
+			for (var j = 0; j < synckolab.settings.baseTypes.length;j++) {
+				var cType = synckolab.settings.baseTypes[j];
+				var tItem = document.getElementById("tab-" + cType +"-" + acctName);
+				if(!tItem) {
+					synckolab.tools.logMessage("(skip) Missing account: " + acctName, synckolab.global.LOG_ERROR);
+					continue;
 				}
-				cnode = cnode.nextSibling;
-			}
-			
-			// now re-create them
-			var tChildren = document.createElement("treechildren");
-			tItem.appendChild(tChildren);
-			var configs = conf.accounts[i][cType];
-			
-			// sort configs
-			configs.sort(configSorter);
-			
-			for(var k = 0; k < configs.length;k++) {
-				var confName = configs[k].name;
+				// delete the treechildren if exist
+				var cnode = tItem.firstChild;
+				while (cnode !== null)
+				{
+					if (cnode.nodeName === "treechildren")
+					{
+						tItem.removeChild(cnode);
+						break;
+					}
+					cnode = cnode.nextSibling;
+				}
 				
-				tItem = document.createElement("treeitem");
-				//tItem.setAttribute("container", "true");
-				//tItem.setAttribute("open", "true");
-				tChildren.appendChild(tItem);
-				var tRow = document.createElement("treerow");
-				tItem.appendChild(tRow);
-				var tCell = document.createElement("treecell");
-				tRow.appendChild(tCell);
-				tItem.setAttribute("id", "tab-"+cType+"-" + acctName + "-" + confName);
-				tCell.setAttribute("label", confName);
-				tCell.setAttribute("value", "tab-"+cType+"-" + acctName + "-" + confName);
+				// now re-create them
+				var tChildren = document.createElement("treechildren");
+				tItem.appendChild(tChildren);
+				var configs = conf.accounts[i][cType];
+				
+				// sort configs
+				configs.sort(configSorter);
+				
+				for(var k = 0; k < configs.length;k++) {
+					var confName = configs[k].name;
+					
+					tItem = document.createElement("treeitem");
+					//tItem.setAttribute("container", "true");
+					//tItem.setAttribute("open", "true");
+					tChildren.appendChild(tItem);
+					var tRow = document.createElement("treerow");
+					tItem.appendChild(tRow);
+					var tCell = document.createElement("treecell");
+					tRow.appendChild(tCell);
+					tItem.setAttribute("id", "tab-"+cType+"-" + acctName + "-" + confName);
+					tCell.setAttribute("label", confName);
+					tCell.setAttribute("value", "tab-"+cType+"-" + acctName + "-" + confName);
+				}
 			}
 		}
-	}
-
+	} catch (ex) {
+		synckolab.tools.logMessage(ex, synckolab.global.LOG_ERROR);
+	} 
 	synckolab.settings.batch = false;
 };
 
@@ -1668,7 +1671,6 @@ synckolab.settings.autocreateNewConfig = function() {
 		curFolder = curFolder.QueryInterface(Components.interfaces.nsIMsgFolder);
 		
 		var newFolder = curFolder.URI + "/" + types[i];
-		alert(newFolder);
 		
 		// create a base config object
 		var cConf = {
@@ -2123,7 +2125,6 @@ synckolab.settings.nextFolder = function(statusDlg) {
 			statusDlg.itemList.appendChild(curListItem);
 		}
 	}
-
 	// next folder
 	synckolab.settings.identifyFolder(statusDlg);
 };

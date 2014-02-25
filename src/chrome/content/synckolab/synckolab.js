@@ -61,49 +61,6 @@ synckolab.main.syncKolabTimer = function () {
 	synckolab.tools.logMessage("sync timer starting", synckolab.global.LOG_DEBUG);
 	synckolab.config.readConfiguration();
 	
-	/*@deprecated: listener works better
-	var i;
-	// check and load config
-		
-	// only continue timer if nothing is running right now and if we have any configs!
-	if (synckolab.main.forceConfig === null && synckolab.main.syncConfigs)
-	{
-		// go through all configs
-		for (i=0; i < synckolab.main.syncConfigs.length; i++)
-		{
-			var curConfig = synckolab.main.syncConfigs[i];
-
-			// skip all configurations which dont have autorun
-			if (!curConfig || curConfig.autoRun === 0)
-			{
-				continue;
-			}
-
-			synckolab.tools.logMessage("synctimer: checking: "+curConfig.name+" ("+synckolab.main.syncConfigs[i].gAutoRun+")....", synckolab.global.LOG_DEBUG);
-
-			curConfig.syncTimer++;
-			
-			// lets start (make sure no other auto config is running right now)
-			if (curConfig.syncTimer >= curConfig.autoRun)
-			{
-				synckolab.tools.logMessage("running syncKolab configuration "+curConfig.name+" ("+curConfig.autoRun+")", synckolab.global.LOG_INFO);
-				curConfig.syncTimer = 0;
-				// hide the window 
-				synckolab.main.doHideWindow = curConfig.autoHideWindow;
-				synckolab.main.forceConfig = curConfig.name;
-				synckolab.main.sync("timer");
-
-				// make sure, that we do not start another config right now
-				break;
-			}
-
-		}
-	}
-	else {
-		synckolab.tools.logMessage("sync with config "+synckolab.main.forceConfig +" is still running...", synckolab.global.LOG_DEBUG);
-	}
-
-*/
 	// refresh all mail folders configured to trigger auto-sync
 	if(synckolab.main.syncConfigs) {
 		for(var j = 0; j < synckolab.main.syncConfigs.length; j++) {
