@@ -5,7 +5,7 @@
 		<em:targetApplication>
 			<Description>
 				<em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id>
-				<em:minVersion>5.0</em:minVersion>
+				<em:minVersion>10.0</em:minVersion>
 				<em:maxVersion>31.0</em:maxVersion>
 			</Description>
 		</em:targetApplication>
@@ -14,7 +14,7 @@
 		<em:targetApplication>
 			<Description>
 				<em:id>{92650c4d-4b8e-4d2a-b7eb-24ecf4f6b63a}</em:id>
-				<em:minVersion>2.0</em:minVersion>
+				<em:minVersion>2.8</em:minVersion>
 				<em:maxVersion>2.28</em:maxVersion>
 			</Description>
 		</em:targetApplication>
@@ -22,13 +22,12 @@
 		<!-- Front End MetaData -->
 		<em:id>{571CFACF-0F7D-49b4-BD77-E6FC7B209ADC}</em:id>
 		<em:name>Sync Kolab</em:name>
-		<em:version>3.1.3</em:version>
+		<em:version>3.1.4</em:version>
 		<em:type>2</em:type>
 		<em:description>Synchronize the address book and calendar with IMAP folder or Kolab1/2 server</em:description>
 		<em:creator>Niko Berger</em:creator>
 		<em:homepageURL>http://www.gargan.org/en/Mozilla_Extensions/SyncKolab</em:homepageURL>
 		<em:optionsURL>chrome://synckolab/content/wndConfig.xul</em:optionsURL>
-		<!--<em:updateURL>https://www.gargan.org/extensions/update.rdf</em:updateURL>-->
 
 		<em:contributor>Andreas Gungl;a.gungl(at)gmx.de</em:contributor>		
 		<em:contributor>Steven D Miller (Copart);stevendm(at)rellims.com</em:contributor>
