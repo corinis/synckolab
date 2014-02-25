@@ -7,7 +7,7 @@
 	<description>
 		Sync your contacts with imap
 	</description>
-	<property name="version" value="3.1.2" />
+	<property name="version" value="3.1.3" />
 
 	<!-- ================================= target: default ================================= -->
 	<target name="default" depends="depends" description="Sync your contacts with imap">
@@ -22,7 +22,7 @@
 				<exclude name="**/*.orig" />
 			</fileset>
 		</copy>
-		<zip destfile="build/chrome/synckolab.jar" basedir="build/chrome" />
+		<!-- zip destfile="build/chrome/synckolab.jar" basedir="build/chrome" / -->
 		<zip destfile="synckolab-${version}.xpi" basedir="build" />
 	</target>
 
