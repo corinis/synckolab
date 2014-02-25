@@ -128,7 +128,7 @@ synckolab.config.loadConfiguration = function(pref) {
 	var sAcct = synckolab.tools.getConfigValue(pref, "accounts.list");
 	if (sAcct) {
 		var sAccts = sAcct.split(';');
-		for(var i = 0; i < sAccts.length; i++) {
+		for(let i = 0; i < sAccts.length; i++) {
 			// skip empty configs
 			if(sAccts[i].length < 1) {
 				continue;
@@ -204,7 +204,6 @@ synckolab.config.loadAccountConfig = function (pref, acct) {
  * </ul>
  */
 synckolab.config.readConfiguration = function() {
-	var i,j;
 	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 	var curVersion = synckolab.tools.getConfigValue(pref, "configVersion", synckolab.tools.CONFIG_TYPE_INT, 0);
 	synckolab.tools.logMessage("Checking configuration ("+synckolab.config.VERSION+" - "+curVersion+")", synckolab.global.LOG_DEBUG);
@@ -236,38 +235,38 @@ synckolab.config.readConfiguration = function() {
 
 	
 	// check for listener or autorun
-	for (i=0; i < config.accounts.length; i++)
+	for(let account in fixIterator(config.accounts))
 	{
-		var account = config.accounts[i];
 		// read the messagefolder and save the object in the config
-		for(j = 0; j < account.contact.length; j++) {
-			account.contact[j].serverKey = account.name;
-			synckolab.config.prepareConfig(account.contact[j], "contact");
-			if(account.contact[j].enabled) {
-				synckolab.tools.logMessage("Adding contact account " + account.contact[j].name, synckolab.global.LOG_INFO);
-				synckolab.main.syncConfigs.push(account.contact[j]);
+		for(let contact in fixIterator(account.contact)) {
+			contact.serverKey = account.name;
+			synckolab.config.prepareConfig(contact, "contact");
+			if(contact.enabled) {
+				synckolab.tools.logMessage("Adding contact account " + contact.name, synckolab.global.LOG_INFO);
+				synckolab.main.syncConfigs.push(contact);
 			}
 		}
 		if(account.calendar) {
-			for(j = 0; j < account.calendar.length; j++) {
-				synckolab.tools.logMessage("checking calendar " + account.calendar[j].name, synckolab.global.LOG_INFO);
-				account.calendar[j].serverKey = account.name;
-				synckolab.config.prepareConfig(account.calendar[j], "calendar");
-				synckolab.tools.logMessage("checking calendar " + account.calendar[j].name + " enabled? " + account.calendar[j].enabled, synckolab.global.LOG_INFO);
-				if(account.calendar[j].enabled) {
-					synckolab.tools.logMessage("Adding calendar account " + account.calendar[j].name, synckolab.global.LOG_INFO);
-					synckolab.main.syncConfigs.push(account.calendar[j]);
+			for(let calendar in fixIterator(account.calendar)) {
+				synckolab.tools.logMessage("checking calendar " + calendar.name, synckolab.global.LOG_INFO);
+				calendar.serverKey = account.name;
+				synckolab.config.prepareConfig(calendar, "calendar");
+				if(calendar) {
+					synckolab.tools.logMessage("Adding calendar account " + calendar.name, synckolab.global.LOG_INFO);
+					synckolab.main.syncConfigs.push(calendar);
+				} else {
+					synckolab.tools.logMessage(calendar.name + " is disabled", synckolab.global.LOG_INFO);
 				}
 			}
 		}
 		if(account.task) {
-			for(j = 0; j < account.task.length; j++) {
-				synckolab.tools.logMessage("checking task " + account.task[j].name, synckolab.global.LOG_INFO);
-				account.task[j].serverKey = account.name;
-				synckolab.config.prepareConfig(account.task[j], "task");
-				if(account.task[j].enabled) {
-					synckolab.tools.logMessage("Adding task account " + account.task[j].name, synckolab.global.LOG_INFO);
-					synckolab.main.syncConfigs.push(account.task[j]);
+			for(let task in fixIterator(account.task)) {
+				synckolab.tools.logMessage("checking task " + task.name, synckolab.global.LOG_INFO);
+				task.serverKey = account.name;
+				synckolab.config.prepareConfig(task, "task");
+				if(task.enabled) {
+					synckolab.tools.logMessage("Adding task account " + task.name, synckolab.global.LOG_INFO);
+					synckolab.main.syncConfigs.push(task);
 				}
 		}
 		}
@@ -278,8 +277,11 @@ synckolab.config.readConfiguration = function() {
 	
 };
 
+/**
+ * check each config if it is already processed. If so, remove fromconfig
+ */
 synckolab.config.checkIdProcessed = function(baseConfig, id) {
-	for(var i = 0; i < baseConfig.recentProcessed.length; i++) {
+	for(let i = 0; i < baseConfig.recentProcessed.length; i++) {
 		if(id === baseConfig.recentProcessed[i]) {
 			baseConfig.recentProcessed.splice(i, 1);
 			return true;
@@ -289,6 +291,7 @@ synckolab.config.checkIdProcessed = function(baseConfig, id) {
 	baseConfig.recentProcessed.push(id);
 	return false;
 };
+
 /**
  * creates an empty config object
  */
@@ -377,16 +380,14 @@ synckolab.config.folderListener = {
 		// fixup folder: image:// vs. imap-message://
 		folder = "imap-message" + folder.substring(4);
 		
-		// search through the configs  
-		for(var j = 0; j < synckolab.main.syncConfigs.length; j++) {
-			if(synckolab.main.syncConfigs[j]) {
-				var curConfig = synckolab.main.syncConfigs[j];
+		// search through the configs
+		for(let curConfig in fixIterator(synckolab.main.syncConfigs)) {
+			if(curConfig) {
 				synckolab.tools.logMessage("checking " + curConfig.folderMsgURI + " vs. " + folder, synckolab.global.LOG_DEBUG);
-
+				
 				if(curConfig.syncListener && curConfig.folderMsgURI === folder)
-				{
 					return curConfig;
-				}
+				
 			}
 		}
 		

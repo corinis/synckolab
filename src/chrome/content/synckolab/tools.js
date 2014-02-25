@@ -41,6 +41,8 @@ try {
 	// ignore exception if lightning is not installed
 }
 
+Components.utils.import("resource:///modules/iteratorUtils.jsm");
+
 synckolab.tools = {
 
 	logStart: -1,
@@ -706,28 +708,34 @@ launchUrl: function (url)
 	protocolSvc.loadUrl(uri);
 },
 
+/**
+ * @return the account object
+ */
+getAccount: function(accountKey) {
+	let gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
+	// get the right account
+	for (let account in fixIterator( gAccountManager.allServers, Components.interfaces.nsIMsgIncomingServer)) {
+		if (account.rootMsgFolder.baseMessageURI === accountKey || 
+				synckolab.tools.text.fixNameToMiniCharset(account.rootMsgFolder.baseMessageURI) === accountKey ||
+				synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === accountKey)
+		{
+			return account;
+		}
+	}
+	
+	return null;
+},
+
 /** 
  * @param accountKey the key for the account (baseMessageURI)
  * @return the account name
  */
 getAccountName: function (accountKey) {
-	var gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
-	// get the right account
-	var allServerLength = gAccountManager.allServers.Count ? gAccountManager.allServers.Count() : gAccountManager.allServers.length;
-	for (var i = 0; i < allServerLength; i++)
-	{
-		var account;
-		if (gAccountManager.allServers.GetElementAt){
-			account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-		} else {
-			account = gAccountManager.allServers.queryElementAt(i, Components.interfaces.nsIMsgIncomingServer);
-		}
-		if (account.rootMsgFolder.baseMessageURI === accountKey || synckolab.tools.text.fixNameToMiniCharset(account.rootMsgFolder.baseMessageURI) === accountKey ||
-				synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === accountKey)
-		{
-			return accountManager.getFirstIdentityForServer(account).fullName;
-		}
-	}
+	let gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
+	var account = synckolab.tools.getAccount(accountKey);
+	if(account)
+		return gAccountManager.getFirstIdentityForServer(account).fullName;
+	return null;
 },
 
 
@@ -736,23 +744,11 @@ getAccountName: function (accountKey) {
  * @return the email address
  */
 getAccountEMail: function (accountKey) {
-	var gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
-	// get the right account
-	var allServerLength = gAccountManager.allServers.Count ? gAccountManager.allServers.Count() : gAccountManager.allServers.length;
-	for (var i = 0; i < allServerLength; i++)
-	{
-		var account;
-		if (gAccountManager.allServers.GetElementAt){
-			account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-		} else {
-			account = gAccountManager.allServers.queryElementAt(i, Components.interfaces.nsIMsgIncomingServer);
-		}
-		if (account.rootMsgFolder.baseMessageURI === accountKey || synckolab.tools.text.fixNameToMiniCharset(account.rootMsgFolder.baseMessageURI) === accountKey ||
-				synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === accountKey)
-		{
-			return accountManager.getFirstIdentityForServer(account).email;
-		}
-	}
+	let gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
+	var account = synckolab.tools.getAccount(accountKey);
+	if(account)
+		return gAccountManager.getFirstIdentityForServer(account).email;
+	return null;
 },
 
 
@@ -766,25 +762,7 @@ getMsgFolder: function (accountKey, path)
 
 	this.logMessage("trying to get folder: '" +  path + "' for account " + accountKey, synckolab.global.LOG_DEBUG);
 
-	var gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
-	var gInc = null, i;
-	// get the right account
-	var allServerLength = accountManager.allServers.Count ? accountManager.allServers.Count() : accountManager.allServers.length;
-	for (i = 0; i < allServerLength; i++)
-	{
-		var account;
-		if (gAccountManager.allServers.GetElementAt){
-			account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-		} else {
-			account = gAccountManager.allServers.queryElementAt(i, Components.interfaces.nsIMsgIncomingServer);
-		}
-		if (account.rootMsgFolder.baseMessageURI === accountKey || synckolab.tools.text.fixNameToMiniCharset(account.rootMsgFolder.baseMessageURI) === accountKey||
-				synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === accountKey)
-		{
-			gInc = account;
-		}
-	}
-
+	var gInc = synckolab.tools.getAccount(accountKey);
 	// no account
 	if (gInc === null)
 	{
@@ -830,18 +808,13 @@ getMsgFolder: function (accountKey, path)
 
 			// we found it
 			if (path === cur.URI)
-			{
-				this.logMessage("we found our path!!!: " + cur.URI, synckolab.global.LOG_DEBUG);
 				return cur;
-			}
 
 			// if the current path is the start of what we are lookiong for, go deeper
 			var cp = path.substring(0, path.indexOf('/', cur.URI.length));
 
 			if (cp === cur.URI)
 			{
-				this.logMessage("got subpath: " + cur.URI, synckolab.global.LOG_DEBUG);
-
 				cFolder = cur;
 				break;
 			}
@@ -1037,7 +1010,6 @@ synckolab.tools.writeSyncDBFile = function (file, data, direct)
 	}
 
 };
-
 
 /**
  * reads a given sync file. 

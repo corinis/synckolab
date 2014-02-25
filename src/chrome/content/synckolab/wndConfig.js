@@ -1389,38 +1389,19 @@ synckolab.settings.autoConfigureStart = function(statusDlg, acctName) {
 	statusDlg.meter.mode = "undetermined";
 	statusDlg.folders = [];
 	
-	// get the right account
-	var gAccountManager = Components.classes['@mozilla.org/messenger/account-manager;1'].getService(Components.interfaces.nsIMsgAccountManager);
-	// get the right account
-	var allServerLength = gAccountManager.allServers.Count ? gAccountManager.allServers.Count() : gAccountManager.allServers.length;
-	for (var i = 0; i < allServerLength; i++)
+	// get the right account for its folders
+	var account = synckolab.tools.getAccount(accountKey);
+	if (account)
 	{
-		try
-		{
-			var account;
-			if (gAccountManager.allServers.GetElementAt){
-				account = gAccountManager.allServers.GetElementAt(i).QueryInterface(Components.interfaces.nsIMsgIncomingServer);
-			} else {
-				account = gAccountManager.allServers.queryElementAt(i, Components.interfaces.nsIMsgIncomingServer);
-			}
-			if (account.rootMsgFolder.baseMessageURI === acctName || synckolab.tools.text.fixNameToMiniCharset(account.prettyName) === acctName)
-			{
-				// collect ALL folders before going throughthem
-				synckolab.settings.collectFolder(account.rootFolder, statusDlg.folders);
-				synckolab.tools.logMessage("collected " + statusDlg.folders.length + " folders...", synckolab.global.LOG_INFO);
+		// collect ALL folders before going through them
+		synckolab.settings.collectFolder(account.rootFolder, statusDlg.folders);
+		synckolab.tools.logMessage("collected " + statusDlg.folders.length + " folders...", synckolab.global.LOG_INFO);
 
-				statusDlg.meter.mode = "determined";
-				statusDlg.curFolderNum = 0;
-				statusDlg.identifiedFolder = [];
-				// start with the identification process
-				synckolab.settings.identifyFolder(statusDlg);
-				break;
-			}
-		}
-		catch (ex)
-		{
-
-		}
+		statusDlg.meter.mode = "determined";
+		statusDlg.curFolderNum = 0;
+		statusDlg.identifiedFolder = [];
+		// start with the identification process
+		synckolab.settings.identifyFolder(statusDlg);
 	}
 };
 
