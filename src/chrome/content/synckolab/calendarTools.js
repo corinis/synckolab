@@ -505,6 +505,10 @@ synckolab.calendarTools.event2json = function (event, syncTasks) {
 		endDate.jsDate = tmp_date;
 	}
 
+	if(event.priority && event.priority !== "") {
+		jobj.priority = event.priority;
+	}
+
 	// tasks have some additional fields
 	if (syncTasks === true)
 	{
@@ -525,9 +529,6 @@ synckolab.calendarTools.event2json = function (event, syncTasks) {
 			};
 		}
 		// jobj.completedDate =  synckolab.tools.text.calDateTime2String(completedDate, true);
-		if(event.priority && event.priority !== null && event.priority !== "") {
-			jobj.priority = event.priority;
-		}
 
 		// tasks have a status
 		if (event.isCompleted || event.percentComplete === 100) {
@@ -908,11 +909,12 @@ synckolab.calendarTools.json2event = function (jobj, calendar) {
 		this.setKolabItemProperty(event, "LAST-MODIFIED", synckolab.tools.text.string2CalDateTime(jobj.lastModified, true));
 	}
 
+	if(jobj.priority) {
+		this.setKolabItemProperty(event, "priority", jobj.priority);
+	}
+
 	// special fields for tasks
 	if(syncTasks) {
-		if(jobj.priority) {
-			this.setKolabItemProperty(event, "priority", jobj.priority);
-		}
 		this.setKolabItemProperty(event, "status", jobj.status);
 		this.setKolabItemProperty(event, "PERCENT-COMPLETE", jobj.completed);
 	}
@@ -1289,10 +1291,6 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				break;
 
 			case "PRIORITY":
-				// only tasks 
-				if (syncTasks === false) {
-					break;
-				}
 				jobj.priority = cur.getFirstData();
 				break;
 
@@ -1881,8 +1879,6 @@ synckolab.calendarTools.json2xml = function (jobj, syncTasks, email) {
 		if(jobj.endDate) {
 			xml += synckolab.tools.text.nodeWithContent("due-date", jobj.endDate.dateTime, false);
 		}
-		xml += synckolab.tools.text.nodeWithContent("priority", jobj.priority, false);
-		
 		// xml += " <completed-date>" + synckolab.tools.text.calDateTime2String(completedDate, true, false) + "</completed-date>\n";
 	}
 	else
@@ -1891,7 +1887,7 @@ synckolab.calendarTools.json2xml = function (jobj, syncTasks, email) {
 		xml += synckolab.tools.text.nodeWithContent("end-date", jobj.endDate.dateTime, false);
 	}
 
-
+	xml += synckolab.tools.text.nodeWithContent("priority", jobj.priority, false);
 	xml += synckolab.tools.text.nodeWithContent("summary", jobj.title, false);
 	xml += synckolab.tools.text.nodeWithContent("body", jobj.body, false);
 	xml += synckolab.tools.text.nodeWithContent("sensitivity", jobj.sensitivity, false);
@@ -2069,6 +2065,7 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 	xml += " <created><date-time>" + jobj.startDate.dateTime  + "</date-time></created>\n";
 	xml += " <dtstamp><date-time>" + jobj.startDate.dateTime  + "</date-time></dtstamp>\n";
 	xml += synckolab.tools.text.nodeContainerWithContent("class", "text", jobj.sensitivity, false);
+	xml += synckolab.tools.text.nodeContainerWithContent("priority", "text", jobj.priority, false);
 
 	if(syncTasks === true)
 	{
@@ -2081,7 +2078,6 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 		if (jobj.endDate && jobj.endDate.dateTime) {
 			xml += synckolab.tools.text.nodeContainerWithContent("dtdue", "date-time", jobj.endDate.dateTime, false);
 		}
-		xml += synckolab.tools.text.nodeContainerWithContent("priority", "text", jobj.priority, false);
 		
 		// xml += " <completed-date>" + synckolab.tools.text.calDateTime2String(completedDate, true, false) + "</completed-date>\n";
 	}
