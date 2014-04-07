@@ -40,9 +40,11 @@ try {
 } catch (importEx) {
 	// ignore exception if lightning is not installed
 }
-
+try {
 Components.utils.import("resource:///modules/iteratorUtils.jsm");
-
+} catch (ex) {
+	
+}
 synckolab.tools = {
 
 	logStart: -1,

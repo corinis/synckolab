@@ -513,19 +513,17 @@ synckolab.calendarTools.event2json = function (event, syncTasks) {
 	if (syncTasks === true)
 	{
 		if(event.entryDate) {
-			// TODO add timezone
 			jobj.startDate = {
-					dateTime: synckolab.tools.text.calDateTime2String(event.entryDate, isAllDay),
-					allday: isAllDay,
-					tz: null
+				dateTime: synckolab.tools.text.calDateTime2String(event.entryDate, isAllDay),
+				allday: isAllDay,
+				tz: event.entryDate.timezone.tzid
 			};
 		}
 		if(endDate) {
-			// TODO add timezone
 			jobj.endDate = {
-					dateTime: synckolab.tools.text.calDateTime2String(endDate, isAllDay),
-					allday: isAllDay,
-					tz: null
+				dateTime: synckolab.tools.text.calDateTime2String(endDate, isAllDay),
+				allday: isAllDay,
+				tz: event.endDate.timezone.tzid
 			};
 		}
 		// jobj.completedDate =  synckolab.tools.text.calDateTime2String(completedDate, true);
@@ -540,16 +538,15 @@ synckolab.calendarTools.event2json = function (event, syncTasks) {
 			jobj.completed = event.percentComplete;
 		}
 	} else {
-		// TODO add timezone
 		jobj.startDate = {
-				dateTime: synckolab.tools.text.calDateTime2String(event.startDate, isAllDay),
-				allday: isAllDay,
-				tz: null
+			dateTime: synckolab.tools.text.calDateTime2String(event.startDate, isAllDay),
+			allday: isAllDay,
+			tz: event.startDate.timezone.tzid
 		};
 		jobj.endDate = {
 			dateTime:synckolab.tools.text.calDateTime2String(endDate, isAllDay),
 			allday: isAllDay,
-			tz: null
+			tz: event.endDate.timezone.tzid
 		};
 	}
 
@@ -1082,7 +1079,76 @@ synckolab.calendarTools.json2event = function (jobj, calendar) {
 	return event;
 };
 
+/**
+ *  Shortcut to the timezone service 
+ */
+synckolab.calendarTools.getTimezoneService = function() {
+	if(typeof Components === 'undefined')
+		return { 
+			getTimezone: function(tzid) { return {tzid: tzid}; }
+		};
+	return Components.classes["@mozilla.org/calendar/timezone-service;1"].getService(Components.interfaces.calITimezoneService);
+}
 
+/**
+ * get the lightning timezone object from a string
+ */
+synckolab.calendarTools.getTimezone = function(tzid) {
+	if(!tzid) {
+		return synckolab.calendarTools.getTimezoneService().defaultTimezone;
+	}
+	
+	// get (rid) of the prefix
+	if(tzid.indexof("/") === 0) {
+		tzid = tzid.substring(1);
+		if(tzid.indexOf("/") !== -1) {
+			tzid = tzid.substring(tzid.indexOf("/") + 1);
+		}
+	} 
+	// from mxr.mozilla.org
+	if (tzid.indexOf("Etc/GMT") != -1) {
+		return synckolab.calendarTools.getTimezoneService().UTC;
+	}
+	return synckolab.calendarTools.getTimezoneService().getTimezone(tzid);
+}
+
+synckolab.calendarTools.tzidCache = {};
+
+/**
+ * get the lightning timezone object from a string.
+ * This is used by xml-json and entry-json 
+ */
+synckolab.calendarTools.getTimezoneId = function(tzid) {
+	if(!tzid) {
+		return synckolab.calendarTools.getTimezoneService().defaultTimezone.tzid;
+	}
+	
+	// remember for cache
+	var realtzId = synckolab.calendarTools.tzidCache[tzid];
+	if(realtzId)
+		return realtzId;
+	
+	// get (rid) of the prefix
+	if(tzid.indexOf("/kolab.org/") == 0) {
+		tzid = tzid.substring(11);
+	} else if(tzid.indexof("/freeassociation.sourceforge.net/")) {
+		tzid = tzid.substring(33);
+	}
+	// from mxr.mozilla.org
+	if (tzid.indexOf("Etc/GMT") != -1) {
+		realtzId = synckolab.calendarTools.getTimezoneService().UTC.tzid;
+	}
+	
+	if(!realtzId)
+		realtzId = synckolab.calendarTools.getTimezoneService().getTimezone(tzid).tzid;
+	
+	if(!realtzId)
+		realtzId = synckolab.calendarTools.getTimezoneService().defaultTimezone.tzid;
+	
+	// update cache
+	synckolab.calendarTools.tzidCache[tzid] = realtzId;
+	return realtzId;
+}
 
 /**
  * parse a string containing a Kolab XML message and put the information
@@ -1242,7 +1308,7 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				}
 				s = synckolab.tools.text.getLongDateTime(cur.getXmlResult([["date-time"],["date"]], ""));
 				jobj.startDate = {
-					tz: cur.getXmlResult(["parameters","tzid","text"], null),
+					tz: synckolab.calendarTools.getTimezoneId(cur.getXmlResult(["parameters","tzid","text"], null)),
 					allday: s.indexOf("T") === -1,
 					dateTime: s
 				};
@@ -1255,10 +1321,9 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				if (!cur.firstChild) {
 					break;
 				}
-				// TODO: add timezone
 				s = cur.getFirstData();
 				jobj.startDate = {
-					tz: null,
+					tz: synckolab.calendarTools.getTimezoneId(cur.getXmlResult(["parameters","tzid","text"], null)),
 					allday: s.indexOf("T") === -1,
 					dateTime: s
 				};
@@ -1270,7 +1335,7 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				}
 				s = synckolab.tools.text.getLongDateTime(cur.getXmlResult([["date-time"],["date"]], ""));
 				jobj.endDate = {
-						tz: cur.getXmlResult(["parameters","tzid","text"], null),
+						tz: synckolab.calendarTools.getTimezoneId(cur.getXmlResult(["parameters","tzid","text"], null)),
 						allday: s.indexOf("T") === -1,
 						dateTime: s
 					};
@@ -1282,9 +1347,8 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 					break;
 				}
 				s = cur.getFirstData();
-				// TODO: add timezone
 				jobj.endDate = {
-						tz: null,
+						tz: synckolab.calendarTools.getTimezoneId(cur.getXmlResult(["parameters","tzid","text"], null)),
 						allday: s.indexOf("T") === -1,
 						dateTime: s
 				};
@@ -2084,10 +2148,20 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 	else
 	{
 		if (jobj.startDate && jobj.startDate.dateTime) {
-			xml += synckolab.tools.text.nodeContainerWithContent("dtstart", "date-time", jobj.startDate.dateTime, false);
+			xml += " <dtstart>\n";
+			if(jobj.endDate.tz) {
+				xml += "  <parameters><tzid><text>/kolab.org/" + jobj.startDate.tz + "</text></tzid></parameters>\n";
+			}
+			xml += "  <date-time>" + jobj.startDate.dateTime  + "</date-time>\n";
+			xml += " </dtstart>\n";
 		}
 		if (jobj.endDate && jobj.endDate.dateTime) {
-			xml += synckolab.tools.text.nodeContainerWithContent("dtend", "date-time", jobj.endDate.dateTime, false);
+			xml += " <dtend>\n";
+			if(jobj.endDate.tz) {
+				xml += "  <parameters><tzid><text>/kolab.org/" + jobj.endDate.tz + "</text></tzid></parameters>\n";
+			}
+			xml += "  <date-time>" + jobj.endDate.dateTime  + "</date-time>\n"
+			xml += " </dtend>\n";
 		}
 	}
 
