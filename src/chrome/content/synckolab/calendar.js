@@ -963,6 +963,8 @@ synckolab.Calendar = {
 
 			// check if we can skip this entry	(make sure we got a start and enddate.. otherwise it will fail)
 			var endDate = this.calTools.getEndDate(cur, this.gConfig.type === "task");
+			if(endDate)
+				endDate = synckolab.tools.text.getJSDateFromICalDateTime(endDate);
 
 			if (endDate && this.gConfig.timeFrame > 0 && (endDate.getTime() + (this.gConfig.timeFrame * 86400000) < (new Date()).getTime())) {
 				synckolab.tools.logMessage("skipping event because its too old: " + cur.id, synckolab.global.LOG_CAL + synckolab.global.LOG_INFO);

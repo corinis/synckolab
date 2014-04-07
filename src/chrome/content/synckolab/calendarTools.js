@@ -143,14 +143,13 @@ synckolab.calendarTools = {
 		getEndDate: function (cur, tasks)
 		{
 			if (tasks === true && cur.dueDate){
-				return synckolab.tools.text.getJSDateFromICalDateTime(cur.dueDate);
+				return cur.dueDate;
 			}
 			if (tasks === false  && cur.untilDate) {
-				return synckolab.tools.text.getJSDateFromICalDateTime(cur.untilDate);
+				return cur.untilDate;
 			}
-
 			if (tasks === false && cur.endDate) {
-				return synckolab.tools.text.getJSDateFromICalDateTime(cur.endDate);
+				return cur.endDate;
 			}
 
 			return null;
@@ -379,6 +378,17 @@ synckolab.calendarTools = {
  * This functions checks if two event json objects are equals
  */
 synckolab.calendarTools.equalsEvent = function (a, b) {
+	// cllean out some "irrelevant" fields like createdDate
+	delete (a.createdDate);
+	delete (b.createdDate);
+	delete(a.modified);
+	delete(b.modified);
+	// if no "show time as" - then use busy
+	if(!a.showTimeAs)
+		a.showTimeAs = "busy";
+	if(!b.showTimeAs)
+		b.showTimeAs = "busy";
+	
 	return synckolab.tools.equalsObject(a, b, {revision:true});
 };
 
@@ -503,6 +513,9 @@ synckolab.calendarTools.event2json = function (event, syncTasks) {
 		}
 
 		endDate.jsDate = tmp_date;
+		if(!endDate.timezone) {
+			endDate.timezone = synckolab.calendarTools.getTimezone(null);
+		}
 	}
 
 	if(event.priority && event.priority !== "") {
@@ -523,7 +536,7 @@ synckolab.calendarTools.event2json = function (event, syncTasks) {
 			jobj.endDate = {
 				dateTime: synckolab.tools.text.calDateTime2String(endDate, isAllDay),
 				allday: isAllDay,
-				tz: event.endDate.timezone.tzid
+				tz: endDate.timezone.tzid
 			};
 		}
 		// jobj.completedDate =  synckolab.tools.text.calDateTime2String(completedDate, true);
@@ -538,16 +551,27 @@ synckolab.calendarTools.event2json = function (event, syncTasks) {
 			jobj.completed = event.percentComplete;
 		}
 	} else {
+		var startDate = event.startDate;
+		// transfer into local timezone
+		if(startDate.timezone.tzid === "UTC") {
+			startDate = startDate.getInTimezone(synckolab.calendarTools.getTimezone(null));
+		}
 		jobj.startDate = {
-			dateTime: synckolab.tools.text.calDateTime2String(event.startDate, isAllDay),
+			dateTime: synckolab.tools.text.calDateTime2String(startDate, isAllDay),
 			allday: isAllDay,
-			tz: event.startDate.timezone.tzid
+			tz: startDate.timezone.tzid
 		};
-		jobj.endDate = {
-			dateTime:synckolab.tools.text.calDateTime2String(endDate, isAllDay),
-			allday: isAllDay,
-			tz: event.endDate.timezone.tzid
-		};
+		if(endDate) {
+			// transfer into local timezone
+			if(endDate.timezone.tzid === "UTC") {
+				endDate = endDate.getInTimezone(synckolab.calendarTools.getTimezone(null));
+			}
+			jobj.endDate = {
+				dateTime:synckolab.tools.text.calDateTime2String(endDate, isAllDay),
+				allday: isAllDay,
+				tz: endDate.timezone.tzid
+			};
+		}
 	}
 
 	jobj.uid = event.id;
@@ -866,7 +890,7 @@ synckolab.calendarTools.json2event = function (jobj, calendar) {
 		} else {
 			// entry date and start date can be handled the same way
 			synckolab.tools.logMessage("setting: " + (syncTasks?"entryDate":"startDate"), synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
-			this.setKolabItemProperty(event, syncTasks?"entryDate":"startDate", synckolab.tools.text.string2CalDateTime(jobj.startDate, true));
+			this.setKolabItemProperty(event, syncTasks?"entryDate":"startDate", synckolab.tools.text.string2CalDateTime(jobj.startDate, false));
 		}
 	}
 	
@@ -892,7 +916,7 @@ synckolab.calendarTools.json2event = function (jobj, calendar) {
 			this.setKolabItemProperty(event, syncTasks?"dueDate":"endDate", cDate);
 		} else {
 			// due date and end date can be handled the same way
-			this.setKolabItemProperty(event, syncTasks?"dueDate":"endDate", synckolab.tools.text.string2CalDateTime(jobj.endDate, true));
+			this.setKolabItemProperty(event, syncTasks?"dueDate":"endDate", synckolab.tools.text.string2CalDateTime(jobj.endDate, false));
 		}
 	}
 	
@@ -1099,7 +1123,7 @@ synckolab.calendarTools.getTimezone = function(tzid) {
 	}
 	
 	// get (rid) of the prefix
-	if(tzid.indexof("/") === 0) {
+	if(tzid.indexOf("/") === 0) {
 		tzid = tzid.substring(1);
 		if(tzid.indexOf("/") !== -1) {
 			tzid = tzid.substring(tzid.indexOf("/") + 1);
@@ -1312,7 +1336,6 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 					allday: s.indexOf("T") === -1,
 					dateTime: s
 				};
-				
 				break;
 
 			// entry date and start date can be handled the same way 
@@ -2137,10 +2160,20 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 		xml += synckolab.tools.text.nodeContainerWithContent("status", "text", jobj.status, false);
 		xml += synckolab.tools.text.nodeContainerWithContent("completed", "text", jobj.completed, false);
 		if (jobj.startDate && jobj.startDate.dateTime) {
-			xml += synckolab.tools.text.nodeContainerWithContent("dtstart", "date-time", jobj.startDate.dateTime, false);
+			xml += " <dtstart>\n";
+			if(jobj.endDate.tz) {
+				xml += "  <parameters><tzid><text>/kolab.org/" + jobj.startDate.tz + "</text></tzid></parameters>\n";
+			}
+			xml += "  <date-time>" + jobj.startDate.dateTime  + "</date-time>\n";
+			xml += " </dtstart>\n";
 		}
 		if (jobj.endDate && jobj.endDate.dateTime) {
-			xml += synckolab.tools.text.nodeContainerWithContent("dtdue", "date-time", jobj.endDate.dateTime, false);
+			xml += " <dtend>\n";
+			if(jobj.endDate.tz) {
+				xml += "  <parameters><tzid><text>/kolab.org/" + jobj.endDate.tz + "</text></tzid></parameters>\n";
+			}
+			xml += "  <date-time>" + jobj.endDate.dateTime  + "</date-time>\n"
+			xml += " </dtend>\n";
 		}
 		
 		// xml += " <completed-date>" + synckolab.tools.text.calDateTime2String(completedDate, true, false) + "</completed-date>\n";
@@ -2337,14 +2370,11 @@ synckolab.calendarTools.json2Human = function (jobj)
 		txt += "Summary: " + jobj.title +"\n";
 	}
 
-	if(jobj.type === "task")
+	if (jobj.startDate)
 	{
-		if (jobj.startDate)
-		{
-			txt += "Start date: " + jobj.startDate.dateTime + "\n";
-			if (jobj.endDate) {
-				txt += "End date: " + jobj.endDate.dateTime + "\n\n";
-			}
+		txt += "Start date: " + jobj.startDate.dateTime + "\n";
+		if (jobj.endDate) {
+			txt += "End date: " + jobj.endDate.dateTime + "\n\n";
 		}
 	}
 	if (jobj.body) {

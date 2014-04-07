@@ -256,15 +256,6 @@ synckolab.tools.text = {
 			s = s.substring(0, s.indexOf('+'));
 		}
 
-		if(tz && tz !== "") {
-			switch(tz) {
-			case "/kolab.org/Europe/Berlin": tz = 1; break;
-			case "/kolab.org/Europe/Vienna": tz = 1; break;
-			case "/kolab.org/Europe/Rome": tz = 1; break;
-			
-			}
-		}
-		
 		s = s.replace('T', ' ');
 		s = s.replace('Z', '');
 		var both = s.split(' ');
@@ -306,8 +297,6 @@ synckolab.tools.text = {
 					return new Date(cdate[0], cdate[1] - 1, cdate[2], ctime[0], ctime[1], ctime[2]);
 				} else {
 					var dateObj = new Date(Date.UTC(cdate[0], cdate[1] - 1, cdate[2], ctime[0], ctime[1], ctime[2]));
-					// add tc hours
-					dateObj.setTime(dateObj.getTime() +  tz * 3600000);
 					return dateObj;
 				}
 			}
@@ -379,10 +368,16 @@ synckolab.tools.text = {
 		if (useUTC) {
 			jsDate = this.string2DateTime(val, true);
 		} else {
-			jsDate = this.string2DateTime(val);
+			// if no tz - use local time - else use utc
+			jsDate = this.string2DateTime(val, val.tz);
 		}
 		
 		calDateTime.jsDate = jsDate;
+		if (!useUTC) {
+			if (val.tz && synckolab.calendarTools) {
+				calDateTime.timezone = synckolab.calendarTools.getTimezone(val.tz);
+			}
+		}
 		return calDateTime;
 	},
 	
@@ -442,14 +437,18 @@ synckolab.tools.text = {
 	},
 
 	// produces 15:28:52
-	time2String : function (datetime, compact) {
+	time2String : function (datetime, utc, compact) {
 		// if we do not have a javascript date
 		if(!datetime.getTime) {
 			// calIDateTime - http://doxygen.db48x.net/mozilla-full/html/d0/d83/interfacecalIDateTime.html
 			datetime = this.getJSDateFromICalDateTime(datetime);
 		}
 		
-		var strDate= (datetime.getUTCHours() < 10 ? "0" : "") + datetime.getUTCHours() + ":" + (datetime.getUTCMinutes() < 10 ? "0" : "") + datetime.getUTCMinutes() + ":" + (datetime.getUTCSeconds() < 10 ? "0" : "") + datetime.getUTCSeconds();
+		var strDate= "";
+		if (utc)
+			strDate = (datetime.getUTCHours() < 10 ? "0" : "") + datetime.getUTCHours() + ":" + (datetime.getUTCMinutes() < 10 ? "0" : "") + datetime.getUTCMinutes() + ":" + (datetime.getUTCSeconds() < 10 ? "0" : "") + datetime.getUTCSeconds();
+		else
+			strDate = (datetime.getHours() < 10 ? "0" : "") + datetime.getHours() + ":" + (datetime.getMinutes() < 10 ? "0" : "") + datetime.getMinutes() + ":" + (datetime.getSeconds() < 10 ? "0" : "") + datetime.getSeconds();
 		
 		if(compact) {
 			// compact: remove seperators
@@ -470,8 +469,7 @@ synckolab.tools.text = {
 		var resultstring = this.date2String(val, true, compact);
 		if (!onlyDate) {
 			resultstring += 'T';
-			resultstring += this.time2String(val, compact);
-			resultstring += 'Z';
+			resultstring += this.time2String(val, false, compact);
 		}
 		return resultstring;
 	},
