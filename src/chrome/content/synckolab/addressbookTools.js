@@ -1988,8 +1988,8 @@ synckolab.addressbookTools.card2Pojo = function (card, uid, fields) {
 			// image is the last part of the uri
 			var image = uri.substring(uri.lastIndexOf("/") + 1);
 			
-			var file = synckolab.tools.getFile(uri);
 			try {
+				var file = synckolab.tools.getFile(uri);
 				if (!file.exists()) {
 					synckolab.tools.logMessage("Photo does not exist: "+uri, synckolab.global.LOG_WARNING);
 					
