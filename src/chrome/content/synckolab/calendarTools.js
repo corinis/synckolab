@@ -2130,7 +2130,7 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 		'<icalendar xmlns="urn:ietf:params:xml:ns:icalendar-2.0">\n'+
 		'<vcalendar>\n' +
 		'<properties>\n' +
-		' <prodid><text>Synckolab , Calendar Sync</text></prodid>\n' +
+		' <prodid><text>Synckolab, Calendar Sync</text></prodid>\n' +
 		' <version><text>'+synckolab.config.version+'</text></version>\n' +
 		' <x-kolab-version><text>3.0</text></x-kolab-version>\n' +
 		'</properties>\n' + 
@@ -2151,14 +2151,23 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 	// added by Mihai Badici
 	xml += " <created><date-time>" + jobj.startDate.dateTime  + "</date-time></created>\n";
 	xml += " <dtstamp><date-time>" + jobj.startDate.dateTime  + "</date-time></dtstamp>\n";
+	// sequence ?
 	xml += synckolab.tools.text.nodeContainerWithContent("class", "text", jobj.sensitivity, false);
-	xml += synckolab.tools.text.nodeContainerWithContent("priority", "text", jobj.priority, false);
 
+	var i;
+	if(jobj.categories) {
+		xml += "<categories>\n";
+		var catList = jobj.categories.split(" ");
+		for(i = 0; i < catList.length; i++) {
+			if(catList[i].length > 0) {
+				xml += synckolab.tools.text.nodeWithContent("text", catList[i], false);
+			}
+		}
+		xml += "</categories>\n";
+	}
+	
 	if(syncTasks === true)
 	{
-		// tasks have a status
-		xml += synckolab.tools.text.nodeContainerWithContent("status", "text", jobj.status, false);
-		xml += synckolab.tools.text.nodeContainerWithContent("completed", "text", jobj.completed, false);
 		if (jobj.startDate && jobj.startDate.dateTime) {
 			xml += " <dtstart>\n";
 			if(jobj.endDate.tz) {
@@ -2198,27 +2207,20 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 		}
 	}
 
-
-	// TODO check if we really have to exclude sensetivity
 	xml += synckolab.tools.text.nodeContainerWithContent("summary", "text", jobj.title, false);
 	xml += synckolab.tools.text.nodeContainerWithContent("description", "text", jobj.body, false);
+	xml += synckolab.tools.text.nodeContainerWithContent("priority", "text", jobj.priority, false);
+
+	if(syncTasks === true){
+		// tasks have a status
+		xml += synckolab.tools.text.nodeContainerWithContent("status", "text", jobj.status, false);
+		xml += synckolab.tools.text.nodeContainerWithContent("completed", "text", jobj.completed, false);
+	}
+
+
+	// TODO check if we really have to exclude sensitivity
 //	xml += synckolab.tools.text.nodeContainerWithContent("x-custom-sensitivity", "text", jobj.sensitivity, false);
 	xml += synckolab.tools.text.nodeContainerWithContent("location", "text", jobj.location, false);
-//	xml += synckolab.tools.text.nodeContainerWithContent("x-custom-show-time-as", "text",  jobj.showTimeAs, false);
-	xml += synckolab.tools.text.nodeContainerWithContent("x-custom-color-label", "text", jobj.colorLabel, false);
-
-	var i;
-
-	if(jobj.categories) {
-		xml += "<categories>\n";
-		var catList = jobj.categories.split(" ");
-		for(i = 0; i < catList.length; i++) {
-			if(catList[i].length > 0) {
-				xml += synckolab.tools.text.nodeWithContent("text", catList[i], false);
-			}
-		}
-		xml += "</categories>\n";
-	}
 	
 	if(jobj.recurrence) {
 		xml += " <rrule>\n";
@@ -2323,6 +2325,8 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 		xml += " </creator>\n";
 	}
 
+//	xml += synckolab.tools.text.nodeContainerWithContent("x-custom-show-time-as", "text",  jobj.showTimeAs, false);
+	xml += synckolab.tools.text.nodeContainerWithContent("x-custom-color-label", "text", jobj.colorLabel, false);
 
 	xml += " </properties>\n";
 	
@@ -2347,6 +2351,7 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 		xml += "</components>\n";
 	}
 
+	
 	
 	if (jobj.type === "task")
 	{
@@ -2396,7 +2401,7 @@ synckolab.calendarTools.event2kolabXmlMsg = function (event, email)
 	var syncTasks = (event.type === "task");
 	var xml = this.json2xml(event, syncTasks, email);
 	return synckolab.tools.generateMail(event.uid, email, "", syncTasks?"application/x-vnd.kolab.task":"application/x-vnd.kolab.event", 
-			true, synckolab.tools.text.utf8.encode(xml), this.json2Human(event, syncTasks));
+			2, synckolab.tools.text.utf8.encode(xml), this.json2Human(event, syncTasks));
 };
 
 /**
@@ -2409,7 +2414,7 @@ synckolab.calendarTools.event2kolab3XmlMsg = function (event, email)
 	var syncTasks = (event.type === "task");
 	var xml = this.json2kolab3(event, syncTasks, email);
 	return synckolab.tools.generateMail(event.uid, email, "", syncTasks?"application/x-vnd.kolab.task":"application/x-vnd.kolab.event", 
-			true, synckolab.tools.text.utf8.encode(xml), this.json2Human(event, syncTasks));
+			3, synckolab.tools.text.utf8.encode(xml), this.json2Human(event, syncTasks));
 };
 
 

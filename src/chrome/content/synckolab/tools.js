@@ -606,6 +606,9 @@ generateMail: function (cid, mail, adsubject, mime, part, skcontent, hr, attachm
 	msg += "User-Agent: SyncKolab " + synckolab.config.version + "\n";
 	if (part) {
 		msg += "X-Kolab-Type: "+mime+"\n";
+		// for kolab3 set the part to "3"
+		if(part === 3)
+			msg += "X-Kolab-Mime-Version: 3\n";
 	}
 	msg += "\n";
 	if (part)

@@ -3649,7 +3649,7 @@ synckolab.addressbookTools.card2Message = function (card, email, format, fields)
 	if (format === "xml-k2") {
 		// mailing list
 		if (card.isMailList) {
-			return synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vnd.kolab.distribution-list", true, synckolab.tools.text.utf8.encode(this.list2Xml(card, fields)), this.list2Human(card));
+			return synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vnd.kolab.distribution-list", 2, synckolab.tools.text.utf8.encode(this.list2Xml(card, fields)), this.list2Human(card));
 		} else {
 			// generat email with optional image attachment
 			var img = null;
@@ -3663,12 +3663,12 @@ synckolab.addressbookTools.card2Message = function (card, email, format, fields)
 				});
 			}
 					
-			return synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vnd.kolab.contact", true, synckolab.tools.text.utf8.encode(this.card2Xml(card, fields)), this.card2Human(card), img);
+			return synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vnd.kolab.contact", 2, synckolab.tools.text.utf8.encode(this.card2Xml(card, fields)), this.card2Human(card), img);
 		}
 	} else if(format === "xml-k3") {
 		// mailing list
 		if (card.isMailList) {
-			return synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vnd.kolab.distribution-list", true, synckolab.tools.text.utf8.encode(this.list2Kolab3(card, fields)), this.list2Human(card));
+			return synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vnd.kolab.distribution-list", 3, synckolab.tools.text.utf8.encode(this.list2Kolab3(card, fields)), this.list2Human(card));
 		} else {
 			data = this.card2Kolab3(card, fields);
 			if(data.content) {
@@ -3679,7 +3679,7 @@ synckolab.addressbookTools.card2Message = function (card, email, format, fields)
 				data = null;
 			}
 			
-			return synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vnd.kolab.contact", true, synckolab.tools.text.utf8.encode(content), this.card2Human(card), data);
+			return synckolab.tools.generateMail(this.getUID(card), email, "", "application/x-vnd.kolab.contact", 3, synckolab.tools.text.utf8.encode(content), this.card2Human(card), data);
 		}
 	}
 
