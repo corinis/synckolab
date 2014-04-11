@@ -114,7 +114,7 @@ synckolab.config.loadConfiguration = function(pref) {
 	
 	var config = {
 		version: synckolab.tools.getConfigValue(pref, "configVersion", synckolab.tools.CONFIG_TYPE_INT, 0),
-		// default: only errors
+		// default: only errors - override: show debug
 		debugLevel: synckolab.tools.getConfigValue(pref, "debugLevel", synckolab.tools.CONFIG_TYPE_INT, synckolab.global.LOG_ERROR),
 		// hide folder
 		hideFolder: synckolab.tools.getConfigValue(pref, "hideFolder", synckolab.tools.CONFIG_TYPE_BOOL, false),

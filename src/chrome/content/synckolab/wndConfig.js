@@ -280,9 +280,13 @@ synckolab.settings.fillCalendar = function() {
  * This will read the current configuration and the window elements.
  */
 synckolab.settings.init = function () {
-	var i = 0, j;
+	// set debug level so we see EVERYTHING
+	synckolab.config.DEBUG_SYNCKOLAB_LEVEL = 3;
+	synckolab.tools.logMessage("[wndConfig] Start initializing", synckolab.global.LOG_DEBUG);
 	
+	var i = 0, j;
 	synckolab.settings.checkOldConfig();
+	synckolab.tools.logMessage("[wndConfig] Done checking old Config", synckolab.global.LOG_DEBUG);
 
 	// load the string bundle for translation
 	synckolab.settings.strBundle = document.getElementById("synckolabBundle");
@@ -290,6 +294,11 @@ synckolab.settings.init = function () {
 	synckolab.settings.isCalendar = synckolab.calendarTools.isCalendarAvailable();
 	// read the current configuration
 	synckolab.settings.config = synckolab.config.loadConfiguration();
+
+	synckolab.tools.logMessage("[wndConfig] done loading existing configuration", synckolab.global.LOG_DEBUG);
+
+	synckolab.settings.fillBaseInfo();
+	synckolab.tools.logMessage("[wndConfig] Done filling base info", synckolab.global.LOG_DEBUG);
 
 	// the format selection boxes:
 	var abList = document.getElementById("contactFormat");
@@ -358,6 +367,8 @@ synckolab.settings.init = function () {
 	abList.setAttribute("label", "Xml/Kolab3");
 	abList.setAttribute("value", "xml-k3");
 	
+	synckolab.tools.logMessage("[wndConfig] Analyzing address books", synckolab.global.LOG_DEBUG);
+
 	// the adress book list
 	// fill the contact selection
 	var cn = synckolab.addressbookTools.getABDirectory();
@@ -372,6 +383,9 @@ synckolab.settings.init = function () {
 
 	// fill calendar+task and addresbook
 	this.fillAddressBook(cn, ABook);
+	
+	synckolab.tools.logMessage("[wndConfig] Fill calendar", synckolab.global.LOG_DEBUG);
+
 	this.fillCalendar();
 
 	// get the root tree element
@@ -391,21 +405,41 @@ synckolab.settings.init = function () {
 		cnode = cnode.nextSibling;
 	}
 
+	var tItem,tRow;
+	
 	if (ctree === null) {
-		return null;
+		synckolab.tools.logMessage("[wndConfig] Unable to get root treechildren in configTree", synckolab.global.LOG_ERROR);
+		
+		// clear away
+		while(tree.firstChild !== null)
+			tree.removeChild(tree.firstChild);
+
+		// add new:  id="name" flex="1" primary="true"
+		tItem = document.createElement("treecol");
+		tItem.setAttribute("id", "name");
+		tItem.setAttribute("flex", "1");
+		tItem.setAttribute("primary", "true");
+		tRow = document.createElement("treecols");
+		tRow.appendChild(tItem);
+		tree.appendChild(tRow)
+		
+		ctree = document.createElement("treechildren");
+		tree.appendChild(ctree);
 	}
 
-	var tItem = document.createElement("treeitem");
+	tItem = document.createElement("treeitem");
 	tItem.setAttribute("container", "true");
 	tItem.setAttribute("open", "true");
 	ctree.appendChild(tItem);
-	var tRow = document.createElement("treerow");
+	tRow = document.createElement("treerow");
 	tItem.appendChild(tRow);
 	var tCell = document.createElement("treecell");
 	tRow.appendChild(tCell);
 	tItem.setAttribute("id", "Welcome-Welcome");
 	tCell.setAttribute("label", this.strBundle.getString("aboutSyncKolab"));
 	tCell.setAttribute("value", "Welcome-Welcome");
+
+	synckolab.tools.logMessage("[wndConfig] Analyzing accounts", synckolab.global.LOG_DEBUG);
 
 	// the account nodes
 	var actList = document.getElementById("ImapAcct");
@@ -421,11 +455,11 @@ synckolab.settings.init = function () {
 		} else {
 			account = gAccountManager.allServers.queryElementAt(i, Components.interfaces.nsIMsgIncomingServer);
 		}
-		 
-		synckolab.tools.logMessage("Account found: " + account.rootMsgFolder.baseMessageURI, synckolab.global.LOG_DEBUG);		
+		
+		synckolab.tools.logMessage("[wndConfig] Account found: " + account.rootMsgFolder.baseMessageURI, synckolab.global.LOG_DEBUG);
 		if (account.rootMsgFolder.baseMessageURI.toLowerCase().indexOf("imap") === -1)
 		{
-			synckolab.tools.logMessage("Account " + account.rootMsgFolder.baseMessageURI + " is not an imap account - skipping!", synckolab.global.LOG_INFO);
+			synckolab.tools.logMessage("[wndConfig] Account " + account.rootMsgFolder.baseMessageURI + " is not an imap account - skipping!", synckolab.global.LOG_INFO);
 			continue;
 		}
 		
@@ -464,8 +498,7 @@ synckolab.settings.init = function () {
 			
 		}
 	}
-
-	synckolab.settings.fillBaseInfo();
+	
 	synckolab.settings.repaintConfigTree();
 };
 
