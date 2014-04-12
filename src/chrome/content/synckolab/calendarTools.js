@@ -109,6 +109,10 @@ synckolab.calendarTools = {
 		findCalendar: function(name) {
 			var calendars = synckolab.calendarTools.getCalendars();
 			for ( var i = 0; i < calendars.length; i++) {
+				if(!calendars[i].name) {
+					synckolab.tools.logMessage("[calendarTools#findCalendar] invalid calendar item (name=null); skipping", synckolab.global.LOG_DEBUG);
+					continue;
+				}
 				if (calendars[i].name === name || synckolab.tools.text.fixNameToMiniCharset(calendars[i].name) === synckolab.tools.text.fixNameToMiniCharset(name)) {
 					return calendars[i];
 				}
