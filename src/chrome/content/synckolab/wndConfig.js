@@ -210,6 +210,8 @@ synckolab.settings.fillCalendar = function() {
 	// if we do not have a calendar, we can easily skip this
 	if (synckolab.settings.isCalendar)
 	{
+		synckolab.tools.logMessage("[fillCalendar] generate tree", synckolab.global.LOG_DEBUG);
+
 		var abList = document.getElementById("calendarURL");
 		var taskList = document.getElementById("taskURL");
 
@@ -240,6 +242,11 @@ synckolab.settings.fillCalendar = function() {
 
 		
 		var calendars = synckolab.calendarTools.getCalendars();
+		if(!calendars) {
+			synckolab.tools.logMessage("[fillCalendar] no calendars found", synckolab.global.LOG_INFO);
+			return;
+		}
+		
 		var abpopup = document.createElement("menupopup");
 		abList.appendChild(abpopup);
 
@@ -249,6 +256,13 @@ synckolab.settings.fillCalendar = function() {
 		// get the calendar manager to find the right files
 		for (var i = 0; i < calendars.length; i++ )
 		{
+			if(!calendars[i].name) {
+				synckolab.tools.logMessage("[fillCalendar] invalid calendar item (name=null); skipping", synckolab.global.LOG_DEBUG);
+				continue;
+			}
+			
+			synckolab.tools.logMessage("[fillCalendar] create calendar item: " + calendars[i].name, synckolab.global.LOG_DEBUG);
+
 			// only non-remote calendars - hey we are already doin remote sync here :)
 			var abchild = document.createElement("menuitem");
 			abpopup.appendChild(abchild);
@@ -387,6 +401,8 @@ synckolab.settings.init = function () {
 	synckolab.tools.logMessage("[wndConfig] Fill calendar", synckolab.global.LOG_DEBUG);
 
 	this.fillCalendar();
+
+	synckolab.tools.logMessage("[wndConfig] Start with config tree", synckolab.global.LOG_DEBUG);
 
 	// get the root tree element
 	var tree = document.getElementById("configTree");

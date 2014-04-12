@@ -59,15 +59,22 @@ synckolab.calendarTools = {
 
 			// create a new calendar if none exists
 			if (this.activeCalendarManager.getCalendars({}).length === 0) {
-				var homeCalendar = this.activeCalendarManager.createCalendar("storage", synckolab.calendarTools.makeURL("moz-profile-calendar://"));
-				this.activeCalendarManager.registerCalendar(homeCalendar);
-
-				var sbs = Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService);
-				
-				var props = sbs.createBundle("chrome://calendar/locale/calendar.properties");
-				homeCalendar.name = props.GetStringFromName("homeCalendarName");
-
-				this.addCalendar(homeCalendar);
+				synckolab.tools.logMessage("[calendarTools] creating calendar since none exists", synckolab.global.LOG_INFO);
+				try {
+					var homeCalendar = this.activeCalendarManager.createCalendar("storage", synckolab.calendarTools.makeURL("moz-profile-calendar://"));
+					this.activeCalendarManager.registerCalendar(homeCalendar);
+	
+					var sbs = Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService);
+					
+					var props = sbs.createBundle("chrome://calendar/locale/calendar.properties");
+					homeCalendar.name = props.GetStringFromName("homeCalendarName");
+	
+					this.addCalendar(homeCalendar);
+				} catch(ex) {
+					alert("Unable to create a calendar. Please create one before setting up synckolab.\nReason: " + ex);
+					synckolab.tools.logMessage("[calendarTools] unable to create calendar: " + ex, synckolab.global.LOG_ERROR);
+					
+				}
 			}
 			return this.activeCalendarManager;
 		},
@@ -90,7 +97,7 @@ synckolab.calendarTools = {
 				return syncCalManager.getCalendars({});
 			}
 			catch (e) {
-				synckolab.tools.logMessage("Error getting calendars: " + e, synckolab.global.LOG_ERROR);
+				synckolab.tools.logMessage("[calendarTools] Error getting calendars: " + e, synckolab.global.LOG_ERROR);
 				return null;
 			}
 		},
