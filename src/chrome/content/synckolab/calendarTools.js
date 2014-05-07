@@ -514,8 +514,12 @@ synckolab.calendarTools.event2json = function (event, syncTasks) {
 	if (isAllDay && endDate)
 	{
 		var tmp_date = endDate;
-
+		if(tmp_date.jsDate) {
+			tmp_date = tmp_date.jsDate;
+		}
+		
 		tmp_date.setTime(tmp_date.getTime() - 24*60*60000);
+		
 		// lightning 0.9pre fix
 		if (createDateTime) {
 			endDate = new createDateTime();
