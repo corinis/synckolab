@@ -195,16 +195,19 @@ synckolab.Calendar = {
 
 					synckolab.global.triggerRunning = true;
 					var listener = this;
-					synckolab.main.writeImapMessage(msg, cConfig, 
-					{
-						OnProgress: function (progress, progressMax) {},
-						OnStartCopy: function () { },
-						SetMessageKey: function (key) {},
-						OnStopCopy: function (status) { 
-							// update folder information from imap and make sure we got everything
-							synckolab.tools.logMessage("Finished writing contact entry to imap - compacting", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
-							listener.finishMsgfolderChange(cConfig.folder);
-						}
+					// avoid duplicates
+					synckolab.main.removeImapMessages(cUID, cConfig, function(){
+						synckolab.main.writeImapMessage(msg, cConfig, 
+						{
+							OnProgress: function (progress, progressMax) {},
+							OnStartCopy: function () { },
+							SetMessageKey: function (key) {},
+							OnStopCopy: function (status) { 
+								// update folder information from imap and make sure we got everything
+								synckolab.tools.logMessage("[calendar.js] Finished writing contact entry to imap - compacting", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
+								listener.finishMsgfolderChange(cConfig.folder);
+							}
+						});
 					});
 					
 				},
@@ -222,11 +225,11 @@ synckolab.Calendar = {
 						return;
 					}
 
-					synckolab.tools.logMessage("Calendar listener: modified " + aOldItem.id + " with " + cur.id, synckolab.global.LOG_INFO + synckolab.global.LOG_CAL);
+					synckolab.tools.logMessage("[calendar.js#listener] modified " + aOldItem.id + " with " + cur.id, synckolab.global.LOG_INFO + synckolab.global.LOG_CAL);
 
 					// remember that we just worked with this one
 					if(synckolab.config.checkIdProcessed(cConfig, cur.id)) {
-						synckolab.tools.logMessage("skipping because recently processed", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
+						synckolab.tools.logMessage("[calendar.js#listener] skipping because recently processed", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 						return;
 					}
 
@@ -285,16 +288,18 @@ synckolab.Calendar = {
 					synckolab.tools.logMessage("Writing entry to imap" , synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 					synckolab.global.triggerRunning = true;
 					var listener = this;
-					synckolab.main.writeImapMessage(msg, cConfig, 
-					{
-						OnProgress: function (progress, progressMax) {},
-						OnStartCopy: function () { },
-						SetMessageKey: function (key) {},
-						OnStopCopy: function (status) { 
-							// update folder information from imap and make sure we got everything
-							synckolab.tools.logMessage("Finished writing contact entry to imap - compacting", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
-							listener.finishMsgfolderChange(cConfig.folder);
-						}
+					synckolab.main.removeImapMessages(cUID, cConfig, function(){
+						synckolab.main.writeImapMessage(msg, cConfig, 
+						{
+							OnProgress: function (progress, progressMax) {},
+							OnStartCopy: function () { },
+							SetMessageKey: function (key) {},
+							OnStopCopy: function (status) { 
+								// update folder information from imap and make sure we got everything
+								synckolab.tools.logMessage("Finished writing contact entry to imap - compacting", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
+								listener.finishMsgfolderChange(cConfig.folder);
+							}
+						});
 					});
 				},
 				/**

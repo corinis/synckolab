@@ -125,6 +125,7 @@ synckolab.AddressBook = {
 					return;
 				}
 				
+				// save the new card on the server
 				newCard = newCard.QueryInterface(Components.interfaces.nsIAbCard);
 				synckolab.tools.logMessage("trigger new card", synckolab.global.LOG_DEBUG + synckolab.global.LOG_AB);
 				
@@ -151,41 +152,45 @@ synckolab.AddressBook = {
 				
 				// remember that we just worked with this one
 				if(synckolab.config.checkIdProcessed(cConfig, cUID)) {
-					synckolab.tools.logMessage("skipping because recently processed", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
+					synckolab.tools.logMessage("skipping add of "+cUID+" because it was recently processed", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 					return;
 				}
 
 				if (newCard.isMailList) {
-					synckolab.tools.logMessage("adding unsaved list: " + cUID, synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
+					synckolab.tools.logMessage("[addressbook.js] adding unsaved list: " + cUID, synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 				} else {
-					synckolab.tools.logMessage("adding unsaved card: " + cUID, synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
+					synckolab.tools.logMessage("[addressbook.js] adding unsaved card: " + cUID, synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 				}
 				
 				// and write the message
 				var abcontent = synckolab.addressbookTools.card2Message(newCard, cConfig.email, cConfig.format);
-				synckolab.tools.logMessage("New Card " + abcontent, synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
+				synckolab.tools.logMessage("[addressbook.js] New Card " + abcontent, synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 
 				// get the dbfile from the local disk
 				var idxEntry = synckolab.tools.file.getSyncDbFile(cConfig, cUID);
 				// write the current content in the sync-db file (parse to json object first)
 				synckolab.tools.writeSyncDBFile(idxEntry, synckolab.addressbookTools.parseMessageContent(synckolab.tools.parseMail(abcontent)));
 
-				synckolab.tools.logMessage("Writing card to imap" , synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
+				synckolab.tools.logMessage("[addressbook.js] Writing card ("+cUID+") to imap " , synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
 
 				synckolab.global.triggerRunning = true;
+
 				var listener = this;
-				synckolab.main.writeImapMessage(abcontent, cConfig, 
-				{
-					OnProgress: function (progress, progressMax) {},
-					OnStartCopy: function () { },
-					SetMessageKey: function (key) {},
-					OnStopCopy: function (status) { 
-						// update folder information from imap and make sure we got everything
-						synckolab.tools.logMessage("Finished writing contact entry to imap - compacting", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
-						listener.finishMsgfolderChange(cConfig.folder);
-					}
+
+				// check if we have the message already in the folder - if so delete the old one
+				synckolab.main.removeImapMessages(cUID, cConfig, function(){
+					synckolab.main.writeImapMessage(abcontent, cConfig, 
+					{
+						OnProgress: function (progress, progressMax) {},
+						OnStartCopy: function () { },
+						SetMessageKey: function (key) {},
+						OnStopCopy: function (status) { 
+							// update folder information from imap and make sure we got everything
+							synckolab.tools.logMessage("Finished writing contact entry to imap - compacting", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
+							listener.finishMsgfolderChange(cConfig.folder);
+						}
+					});
 				});
-				
 			},
 			onItemRemoved: function(parent, item) {
 				if(!parent) {
@@ -236,7 +241,6 @@ synckolab.AddressBook = {
 				}
 
 				this.finishMsgfolderChange(cConfig.folder);
-
 			},
 			onItemPropertyChanged: function(item, prop, oldval, newval) {
 				// make sure not to parse messages while a full sync is running
@@ -322,16 +326,19 @@ synckolab.AddressBook = {
 				// write the current content in the sync-db file (parse to json object first)
 				synckolab.tools.writeSyncDBFile(idxEntry, synckolab.addressbookTools.parseMessageContent(synckolab.tools.parseMail(abcontent)));
 
+				// remove potential duplicates, before writing the new message
 				var listener = this;
-				synckolab.main.writeImapMessage(abcontent, cConfig, 
-				{
-					OnProgress: function (progress, progressMax) {},
-					OnStartCopy: function () { },
-					SetMessageKey: function (key) {},
-					OnStopCopy: function (status) { 
-						synckolab.tools.logMessage("Finished writing contact entry to imap", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
-						listener.finishMsgfolderChange(cConfig.folder);
-					}
+				synckolab.main.removeImapMessages(cUID, cConfig, function(){
+					synckolab.main.writeImapMessage(abcontent, cConfig, 
+					{
+						OnProgress: function (progress, progressMax) {},
+						OnStartCopy: function () { },
+						SetMessageKey: function (key) {},
+						OnStopCopy: function (status) { 
+							synckolab.tools.logMessage("Finished writing contact entry to imap", synckolab.global.LOG_INFO + synckolab.global.LOG_AB);
+							listener.finishMsgfolderChange(cConfig.folder);
+						}
+					});
 				});
 
 			}

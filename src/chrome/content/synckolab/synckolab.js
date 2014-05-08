@@ -693,14 +693,14 @@ synckolab.main.getMessage = function()
 		if (cur.flags&0x200000)
 		{
 			synckolab.tools.logMessage("Message " + cur.mime2DecodedSubject + " has been DELETED on imap!", synckolab.global.LOG_INFO);
-			// skip current and process next nessage	
+			// skip current and process next message	
 			skipCMessage = true;
 
 		}
 		
 		if(!cur.mime2DecodedSubject || cur.mime2DecodedSubject.length < 3) {
 			synckolab.tools.logMessage("Message '" + cur.mime2DecodedSubject + "' has an invalid subject!", synckolab.global.LOG_INFO);
-			// skip current and process next nessage	
+			// skip current and process next message	
 			skipCMessage = true;
 		}
 
@@ -713,7 +713,7 @@ synckolab.main.getMessage = function()
 			if ((cur.dateInSeconds + (synckolab.main.gConfig.timeFrame * 86400))*1000 < (new Date()).getTime())
 			{
 				synckolab.tools.logMessage("Message " + cur.mime2DecodedSubject + " will be ignored (too old) Now: " + (new Date()).getTime(), synckolab.global.LOG_INFO);
-				// skip current and process next nessage	
+				// skip current and process next message	
 				skipCMessage = true;
 			}
 		}
@@ -988,7 +988,7 @@ synckolab.main.parseMessageRunner = function(mail)
 		}
 	}
 
-	// process next nessage	
+	// process next message	
 	synckolab.main.curMessage++;
 	if (synckolab.main.curMessage <= synckolab.main.totalMessages || synckolab.main.gLaterMessages.pointer < synckolab.main.gLaterMessages.msgs.length)
 	{
@@ -1229,6 +1229,54 @@ synckolab.main.updateContent = function()
 	// now write the new ones
 	synckolab.main.timer.initWithCallback({notify:function (){synckolab.main.updateContentWrite();}}, synckolab.config.SWITCH_TIME, 0);
 };
+
+/**
+ * remove imap messages with the given uid. 
+ */
+synckolab.main.removeImapMessages = function(uid, config, onFinish) {
+	// check if folder REALLY exists
+	config.folder.clearNewMessages();
+
+	var messages = [], cleanMessages = [];
+	// get the message keys
+	if (config.folder.getMessages) {
+		messages = config.folder.getMessages(null);	 // dont need the msgWindow use null
+	} else {
+		messages = config.folder.messages; // tbird 3 uses an enumerator property instead of a function
+	}
+
+	try
+	{
+		while (messages.hasMoreElements()) {
+			let cur = messages.getNext().QueryInterface(Components.interfaces.nsIMsgDBHdr);
+			if (cur.flags&0x200000) {
+				synckolab.tools.logMessage("[removeImapMessages] Message " + cur.mime2DecodedSubject + " has been DELETED on imap!", synckolab.global.LOG_INFO);
+				// skip current and process next message
+				continue;
+			}
+			if(!cur.mime2DecodedSubject || cur.mime2DecodedSubject.length < 3) {
+				synckolab.tools.logMessage("[removeImapMessages] Message '" + cur.mime2DecodedSubject + "' has an invalid subject!", synckolab.global.LOG_INFO);
+				// skip current and process next message
+				continue;
+			}
+			if(uid === synckolab.tools.getUidFromHeader(cur.mime2DecodedSubject)) {
+				cleanMessages.push(cur);
+			}
+		}
+	}
+	catch (ex)
+	{
+		synckolab.tools.logMessage("[removeImapMessages] problem while checking messages: " + ex, synckolab.global.LOG_INFO);
+	}
+
+	var list = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
+	for(var i = 0; i < cleanMessages.length; i++) {
+		synckolab.tools.logMessage("deleting [" + cleanMessages[i].mime2DecodedSubject + "]");
+		list.appendElement(cleanMessages[i], false);
+	}
+	config.folder.deleteMessages(list, msgWindow, true, false, null, true);
+	onFinish();
+}
 
 /* Write all changed messages back to the folder. Skip
  * the messages which were to be deleted from the server.

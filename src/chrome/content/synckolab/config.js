@@ -278,10 +278,11 @@ synckolab.config.readConfiguration = function() {
 };
 
 /**
- * check each config if it is already processed. If so, remove fromconfig
+ * check each config if it is already processed. If so, remove fromconfig.
+ * This only prevents double-processing within one loop.
  */
 synckolab.config.checkIdProcessed = function(baseConfig, id) {
-	for(let i = 0; i < baseConfig.recentProcessed.length; i++) {
+	for(var i = 0; i < baseConfig.recentProcessed.length; i++) {
 		if(id === baseConfig.recentProcessed[i]) {
 			baseConfig.recentProcessed.splice(i, 1);
 			return true;
