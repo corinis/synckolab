@@ -4,7 +4,7 @@
 
 <!DOCTYPE loc SYSTEM "chrome://synckolab/locale/synckolab.dtd">
 
-<dialog id="syncKolabConfigDlg" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" onload="synckolab.settings.init();" buttons="accept,cancel" ondialogaccept="return synckolab.settings.savePrefs();" persist="screenX screenY" width="0" title="SyncKolab 3.1.5">
+<dialog id="syncKolabConfigDlg" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" onload="synckolab.settings.init();" buttons="accept,cancel" ondialogaccept="return synckolab.settings.savePrefs();" persist="screenX screenY" width="0" title="SyncKolab 3.1.6">
 
 	<script type="application/x-javascript" src="chrome://synckolab/content/calendarTools.js" />
 	<script type="application/x-javascript" src="chrome://synckolab/content/addressbookTools.js"/>
@@ -47,7 +47,7 @@
 						<vbox>
 							<hbox>
 								<label value="&synckolab.settings.SyncKolabHeader;" style="font-size: 16pt;" />
-								<label value=" 3.1.5" />
+								<label value=" 3.1.6" />
 							</hbox>
 							<description flex="1" style="width: 300px">
                                 &synckolab.settings.SyncKolabDescription;
