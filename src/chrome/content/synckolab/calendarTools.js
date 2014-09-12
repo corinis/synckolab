@@ -390,6 +390,11 @@ synckolab.calendarTools = {
  */
 synckolab.calendarTools.equalsEvent = function (a, b) {
 	// cllean out some "irrelevant" fields like createdDate
+	if(!a)
+		return false;
+	if(!b)
+		return false;
+	
 	delete (a.createdDate);
 	delete (b.createdDate);
 	delete(a.modified);
