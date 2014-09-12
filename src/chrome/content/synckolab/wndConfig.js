@@ -524,12 +524,13 @@ synckolab.settings.init = function () {
 synckolab.settings.checkOldConfig = function() {
 	var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 	
+	/*
 	var configString = synckolab.tools.getConfigValue(pref, "Configs");
 	// no configs - no old config
 	if(!configString || configString.length === 0) {
 		return;
 	}
-	/*
+	
 	if(!confirm( synckolab.global.strBundle.getString("config.convert"))) {
 		pref.resetBranch("SyncKolab");
 		return;

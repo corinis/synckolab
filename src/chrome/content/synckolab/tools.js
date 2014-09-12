@@ -1641,32 +1641,70 @@ synckolab.tools.CONFIG_TYPE_INT = 2;
  * @return the configuration value in the given type or the default value
  */
 synckolab.tools.getConfigValue = function(pref, name, type, def) {
-	name = "SyncKolab." + name;
+	var prefName = "extensions.SyncKolab." + name;
+	var val = null;
 	try {
-		var preftype = pref.getPrefType(name);
+		if(type === synckolab.tools.CONFIG_TYPE_BOOL) {
+			val = pref.getBoolPref(prefName);
+		} 
+		else if(type === synckolab.tools.CONFIG_TYPE_INT) {
+			val =  pref.getIntPref(prefName);
+		} else
+			// default use char pref 
+		val = pref.getCharPref(prefName);
+	}
+	catch (ex) {
+		synckolab.tools.logMessage(name +" (" + pref.getPrefType("extensions.SyncKolab." + name) + ") has a problem: " + ex, synckolab.global.LOG_INFO);
+		//return def;
+	}
+	
+	// check if we have a value
+	if(val !== null) {
+		synckolab.tools.logMessage(prefName +" = " + val, synckolab.global.LOG_DEBUG);
+		return val;
+	}
+	
+	// no - check old config style
+	try {
+		prefName = "SyncKolab." + name;
+		synckolab.tools.logMessage("trying migrate config for: " + prefName, synckolab.global.LOG_INFO);
+
+		// try to get the "original" value
+		var preftype = pref.getPrefType(prefName);
+		var val;
 		if(type === synckolab.tools.CONFIG_TYPE_BOOL) {
 			// fix wrong types from old versions
 			if(preftype  === 32) {
-				var val = pref.getCharPref(name);
-				return val === "true";
+				val = pref.getCharPref(prefName);
+				val = val === "true";
+			} else {
+				val = pref.getBoolPref(prefName);
 			}
-			return pref.getBoolPref(name);
 		} 
-		if(type === synckolab.tools.CONFIG_TYPE_INT) {
+		else if(type === synckolab.tools.CONFIG_TYPE_INT) {
 			// fix wrong types from old versions
 			if(preftype  === 32) {
-				var val = pref.getCharPref(name);
-				return Number(val);
+				val = pref.getCharPref(prefName);
+				val = Number(val);
+			} else {
+				val = pref.getIntPref(prefName);
 			}
-			return pref.getIntPref(name);
-		} 
-		// default use char pref 
-		return pref.getCharPref(name);
+			
+		} else 
+			// default use char pref 
+			val = pref.getCharPref(prefName);
+		
+		// remove the "old" branch name
+		pref.clearUserPref(prefName);
+		// set in new format
+		synckolab.tools.setConfigValue(pref, name, type, val);
+		
+		return val;
+	} catch(exOld) {
+		synckolab.tools.logMessage("unable to find config: " + prefName + " " + exOld, synckolab.global.LOG_INFO);
 	}
-	catch (ex) {
-		synckolab.tools.logMessage(name +" (" + pref.getPrefType(name) + ") has a problem: " + ex, synckolab.global.LOG_INFO);
-		return def;
-	}
+	
+	return def;
 };
 
 /**
@@ -1677,7 +1715,7 @@ synckolab.tools.getConfigValue = function(pref, name, type, def) {
  * @return true when the value has been written
  */
 synckolab.tools.setConfigValue = function(pref, name, type, value) {
-	name = "SyncKolab." + name;
+	name = "extensions.SyncKolab." + name;
 	try {
 		if(type === synckolab.tools.CONFIG_TYPE_BOOL) {
 			pref.setBoolPref(name, value);
@@ -1691,6 +1729,7 @@ synckolab.tools.setConfigValue = function(pref, name, type, value) {
 		pref.savePrefFile(null);
 	}
 	catch (ex) {
+		synckolab.tools.logMessage("Problem saving " + name +" (" + value + "): " + ex, synckolab.global.LOG_WARN);
 		return false;
 	}
 	return true;
@@ -1704,7 +1743,7 @@ synckolab.tools.setConfigValue = function(pref, name, type, value) {
  * @return true when the value has been written
  */
 synckolab.tools.removeConfig = function(pref, name) {
-	name = "SyncKolab." + name;
+	name = "extensions.SyncKolab." + name;
 	try {
 		pref.clearUserPref(name);
 		pref.savePrefFile(null);
