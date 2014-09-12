@@ -83,7 +83,6 @@
 <!ENTITY synckolab.settings.HiddenWindow		"Skrýt stavové okno při automatické synchronizaci">
 
 <!-- New Config Wizard -->
-<!ENTITY synckolab.wrong.input.name "Please enter at least 3 letters without any special characters">
 <!ENTITY synckolab.newwizard.title 		"Průvodce nastavením SyncKolabu">
 <!ENTITY synckolab.wizard.LongDescription	"Na následujících stránkách si můžete zvolit pro každý typ (kalendář, adresář, úkoly) složku na IMAP serveru se kterou bude provedena synchronizace. Také můžete specifikovat, zda chcete použít režim jen čtení (nic není zapsáno na IMAP server - pro sdílené složky) a formát ukládání dat (xml pro Kolab2 nebo vcard/ical).">
 <!ENTITY synckolab.newwizard.intro 		"SyncKolab vám umožní synchronizovat vaše kontakty a záznamy v kalendáři na více strojích jen pomocí standardního IMAP serveru.">

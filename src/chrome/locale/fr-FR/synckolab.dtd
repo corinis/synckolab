@@ -82,7 +82,6 @@
 <!ENTITY synckolab.settings.HiddenWindow		"Cacher la fenêtre de status pendant la synchronisation automatique">
 
 <!-- New Config Wizard -->
-<!ENTITY synckolab.wrong.input.name "Please enter at least 3 letters without any special characters">
 <!ENTITY synckolab.newwizard.title 		"SyncKolab Setup Wizard">
 <!ENTITY synckolab.wizard.LongDescription	"Dans les écran suivants vous pourrez choisir pour chaque type (calendrier, carnet d'adresse, tâches) le dossier à synchroniser sur le serveur imap. Vous pouvez aussi indiquer si vous voulez utiliser le mode lecture seule (rien n'est écrit sur le serveur imap - pour les dossiers partagés) et le type (xml pour Kolab2 ou vcard/ical).">
 <!ENTITY synckolab.newwizard.intro 		"SyncKolab vous permet de synchroniser vos contacts et votre calendrier depuis plusieurs machines avec un serveur imap standard.">

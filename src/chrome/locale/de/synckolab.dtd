@@ -85,7 +85,6 @@
 <!ENTITY synckolab.settings.HiddenWindow		"Statusfenster beim automatischen Abgleich verstecken">
 
 <!-- New Config Wizard -->
-<!ENTITY synckolab.wrong.input.name "Bitte geben sie mindestens 3 Buchstaben und keine Sonderzeichen ein!">
 <!ENTITY synckolab.newwizard.title "SyncKolab Einrichtungs-Wizard">
 <!ENTITY synckolab.wizard.LongDescription	"Auf den folgenden Seiten können Sie für jeden Abgleichtyp (Kalender, Adressbuch und Aufgaben) das IMAP-Verzeichnis zum abgleichen auswählen. Zusätzlich können Sie angeben, ob in dieser Konfiguration der nur-lese Modus (lokale änderungen werden nicht auf den Server übertragen) und welcher Formattyp (XML oder vCard/iCal) verwendet wird.">
 <!ENTITY synckolab.newwizard.intro 		"Mithilfe von SyncKolab können Sie Ihre Kontakt- und Kalenderdaten zwischen mehreren Rechnern abgleichen. Die einzige Voraussetzung ist ein IMAP Server.">

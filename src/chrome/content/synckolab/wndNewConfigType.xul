@@ -9,31 +9,32 @@
 	ondialogcancel="return true;" persist="screenX screenY" width="0" title="&synckolab.newwizard.configName;">
 	
 	<script type="application/x-javascript" src="chrome://synckolab/content/tools/text.js"></script>
+	<script type="application/x-javascript" src="chrome://synckolab/content/wndNewConfigType.js"></script>
+
+	<stringbundleset id="stringbundleset">
+		<stringbundle src="chrome://synckolab/locale/synckolab.properties" id="synckolabBundle" />
+	</stringbundleset>
+	
 	<script>
-		function checkConfigName(name)
-		{
-			if(name !== synckolab.tools.text.fixNameToMiniCharset(name)) {
-				document.getElementById("configName").value = synckolab.tools.text.fixNameToMiniCharset(name);
-			}
+	function checkConfigName(name)
+	{
+		// fix the name
+		if(name !== synckolab.tools.text.fixNameToMiniCharset(name)) {
+			document.getElementById("configName").value = synckolab.tools.text.fixNameToMiniCharset(name);
 		}
-		
-		function checkConfig() {
-			// check name
-			var name = document.getElementById("configName").value;
-			// avoid problem with less-than
-			if(name.length === 0 || name.length === 1 || name.length === 2) {
-				alert("&synckolab.wrong.input.name;");
-				return false;
-			}
+	}
+	
+	function checkConfig() {
+		// check name
+		var name = document.getElementById("configName").value;
+		if(!synckolab.newconfig.checkName(name))
+			return false;
 			
-			if(name !== synckolab.tools.text.fixNameToMiniCharset(name)) {
-				return false;
-			}
-			var retVals = window.arguments[0];
-			retVals.name = name;
-			return true;
-			
-		}
+		var retVals = window.arguments[0];
+		retVals.name = name;
+		return true;
+	}
+	
 	</script>
 	<vbox>
 		<hbox>

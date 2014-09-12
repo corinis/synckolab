@@ -95,7 +95,7 @@ synckolab.settings.writeConfiguration = function(config) {
 			}
 			if(!found) {
 				synckolab.tools.logMessage("resetting " + orig.accounts[i].name, synckolab.global.LOG_DEBUG);
-				pref.resetBranch("SyncKolab." + orig.accounts[i].name);
+				pref.resetBranch("extensions.SyncKolab." + orig.accounts[i].name);
 			}
 		}
 	}
@@ -152,7 +152,7 @@ synckolab.settings.writeAccountConfig = function (pref, acct, orig) {
 					if(!found) {
 						try {
 							synckolab.settings.resetConfiguration(acct.name, type, orig[type][i].name);
-							pref.resetBranch("SyncKolab.accounts." + acct.name + "." + type + ".configs." + orig[type][i].name);
+							pref.resetBranch("extensions.SyncKolab.accounts." + acct.name + "." + type + ".configs." + orig[type][i].name);
 						} catch (ex) {
 							
 						}

@@ -82,7 +82,6 @@
 <!ENTITY synckolab.settings.HiddenWindow		"Hide the status window when syncing automatically">
 
 <!-- New Config Wizard -->
-<!ENTITY synckolab.wrong.input.name "Please enter at least 3 letters without any special characters">
 <!ENTITY synckolab.newwizard.title 		"SyncKolab 設定ウィザード">
 <!ENTITY synckolab.wizard.LongDescription	"このウィザードでは，(1)アドレス帳，カレンダー，タスクリストの内，何を同期させるのか， (2)それぞれに対し，IMAPサーバ上のどのフォルダを使うのか， (3)その際どのような形式で保存するか(Kolab2, vcard/ical)を設定します．情報の共有に便利な，リードオンリーモードも指定できます．">
 

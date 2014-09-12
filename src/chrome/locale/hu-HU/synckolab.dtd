@@ -82,7 +82,6 @@
 <!ENTITY synckolab.settings.HiddenWindow		"Sync ablak elrejtése mikor szinkronizál">
 
 <!-- New Config Wizard -->
-<!ENTITY synckolab.wrong.input.name "Please enter at least 3 letters without any special characters">
 <!ENTITY synckolab.newwizard.title 		"SyncKolab Setup Wizard">
 <!ENTITY synckolab.wizard.LongDescription	"A következő oldalakon választhat minden típushoz (naptár, címjegyzék, feladatok) a mappát az imap szerveren amelyikkel szinkronizál. Azt is beállíthatja, hogy csak olvasási módban használja a szervert (semmit sem ír vissza az imap szerverre - a megosztott mappába) és a típust (xml Kolab2 szerverhez vagy vcard/ical).">
 <!ENTITY synckolab.newwizard.intro 		"SyncKolab segítségéval szinkronizálhatod a címjegyzékeidet és a naptáraidat több gépre egy imap szervert használva.">
