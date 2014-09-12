@@ -1641,18 +1641,30 @@ synckolab.tools.CONFIG_TYPE_INT = 2;
  * @return the configuration value in the given type or the default value
  */
 synckolab.tools.getConfigValue = function(pref, name, type, def) {
+	name = "SyncKolab." + name;
 	try {
+		var preftype = pref.getPrefType(name);
 		if(type === synckolab.tools.CONFIG_TYPE_BOOL) {
-			return pref.getBoolPref("SyncKolab." + name);
+			// fix wrong types from old versions
+			if(preftype  === 32) {
+				var val = pref.getCharPref(name);
+				return val === "true";
+			}
+			return pref.getBoolPref(name);
 		} 
 		if(type === synckolab.tools.CONFIG_TYPE_INT) {
-			return pref.getIntPref("SyncKolab." + name);
+			// fix wrong types from old versions
+			if(preftype  === 32) {
+				var val = pref.getCharPref(name);
+				return Number(val);
+			}
+			return pref.getIntPref(name);
 		} 
 		// default use char pref 
-		return pref.getCharPref("SyncKolab." + name);
+		return pref.getCharPref(name);
 	}
 	catch (ex) {
-		synckolab.tools.logMessage("SyncKolab."+name+" does not exist(yet).", synckolab.global.LOG_INFO);
+		synckolab.tools.logMessage(name +" (" + pref.getPrefType(name) + ") has a problem: " + ex, synckolab.global.LOG_INFO);
 		return def;
 	}
 };
@@ -1665,15 +1677,18 @@ synckolab.tools.getConfigValue = function(pref, name, type, def) {
  * @return true when the value has been written
  */
 synckolab.tools.setConfigValue = function(pref, name, type, value) {
+	name = "SyncKolab." + name;
 	try {
 		if(type === synckolab.tools.CONFIG_TYPE_BOOL) {
-			pref.setBoolPref("SyncKolab." + name, value);
+			pref.setBoolPref(name, value);
 		} 
-		if(type === synckolab.tools.CONFIG_TYPE_INT) {
-			pref.setIntPref("SyncKolab." + name, value);
-		} 
-		// default use char pref 
-		pref.setCharPref("SyncKolab." + name, value);
+		else if(type === synckolab.tools.CONFIG_TYPE_INT) {
+			pref.setIntPref(name, value);
+		} else {
+			// default use char pref 
+			pref.setCharPref(name, value);
+		}
+		pref.savePrefFile(null);
 	}
 	catch (ex) {
 		return false;
@@ -1689,8 +1704,10 @@ synckolab.tools.setConfigValue = function(pref, name, type, value) {
  * @return true when the value has been written
  */
 synckolab.tools.removeConfig = function(pref, name) {
+	name = "SyncKolab." + name;
 	try {
-		pref.clearUserPref("SyncKolab." + name);
+		pref.clearUserPref(name);
+		pref.savePrefFile(null);
 	}
 	catch (ex) {
 		return false;
