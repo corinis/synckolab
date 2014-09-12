@@ -20,7 +20,7 @@
 		function checkConfig() {
 			// check name
 			var name = document.getElementById("configName").value;
-			if(name.length &lt; 3) {
+			if(name.length === 0) {
 				alert("&synckolab.wrong.input.name;")
 				return false;
 			}
