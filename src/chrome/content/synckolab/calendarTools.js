@@ -2190,7 +2190,7 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 	{
 		if (jobj.startDate && jobj.startDate.dateTime) {
 			xml += " <dtstart>\n";
-			if(jobj.endDate.tz) {
+			if(jobj.startDate.tz) {
 				xml += "  <parameters><tzid><text>/kolab.org/" + jobj.startDate.tz + "</text></tzid></parameters>\n";
 			}
 			xml += "  <date-time>" + jobj.startDate.dateTime  + "</date-time>\n";
@@ -2211,7 +2211,7 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 	{
 		if (jobj.startDate && jobj.startDate.dateTime) {
 			xml += " <dtstart>\n";
-			if(jobj.endDate.tz) {
+			if(jobj.startDate.tz) {
 				xml += "  <parameters><tzid><text>/kolab.org/" + jobj.startDate.tz + "</text></tzid></parameters>\n";
 			}
 			xml += "  <date-time>" + jobj.startDate.dateTime  + "</date-time>\n";
