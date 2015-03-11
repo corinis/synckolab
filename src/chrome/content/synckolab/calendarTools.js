@@ -2169,8 +2169,10 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 	xml += synckolab.tools.text.nodeContainerWithContent("uid", "text", jobj.uid, false);
 	
 	// added by Mihai Badici
-	xml += " <created><date-time>" + jobj.startDate.dateTime  + "</date-time></created>\n";
-	xml += " <dtstamp><date-time>" + jobj.startDate.dateTime  + "</date-time></dtstamp>\n";
+	if (jobj.startDate) {
+		xml += " <created><date-time>" + jobj.startDate.dateTime  + "</date-time></created>\n";
+		xml += " <dtstamp><date-time>" + jobj.startDate.dateTime  + "</date-time></dtstamp>\n";
+	}
 	// sequence ?
 	xml += synckolab.tools.text.nodeContainerWithContent("class", "text", jobj.sensitivity, false);
 
