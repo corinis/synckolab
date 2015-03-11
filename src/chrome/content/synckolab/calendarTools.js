@@ -389,7 +389,7 @@ synckolab.calendarTools = {
  * This functions checks if two event json objects are equals
  */
 synckolab.calendarTools.equalsEvent = function (a, b) {
-	// cllean out some "irrelevant" fields like createdDate
+	// clean out some "irrelevant" fields like createdDate
 	if(!a)
 		return false;
 	if(!b)
@@ -399,6 +399,11 @@ synckolab.calendarTools.equalsEvent = function (a, b) {
 	delete (b.createdDate);
 	delete(a.modified);
 	delete(b.modified);
+	delete (a.creationDate);
+	delete (b.creaionDate);
+	delete(a.lastModifiedTime);
+	delete(b.lastModifiedTime);
+	
 	// if no "show time as" - then use busy
 	if(!a.showTimeAs)
 		a.showTimeAs = "busy";
@@ -598,8 +603,14 @@ synckolab.calendarTools.event2json = function (event, syncTasks) {
 	jobj.title = event.title;
 	jobj.body = event.getProperty("DESCRIPTION");
 	jobj.sensitivity = event.getProperty("CLASS")?event.getProperty("CLASS").toLowerCase():"public";
-	// xml += " <creation-date>" + synckolab.tools.text.calDateTime2String(event.getProperty("CREATED"), false) + "</creation-date>\n";
-	// xml += " <last-modification-date>" + synckolab.tools.text.calDateTime2String(event.getProperty("LAST-MODIFIED"), false) + "</last-modification-date>\n";
+	
+	// unfortunately these attributes are read-only in calendar, so we cannot rely on them
+	/*
+	if(event.creationDate)
+		jobj.creationDate = synckolab.tools.text.calDateTime2String(event.creationDate, false);
+	if(event.lastModifiedTime)
+		jobj.lastModified = synckolab.tools.text.calDateTime2String(event.lastModifiedTime, false);
+	*/
 
 	if (event.getProperty("LOCATION")) {
 		jobj.location = event.getProperty("LOCATION");
@@ -1329,7 +1340,7 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				if(s === "") {
 					s = cur.getFirstData();
 				}
-				jobj.createdDate = s;
+				jobj.creationDate = s;
 				break;
 
 			case "DTSTAMP":	// kolab3
@@ -1343,7 +1354,7 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 				if(s === "") {
 					s = cur.getFirstData();
 				}
-				jobj.modified = s;
+				jobj.lastModified = s;
 				break;
 				
 			case "DTSTART": // kolab3
@@ -2168,11 +2179,18 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 	
 	xml += synckolab.tools.text.nodeContainerWithContent("uid", "text", jobj.uid, false);
 	
-	// added by Mihai Badici
-	if (jobj.startDate) {
+	if(jobj.creationDate) {
+		xml += " <created><date-time>" + jobj.creationDate.dateTime  + "</date-time></created>\n";
+	} else if (jobj.startDate) {
 		xml += " <created><date-time>" + jobj.startDate.dateTime  + "</date-time></created>\n";
-		xml += " <dtstamp><date-time>" + jobj.startDate.dateTime  + "</date-time></dtstamp>\n";
 	}
+	
+	if(jobj.lastModified) {
+		xml += " <dtstamp><date-time>" + jobj.lastModified.dateTime  + "</date-time></dtstamp>\n";
+	} else if (jobj.startDate) {
+		xml += " <dtstamp><date-time>" + jobj.startDate.dateTime  + "</date-time></dtstamp>\n";
+	} 
+		
 	// sequence ?
 	xml += synckolab.tools.text.nodeContainerWithContent("class", "text", jobj.sensitivity, false);
 
