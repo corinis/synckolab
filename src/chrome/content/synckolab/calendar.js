@@ -196,7 +196,7 @@ synckolab.Calendar = {
 					synckolab.global.triggerRunning = true;
 					var listener = this;
 					// avoid duplicates
-					synckolab.main.removeImapMessages(cUID, cConfig, function(){
+					synckolab.main.removeImapMessages(cur.id, cConfig, function(){
 						synckolab.main.writeImapMessage(msg, cConfig, 
 						{
 							OnProgress: function (progress, progressMax) {},
