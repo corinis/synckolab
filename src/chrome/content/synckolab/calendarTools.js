@@ -2169,8 +2169,10 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 	xml += synckolab.tools.text.nodeContainerWithContent("uid", "text", jobj.uid, false);
 	
 	// added by Mihai Badici
-	xml += " <created><date-time>" + jobj.startDate.dateTime  + "</date-time></created>\n";
-	xml += " <dtstamp><date-time>" + jobj.startDate.dateTime  + "</date-time></dtstamp>\n";
+	if (jobj.startDate) {
+		xml += " <created><date-time>" + jobj.startDate.dateTime  + "</date-time></created>\n";
+		xml += " <dtstamp><date-time>" + jobj.startDate.dateTime  + "</date-time></dtstamp>\n";
+	}
 	// sequence ?
 	xml += synckolab.tools.text.nodeContainerWithContent("class", "text", jobj.sensitivity, false);
 
@@ -2190,7 +2192,7 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 	{
 		if (jobj.startDate && jobj.startDate.dateTime) {
 			xml += " <dtstart>\n";
-			if(jobj.endDate.tz) {
+			if(jobj.startDate.tz) {
 				xml += "  <parameters><tzid><text>/kolab.org/" + jobj.startDate.tz + "</text></tzid></parameters>\n";
 			}
 			xml += "  <date-time>" + jobj.startDate.dateTime  + "</date-time>\n";
@@ -2211,7 +2213,7 @@ synckolab.calendarTools.json2kolab3 = function (jobj, syncTasks, email) {
 	{
 		if (jobj.startDate && jobj.startDate.dateTime) {
 			xml += " <dtstart>\n";
-			if(jobj.endDate.tz) {
+			if(jobj.startDate.tz) {
 				xml += "  <parameters><tzid><text>/kolab.org/" + jobj.startDate.tz + "</text></tzid></parameters>\n";
 			}
 			xml += "  <date-time>" + jobj.startDate.dateTime  + "</date-time>\n";
