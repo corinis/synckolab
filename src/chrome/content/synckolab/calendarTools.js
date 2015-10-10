@@ -451,9 +451,18 @@ synckolab.calendarTools.message2json = function (fileContent, syncTasks) {
 		fileContent = synckolab.tools.text.quoted.decode(fileContent);
 	}
 	// sepcial fix for Europe bug
-	if (fileContent.indexOf("TZIDID=rope")) {
+	if (fileContent.indexOf("TZID=rope")) {
 		fileContent = fileContent.replace(/TZID=rope/g,"TZID=Europe");
+	} 
+	// adapt content from i.e. citadel /citadel.org/Tzfile
+	if(fileContent.indexOf("Tzfile") != -1)
+	{
+		// fix tzFile based time zones
+		fileContent = fileContent.replace(/TZID([=:]).*Tzfile\//g,"TZID$1");
 	}
+	
+	synckolab.tools.logMessage("Actual file content: \n" + fileContent, synckolab.global.LOG_CAL + synckolab.global.LOG_WARNING);
+	
 	// this.format === 'iCal'
 	parsedEvent = this.ical2event(fileContent, syncTasks);
 
@@ -523,21 +532,22 @@ synckolab.calendarTools.event2json = function (event, syncTasks) {
 	// startdate = day_x, enddate = day_x + 1
 	if (isAllDay && endDate)
 	{
-		var tmp_date = endDate;
-		if(tmp_date.jsDate) {
-			tmp_date = tmp_date.jsDate;
-		}
+		var tmp_date = new Date();
+		synckolab.tools.text.setCalByJsDate(tmp_date, endDate);
 		
 		tmp_date.setTime(tmp_date.getTime() - 24*60*60000);
 		
-		// lightning 0.9pre fix
-		if (createDateTime) {
-			endDate = new createDateTime();
+		// lightning 0.9pre fix (uses createDateTime)
+		if (typeof createDateTime !== 'undefined') {
+			calDateTime = new createDateTime();
+		} else if (typeof CalDateTime !== 'undefined') {
+			calDateTime = new CalDateTime();
 		} else {
-			endDate = new CalDateTime();
+			calDateTime = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
 		}
+		
+		synckolab.tools.text.setCalByJsDate(endDate, tmp_date);
 
-		endDate.jsDate = tmp_date;
 		if(!endDate.timezone) {
 			endDate.timezone = synckolab.calendarTools.getTimezone(null);
 		}
@@ -576,7 +586,7 @@ synckolab.calendarTools.event2json = function (event, syncTasks) {
 			jobj.completed = event.percentComplete;
 		}
 	} else {
-		var startDate = event.startDate;
+		var startDate = event.startDate || event.entryDate;
 		// transfer into local timezone
 		if(startDate.timezone.tzid === "UTC") {
 			startDate = startDate.getInTimezone(synckolab.calendarTools.getTimezone(null));

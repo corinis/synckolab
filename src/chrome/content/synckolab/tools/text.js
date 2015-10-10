@@ -350,6 +350,18 @@ synckolab.tools.text = {
 		return s;
 	},
 	
+	/**
+	 * Set a calendar datetime by using a javascript date component
+	 */
+	setCalByJsDate: function(calDateTime, jsDate) {
+		calDateTime.year = jsDate.year;
+		calDateTime.month = jsDate.month;
+		calDateTime.day = jsDate.day;
+		calDateTime.hour = jsDate.hour;
+		calDateTime.minute = jsDate.minute;
+		calDateTime.second = jsDate.second;
+	},
+	
 	// takes: 2005-03-30T15:28:52Z or 2005-03-30 15:28:52
 	string2CalDateTime : function (val, useUTC) {
 		// in case its a date without time fall back to string2CalDate()
@@ -372,7 +384,8 @@ synckolab.tools.text = {
 			jsDate = this.string2DateTime(val, val.tz);
 		}
 		
-		calDateTime.jsDate = jsDate;
+		synckolab.tools.text.setCalByJsDate(calDateTime, jsDate);
+		
 		if (!useUTC) {
 			if (val.tz && synckolab.calendarTools) {
 				calDateTime.timezone = synckolab.calendarTools.getTimezone(val.tz);
@@ -398,15 +411,25 @@ synckolab.tools.text = {
 	getJSDateFromICalDateTime: function (cal) {
 		var dt;
 
-		if (this.isDate) {
+		if (cal.isDate) {
 			dt = new Date(cal.year,
 					cal.month,
 					cal.day);
 		} else {
-			dt = new Date(cal.jsDate);
-			//dt.setTime(dt.getTime() + cal.timezoneOffset);
+			if (cal.jsDate) {
+				dt = new Date(cal.jsDate);
+			} else {
+				dt = new Date(cal.year,
+						cal.month,
+						cal.day,
+						cal.hour,
+						cal.minute,
+						cal.second
+				);
+			}
 		}
-		synckolab.tools.logMessage("CONVERTING: " + cal.hour + "/"+ dt.getUTCHours() +" - " + cal.timezoneOffset + " - " + cal.jsDate + " vs. " + dt, synckolab.global.LOG_CAL + synckolab.global.LOG_WARNING);
+		// log converted time...
+		synckolab.tools.logMessage("CONVERTING " +  cal + ": " + cal.hour + "/"+ dt.getUTCHours() +" - " + cal.timezoneOffset + " - " + cal.jsDate + " vs. " + dt, synckolab.global.LOG_CAL + synckolab.global.LOG_WARNING);
 		return dt;
 	},
 	
