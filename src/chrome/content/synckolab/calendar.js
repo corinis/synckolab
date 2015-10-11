@@ -466,8 +466,7 @@ synckolab.Calendar = {
 		try {
 			var tmpEventObj = synckolab.calendarTools.json2event(newEvent, message.config.calendar);
 			// update the newEvent timestamp so it wont display a window
-			var lastAckTime = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
-			synckolab.tools.text.setCalByJsDate(lastAckTime, new Date());
+			var lastAckTime = synckolab.tools.text.setCalByJsDate(null, new Date());
 			tmpEventObj.alarmLastAck = lastAckTime;
 
 			// if we dont have a timezone - set it
@@ -672,8 +671,7 @@ synckolab.Calendar = {
 				tmpEventObj = synckolab.calendarTools.json2event(newEvent, this.gConfig.calendar);
 
 				// update the newEvent timestamp so it wont display a window
-				var lastAckTime = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
-				synckolab.tools.text.setCalByJsDate(lastAckTime, new Date());
+				lastAckTime = synckolab.tools.text.setCalByJsDate(null, new Date());
 				tmpEventObj.alarmLastAck = lastAckTime;
 
 				// if we dont have a timezone - set it based on the ack object (=current timezone)

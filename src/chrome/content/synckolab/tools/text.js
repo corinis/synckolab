@@ -351,31 +351,39 @@ synckolab.tools.text = {
 	},
 	
 	/**
-	 * Set a calendar datetime by using a javascript date component
+	 * Set a calendar datetime by using a javascript date component.
+	 * Note: calDateTime can also be a standard js Date object!
+	 * @param calDateTime the datetime object (if null, will be created)
+	 * @param jsDate the date object to copy the date/time from
+	 * @return the modified original object or a new one
 	 */
 	setCalByJsDate: function(calDateTime, jsDate) {
+		if(!calDateTime){
+			// lightning 0.9pre fix (uses createDateTime)
+			if (typeof createDateTime !== 'undefined') {
+				calDateTime = new createDateTime();
+			} else if (typeof CalDateTime !== 'undefined') {
+				calDateTime = new CalDateTime();
+			} else {
+				calDateTime = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
+			}
+		}
+		if(calDateTime.isMutable === false) {
+			calDateTime = calDateTime.clone();
+		} 
+		
 		calDateTime.year = jsDate.year;
 		calDateTime.month = jsDate.month;
 		calDateTime.day = jsDate.day;
 		calDateTime.hour = jsDate.hour;
 		calDateTime.minute = jsDate.minute;
 		calDateTime.second = jsDate.second;
+		return calDateTime;
 	},
 	
 	// takes: 2005-03-30T15:28:52Z or 2005-03-30 15:28:52
 	string2CalDateTime : function (val, useUTC) {
 		// in case its a date without time fall back to string2CalDate()
-		var calDateTime;
-		
-		// lightning 0.9pre fix (uses createDateTime)
-		if (typeof createDateTime !== 'undefined') {
-			calDateTime = new createDateTime();
-		} else if (typeof CalDateTime !== 'undefined') {
-			calDateTime = new CalDateTime();
-		} else {
-			calDateTime = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
-		}
-
 		var jsDate = null;
 		if (useUTC) {
 			jsDate = this.string2DateTime(val, true);
@@ -384,7 +392,7 @@ synckolab.tools.text = {
 			jsDate = this.string2DateTime(val, val.tz);
 		}
 		
-		synckolab.tools.text.setCalByJsDate(calDateTime, jsDate);
+		var calDateTime = synckolab.tools.text.setCalByJsDate(null, jsDate);
 		
 		if (!useUTC) {
 			if (val.tz && synckolab.calendarTools) {

@@ -534,20 +534,12 @@ synckolab.calendarTools.event2json = function (event, syncTasks) {
 	if (isAllDay && endDate)
 	{
 		var tmp_date = new Date();
-		synckolab.tools.text.setCalByJsDate(tmp_date, endDate);
+		tmp_date = synckolab.tools.text.setCalByJsDate(tmp_date, endDate);
 		
 		tmp_date.setTime(tmp_date.getTime() - 24*60*60000);
-		
-		// lightning 0.9pre fix (uses createDateTime)
-		if (typeof createDateTime !== 'undefined') {
-			calDateTime = new createDateTime();
-		} else if (typeof CalDateTime !== 'undefined') {
-			calDateTime = new CalDateTime();
-		} else {
-			calDateTime = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
-		}
-		
-		synckolab.tools.text.setCalByJsDate(endDate, tmp_date);
+
+		// create a new date object
+		endDate = synckolab.tools.text.setCalByJsDate(null, tmp_date);
 
 		if(!endDate.timezone) {
 			endDate.timezone = synckolab.calendarTools.getTimezone(null);
