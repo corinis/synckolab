@@ -437,7 +437,7 @@ synckolab.tools.text = {
 			}
 		}
 		// log converted time...
-		synckolab.tools.logMessage("CONVERTING " +  cal + ": " + cal.hour + "/"+ dt.getUTCHours() +" - " + cal.timezoneOffset + " - " + cal.jsDate + " vs. " + dt, synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
+		synckolab.tools.logMessage("CONVERTING " +  cal + ": hour=" + cal.hour + "/utc="+ dt.getUTCHours() +" TZ:" + cal.timezoneOffset + " - JS: " + dt, synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 		return dt;
 	},
 	

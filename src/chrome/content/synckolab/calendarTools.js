@@ -395,12 +395,14 @@ synckolab.calendarTools.equalsEvent = function (a, b) {
 	if(!b)
 		return false;
 	
-	delete (a.createdDate);
-	delete (b.createdDate);
+	delete(a.createdDate);
+	delete(b.createdDate);
 	delete(a.modified);
 	delete(b.modified);
-	delete (a.creationDate);
-	delete (b.creaionDate);
+	delete(a.lastModified);
+	delete(b.lastModified);
+	delete(a.creationDate);
+	delete(b.creationDate);
 	delete(a.lastModifiedTime);
 	delete(b.lastModifiedTime);
 	
