@@ -524,6 +524,7 @@ synckolab.calendarTools.event2json = function (event, syncTasks) {
 	var endDate = synckolab.calendarTools.getEndDate(event, syncTasks);
 	var i, minutes;
 	var dayindex, daynumber;
+	var calDateTime;
 
 	// correct the end date for all day events 
 	// Kolab uses for 1-day-event:
