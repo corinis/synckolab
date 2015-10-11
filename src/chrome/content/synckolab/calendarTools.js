@@ -582,6 +582,12 @@ synckolab.calendarTools.event2json = function (event, syncTasks) {
 		}
 	} else {
 		var startDate = event.startDate || event.entryDate;
+		
+		// set to "now"
+		if(!startDate) {
+			startDate = synckolab.tools.text.setCalByJsDate(null, new Date());
+		}
+		
 		// transfer into local timezone
 		if(startDate.timezone.tzid === "UTC") {
 			startDate = startDate.getInTimezone(synckolab.calendarTools.getTimezone(null));
@@ -1429,7 +1435,7 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 
 			case "STATUS":
 				// only tasks 
-				if (!syncTasks !cur.firstChild) {
+				if (!syncTasks && !cur.firstChild) {
 					break;
 				}
 				jobj.status = cur.getFirstData();
