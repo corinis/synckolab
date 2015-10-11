@@ -915,10 +915,12 @@ synckolab.calendarTools.json2event = function (jobj, calendar) {
 			// entry date and start date can be handled the same way
 			synckolab.tools.logMessage("setting all day: " + (syncTasks?"entryDate":"startDate"), synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
 			cDate = synckolab.tools.text.string2CalDateTime(jobj.startDate);
-			// this is a date
-			var tmp_date = cDate.jsDate;
+			// this is a date - set the javascript date
+			var tmp_date = synckolab.tools.text.setCalByJsDate(new Date(), cDate);
+			// ad 12h
 			tmp_date.setTime(tmp_date.getTime() + 12*60*60000);
-			cDate.jsDate = tmp_date;
+			// set cdate back (now changed)
+			cDate = synckolab.tools.text.setCalByJsDate(cDate, tmp_date);
 			cDate.isDate = true;
 			this.setKolabItemProperty(event, syncTasks?"entryDate":"startDate", cDate);
 		} else {
@@ -942,9 +944,10 @@ synckolab.calendarTools.json2event = function (jobj, calendar) {
 			// startdate = day_x, enddate = day_x
 			// Sunbird uses for 1-day-event:
 			// startdate = day_x, enddate = day_x + 1
-			var tmp_date = cDate.jsDate;
+			var tmp_date = synckolab.tools.text.setCalByJsDate(new Date(), cDate);
 			tmp_date.setTime(tmp_date.getTime() + 36*60*60000);
-			cDate.jsDate = tmp_date;
+			// set cdate back (now changed)
+			cDate = synckolab.tools.text.setCalByJsDate(cDate, tmp_date);
 			cDate.isDate = true;
 			// due date and end date can be handled the same way
 			this.setKolabItemProperty(event, syncTasks?"dueDate":"endDate", cDate);
