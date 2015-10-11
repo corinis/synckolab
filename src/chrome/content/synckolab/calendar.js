@@ -656,8 +656,6 @@ synckolab.Calendar = {
 		// get the dbfile from the local disk
 		var idxEntry = synckolab.tools.file.getSyncDbFile(this.gConfig, newEvent.uid);
 		
-		synckolab.tools.logMessage("idxEntry:" + idxEntry, synckolab.global.LOG_CAL + synckolab.global.LOG_DEBUG);
-
 		// always add if the forceLocalCopy flag is set (happens when you change the configuration)
 		if (foundEvent === null || this.forceLocalCopy) {
 			// a new event
@@ -721,6 +719,14 @@ synckolab.Calendar = {
 			if(newEvent === null) {
 				synckolab.tools.logMessage("newEvent is null!", synckolab.global.LOG_DEBUG);
 			}
+			
+			// add fix for "completed" handling
+			if(this.gConfig.type === "task") {
+				synckolab.calendarTools.fixTaskObj(cEvent);
+				synckolab.calendarTools.fixTaskObj(foundEvent);
+				synckolab.calendarTools.fixTaskObj(newEvent);
+			}
+			
 			// Streamline card comparisons
 			if (synckolab.calendarTools.equalsEvent(cEvent, foundEvent)) {
 				cEvent_equals_foundEvent = true;

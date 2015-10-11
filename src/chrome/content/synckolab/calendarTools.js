@@ -1423,16 +1423,19 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 			case "COMPLETED-DATE":
 				if (syncTasks) {
 					jobj.completed = 100;
-					jobj.statsu = "completed";
+					jobj.status = "completed";
 				}
 				break;
 
 			case "STATUS":
 				// only tasks 
-				if (syncTasks === false || !cur.firstChild) {
+				if (!syncTasks !cur.firstChild) {
 					break;
 				}
 				jobj.status = cur.getFirstData();
+				if(jobj.status === "completed") {
+					jobj.completed = 100;
+				}
 				break;
 
 			case "COMPLETED":
@@ -1449,8 +1452,9 @@ synckolab.calendarTools.xml2json = function (xml, syncTasks)
 
 				if (iComplete < 0) {
 					iComplete = 0;
-				} else if (iComplete > 100) {
+				} else if (iComplete >= 100) {
 						iComplete = 100;
+						jobj.status = "completed";
 				}
 				jobj.completed = iComplete;
 				break;
@@ -2515,7 +2519,7 @@ synckolab.calendarTools.ical2event = function (content, todo)
 	}
 
 	if (!subComp ) {
-		synckolab.tools.logMessage("unable to parse event 3: " + content, synckolab.global.LOG_CAL + synckolab.global.LOG_ERROR);
+		synckolab.tools.logMessage("unable to parse event subcomponent: " + content, synckolab.global.LOG_CAL + synckolab.global.LOG_ERROR);
 		return null;
 	}
 
@@ -2531,3 +2535,16 @@ synckolab.calendarTools.ical2event = function (content, todo)
 	return event;
 };
 
+synckolab.calendarTools.fixTaskObj = function(task) {
+	if(!task)
+		return;
+	
+	if(task.status === "completed") {
+		task.completed = 100;
+	} else if (task.completed >= 100) {
+		task.status = "completed";
+		task.completed = 100;
+	} else if (task.completed < 0 || !task.completed) {
+		task.completed = 0;
+	}
+}
