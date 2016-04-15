@@ -1,14 +1,14 @@
 SyncKolab
 =========
 
-Importnat Note: SyncKolab relies on a lot thunderbird internals in order to work. This means that on every version upgrade of thunderbird there is quite a chance that it will break. 
-Please use [bugzilla](http://bugzilla.mozdev.org/enter_bug.cgi?product=synckolab) to report such an issue (or check if it hasn't been reported already). 
+Important Note: SyncKolab relies on a lot of Thunderbird internals in order to work. This means that on every version upgrade of Thunderbird, there is quite a chance that it will break. 
+Please use [bugzilla](http://bugzilla.mozdev.org/enter_bug.cgi?product=synckolab) to report such an issue (after checking if it hasn't been reported already). 
 
-Thunderbird extension allowing to synchronize your contacts, calendar items and events using IMAP.
+SyncKolab is a Thunderbird extension allowing to synchronize your contacts, calendar items and events using IMAP.
 
-for more information please refer to [the main page](http://www.gargan.org/en/Mozilla_Extensions/SyncKolab/)
+For more information please refer to [the main page](http://www.gargan.org/en/Mozilla_Extensions/SyncKolab/)
 
-You can always checkout the current [nightly](http://www.gargan.org/extensions/synckolab-NIGHTLY.xpi) if you run into major problems (like no configuration options available) - since they are most often fixed there.
+You can always checkout the current [nightly](http://www.gargan.org/extensions/synckolab-NIGHTLY.xpi) if you run into major problems (like having no configuration options available) - since they are most often fixed there.
 
 Make sure to read http://www.gargan.org/en/Mozilla_Extensions/SyncKolab/FAQ/
 
